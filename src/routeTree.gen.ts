@@ -10,33 +10,52 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiHelloRouteImport } from './routes/api/hello'
+import { Route as ApiHelloNameRouteImport } from './routes/api/hello.$name'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHelloRoute = ApiHelloRouteImport.update({
+  id: '/api/hello',
+  path: '/api/hello',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHelloNameRoute = ApiHelloNameRouteImport.update({
+  id: '/$name',
+  path: '/$name',
+  getParentRoute: () => ApiHelloRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/hello': typeof ApiHelloRouteWithChildren
+  '/api/hello/$name': typeof ApiHelloNameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/hello': typeof ApiHelloRouteWithChildren
+  '/api/hello/$name': typeof ApiHelloNameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/hello': typeof ApiHelloRouteWithChildren
+  '/api/hello/$name': typeof ApiHelloNameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/hello' | '/api/hello/$name'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/hello' | '/api/hello/$name'
+  id: '__root__' | '/' | '/api/hello' | '/api/hello/$name'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiHelloRoute: typeof ApiHelloRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +67,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/hello': {
+      id: '/api/hello'
+      path: '/api/hello'
+      fullPath: '/api/hello'
+      preLoaderRoute: typeof ApiHelloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/hello/$name': {
+      id: '/api/hello/$name'
+      path: '/$name'
+      fullPath: '/api/hello/$name'
+      preLoaderRoute: typeof ApiHelloNameRouteImport
+      parentRoute: typeof ApiHelloRoute
+    }
   }
 }
 
+interface ApiHelloRouteChildren {
+  ApiHelloNameRoute: typeof ApiHelloNameRoute
+}
+
+const ApiHelloRouteChildren: ApiHelloRouteChildren = {
+  ApiHelloNameRoute: ApiHelloNameRoute,
+}
+
+const ApiHelloRouteWithChildren = ApiHelloRoute._addFileChildren(
+  ApiHelloRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiHelloRoute: ApiHelloRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

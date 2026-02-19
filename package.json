@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun --bun vite dev",
-    "build": "bun --bun vite build",
-    "preview": "bun --bun vite preview",
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",

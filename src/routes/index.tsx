@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import Chroma from "@/components/Chroma";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Route as RouteIcon,
@@ -9,7 +10,7 @@ import {
   Zap,
 } from "lucide-react";
 
-export const Route = createFileRoute("/")({ component: App });
+export const Route = createFileRoute("/")({ component: Chroma });
 
 function App() {
   const features = [
