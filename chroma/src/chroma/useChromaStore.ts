@@ -6,18 +6,15 @@ import type {
   ChromaState,
   PaletteSlot,
   HarmonyMode,
-} from "@/types";
-import {
-  generateUtilityColors,
-  mergeUtilityColors,
-} from "@/lib/utils/colorMath";
+} from "./types";
+import { generateUtilityColors, mergeUtilityColors } from "./colorMath";
 import {
   genPalette,
   cloneSlot,
   hexToStop,
   decodeUrl,
   savePrefs,
-} from "@/lib/utils/paletteUtils";
+} from "./paletteUtils";
 
 // ─── Initial state builder ────────────────────────────────────────────────────
 
@@ -122,7 +119,9 @@ export const useChromaStore = create<ChromaStore>()(
             seedHsls.length ? seedHsls : null,
           );
           s.slots = newColors.map((color, i) =>
-            s.slots[i]?.locked ? s.slots[i] : { color, locked: false },
+            s.slots[i]?.locked
+              ? cloneSlot(s.slots[i])
+              : { color, locked: false },
           );
           s.utilityColors = mergeUtilityColors(
             s.utilityColors,

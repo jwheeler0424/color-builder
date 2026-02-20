@@ -1,29 +1,19 @@
-import React, { useState, useCallback } from "react";
-import type { ChromaState, ChromaAction, HarmonyMode } from "@/types";
+import { useState, useCallback } from "react";
+import type { HarmonyMode } from "@/types";
 import { textColor, parseHex } from "@/lib/utils/colorMath";
 import { nearestName, hexToStop } from "@/lib/utils/paletteUtils";
 import { HARMONIES, THEMES } from "@/lib/utils/constants";
+import { useChromaStore } from "@/hooks/useChromaStore";
 import Button from "../Button";
-
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-  generate: () => void;
-}
 
 function PaletteSlotComponent({
   slot,
   index,
-  onLock,
-  onCopy,
-  onEdit,
 }: {
-  slot: ChromaState["slots"][0];
+  slot: ReturnType<typeof useChromaStore.getState>["slots"][0];
   index: number;
-  onLock: (i: number) => void;
-  onCopy: (i: number) => void;
-  onEdit: (i: number) => void;
 }) {
+  const { toggleLock, editSlotColor } = useChromaStore();
   const [toastVisible, setToastVisible] = useState(false);
   const tc = textColor(slot.color.rgb);
   const name = nearestName(slot.color.rgb);
@@ -41,7 +31,7 @@ function PaletteSlotComponent({
         <button
           className={`ch-sbtn${slot.locked ? " locked" : ""}`}
           style={{ color: slot.locked ? "var(--ch-acc)" : tc }}
-          onClick={() => onLock(index)}
+          onClick={() => toggleLock(index)}
           title={slot.locked ? "Unlock" : "Lock"}
         >
           {slot.locked ? "🔒" : "🔓"}
@@ -53,14 +43,6 @@ function PaletteSlotComponent({
           title="Copy hex"
         >
           📋
-        </button>
-        <button
-          className="ch-sbtn"
-          style={{ color: tc }}
-          onClick={() => onEdit(index)}
-          title="Edit color"
-        >
-          ✏️
         </button>
       </div>
       <div className="ch-slot-info">
@@ -79,7 +61,6 @@ function PaletteSlotComponent({
   );
 }
 
-// Inline mini-picker for slot editing (Phase 1.3)
 function SlotEditPopover({
   slotHex,
   onClose,
@@ -91,7 +72,6 @@ function SlotEditPopover({
 }) {
   const [value, setValue] = useState(slotHex);
   const [error, setError] = useState(false);
-
   const handleChange = (v: string) => {
     setValue(v);
     const h = parseHex(v);
@@ -100,7 +80,6 @@ function SlotEditPopover({
       onApply(h);
     } else setError(true);
   };
-
   return (
     <div className="ch-slot-edit-popover" onClick={(e) => e.stopPropagation()}>
       <div
@@ -127,37 +106,42 @@ function SlotEditPopover({
   );
 }
 
-export default function PaletteView({ state, dispatch, generate }: Props) {
+export default function PaletteView() {
+  const {
+    slots,
+    seeds,
+    count,
+    mode,
+    generate,
+    setMode,
+    setCount,
+    addSeed,
+    removeSeed,
+    setSeeds,
+    editSlotColor,
+  } = useChromaStore();
   const [seedInp, setSeedInp] = useState("");
   const [seedErr, setSeedErr] = useState(false);
   const [editingSlot, setEditingSlot] = useState<number | null>(null);
 
-  const addSeed = useCallback(() => {
+  const handleAddSeed = useCallback(() => {
     const hex = parseHex(seedInp);
     if (!hex) {
       setSeedErr(true);
       setTimeout(() => setSeedErr(false), 600);
       return;
     }
-    dispatch({ type: "ADD_SEED", seed: hexToStop(hex) });
+    addSeed(hexToStop(hex));
     setSeedInp("");
-  }, [seedInp, dispatch]);
-
-  const handleEditApply = useCallback(
-    (index: number, hex: string) => {
-      dispatch({ type: "EDIT_SLOT_COLOR", index, color: hexToStop(hex) });
-    },
-    [dispatch],
-  );
+  }, [seedInp, addSeed]);
 
   return (
     <div className="ch-view-pal">
-      {/* Palette strip */}
       <div
         className="ch-pstrip"
         onClick={() => editingSlot !== null && setEditingSlot(null)}
       >
-        {state.slots.map((slot, i) => (
+        {slots.map((slot, i) => (
           <div
             key={i}
             style={{
@@ -167,51 +151,49 @@ export default function PaletteView({ state, dispatch, generate }: Props) {
               flexDirection: "column",
             }}
           >
-            <PaletteSlotComponent
-              slot={slot}
-              index={i}
-              onLock={(idx) => dispatch({ type: "TOGGLE_LOCK", index: idx })}
-              onCopy={(idx) => {
-                navigator.clipboard
-                  .writeText(state.slots[idx]?.color.hex || "")
-                  .catch(() => {});
-              }}
-              onEdit={(idx) => setEditingSlot(editingSlot === idx ? null : idx)}
-            />
+            <PaletteSlotComponent slot={slot} index={i} />
             {editingSlot === i && (
               <SlotEditPopover
                 slotHex={slot.color.hex}
                 onClose={() => setEditingSlot(null)}
-                onApply={(hex) => handleEditApply(i, hex)}
+                onApply={(hex) => editSlotColor(i, hexToStop(hex))}
               />
             )}
+            <button
+              className="ch-sbtn"
+              style={{
+                position: "absolute",
+                bottom: 8,
+                right: 8,
+                color: textColor(slot.color.rgb),
+              }}
+              onClick={() => setEditingSlot(editingSlot === i ? null : i)}
+              title="Edit color"
+            >
+              ✏️
+            </button>
           </div>
         ))}
       </div>
 
-      {/* Sidebar */}
       <aside className="ch-panel">
         <div className="ch-pscroll">
-          {/* Count */}
           <div className="ch-psec">
             <div className="ch-slabel">Colors</div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div className="ch-count-num">{state.count}</div>
+              <div className="ch-count-num">{count}</div>
               <input
                 type="range"
                 min={4}
                 max={12}
-                value={state.count}
-                onChange={(e) =>
-                  dispatch({ type: "SET_COUNT", count: +e.target.value })
-                }
+                value={count}
+                onChange={(e) => setCount(+e.target.value)}
                 className="ch-range"
               />
               <span style={{ fontSize: 10, color: "var(--ch-t3)" }}>12</span>
             </div>
           </div>
 
-          {/* Themes */}
           <div className="ch-psec">
             <div className="ch-slabel">Themes</div>
             <div className="ch-themes-grid">
@@ -221,11 +203,8 @@ export default function PaletteView({ state, dispatch, generate }: Props) {
                   className="ch-theme-card"
                   title={t.name}
                   onClick={() => {
-                    const seeds = t.seeds.map((h) =>
-                      hexToStop(h.toLowerCase()),
-                    );
-                    dispatch({ type: "SET_MODE", mode: t.mode as HarmonyMode });
-                    dispatch({ type: "SET_SEEDS", seeds });
+                    setMode(t.mode as HarmonyMode);
+                    setSeeds(t.seeds.map((h) => hexToStop(h.toLowerCase())));
                     generate();
                   }}
                 >
@@ -244,18 +223,14 @@ export default function PaletteView({ state, dispatch, generate }: Props) {
             </div>
           </div>
 
-          {/* Seeds */}
           <div className="ch-psec">
             <div className="ch-slabel">Seed Colors</div>
             <div className="ch-seedlist">
-              {state.seeds.map((s, i) => (
+              {seeds.map((s, i) => (
                 <div key={i} className="ch-seeditem">
                   <div className="ch-seedsw" style={{ background: s.hex }} />
                   <span className="ch-seedhex">{s.hex.toUpperCase()}</span>
-                  <button
-                    className="ch-seedrm"
-                    onClick={() => dispatch({ type: "REMOVE_SEED", index: i })}
-                  >
+                  <button className="ch-seedrm" onClick={() => removeSeed(i)}>
                     ×
                   </button>
                 </div>
@@ -266,32 +241,31 @@ export default function PaletteView({ state, dispatch, generate }: Props) {
                 className={`ch-inp${seedErr ? " err" : ""}`}
                 value={seedInp}
                 onChange={(e) => setSeedInp(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addSeed()}
+                onKeyDown={(e) => e.key === "Enter" && handleAddSeed()}
                 placeholder="#F4A261"
                 maxLength={7}
                 spellCheck={false}
                 autoComplete="off"
                 style={{ fontSize: 11 }}
               />
-              <Button variant="ghost" size="sm" onClick={addSeed}>
+              <Button variant="ghost" size="sm" onClick={handleAddSeed}>
                 + Add
               </Button>
             </div>
           </div>
 
-          {/* Harmony */}
           <div className="ch-psec">
             <div className="ch-slabel">Harmony</div>
             <div className="ch-hdesc">
-              {HARMONIES.find((h) => h.id === state.mode)?.desc || ""}
+              {HARMONIES.find((h) => h.id === mode)?.desc || ""}
             </div>
             <div className="ch-hgrid">
               {HARMONIES.map((h) => (
                 <button
                   key={h.id}
-                  className={`ch-hbtn${state.mode === h.id ? " on" : ""}`}
+                  className={`ch-hbtn${mode === h.id ? " on" : ""}`}
                   onClick={() => {
-                    dispatch({ type: "SET_MODE", mode: h.id });
+                    setMode(h.id);
                     generate();
                   }}
                 >
@@ -301,12 +275,11 @@ export default function PaletteView({ state, dispatch, generate }: Props) {
             </div>
           </div>
 
-          {/* Preview strip */}
-          {state.slots.length > 0 && (
+          {slots.length > 0 && (
             <div className="ch-psec">
               <div className="ch-slabel">Preview</div>
               <div className="ch-prevstrip">
-                {state.slots.map((s, i) => (
+                {slots.map((s, i) => (
                   <div key={i} style={{ flex: 1, background: s.color.hex }} />
                 ))}
               </div>

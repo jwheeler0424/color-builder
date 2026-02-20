@@ -65,8 +65,6 @@ export interface HarmonyDef {
   desc: string;
 }
 
-// ─── Themes ───────────────────────────────────────────────────────────────────
-
 export interface ThemeDef {
   name: string;
   mode: HarmonyMode;
@@ -140,7 +138,6 @@ export interface UtilityColor {
   role: UtilityRole;
   label: string;
   description: string;
-  /** Semantic hue anchor the generator targets (degrees) */
   anchorHue: number;
   color: ColorStop;
   locked: boolean;
@@ -166,42 +163,18 @@ export interface ThemeTokenSet {
   palette: { name: string; hex: string }[];
 }
 
-// ─── App Views ────────────────────────────────────────────────────────────────
-
-export type ViewId =
-  | "pal"
-  | "pick"
-  | "scale"
-  | "sim"
-  | "grad"
-  | "conv"
-  | "a11y"
-  | "img"
-  | "saved"
-  | "contrast"
-  | "mixer"
-  | "scoring"
-  | "preview"
-  | "utility"
-  | "theme";
-
 // ─── Mixer ────────────────────────────────────────────────────────────────────
 
 export type MixSpace = "oklch" | "hsl" | "rgb";
-
-export interface MixerColor {
-  hex: string;
-  rgb: RGB;
-}
 
 // ─── Export tabs ──────────────────────────────────────────────────────────────
 
 export type ExportTab = "hex" | "css" | "array" | "scss" | "figma" | "tailwind";
 
 // ─── App State ────────────────────────────────────────────────────────────────
+// NOTE: view is removed — navigation is owned by TanStack Router.
 
 export interface ChromaState {
-  view: ViewId;
   mode: HarmonyMode;
   count: number;
   seeds: ColorStop[];
@@ -223,40 +196,37 @@ export interface ChromaState {
   utilityColors: UtilityColorSet;
 }
 
-// ─── Actions ──────────────────────────────────────────────────────────────────
+// ─── Store actions (methods replace old dispatch pattern) ─────────────────────
 
-export type ChromaAction =
-  | { type: "SET_VIEW"; view: ViewId }
-  | { type: "SET_MODE"; mode: HarmonyMode }
-  | { type: "SET_COUNT"; count: number }
-  | { type: "ADD_SEED"; seed: ColorStop }
-  | { type: "REMOVE_SEED"; index: number }
-  | { type: "SET_SEEDS"; seeds: ColorStop[] }
-  | { type: "GENERATE" }
-  | { type: "UNDO" }
-  | { type: "TOGGLE_LOCK"; index: number }
-  | { type: "EDIT_SLOT_COLOR"; index: number; color: ColorStop }
-  | { type: "ADD_SLOT"; color: ColorStop }
-  | { type: "REMOVE_SLOT"; index: number }
-  | { type: "SET_PICKER_HSL"; hsl: HSL }
-  | { type: "SET_PICKER_ALPHA"; alpha: number }
-  | { type: "ADD_RECENT"; hex: string }
-  | { type: "SET_GRADIENT"; gradient: Partial<GradientState> }
-  | { type: "SET_SCALE_HEX"; hex: string }
-  | { type: "SET_SCALE_NAME"; name: string }
-  | { type: "SET_SCALE_TOKEN_TAB"; tab: TokenFormat }
-  | { type: "SET_CONV_INPUT"; input: string }
-  | { type: "SET_EXPORT_TAB"; tab: ExportTab }
-  | { type: "OPEN_MODAL"; modal: ChromaState["modal"] }
-  | { type: "CLOSE_MODAL" }
-  | { type: "SET_SAVE_NAME"; name: string }
-  | { type: "SET_EXTRACTED"; colors: RGB[]; imgSrc: string }
-  | {
-      type: "LOAD_PALETTE";
-      slots: PaletteSlot[];
-      mode: HarmonyMode;
-      count: number;
-    }
-  | { type: "SET_UTILITY_COLOR"; role: UtilityRole; color: ColorStop }
-  | { type: "TOGGLE_UTILITY_LOCK"; role: UtilityRole }
-  | { type: "REGEN_UTILITY_COLORS" };
+export interface ChromaActions {
+  setMode: (mode: HarmonyMode) => void;
+  setCount: (count: number) => void;
+  addSeed: (seed: ColorStop) => void;
+  removeSeed: (index: number) => void;
+  setSeeds: (seeds: ColorStop[]) => void;
+  generate: () => void;
+  undo: () => void;
+  toggleLock: (index: number) => void;
+  editSlotColor: (index: number, color: ColorStop) => void;
+  addSlot: (color: ColorStop) => void;
+  removeSlot: (index: number) => void;
+  loadPalette: (slots: PaletteSlot[], mode: HarmonyMode, count: number) => void;
+  setPickerHsl: (hsl: HSL) => void;
+  setPickerAlpha: (alpha: number) => void;
+  addRecent: (hex: string) => void;
+  setGradient: (partial: Partial<GradientState>) => void;
+  setScaleHex: (hex: string) => void;
+  setScaleName: (name: string) => void;
+  setScaleTokenTab: (tab: TokenFormat) => void;
+  setConvInput: (input: string) => void;
+  setExportTab: (tab: ExportTab) => void;
+  openModal: (modal: ChromaState["modal"]) => void;
+  closeModal: () => void;
+  setSaveName: (name: string) => void;
+  setExtracted: (colors: RGB[], imgSrc: string) => void;
+  setUtilityColor: (role: UtilityRole, color: ColorStop) => void;
+  toggleUtilityLock: (role: UtilityRole) => void;
+  regenUtilityColors: () => void;
+}
+
+export type ChromaStore = ChromaState & ChromaActions;

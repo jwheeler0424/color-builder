@@ -1,16 +1,10 @@
-/// <reference types="vite/client" />
-import {
-  HeadContent,
-  Link,
-  Scripts,
-  createRootRoute,
-} from "@tanstack/react-router";
+import { ScrollRestoration, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import * as React from "react";
 import { DefaultCatchBoundary } from "@/components/DefaultCatchBoundary";
 import { NotFound } from "@/components/NotFound";
-import appCss from "@/styles/app.css?url";
+import { Scripts } from "@tanstack/start";
 import { seo } from "@/lib/utils/seo";
 
 export const Route = createRootRoute({
@@ -69,20 +63,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
-        <div className="p-2 flex gap-2 text-lg">
-          <Link
-            to="/"
-            activeProps={{
-              className: "font-bold",
-            }}
-            activeOptions={{ exact: true }}
-          >
-            Home
-          </Link>
-        </div>
-        <hr />
+      <body style={{ margin: 0, padding: 0, overflow: "hidden" }}>
         {children}
+        <ScrollRestoration />
         <TanStackRouterDevtools position="bottom-right" />
         <TanStackDevtools />
         <Scripts />
