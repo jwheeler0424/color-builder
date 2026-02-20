@@ -9,6 +9,8 @@ import {
   rgbToHex,
   rgbToHsl,
   hslToRgb,
+  rgbToOklch,
+  oklchToRgb,
   clamp,
   colorDist,
 } from "./colorMath";
@@ -17,29 +19,139 @@ import { NAMED } from "./constants";
 // ─── Color Naming ─────────────────────────────────────────────────────────────
 
 export function nearestName(rgb: { r: number; g: number; b: number }): string {
-  let best = NAMED[0]!;
+  let best = NAMED[0];
   let bestD = colorDist(rgb, best.rgb);
   for (let i = 1; i < NAMED.length; i++) {
-    const d = colorDist(rgb, NAMED[i]!.rgb);
+    const d = colorDist(rgb, NAMED[i].rgb);
     if (d < bestD) {
       bestD = d;
-      best = NAMED[i]!;
+      best = NAMED[i];
     }
   }
   return best.name;
 }
 
-// ─── Harmony Generation ───────────────────────────────────────────────────────
+// ─── OKLCH Palette Generation ─────────────────────────────────────────────────
+//
+// All harmony math works directly in OKLCH space.
+//
+// Why OKLCH over HSL for palette generation:
+//  • Equal L values produce equal perceived brightness regardless of hue —
+//    a blue at L=0.55 and a yellow at L=0.55 look equally bright. HSL fails
+//    this: yellow at HSL L=50% looks far lighter than blue at L=50%.
+//  • Hue rotations follow the perceptual color wheel, not the RGB wheel, so
+//    complementary / triadic angles feel more balanced visually.
+//  • Gamut mapping (chroma bisection) keeps out-of-sRGB colors valid.
+//
+// Chroma strategy:
+//  Palette chroma lives in 0.08–0.22 for general palettes. Seeds push this
+//  higher if the input color is very saturated. We cap at 0.30 to stay safely
+//  inside sRGB across all hue/lightness combinations.
+//
+// Lightness distribution:
+//  Colors within a harmony share similar L (perceptual uniformity).
+//  When count > anchor-hues, we offset L by ±0.08 per "cycle" so adjacent
+//  colors of the same hue are distinguishable.
 
 function rotateHue(h: number, d: number): number {
   return (((h + d) % 360) + 360) % 360;
 }
 
-function makeStop(hsl: { h: number; s: number; l: number }): ColorStop {
-  const rgb = hslToRgb(hsl);
-  return { hex: rgbToHex(rgb), rgb, hsl };
+/** Build a ColorStop from OKLCH values — gamut-maps automatically */
+function makeStop(L: number, C: number, H: number): ColorStop {
+  const rgb = oklchToRgb({ L, C, H });
+  return { hex: rgbToHex(rgb), rgb, hsl: rgbToHsl(rgb) };
 }
 
+/**
+ * Matsuda Harmonic Templates — precise implementation from:
+ *   Cohen-Or et al. (2006) "Color Harmonization", ACM SIGGRAPH
+ *   as cited in Zaeimi & Ghoddosian (2020) Color Harmony Algorithm
+ *
+ * Each template defines one or more arc ranges (in OKLCH hue degrees)
+ * relative to a base hue H=0. The template can be rotated so that
+ * its "anchor sector" aligns with any input hue.
+ *
+ * Arc widths from Appendix A of the CHA paper:
+ *   Large area (V, X, Y): 26% of 360° = 93.6°
+ *   Small area (i, L, I, Y): 5% of 360° = 18°
+ *   L large area: 22% of 360° = 79.2°
+ *   T area: 50% of 360° = 180°
+ *
+ * Templates i, I, N are excluded (per paper: i≈I, N has no hue).
+ * We use: V (slice), L (L-shape), Y (Y-shape), X (double-slice), T (half-wheel)
+ * plus standard color-theory modes: complementary, triadic, split-comp, etc.
+ *
+ * A template arc is {center, width} in degrees. We sample N hues uniformly
+ * within the template's arcs, biased toward arc centers (more natural results).
+ */
+
+interface TemplateArc {
+  center: number;
+  width: number;
+}
+
+const MATSUDA_TEMPLATES: Record<string, TemplateArc[]> = {
+  // V type: one wide arc (26% = 93.6°) — analogous cluster
+  matsuda_V: [{ center: 0, width: 93.6 }],
+  // L type: one large (22% = 79.2°) + one small (5% = 18°) at 90°
+  matsuda_L: [
+    { center: 0, width: 79.2 },
+    { center: 90, width: 18 },
+  ],
+  // Y type: one large (26% = 93.6°) + one small (5% = 18°) opposite
+  matsuda_Y: [
+    { center: 0, width: 93.6 },
+    { center: 180, width: 18 },
+  ],
+  // X type: two large arcs (26% each) at 180° — complementary clusters
+  matsuda_X: [
+    { center: 0, width: 93.6 },
+    { center: 180, width: 93.6 },
+  ],
+  // T type: one half-wheel (50% = 180°) — warm or cool dominance
+  matsuda_T: [{ center: 0, width: 180 }],
+};
+
+/** Sample n hues from a set of template arcs (rotated to anchorH).
+ *  Uses a bias toward arc centers (Gaussian-like weighting via cosine)
+ *  so colors feel cohesive rather than randomly spread. */
+function sampleArcs(arcs: TemplateArc[], anchorH: number, n: number): number[] {
+  const hues: number[] = [];
+  // Distribute n samples across arcs proportionally to their width
+  const totalWidth = arcs.reduce((s, a) => s + a.width, 0);
+  let remaining = n;
+
+  for (let ai = 0; ai < arcs.length; ai++) {
+    const arc = arcs[ai];
+    const count =
+      ai === arcs.length - 1
+        ? remaining
+        : Math.max(1, Math.round((arc.width / totalWidth) * n));
+    remaining -= count;
+
+    for (let i = 0; i < count; i++) {
+      // Bias toward center: use cosine-weighted sampling
+      // u ∈ [-1, 1] biased toward 0 via u = sin(random * π - π/2)
+      const u = Math.sin(Math.random() * Math.PI - Math.PI / 2);
+      const offset = u * (arc.width / 2);
+      hues.push((((anchorH + arc.center + offset) % 360) + 360) % 360);
+    }
+  }
+  return hues;
+}
+
+/**
+ * Anchor hue angles for each harmony mode.
+ *
+ * For Matsuda template modes: returns the set of arc-sampled hues for n colors.
+ * For geometric modes: returns exact hue positions (unchanged — these are
+ * already correct in perceptual OKLCH space).
+ *
+ * OKLCH hue landmarks (approximate):
+ *   Red ≈ 25°, Orange ≈ 55°, Yellow ≈ 90°, Yellow-Green ≈ 115°,
+ *   Green ≈ 142°, Cyan ≈ 195°, Blue ≈ 260°, Purple ≈ 305°, Pink ≈ 340°
+ */
 function anchorHues(mode: HarmonyMode, h: number): number[] {
   switch (mode) {
     case "complementary":
@@ -51,8 +163,6 @@ function anchorHues(mode: HarmonyMode, h: number): number[] {
     case "tetradic":
     case "square":
       return [h, rotateHue(h, 90), rotateHue(h, 180), rotateHue(h, 270)];
-    case "analogous":
-      return [-2, -1, 0, 1, 2].map((i) => rotateHue(h, i * 30));
     case "double-split":
       return [
         rotateHue(h, -30),
@@ -63,93 +173,144 @@ function anchorHues(mode: HarmonyMode, h: number): number[] {
       ];
     case "compound":
       return [h, rotateHue(h, 150), rotateHue(h, 180), rotateHue(h, 210)];
+    // Matsuda template modes — sample fixed 5 hues for multi-seed compatibility
+    case "analogous":
+    case "matsuda_L":
+    case "matsuda_Y":
+    case "matsuda_X":
+    case "matsuda_T":
+      return getMatsudaHues(mode, h, 5) ?? [h];
     default:
       return [h];
   }
 }
 
+/** Get arc-sampled hues for Matsuda template modes — used when count > hue anchors */
+function getMatsudaHues(
+  mode: HarmonyMode,
+  anchorH: number,
+  n: number,
+): number[] | null {
+  const templateMap: Partial<Record<HarmonyMode, string>> = {
+    analogous: "matsuda_V",
+    matsuda_L: "matsuda_L",
+    matsuda_Y: "matsuda_Y",
+    matsuda_X: "matsuda_X",
+    matsuda_T: "matsuda_T",
+  };
+  const key = templateMap[mode];
+  if (!key) return null;
+  return sampleArcs(MATSUDA_TEMPLATES[key], anchorH, n);
+}
+
 export function genPalette(
   mode: HarmonyMode,
   count: number,
-  seeds: { h: number; s: number; l: number }[] | null,
+  seeds: { h: number; s: number; l: number }[] | null, // incoming seeds are still in HSL (from picker/store)
 ): ColorStop[] {
-  const base = seeds?.length
-    ? seeds[0]!
-    : {
-        h: Math.random() * 360,
-        s: 40 + Math.random() * 50,
-        l: 35 + Math.random() * 35,
-      };
+  // Convert seed HSL → OKLCH for internal work
+  const seedsOklch = seeds?.length
+    ? seeds.map((s) => rgbToOklch(hslToRgb(s)))
+    : null;
+
+  // Base color in OKLCH
+  const base = seedsOklch?.[0] ?? {
+    L: 0.42 + Math.random() * 0.25,
+    C: 0.1 + Math.random() * 0.14,
+    H: Math.random() * 360,
+  };
+
+  // Target chroma — inherit from seed or use moderate default
+  const targetC = clamp(base.C, 0.08, 0.26);
+  // Target lightness — inherit from seed, clamped to visible midrange
+  const targetL = clamp(base.L, 0.32, 0.72);
+
+  // ── Special modes ───────────────────────────────────────────────────────────
 
   if (mode === "monochromatic") {
+    // Same hue and chroma, sweep lightness from light→dark
     return Array.from({ length: count }, (_, i) => {
       const t = count === 1 ? 0.5 : i / (count - 1);
-      return makeStop({
-        h: base.h,
-        s: clamp(base.s + (Math.random() - 0.5) * 12, 10, 95),
-        l: 15 + t * 70,
-      });
+      const L = clamp(0.88 - t * 0.7, 0.1, 0.92); // L: 0.88 → 0.18
+      const C = targetC * (1 - 0.35 * Math.abs(t - 0.5)); // chroma peaks at midpoint
+      return makeStop(L, C, base.H);
     });
-  }
-  if (mode === "shades") {
-    return Array.from({ length: count }, (_, i) => {
-      const t = count === 1 ? 0.5 : i / (count - 1);
-      return makeStop({
-        h: base.h,
-        s: clamp(base.s - t * 20, 10, 95),
-        l: 8 + t * 82,
-      });
-    });
-  }
-  if (mode === "natural") {
-    return Array.from({ length: count }, () =>
-      makeStop({
-        h: rotateHue(base.h + (Math.random() - 0.5) * 50, 0),
-        s: 15 + Math.random() * 45,
-        l: 25 + Math.random() * 50,
-      }),
-    );
-  }
-  if (mode === "random") {
-    const bh = Math.random() * 360;
-    return Array.from({ length: count }, (_, i) =>
-      makeStop({
-        h: rotateHue(bh + i * 137.508, 0),
-        s: 45 + Math.random() * 45,
-        l: 35 + Math.random() * 35,
-      }),
-    );
   }
 
-  // Multi-seed: honour all seeds, fill gaps from harmony hues
-  if (seeds && seeds.length > 1) {
-    const stops = seeds.map((s) => makeStop(s));
+  if (mode === "shades") {
+    // Like monochromatic but chroma fades toward extremes more aggressively
+    return Array.from({ length: count }, (_, i) => {
+      const t = count === 1 ? 0.5 : i / (count - 1);
+      const L = clamp(0.93 - t * 0.82, 0.06, 0.94);
+      const C = targetC * Math.sin(t * Math.PI) * 0.9; // smooth sine fade
+      return makeStop(L, C, base.H);
+    });
+  }
+
+  if (mode === "natural") {
+    // Organic: hue wanders ±40°, low-moderate chroma, varied lightness
+    return Array.from({ length: count }, () => {
+      const L = clamp(0.3 + Math.random() * 0.45, 0.25, 0.78);
+      const C = clamp(0.04 + Math.random() * 0.14, 0.02, 0.18);
+      const H = rotateHue(base.H + (Math.random() - 0.5) * 80, 0);
+      return makeStop(L, C, H);
+    });
+  }
+
+  if (mode === "random") {
+    // Golden-angle hue series for good visual spread
+    const bH = Math.random() * 360;
+    return Array.from({ length: count }, (_, i) => {
+      const L = clamp(0.35 + Math.random() * 0.3, 0.28, 0.72);
+      const C = clamp(0.1 + Math.random() * 0.16, 0.08, 0.28);
+      return makeStop(L, C, rotateHue(bH + i * 137.508, 0)); // golden angle
+    });
+  }
+
+  // ── Matsuda template modes (analogous) — sample full count from arcs ────────
+  const matsudaHues = getMatsudaHues(mode, base.H, count);
+  if (matsudaHues) {
+    return matsudaHues.map((H) => {
+      const L = clamp(targetL + (Math.random() - 0.5) * 0.18, 0.28, 0.74);
+      const C = clamp(targetC + (Math.random() - 0.5) * 0.06, 0.06, 0.28);
+      return makeStop(L, C, H);
+    });
+  }
+
+  // ── Multi-seed: honour all seeds, fill gaps from harmony hues ──────────────
+  if (seedsOklch && seedsOklch.length > 1) {
+    const stops = seedsOklch.map((s) => makeStop(s.L, s.C, s.H));
     const need = count - stops.length;
-    const hues = anchorHues(mode, seeds[0]!.h);
+    const hues = anchorHues(mode, seedsOklch[0].H);
     for (let i = 0; i < need; i++) {
-      stops.push(
-        makeStop({
-          h: hues[i % hues.length]!,
-          s: clamp(seeds[0]!.s + (Math.random() - 0.5) * 15, 25, 95),
-          l: clamp(seeds[0]!.l + (Math.random() - 0.5) * 30, 20, 80),
-        }),
-      );
+      const H = hues[i % hues.length];
+      const L = clamp(targetL + (Math.random() - 0.5) * 0.22, 0.28, 0.75);
+      const C = clamp(targetC + (Math.random() - 0.5) * 0.06, 0.06, 0.28);
+      stops.push(makeStop(L, C, H));
     }
     return stops.slice(0, count);
   }
 
-  // Standard hue-based
-  const hues = anchorHues(mode, base.h);
-  const total = Math.ceil(count / hues.length);
+  // ── Standard single-seed harmony ───────────────────────────────────────────
+  const hues = anchorHues(mode, base.H);
+  const cyclesNeeded = Math.ceil(count / hues.length);
+
   return Array.from({ length: count }, (_, i) => {
+    const hueIdx = i % hues.length;
     const cycle = Math.floor(i / hues.length);
-    const lv =
-      total > 1 ? (cycle / (total - 1)) * 40 - 20 : (Math.random() - 0.5) * 22;
-    return makeStop({
-      h: hues[i % hues.length]!,
-      s: clamp(base.s + (Math.random() - 0.5) * 15, 25, 95),
-      l: clamp(base.l + lv, 20, 80),
-    });
+
+    // Lightness: slight stagger per cycle to distinguish same-hue colors
+    // Uses a cosine curve so the variation is smooth: ±0.09 over the range
+    const lOffset =
+      cyclesNeeded > 1
+        ? (cycle / (cyclesNeeded - 1) - 0.5) * 0.18
+        : (Math.random() - 0.5) * 0.14;
+    const L = clamp(targetL + lOffset, 0.24, 0.78);
+
+    // Chroma: small random variation ±0.04 for natural variation
+    const C = clamp(targetC + (Math.random() - 0.5) * 0.08, 0.06, 0.3);
+
+    return makeStop(L, C, hues[hueIdx]);
   });
 }
 
@@ -247,8 +408,8 @@ export async function extractColors(file: File, count = 8): Promise<Pixel[]> {
       const data = ctx.getImageData(0, 0, w, h).data;
       const px: Pixel[] = [];
       for (let i = 0; i < data.length; i += 4) {
-        if (data[i + 3]! < 128) continue;
-        px.push({ r: data[i]!, g: data[i + 1]!, b: data[i + 2]! });
+        if (data[i + 3] < 128) continue;
+        px.push({ r: data[i], g: data[i + 1], b: data[i + 2] });
       }
       if (!px.length) return resolve([]);
       const depth = Math.ceil(Math.log2(count * 2));

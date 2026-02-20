@@ -1,14 +1,9 @@
+import { useNavigate } from "@tanstack/react-router";
 import React, { useState, useMemo } from "react";
-import type { ChromaState, ChromaAction } from "@/types";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import { generateScale, textColor, parseHex } from "@/lib/utils/colorMath";
 import { hexToStop } from "@/lib/utils/paletteUtils";
-import Button from "../Button";
-
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-  generate: () => void;
-}
+import { Button } from "../ui/button";
 
 const TOKEN_TABS = ["css", "js", "tailwind", "json"] as const;
 
@@ -37,29 +32,46 @@ function buildTokens(
   }
 }
 
-export default function TintScaleView({ state, dispatch, generate }: Props) {
+export default function TintScaleView() {
+  const {
+    scaleHex,
+    scaleName,
+    scaleTokenTab,
+    slots,
+    generate,
+    setSeeds,
+    setScaleHex,
+    setScaleName,
+    setScaleTokenTab,
+  } = useChromaStore();
+  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const [inputVal, setInputVal] = useState(state.scaleHex);
+  const [inputVal, setInputVal] = useState(scaleHex);
 
-  const scale = useMemo(() => generateScale(state.scaleHex), [state.scaleHex]);
+  // Keep local input in sync if scaleHex changes from the store (e.g. after undo)
+  React.useEffect(() => {
+    setInputVal(scaleHex);
+  }, [scaleHex]);
+
+  const scale = useMemo(() => generateScale(scaleHex), [scaleHex]);
   const tokens = useMemo(
-    () => buildTokens(scale, state.scaleName, state.scaleTokenTab),
-    [scale, state.scaleName, state.scaleTokenTab],
+    () => buildTokens(scale, scaleName, scaleTokenTab),
+    [scale, scaleName, scaleTokenTab],
   );
 
   const handleInput = (v: string) => {
     setInputVal(v);
     const h = parseHex(v);
-    if (h) dispatch({ type: "SET_SCALE_HEX", hex: h });
+    if (h) setScaleHex(h);
   };
 
   const handleGenerate = () => {
     const h = parseHex(inputVal);
-    if (h) dispatch({ type: "SET_SCALE_HEX", hex: h });
-    else if (state.slots.length) {
-      const h2 = state.slots[0]!.color.hex;
+    if (h) setScaleHex(h);
+    else if (slots.length) {
+      const h2 = slots[0].color.hex;
       setInputVal(h2);
-      dispatch({ type: "SET_SCALE_HEX", hex: h2 });
+      setScaleHex(h2);
     }
   };
 
@@ -71,12 +83,9 @@ export default function TintScaleView({ state, dispatch, generate }: Props) {
 
   const useAsSeeds = () => {
     const picks = [1, 3, 5, 7, 9].map((i) => scale[i]).filter(Boolean);
-    dispatch({
-      type: "SET_SEEDS",
-      seeds: picks.map((pick) => hexToStop(pick!.hex)),
-    });
-    dispatch({ type: "SET_VIEW", view: "pal" });
+    setSeeds(picks.map(({ hex }) => hexToStop(hex)));
     generate();
+    navigate({ to: "/palette" });
   };
 
   return (
@@ -98,10 +107,7 @@ export default function TintScaleView({ state, dispatch, generate }: Props) {
             maxWidth: 600,
           }}
         >
-          <div
-            className="ch-scale-swatch"
-            style={{ background: state.scaleHex }}
-          />
+          <div className="ch-scale-swatch" style={{ background: scaleHex }} />
           <input
             className="ch-inp"
             value={inputVal}
@@ -112,7 +118,7 @@ export default function TintScaleView({ state, dispatch, generate }: Props) {
             autoComplete="off"
             style={{ flex: 1 }}
           />
-          <Button variant="primary" size="sm" onClick={handleGenerate}>
+          <Button variant="default" size="sm" onClick={handleGenerate}>
             Generate
           </Button>
         </div>
@@ -146,13 +152,8 @@ export default function TintScaleView({ state, dispatch, generate }: Props) {
         <div className="ch-slabel">Token Name</div>
         <input
           className="ch-inp"
-          value={state.scaleName}
-          onChange={(e) =>
-            dispatch({
-              type: "SET_SCALE_NAME",
-              name: e.target.value.trim() || "primary",
-            })
-          }
+          value={scaleName}
+          onChange={(e) => setScaleName(e.target.value.trim() || "primary")}
           placeholder="primary"
           maxLength={24}
           autoComplete="off"
@@ -171,9 +172,9 @@ export default function TintScaleView({ state, dispatch, generate }: Props) {
           {TOKEN_TABS.map((tab) => (
             <Button
               key={tab}
-              variant={state.scaleTokenTab === tab ? "primary" : "ghost"}
+              variant={scaleTokenTab === tab ? "default" : "ghost"}
               size="sm"
-              onClick={() => dispatch({ type: "SET_SCALE_TOKEN_TAB", tab })}
+              onClick={() => setScaleTokenTab(tab)}
             >
               {tab.toUpperCase()}
             </Button>

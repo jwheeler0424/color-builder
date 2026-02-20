@@ -1,13 +1,25 @@
-import { ScrollRestoration, createRootRoute } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+// src/routes/__root.tsx
+/// <reference types="vite/client" />
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRouteWithContext,
+} from "@tanstack/react-router";
 import { TanStackDevtools } from "@tanstack/react-devtools";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { PacerDevtoolsPanel } from "@tanstack/react-pacer-devtools";
 import * as React from "react";
-import { DefaultCatchBoundary } from "@/components/DefaultCatchBoundary";
-import { NotFound } from "@/components/NotFound";
-import { Scripts } from "@tanstack/start";
+import type { QueryClient } from "@tanstack/react-query";
+import { DefaultCatchBoundary } from "@/components/default-catch-boundary";
+import { NotFound } from "@/components/not-found";
+import appCss from "@/styles/app.css?url";
 import { seo } from "@/lib/utils/seo";
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{
+  queryClient: QueryClient;
+}>()({
   head: () => ({
     meta: [
       {
@@ -19,8 +31,8 @@ export const Route = createRootRoute({
       },
       ...seo({
         title:
-          "TanStack Start | Type-Safe, Client-First, Full-Stack React Framework",
-        description: `TanStack Start is a type-safe, client-first, full-stack React framework. `,
+          "Chroma v3 - A powerful color palette generator and editor built with TanStack Router",
+        description: `Chroma v3 is a type-safe, client-first, color palette generator and editor built with TanStack Router. `,
       }),
     ],
     links: [
@@ -52,10 +64,24 @@ export const Route = createRootRoute({
       },
     ],
   }),
-  errorComponent: DefaultCatchBoundary,
+  errorComponent: (props) => {
+    return (
+      <RootDocument>
+        <DefaultCatchBoundary {...props} />
+      </RootDocument>
+    );
+  },
   notFoundComponent: () => <NotFound />,
-  shellComponent: RootDocument,
+  component: RootComponent,
 });
+
+function RootComponent() {
+  return (
+    <RootDocument>
+      <Outlet />
+    </RootDocument>
+  );
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
@@ -65,9 +91,28 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body style={{ margin: 0, padding: 0, overflow: "hidden" }}>
         {children}
-        <ScrollRestoration />
-        <TanStackRouterDevtools position="bottom-right" />
-        <TanStackDevtools />
+        <TanStackDevtools
+          config={{
+            position: "bottom-right",
+          }}
+          plugins={[
+            {
+              name: "TanStack Query",
+              render: <ReactQueryDevtoolsPanel />,
+              defaultOpen: true,
+            },
+            {
+              name: "TanStack Router",
+              render: <TanStackRouterDevtoolsPanel />,
+              defaultOpen: false,
+            },
+            {
+              name: "TanStack Pacer",
+              render: <PacerDevtoolsPanel />,
+              defaultOpen: false,
+            },
+          ]}
+        />
         <Scripts />
       </body>
     </html>

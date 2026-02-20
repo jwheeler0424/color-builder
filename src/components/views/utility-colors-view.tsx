@@ -1,10 +1,6 @@
-import React, { useState } from "react";
-import type {
-  ChromaState,
-  ChromaAction,
-  UtilityRole,
-  UtilityColor,
-} from "@/types";
+import { useState, useEffect } from "react";
+import type { UtilityRole, UtilityColor } from "@/types";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import {
   parseHex,
   textColor,
@@ -14,12 +10,7 @@ import {
   rgbToHex,
 } from "@/lib/utils/colorMath";
 import { hexToStop } from "@/lib/utils/paletteUtils";
-import Button from "../Button";
-
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-}
+import { Button } from "../ui/button";
 
 const ROLE_ICONS: Record<UtilityRole, string> = {
   info: "ℹ",
@@ -41,6 +32,10 @@ function UtilityCard({
 }) {
   const [editVal, setEditVal] = useState(utility.color.hex);
   const [editErr, setEditErr] = useState(false);
+  // Sync input when the color is updated externally (regen, load palette, etc.)
+  useEffect(() => {
+    setEditVal(utility.color.hex);
+  }, [utility.color.hex]);
   const { hex, rgb } = utility.color;
   const tc = textColor(rgb);
 
@@ -252,8 +247,8 @@ function UtilityCard({
 }
 
 /** Live alert/toast/banner preview using all 6 utility colors */
-function LivePreview({ state }: { state: ChromaState }) {
-  const { utilityColors, slots } = state;
+function LivePreview() {
+  const { utilityColors, slots } = useChromaStore();
   const bySat = [...slots].sort((a, b) => b.color.hsl.s - a.color.hsl.s);
   const bgHex =
     slots.length > 0
@@ -371,7 +366,14 @@ function LivePreview({ state }: { state: ChromaState }) {
   );
 }
 
-export default function UtilityColorsView({ state, dispatch }: Props) {
+export default function UtilityColorsView() {
+  const {
+    utilityColors,
+    slots,
+    setUtilityColor,
+    toggleUtilityLock,
+    regenUtilityColors,
+  } = useChromaStore();
   const roles: UtilityRole[] = [
     "info",
     "success",
@@ -380,17 +382,15 @@ export default function UtilityColorsView({ state, dispatch }: Props) {
     "neutral",
     "focus",
   ];
-  const { utilityColors } = state;
-
   const handleColorChange = (role: UtilityRole, hex: string) => {
-    dispatch({ type: "SET_UTILITY_COLOR", role, color: hexToStop(hex) });
+    setUtilityColor(role, hexToStop(hex));
   };
 
   const handleToggleLock = (role: UtilityRole) => {
-    dispatch({ type: "TOGGLE_UTILITY_LOCK", role });
+    toggleUtilityLock(role);
   };
 
-  const regenAll = () => dispatch({ type: "REGEN_UTILITY_COLORS" });
+  const regenAll = () => regenUtilityColors();
 
   // Build CSS vars preview
   const cssVars = roles
@@ -427,7 +427,7 @@ export default function UtilityColorsView({ state, dispatch }: Props) {
             flexWrap: "wrap",
           }}
         >
-          <Button variant="primary" onClick={regenAll}>
+          <Button variant="default" onClick={regenAll}>
             ↻ Regenerate All
           </Button>
           <Button variant="ghost" onClick={copyCss}>
@@ -435,7 +435,7 @@ export default function UtilityColorsView({ state, dispatch }: Props) {
           </Button>
         </div>
 
-        {!state.slots.length && (
+        {!slots.length && (
           <p style={{ color: "var(--ch-t3)", fontSize: 12, marginBottom: 24 }}>
             Generate a palette first to derive contextual utility colors.
           </p>
@@ -458,7 +458,7 @@ export default function UtilityColorsView({ state, dispatch }: Props) {
           <div className="ch-slabel" style={{ marginBottom: 12 }}>
             Component Preview
           </div>
-          <LivePreview state={state} />
+          <LivePreview />
         </div>
 
         {/* Quick CSS vars */}

@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import type { ChromaState, ChromaAction } from "@/types";
+import { useMemo, useState } from "react";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import {
   deriveThemeTokens,
   buildThemeCss,
@@ -8,12 +8,7 @@ import {
   textColor,
 } from "@/lib/utils/colorMath";
 import { hexToStop } from "@/lib/utils/paletteUtils";
-import Button from "../Button";
-
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-}
+import { Button } from "../ui/button";
 
 type ThemeTab = "css" | "figma" | "tailwind";
 
@@ -37,13 +32,15 @@ function ThemePreview({
   return (
     <div className="ch-theme-preview-pair">
       {(["light", "dark"] as const).map((mode) => {
-        const bg = get("color-bg", mode);
-        const surface = get("color-surface", mode);
-        const border = get("color-border", mode);
-        const text = get("color-text", mode);
-        const muted = get("color-text-muted", mode);
-        const accent = get("color-accent", mode);
-        const accentTc = textColor(hexToStop(accent).rgb);
+        const bg = get("--background", mode);
+        const card = get("--card", mode);
+        const border = get("--border", mode);
+        const text = get("--foreground", mode);
+        const muted = get("--muted-foreground", mode);
+        const primary = get("--primary", mode);
+        const primaryFg = get("--primary-foreground", mode);
+        const secondary = get("--secondary", mode);
+        const secFg = get("--secondary-foreground", mode);
 
         return (
           <div
@@ -53,7 +50,7 @@ function ThemePreview({
           >
             <div
               style={{
-                background: surface,
+                background: card,
                 borderBottom: `1px solid ${border}`,
                 padding: "8px 12px",
                 display: "flex",
@@ -66,15 +63,15 @@ function ThemePreview({
               </span>
               <span
                 style={{
-                  background: accent,
-                  color: accentTc,
+                  background: primary,
+                  color: primaryFg,
                   padding: "3px 9px",
                   borderRadius: 3,
                   fontSize: 10,
                   fontWeight: 700,
                 }}
               >
-                Accent
+                Primary
               </span>
             </div>
             <div style={{ padding: "10px 12px" }}>
@@ -101,15 +98,27 @@ function ThemePreview({
               <div style={{ display: "flex", gap: 5 }}>
                 <div
                   style={{
-                    background: accent,
-                    color: accentTc,
+                    background: primary,
+                    color: primaryFg,
                     padding: "5px 10px",
                     borderRadius: 3,
                     fontSize: 10,
                     fontWeight: 700,
                   }}
                 >
-                  Primary
+                  Button
+                </div>
+                <div
+                  style={{
+                    background: secondary,
+                    color: secFg,
+                    border: `1px solid ${border}`,
+                    padding: "5px 10px",
+                    borderRadius: 3,
+                    fontSize: 10,
+                  }}
+                >
+                  Secondary
                 </div>
                 <div
                   style={{
@@ -120,7 +129,7 @@ function ThemePreview({
                     fontSize: 10,
                   }}
                 >
-                  Secondary
+                  Outline
                 </div>
               </div>
             </div>
@@ -204,26 +213,29 @@ function UtilityModePreview({
   );
 }
 
-export default function ThemeGeneratorView({ state }: Props) {
+export default function ThemeGeneratorView() {
+  const { slots, utilityColors } = useChromaStore();
   const [activeTab, setActiveTab] = useState<ThemeTab>("css");
   const [copied, setCopied] = useState(false);
 
   const tokens = useMemo(
-    () => deriveThemeTokens(state.slots, state.utilityColors),
-    [state.slots, state.utilityColors],
+    () => deriveThemeTokens(slots, utilityColors),
+    [slots, utilityColors],
   );
 
-  const content = useMemo(() => {
-    if (!state.slots.length) return "";
+  const content = useMemo((): string => {
+    if (!slots.length) return "";
     switch (activeTab) {
       case "css":
         return buildThemeCss(tokens);
       case "figma":
-        return buildFigmaTokens(tokens, state.utilityColors);
+        return buildFigmaTokens(tokens, utilityColors);
       case "tailwind":
-        return buildTailwindConfig(tokens, state.utilityColors);
+        return buildTailwindConfig(tokens, utilityColors);
+      default:
+        return "";
     }
-  }, [tokens, state.utilityColors, activeTab, state.slots.length]);
+  }, [tokens, utilityColors, activeTab, slots.length]);
 
   const copy = () => {
     navigator.clipboard.writeText(content).catch(() => {});
@@ -231,7 +243,7 @@ export default function ThemeGeneratorView({ state }: Props) {
     setTimeout(() => setCopied(false), 1400);
   };
 
-  if (!state.slots.length) {
+  if (!slots.length) {
     return (
       <div className="ch-view-scroll ch-view-pad">
         <div className="ch-view-hd">
@@ -353,7 +365,7 @@ export default function ThemeGeneratorView({ state }: Props) {
               {(Object.keys(TAB_LABELS) as ThemeTab[]).map((tab) => (
                 <Button
                   key={tab}
-                  variant={activeTab === tab ? "primary" : "ghost"}
+                  variant={activeTab === tab ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setActiveTab(tab)}
                 >

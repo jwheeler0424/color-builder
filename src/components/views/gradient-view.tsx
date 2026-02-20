@@ -1,20 +1,10 @@
-import React, { useState, useMemo, useCallback } from "react";
-import type {
-  ChromaState,
-  ChromaAction,
-  GradientStop,
-  GradientType,
-  GradientState,
-} from "@/types";
+import { useState, useMemo, useCallback } from "react";
+import type { GradientStop, GradientState, GradientType } from "@/types";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import { parseHex, clamp } from "@/lib/utils/colorMath";
-import { GRAD_PRESETS } from "@/lib/utils/constants";
-import GradientStopBar from "../GradientStopBar";
-import Button from "../Button";
-
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-}
+import { GRAD_PRESETS } from "@/lib/constants/chroma";
+import GradientStopBar from "../gradient-stop-bar";
+import { Button } from "../ui/button";
 
 const DIRECTIONS = [
   { label: "→", val: "to right" },
@@ -27,7 +17,7 @@ const DIRECTIONS = [
   { label: "45°", val: "45deg" },
 ];
 
-function buildCss(grad: ChromaState["gradient"]): string {
+function buildCss(grad: GradientState): string {
   const sorted = grad.stops.slice().sort((a, b) => a.pos - b.pos);
   const str = sorted.map((x) => `${x.hex} ${x.pos}%`).join(", ");
   if (grad.type === "radial")
@@ -37,16 +27,16 @@ function buildCss(grad: ChromaState["gradient"]): string {
   return `linear-gradient(${grad.dir}, ${str})`;
 }
 
-export default function GradientView({ state, dispatch }: Props) {
+export default function GradientView() {
+  const { gradient, slots, setGradient } = useChromaStore();
   const [copied, setCopied] = useState(false);
-  const g = state.gradient;
+  const g = gradient;
   const css = useMemo(() => buildCss(g), [g]);
   const selectedStop = g.stops[g.selectedStop] ?? g.stops[0];
 
   const setGrad = useCallback(
-    (partial: Partial<typeof g>) =>
-      dispatch({ type: "SET_GRADIENT", gradient: partial }),
-    [dispatch],
+    (partial: Partial<GradientState>) => setGradient(partial),
+    [setGradient],
   );
 
   const handleMoveStop = useCallback(
@@ -63,8 +53,8 @@ export default function GradientView({ state, dispatch }: Props) {
       const sorted = g.stops.slice().sort((a, b) => a.pos - b.pos);
       let hex = "#ffffff";
       for (let i = 0; i < sorted.length - 1; i++) {
-        if (pos >= sorted[i]!.pos && pos <= sorted[i + 1]!.pos) {
-          hex = sorted[i]!.hex; // use left neighbour's colour as default
+        if (pos >= sorted[i].pos && pos <= sorted[i + 1].pos) {
+          hex = sorted[i].hex; // use left neighbour's colour as default
           break;
         }
       }
@@ -104,9 +94,9 @@ export default function GradientView({ state, dispatch }: Props) {
   };
 
   const loadFromPalette = () => {
-    if (!state.slots.length) return;
-    const n = state.slots.length;
-    const stops: GradientStop[] = state.slots.map((slot, i) => ({
+    if (!slots.length) return;
+    const n = slots.length;
+    const stops: GradientStop[] = slots.map((slot, i) => ({
       hex: slot.color.hex,
       pos: Math.round((i / (n - 1 || 1)) * 100),
     }));
@@ -164,7 +154,7 @@ export default function GradientView({ state, dispatch }: Props) {
             {(["linear", "radial", "conic"] as GradientType[]).map((t) => (
               <Button
                 key={t}
-                variant={g.type === t ? "primary" : "ghost"}
+                variant={g.type === t ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setGrad({ type: t })}
               >
@@ -182,7 +172,7 @@ export default function GradientView({ state, dispatch }: Props) {
               {DIRECTIONS.map(({ label, val }) => (
                 <Button
                   key={val}
-                  variant={g.dir === val ? "primary" : "ghost"}
+                  variant={g.dir === val ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setGrad({ dir: val })}
                 >
@@ -202,7 +192,7 @@ export default function GradientView({ state, dispatch }: Props) {
                 (d) => (
                   <Button
                     key={d}
-                    variant={g.dir === d ? "primary" : "ghost"}
+                    variant={g.dir === d ? "default" : "ghost"}
                     size="sm"
                     onClick={() => setGrad({ dir: d })}
                   >
@@ -265,7 +255,7 @@ export default function GradientView({ state, dispatch }: Props) {
           <div className="ch-slabel">Presets</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {GRAD_PRESETS.map((p, i) => (
-              <button
+              <Button
                 key={i}
                 className="ch-btn ch-btn-ghost ch-btn-sm"
                 style={{
@@ -292,11 +282,11 @@ export default function GradientView({ state, dispatch }: Props) {
                       ...p,
                       stops: p.stops,
                       selectedStop: 0,
-                    } as GradientState),
+                    }),
                   }}
                 />
                 {p.name}
-              </button>
+              </Button>
             ))}
           </div>
         </div>

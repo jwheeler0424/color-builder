@@ -57,7 +57,11 @@ export type HarmonyMode =
   | "double-split"
   | "compound"
   | "natural"
-  | "random";
+  | "random"
+  | "matsuda_L"
+  | "matsuda_Y"
+  | "matsuda_X"
+  | "matsuda_T";
 
 export interface HarmonyDef {
   id: HarmonyMode;

@@ -1,16 +1,16 @@
 import { useState, useCallback } from "react";
-import type { HarmonyMode } from "@/types";
+import type { PaletteSlot } from "@/types";
 import { textColor, parseHex } from "@/lib/utils/colorMath";
 import { nearestName, hexToStop } from "@/lib/utils/paletteUtils";
-import { HARMONIES, THEMES } from "@/lib/utils/constants";
-import { useChromaStore } from "@/hooks/useChromaStore";
-import Button from "../Button";
+import { HARMONIES, THEMES } from "@/lib/constants/chroma";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import { Button } from "../ui/button";
 
 function PaletteSlotComponent({
   slot,
   index,
 }: {
-  slot: ReturnType<typeof useChromaStore.getState>["slots"][0];
+  slot: PaletteSlot;
   index: number;
 }) {
   const { toggleLock, editSlotColor } = useChromaStore();
@@ -99,7 +99,7 @@ function SlotEditPopover({
           width: 100,
         }}
       />
-      <Button variant="primary" size="sm" onClick={onClose}>
+      <Button variant="default" size="sm" onClick={onClose}>
         Done
       </Button>
     </div>
@@ -203,7 +203,7 @@ export default function PaletteView() {
                   className="ch-theme-card"
                   title={t.name}
                   onClick={() => {
-                    setMode(t.mode as HarmonyMode);
+                    setMode(t.mode);
                     setSeeds(t.seeds.map((h) => hexToStop(h.toLowerCase())));
                     generate();
                   }}
@@ -288,7 +288,7 @@ export default function PaletteView() {
         </div>
 
         <div className="ch-genbar">
-          <Button variant="primary" className="ch-gen-btn" onClick={generate}>
+          <Button variant="default" className="ch-gen-btn" onClick={generate}>
             ⟳ Generate
           </Button>
           <div className="ch-hint">

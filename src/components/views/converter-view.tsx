@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import type { ChromaState, ChromaAction } from "@/types";
+import { useState } from "react";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import {
   parseAny,
   rgbToHex,
@@ -10,11 +10,6 @@ import {
   oklabToLch,
 } from "@/lib/utils/colorMath";
 import { nearestName } from "@/lib/utils/paletteUtils";
-
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-}
 
 function ConvCard({
   label,
@@ -43,8 +38,9 @@ function ConvCard({
   );
 }
 
-export default function ConverterView({ state, dispatch }: Props) {
-  const rgb = parseAny(state.convInput) ?? { r: 224, g: 122, b: 95 };
+export default function ConverterView() {
+  const { convInput, setConvInput } = useChromaStore();
+  const rgb = parseAny(convInput) ?? { r: 224, g: 122, b: 95 };
   const hex = rgbToHex(rgb);
   const hsl = rgbToHsl(rgb);
   const hsv = rgbToHsv(rgb);
@@ -72,10 +68,8 @@ export default function ConverterView({ state, dispatch }: Props) {
           <div className="ch-conv-swatch" style={{ background: hex }} />
           <input
             className="ch-inp"
-            value={state.convInput}
-            onChange={(e) =>
-              dispatch({ type: "SET_CONV_INPUT", input: e.target.value })
-            }
+            value={convInput}
+            onChange={(e) => setConvInput(e.target.value)}
             placeholder="#F4A261  ·  rgb(244,162,97)  ·  hsl(27,89%,67%)"
             spellCheck={false}
             autoComplete="off"

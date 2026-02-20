@@ -1,20 +1,19 @@
-import React, { useState, useEffect } from "react";
-import type { ChromaState, ChromaAction, SavedPalette } from "@/types";
-import { hexToStop } from "@/lib/utils/paletteUtils";
+import { useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import type { SavedPalette } from "@/types";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import {
+  hexToStop,
   loadSaved,
   deleteSaved,
   clearSaved,
   encodeUrl,
 } from "@/lib/utils/paletteUtils";
-import Button from "../Button";
+import { Button } from "../ui/button";
 
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-}
-
-export default function SavedView({ state, dispatch }: Props) {
+export default function SavedView() {
+  const { loadPalette, openModal } = useChromaStore();
+  const navigate = useNavigate();
   const [palettes, setPalettes] = useState<SavedPalette[]>([]);
 
   const refresh = () => setPalettes(loadSaved());
@@ -23,18 +22,14 @@ export default function SavedView({ state, dispatch }: Props) {
     refresh();
   }, []);
 
-  const loadPalette = (p: SavedPalette) => {
+  // Renamed to avoid collision with the store's loadPalette method
+  const handleLoad = (p: SavedPalette) => {
     const slots = p.hexes.map((hex) => ({
       color: hexToStop(hex),
       locked: false,
     }));
-    dispatch({
-      type: "LOAD_PALETTE",
-      slots,
-      mode: p.mode,
-      count: p.hexes.length,
-    });
-    dispatch({ type: "SET_VIEW", view: "pal" });
+    loadPalette(slots, p.mode, p.hexes.length);
+    navigate({ to: "/palette" });
   };
 
   const handleDelete = (id: string) => {
@@ -52,8 +47,7 @@ export default function SavedView({ state, dispatch }: Props) {
   const handleShare = (p: SavedPalette) => {
     const url = encodeUrl(p.hexes, p.mode);
     navigator.clipboard.writeText(url).catch(() => {});
-    // open share modal pre-filled
-    dispatch({ type: "OPEN_MODAL", modal: "share" });
+    openModal("share");
   };
 
   if (!palettes.length) {
@@ -108,7 +102,7 @@ export default function SavedView({ state, dispatch }: Props) {
           >
             Saved Palettes
           </h2>
-          <Button variant="danger" size="sm" onClick={handleClearAll}>
+          <Button variant="destructive" size="sm" onClick={handleClearAll}>
             Clear All
           </Button>
         </div>
@@ -146,7 +140,7 @@ export default function SavedView({ state, dispatch }: Props) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => loadPalette(p)}
+                    onClick={() => handleLoad(p)}
                   >
                     ↓ Load
                   </Button>
@@ -158,7 +152,7 @@ export default function SavedView({ state, dispatch }: Props) {
                     ⤴ Share
                   </Button>
                   <Button
-                    variant="danger"
+                    variant="destructive"
                     size="sm"
                     onClick={() => handleDelete(p.id)}
                   >

@@ -1,13 +1,9 @@
-import type { ChromaState } from "@/types";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import { applySimMatrix, rgbToHex, textColor } from "@/lib/utils/colorMath";
-import { CB_TYPES } from "@/lib/utils/constants";
+import { CB_TYPES } from "@/lib/constants/chroma";
 
-interface Props {
-  state: ChromaState;
-}
-
-export default function ColorBlindView({ state }: Props) {
-  const { slots } = state;
+export default function ColorBlindView() {
+  const { slots } = useChromaStore();
 
   if (!slots.length) {
     return (

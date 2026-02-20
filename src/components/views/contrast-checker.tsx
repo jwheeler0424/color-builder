@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   contrastRatio,
   wcagLevel,
@@ -7,14 +7,10 @@ import {
   rgbToHex,
 } from "@/lib/utils/colorMath";
 import { nearestName } from "@/lib/utils/paletteUtils";
-import type { ChromaState, ChromaAction } from "@/types";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-}
-
-export default function ContrastChecker({ state }: Props) {
+export default function ContrastChecker() {
+  const { slots } = useChromaStore();
   const [fg, setFg] = useState("#ffffff");
   const [bg, setBg] = useState("#1a1a2e");
 
@@ -179,7 +175,7 @@ export default function ContrastChecker({ state }: Props) {
         </div>
 
         {/* Palette quick-pick */}
-        {state.slots.length > 0 && (
+        {slots.length > 0 && (
           <div style={{ marginTop: 24 }}>
             <div className="ch-slabel">Quick-pick from Palette</div>
             <div
@@ -190,7 +186,7 @@ export default function ContrastChecker({ state }: Props) {
                 marginTop: 6,
               }}
             >
-              {state.slots.map((slot, i) => (
+              {slots.map((slot, i) => (
                 <div
                   key={i}
                   style={{ display: "flex", flexDirection: "column", gap: 3 }}

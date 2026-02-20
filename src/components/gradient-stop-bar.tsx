@@ -44,7 +44,7 @@ export default function GradientStopBar({
 
       const onMove = (ev: MouseEvent | TouchEvent) => {
         if (draggingIdx.current === null) return;
-        const clientX = "touches" in ev ? ev.touches[0]!.clientX : ev.clientX;
+        const clientX = "touches" in ev ? ev.touches[0].clientX : ev.clientX;
         onMoveStop(draggingIdx.current, posFromEvent(clientX));
       };
       const onUp = () => {

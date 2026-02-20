@@ -1,18 +1,23 @@
-import React, { useState, useMemo } from "react";
-import type { ChromaState, ChromaAction, ExportTab } from "@/types";
+import { useState, useMemo } from "react";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import { encodeUrl, savePalette } from "@/lib/utils/paletteUtils";
 import {
   deriveThemeTokens,
   buildFigmaTokens,
   buildTailwindConfig,
 } from "@/lib/utils/colorMath";
-import Modal from "./Modal";
-import Button from "./Button";
-
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-}
+import type { ExportTab } from "@/types";
+import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
 
 // ─── Export Modal ─────────────────────────────────────────────────────────────
 
@@ -25,17 +30,26 @@ const EXPORT_TABS: { id: ExportTab; label: string }[] = [
   { id: "tailwind", label: "Tailwind" },
 ];
 
-export function ExportModal({ state, dispatch }: Props) {
-  const hexes = state.slots.map((s) => s.color.hex);
+export function ExportModal() {
+  const {
+    modal,
+    slots,
+    utilityColors,
+    exportTab,
+    closeModal,
+    openModal,
+    setExportTab,
+  } = useChromaStore();
+  const hexes = slots.map((s) => s.color.hex);
   const [copied, setCopied] = useState(false);
 
   const tokens = useMemo(
-    () => deriveThemeTokens(state.slots, state.utilityColors),
-    [state.slots, state.utilityColors],
+    () => deriveThemeTokens(slots, utilityColors),
+    [slots, utilityColors],
   );
 
   const content = useMemo(() => {
-    switch (state.exportTab) {
+    switch (exportTab) {
       case "hex":
         return hexes.join("\n");
       case "css":
@@ -45,11 +59,13 @@ export function ExportModal({ state, dispatch }: Props) {
       case "scss":
         return hexes.map((h, i) => `$color-${i + 1}: ${h};`).join("\n");
       case "figma":
-        return buildFigmaTokens(tokens, state.utilityColors);
+        return buildFigmaTokens(tokens, utilityColors);
       case "tailwind":
-        return buildTailwindConfig(tokens, state.utilityColors);
+        return buildTailwindConfig(tokens, utilityColors);
+      default:
+        return "";
     }
-  }, [state.exportTab, hexes, tokens, state.utilityColors]);
+  }, [exportTab, hexes, tokens, utilityColors]);
 
   const copy = () => {
     navigator.clipboard.writeText(content).catch(() => {});
@@ -58,78 +74,89 @@ export function ExportModal({ state, dispatch }: Props) {
   };
 
   return (
-    <Modal
-      title="Export"
-      onClose={() => dispatch({ type: "CLOSE_MODAL" })}
-      width={560}
-      footer={
-        <>
+    <Dialog
+      open={modal === "export"}
+      onOpenChange={(open) => !open && closeModal()}
+    >
+      <DialogTrigger
+        render={
           <Button
             variant="ghost"
-            onClick={() => dispatch({ type: "CLOSE_MODAL" })}
+            size="sm"
+            title="Export"
+            onClick={() => openModal("export")}
           >
-            Close
+            ↗
           </Button>
-          <Button variant="primary" onClick={copy}>
+        }
+      />
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Export</DialogTitle>
+        </DialogHeader>
+        <div
+          style={{
+            display: "flex",
+            gap: 4,
+            marginBottom: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          {EXPORT_TABS.map(({ id, label }) => (
+            <Button
+              key={id}
+              variant={exportTab === id ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setExportTab(id)}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
+        {exportTab === "figma" && (
+          <p style={{ fontSize: 11, color: "var(--ch-t3)", marginBottom: 8 }}>
+            Style Dictionary / Figma Tokens JSON — includes palette, semantic
+            tokens, and utility colors.
+          </p>
+        )}
+        {exportTab === "tailwind" && (
+          <p style={{ fontSize: 11, color: "var(--ch-t3)", marginBottom: 8 }}>
+            Tailwind config snippet — pair with CSS Variables output for full
+            light/dark support.
+          </p>
+        )}
+        <pre className="ch-expre">{content}</pre>
+        <div
+          style={{
+            display: "flex",
+            height: 24,
+            borderRadius: 2,
+            overflow: "hidden",
+            gap: 2,
+            marginTop: 8,
+          }}
+        >
+          {hexes.map((h, i) => (
+            <div key={i} style={{ flex: 1, background: h }} />
+          ))}
+        </div>
+        <DialogFooter>
+          <DialogClose render={<Button variant="ghost">Close</Button>} />
+          <Button variant="default" onClick={copy}>
             {copied ? "✓ Copied" : "Copy"}
           </Button>
-        </>
-      }
-    >
-      <div
-        style={{ display: "flex", gap: 4, marginBottom: 12, flexWrap: "wrap" }}
-      >
-        {EXPORT_TABS.map(({ id, label }) => (
-          <Button
-            key={id}
-            variant={state.exportTab === id ? "primary" : "ghost"}
-            size="sm"
-            onClick={() => dispatch({ type: "SET_EXPORT_TAB", tab: id })}
-          >
-            {label}
-          </Button>
-        ))}
-      </div>
-
-      {/* Contextual hint for new tabs */}
-      {state.exportTab === "figma" && (
-        <p style={{ fontSize: 11, color: "var(--ch-t3)", marginBottom: 8 }}>
-          Style Dictionary / Figma Tokens JSON — includes palette, semantic
-          tokens, and utility colors.
-        </p>
-      )}
-      {state.exportTab === "tailwind" && (
-        <p style={{ fontSize: 11, color: "var(--ch-t3)", marginBottom: 8 }}>
-          Tailwind config snippet — pair with CSS variables from the Theme
-          Generator for full light/dark support.
-        </p>
-      )}
-
-      <pre className="ch-expre">{content}</pre>
-
-      <div
-        style={{
-          display: "flex",
-          height: 24,
-          borderRadius: 2,
-          overflow: "hidden",
-          gap: 2,
-          marginTop: 8,
-        }}
-      >
-        {hexes.map((h, i) => (
-          <div key={i} style={{ flex: 1, background: h }} />
-        ))}
-      </div>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 // ─── Share Modal ──────────────────────────────────────────────────────────────
 
-export function ShareModal({ state, dispatch }: Props) {
-  const hexes = state.slots.map((s) => s.color.hex);
-  const url = encodeUrl(hexes, state.mode);
+export function ShareModal() {
+  const { modal, slots, mode, closeModal, openModal } = useChromaStore();
+  const hexes = slots.map((s) => s.color.hex);
+  const url = encodeUrl(hexes, mode);
   const [copied, setCopied] = useState(false);
 
   const copy = () => {
@@ -139,175 +166,208 @@ export function ShareModal({ state, dispatch }: Props) {
   };
 
   return (
-    <Modal
-      title="Share Palette"
-      onClose={() => dispatch({ type: "CLOSE_MODAL" })}
-      footer={
-        <>
+    <Dialog
+      open={modal === "share"}
+      onOpenChange={(open) => !open && closeModal()}
+    >
+      <DialogTrigger
+        render={
           <Button
             variant="ghost"
-            onClick={() => dispatch({ type: "CLOSE_MODAL" })}
+            size="sm"
+            title="Share URL"
+            onClick={() => openModal("share")}
           >
-            Close
+            ⤴
           </Button>
-          <Button variant="primary" onClick={copy}>
-            {copied ? "✓ Copied" : "Copy URL"}
-          </Button>
-        </>
-      }
-    >
-      <p style={{ fontSize: 12, color: "var(--ch-t3)", marginBottom: 10 }}>
-        Anyone with this URL can load your exact palette.
-      </p>
-      <textarea
-        readOnly
-        value={url}
-        rows={2}
-        style={{
-          width: "100%",
-          background: "var(--ch-s2)",
-          border: "1px solid var(--ch-b1)",
-          borderRadius: 2,
-          color: "var(--ch-t2)",
-          fontFamily: "var(--ch-fm)",
-          fontSize: 11,
-          padding: 9,
-          resize: "none",
-          outline: "none",
-          lineHeight: 1.6,
-        }}
+        }
       />
-      <div
-        style={{
-          display: "flex",
-          height: 24,
-          borderRadius: 2,
-          overflow: "hidden",
-          gap: 2,
-          marginTop: 8,
-        }}
-      >
-        {hexes.map((h, i) => (
-          <div key={i} style={{ flex: 1, background: h }} />
-        ))}
-      </div>
-    </Modal>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Share Palette</DialogTitle>
+          <DialogDescription>
+            Anyone with this URL can load your exact palette.
+          </DialogDescription>
+        </DialogHeader>
+        <textarea
+          readOnly
+          value={url}
+          rows={2}
+          style={{
+            width: "100%",
+            background: "var(--ch-s2)",
+            border: "1px solid var(--ch-b1)",
+            borderRadius: 2,
+            color: "var(--ch-t2)",
+            fontFamily: "var(--ch-fm)",
+            fontSize: 11,
+            padding: 9,
+            resize: "none",
+            outline: "none",
+            lineHeight: 1.6,
+          }}
+        />
+        <div
+          style={{
+            display: "flex",
+            height: 24,
+            borderRadius: 2,
+            overflow: "hidden",
+            gap: 2,
+            marginTop: 8,
+          }}
+        >
+          {hexes.map((h, i) => (
+            <div key={i} style={{ flex: 1, background: h }} />
+          ))}
+        </div>
+        <DialogFooter>
+          <DialogClose render={<Button variant="ghost">Close</Button>} />
+          <Button variant="default" onClick={copy}>
+            {copied ? "✓ Copied" : "Copy"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 // ─── Save Modal ───────────────────────────────────────────────────────────────
 
-export function SaveModal({ state, dispatch }: Props) {
-  const hexes = state.slots.map((s) => s.color.hex);
+export function SaveModal() {
+  const { modal, slots, mode, saveName, setSaveName, closeModal, openModal } =
+    useChromaStore();
+  const hexes = slots.map((s) => s.color.hex);
 
   const handleSave = () => {
-    savePalette(state.saveName.trim() || "Unnamed", hexes, state.mode);
-    dispatch({ type: "CLOSE_MODAL" });
+    savePalette(saveName.trim() || "Unnamed", hexes, mode);
+    closeModal();
   };
 
   return (
-    <Modal
-      title="Save Palette"
-      onClose={() => dispatch({ type: "CLOSE_MODAL" })}
-      footer={
-        <>
+    <Dialog
+      open={modal === "save"}
+      onOpenChange={(open) => !open && closeModal()}
+    >
+      <DialogTrigger
+        render={
           <Button
             variant="ghost"
-            onClick={() => dispatch({ type: "CLOSE_MODAL" })}
+            size="sm"
+            onClick={() => {
+              setSaveName("");
+              openModal("save");
+            }}
+            title="Save palette"
           >
-            Cancel
+            ♡
           </Button>
-          <Button variant="primary" onClick={handleSave}>
+        }
+      />
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Save Palette</DialogTitle>
+        </DialogHeader>
+        <div
+          style={{
+            display: "flex",
+            height: 36,
+            borderRadius: 3,
+            overflow: "hidden",
+            gap: 2,
+            marginBottom: 12,
+          }}
+        >
+          {hexes.map((h, i) => (
+            <div key={i} style={{ flex: 1, background: h }} />
+          ))}
+        </div>
+        <input
+          className="ch-inp"
+          value={saveName}
+          onChange={(e) => setSaveName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSave()}
+          placeholder="Name your palette…"
+          maxLength={40}
+          autoFocus
+          autoComplete="off"
+        />
+        <DialogFooter>
+          <DialogClose render={<Button variant="ghost">Cancel</Button>} />
+          <Button variant="default" onClick={handleSave}>
             Save
           </Button>
-        </>
-      }
-    >
-      <div
-        style={{
-          display: "flex",
-          height: 36,
-          borderRadius: 3,
-          overflow: "hidden",
-          gap: 2,
-          marginBottom: 12,
-        }}
-      >
-        {hexes.map((h, i) => (
-          <div key={i} style={{ flex: 1, background: h }} />
-        ))}
-      </div>
-      <input
-        className="ch-inp"
-        value={state.saveName}
-        onChange={(e) =>
-          dispatch({ type: "SET_SAVE_NAME", name: e.target.value })
-        }
-        onKeyDown={(e) => e.key === "Enter" && handleSave()}
-        placeholder="Name your palette…"
-        maxLength={40}
-        autoFocus
-        autoComplete="off"
-      />
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-// ─── Keyboard Shortcuts Modal ─────────────────────────────────────────────────
+// ─── Shortcuts Modal ──────────────────────────────────────────────────────────
 
-export function ShortcutsModal({
-  dispatch,
-}: {
-  dispatch: React.Dispatch<ChromaAction>;
-}) {
+export function ShortcutsModal() {
   const shortcuts = [
     { keys: "Space", desc: "Generate new palette" },
     { keys: "Ctrl+Z", desc: "Undo last generation" },
     { keys: "Escape", desc: "Close modal / cancel" },
     { keys: "?", desc: "Show this shortcuts panel" },
   ];
-
+  const { modal, closeModal, openModal } = useChromaStore();
   return (
-    <Modal
-      title="Keyboard Shortcuts"
-      onClose={() => dispatch({ type: "CLOSE_MODAL" })}
-      footer={
-        <Button
-          variant="ghost"
-          onClick={() => dispatch({ type: "CLOSE_MODAL" })}
-        >
-          Close
-        </Button>
-      }
+    <Dialog
+      open={modal === "shortcuts"}
+      onOpenChange={(open) => !open && closeModal()}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {shortcuts.map(({ keys, desc }) => (
-          <div
-            key={keys}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
+      <DialogTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Shortcuts"
+            onClick={() => openModal("shortcuts")}
           >
-            <span style={{ fontSize: 12, color: "var(--ch-t2)" }}>{desc}</span>
-            <kbd
+            ?
+          </Button>
+        }
+      />
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Keyboard Shortcuts</DialogTitle>
+        </DialogHeader>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {shortcuts.map(({ keys, desc }) => (
+            <div
+              key={keys}
               style={{
-                display: "inline-block",
-                padding: "2px 8px",
-                border: "1px solid var(--ch-b2)",
-                borderRadius: 3,
-                fontSize: 11,
-                color: "var(--ch-t3)",
-                fontFamily: "var(--ch-fm)",
-                background: "var(--ch-s2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
               }}
             >
-              {keys}
-            </kbd>
-          </div>
-        ))}
-      </div>
-    </Modal>
+              <span style={{ fontSize: 12, color: "var(--ch-t2)" }}>
+                {desc}
+              </span>
+              <kbd
+                style={{
+                  display: "inline-block",
+                  padding: "2px 8px",
+                  border: "1px solid var(--ch-b2)",
+                  borderRadius: 3,
+                  fontSize: 11,
+                  color: "var(--ch-t3)",
+                  fontFamily: "var(--ch-fm)",
+                  background: "var(--ch-s2)",
+                }}
+              >
+                {keys}
+              </kbd>
+            </div>
+          ))}
+        </div>
+        <DialogFooter>
+          <DialogClose render={<Button variant="ghost">Close</Button>} />
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

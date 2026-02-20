@@ -89,7 +89,7 @@ export default function ColorWheel({
       e.preventDefault();
       draggingRef.current = true;
       rectRef.current = canvasRef.current!.getBoundingClientRect();
-      hitWheel(e.touches[0]!.clientX, e.touches[0]!.clientY);
+      hitWheel(e.touches[0].clientX, e.touches[0].clientY);
     },
     [hitWheel],
   );
@@ -101,7 +101,7 @@ export default function ColorWheel({
     const onTMove = (e: TouchEvent) => {
       if (draggingRef.current) {
         e.preventDefault();
-        hitWheel(e.touches[0]!.clientX, e.touches[0]!.clientY);
+        hitWheel(e.touches[0].clientX, e.touches[0].clientY);
       }
     };
     const onUp = () => {

@@ -9,19 +9,120 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ChromaRouteImport } from './routes/_chroma'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPaletteRouteImport } from './routes/api/palette'
 import { Route as ApiHelloRouteImport } from './routes/api/hello'
+import { Route as ChromaUtilityRouteImport } from './routes/_chroma/utility'
+import { Route as ChromaThemeRouteImport } from './routes/_chroma/theme'
+import { Route as ChromaScoringRouteImport } from './routes/_chroma/scoring'
+import { Route as ChromaScaleRouteImport } from './routes/_chroma/scale'
+import { Route as ChromaSavedRouteImport } from './routes/_chroma/saved'
+import { Route as ChromaPreviewRouteImport } from './routes/_chroma/preview'
+import { Route as ChromaPickerRouteImport } from './routes/_chroma/picker'
+import { Route as ChromaPaletteRouteImport } from './routes/_chroma/palette'
+import { Route as ChromaMixerRouteImport } from './routes/_chroma/mixer'
+import { Route as ChromaGradientRouteImport } from './routes/_chroma/gradient'
+import { Route as ChromaExtractRouteImport } from './routes/_chroma/extract'
+import { Route as ChromaConverterRouteImport } from './routes/_chroma/converter'
+import { Route as ChromaContrastRouteImport } from './routes/_chroma/contrast'
+import { Route as ChromaColorblindRouteImport } from './routes/_chroma/colorblind'
+import { Route as ChromaAccessibilityRouteImport } from './routes/_chroma/accessibility'
 import { Route as ApiHelloNameRouteImport } from './routes/api/hello.$name'
 
+const ChromaRoute = ChromaRouteImport.update({
+  id: '/_chroma',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaletteRoute = ApiPaletteRouteImport.update({
+  id: '/api/palette',
+  path: '/api/palette',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHelloRoute = ApiHelloRouteImport.update({
   id: '/api/hello',
   path: '/api/hello',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ChromaUtilityRoute = ChromaUtilityRouteImport.update({
+  id: '/utility',
+  path: '/utility',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaThemeRoute = ChromaThemeRouteImport.update({
+  id: '/theme',
+  path: '/theme',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaScoringRoute = ChromaScoringRouteImport.update({
+  id: '/scoring',
+  path: '/scoring',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaScaleRoute = ChromaScaleRouteImport.update({
+  id: '/scale',
+  path: '/scale',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaSavedRoute = ChromaSavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaPreviewRoute = ChromaPreviewRouteImport.update({
+  id: '/preview',
+  path: '/preview',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaPickerRoute = ChromaPickerRouteImport.update({
+  id: '/picker',
+  path: '/picker',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaPaletteRoute = ChromaPaletteRouteImport.update({
+  id: '/palette',
+  path: '/palette',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaMixerRoute = ChromaMixerRouteImport.update({
+  id: '/mixer',
+  path: '/mixer',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaGradientRoute = ChromaGradientRouteImport.update({
+  id: '/gradient',
+  path: '/gradient',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaExtractRoute = ChromaExtractRouteImport.update({
+  id: '/extract',
+  path: '/extract',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaConverterRoute = ChromaConverterRouteImport.update({
+  id: '/converter',
+  path: '/converter',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaContrastRoute = ChromaContrastRouteImport.update({
+  id: '/contrast',
+  path: '/contrast',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaColorblindRoute = ChromaColorblindRouteImport.update({
+  id: '/colorblind',
+  path: '/colorblind',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaAccessibilityRoute = ChromaAccessibilityRouteImport.update({
+  id: '/accessibility',
+  path: '/accessibility',
+  getParentRoute: () => ChromaRoute,
 } as any)
 const ApiHelloNameRoute = ApiHelloNameRouteImport.update({
   id: '/$name',
@@ -31,40 +132,164 @@ const ApiHelloNameRoute = ApiHelloNameRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/accessibility': typeof ChromaAccessibilityRoute
+  '/colorblind': typeof ChromaColorblindRoute
+  '/contrast': typeof ChromaContrastRoute
+  '/converter': typeof ChromaConverterRoute
+  '/extract': typeof ChromaExtractRoute
+  '/gradient': typeof ChromaGradientRoute
+  '/mixer': typeof ChromaMixerRoute
+  '/palette': typeof ChromaPaletteRoute
+  '/picker': typeof ChromaPickerRoute
+  '/preview': typeof ChromaPreviewRoute
+  '/saved': typeof ChromaSavedRoute
+  '/scale': typeof ChromaScaleRoute
+  '/scoring': typeof ChromaScoringRoute
+  '/theme': typeof ChromaThemeRoute
+  '/utility': typeof ChromaUtilityRoute
   '/api/hello': typeof ApiHelloRouteWithChildren
+  '/api/palette': typeof ApiPaletteRoute
   '/api/hello/$name': typeof ApiHelloNameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/accessibility': typeof ChromaAccessibilityRoute
+  '/colorblind': typeof ChromaColorblindRoute
+  '/contrast': typeof ChromaContrastRoute
+  '/converter': typeof ChromaConverterRoute
+  '/extract': typeof ChromaExtractRoute
+  '/gradient': typeof ChromaGradientRoute
+  '/mixer': typeof ChromaMixerRoute
+  '/palette': typeof ChromaPaletteRoute
+  '/picker': typeof ChromaPickerRoute
+  '/preview': typeof ChromaPreviewRoute
+  '/saved': typeof ChromaSavedRoute
+  '/scale': typeof ChromaScaleRoute
+  '/scoring': typeof ChromaScoringRoute
+  '/theme': typeof ChromaThemeRoute
+  '/utility': typeof ChromaUtilityRoute
   '/api/hello': typeof ApiHelloRouteWithChildren
+  '/api/palette': typeof ApiPaletteRoute
   '/api/hello/$name': typeof ApiHelloNameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_chroma': typeof ChromaRouteWithChildren
+  '/_chroma/accessibility': typeof ChromaAccessibilityRoute
+  '/_chroma/colorblind': typeof ChromaColorblindRoute
+  '/_chroma/contrast': typeof ChromaContrastRoute
+  '/_chroma/converter': typeof ChromaConverterRoute
+  '/_chroma/extract': typeof ChromaExtractRoute
+  '/_chroma/gradient': typeof ChromaGradientRoute
+  '/_chroma/mixer': typeof ChromaMixerRoute
+  '/_chroma/palette': typeof ChromaPaletteRoute
+  '/_chroma/picker': typeof ChromaPickerRoute
+  '/_chroma/preview': typeof ChromaPreviewRoute
+  '/_chroma/saved': typeof ChromaSavedRoute
+  '/_chroma/scale': typeof ChromaScaleRoute
+  '/_chroma/scoring': typeof ChromaScoringRoute
+  '/_chroma/theme': typeof ChromaThemeRoute
+  '/_chroma/utility': typeof ChromaUtilityRoute
   '/api/hello': typeof ApiHelloRouteWithChildren
+  '/api/palette': typeof ApiPaletteRoute
   '/api/hello/$name': typeof ApiHelloNameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/hello' | '/api/hello/$name'
+  fullPaths:
+    | '/'
+    | '/accessibility'
+    | '/colorblind'
+    | '/contrast'
+    | '/converter'
+    | '/extract'
+    | '/gradient'
+    | '/mixer'
+    | '/palette'
+    | '/picker'
+    | '/preview'
+    | '/saved'
+    | '/scale'
+    | '/scoring'
+    | '/theme'
+    | '/utility'
+    | '/api/hello'
+    | '/api/palette'
+    | '/api/hello/$name'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/hello' | '/api/hello/$name'
-  id: '__root__' | '/' | '/api/hello' | '/api/hello/$name'
+  to:
+    | '/'
+    | '/accessibility'
+    | '/colorblind'
+    | '/contrast'
+    | '/converter'
+    | '/extract'
+    | '/gradient'
+    | '/mixer'
+    | '/palette'
+    | '/picker'
+    | '/preview'
+    | '/saved'
+    | '/scale'
+    | '/scoring'
+    | '/theme'
+    | '/utility'
+    | '/api/hello'
+    | '/api/palette'
+    | '/api/hello/$name'
+  id:
+    | '__root__'
+    | '/'
+    | '/_chroma'
+    | '/_chroma/accessibility'
+    | '/_chroma/colorblind'
+    | '/_chroma/contrast'
+    | '/_chroma/converter'
+    | '/_chroma/extract'
+    | '/_chroma/gradient'
+    | '/_chroma/mixer'
+    | '/_chroma/palette'
+    | '/_chroma/picker'
+    | '/_chroma/preview'
+    | '/_chroma/saved'
+    | '/_chroma/scale'
+    | '/_chroma/scoring'
+    | '/_chroma/theme'
+    | '/_chroma/utility'
+    | '/api/hello'
+    | '/api/palette'
+    | '/api/hello/$name'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ChromaRoute: typeof ChromaRouteWithChildren
   ApiHelloRoute: typeof ApiHelloRouteWithChildren
+  ApiPaletteRoute: typeof ApiPaletteRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/_chroma': {
+      id: '/_chroma'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ChromaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/palette': {
+      id: '/api/palette'
+      path: '/api/palette'
+      fullPath: '/api/palette'
+      preLoaderRoute: typeof ApiPaletteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/hello': {
@@ -73,6 +298,111 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/hello'
       preLoaderRoute: typeof ApiHelloRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_chroma/utility': {
+      id: '/_chroma/utility'
+      path: '/utility'
+      fullPath: '/utility'
+      preLoaderRoute: typeof ChromaUtilityRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/theme': {
+      id: '/_chroma/theme'
+      path: '/theme'
+      fullPath: '/theme'
+      preLoaderRoute: typeof ChromaThemeRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/scoring': {
+      id: '/_chroma/scoring'
+      path: '/scoring'
+      fullPath: '/scoring'
+      preLoaderRoute: typeof ChromaScoringRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/scale': {
+      id: '/_chroma/scale'
+      path: '/scale'
+      fullPath: '/scale'
+      preLoaderRoute: typeof ChromaScaleRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/saved': {
+      id: '/_chroma/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof ChromaSavedRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/preview': {
+      id: '/_chroma/preview'
+      path: '/preview'
+      fullPath: '/preview'
+      preLoaderRoute: typeof ChromaPreviewRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/picker': {
+      id: '/_chroma/picker'
+      path: '/picker'
+      fullPath: '/picker'
+      preLoaderRoute: typeof ChromaPickerRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/palette': {
+      id: '/_chroma/palette'
+      path: '/palette'
+      fullPath: '/palette'
+      preLoaderRoute: typeof ChromaPaletteRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/mixer': {
+      id: '/_chroma/mixer'
+      path: '/mixer'
+      fullPath: '/mixer'
+      preLoaderRoute: typeof ChromaMixerRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/gradient': {
+      id: '/_chroma/gradient'
+      path: '/gradient'
+      fullPath: '/gradient'
+      preLoaderRoute: typeof ChromaGradientRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/extract': {
+      id: '/_chroma/extract'
+      path: '/extract'
+      fullPath: '/extract'
+      preLoaderRoute: typeof ChromaExtractRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/converter': {
+      id: '/_chroma/converter'
+      path: '/converter'
+      fullPath: '/converter'
+      preLoaderRoute: typeof ChromaConverterRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/contrast': {
+      id: '/_chroma/contrast'
+      path: '/contrast'
+      fullPath: '/contrast'
+      preLoaderRoute: typeof ChromaContrastRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/colorblind': {
+      id: '/_chroma/colorblind'
+      path: '/colorblind'
+      fullPath: '/colorblind'
+      preLoaderRoute: typeof ChromaColorblindRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/accessibility': {
+      id: '/_chroma/accessibility'
+      path: '/accessibility'
+      fullPath: '/accessibility'
+      preLoaderRoute: typeof ChromaAccessibilityRouteImport
+      parentRoute: typeof ChromaRoute
     }
     '/api/hello/$name': {
       id: '/api/hello/$name'
@@ -83,6 +413,45 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface ChromaRouteChildren {
+  ChromaAccessibilityRoute: typeof ChromaAccessibilityRoute
+  ChromaColorblindRoute: typeof ChromaColorblindRoute
+  ChromaContrastRoute: typeof ChromaContrastRoute
+  ChromaConverterRoute: typeof ChromaConverterRoute
+  ChromaExtractRoute: typeof ChromaExtractRoute
+  ChromaGradientRoute: typeof ChromaGradientRoute
+  ChromaMixerRoute: typeof ChromaMixerRoute
+  ChromaPaletteRoute: typeof ChromaPaletteRoute
+  ChromaPickerRoute: typeof ChromaPickerRoute
+  ChromaPreviewRoute: typeof ChromaPreviewRoute
+  ChromaSavedRoute: typeof ChromaSavedRoute
+  ChromaScaleRoute: typeof ChromaScaleRoute
+  ChromaScoringRoute: typeof ChromaScoringRoute
+  ChromaThemeRoute: typeof ChromaThemeRoute
+  ChromaUtilityRoute: typeof ChromaUtilityRoute
+}
+
+const ChromaRouteChildren: ChromaRouteChildren = {
+  ChromaAccessibilityRoute: ChromaAccessibilityRoute,
+  ChromaColorblindRoute: ChromaColorblindRoute,
+  ChromaContrastRoute: ChromaContrastRoute,
+  ChromaConverterRoute: ChromaConverterRoute,
+  ChromaExtractRoute: ChromaExtractRoute,
+  ChromaGradientRoute: ChromaGradientRoute,
+  ChromaMixerRoute: ChromaMixerRoute,
+  ChromaPaletteRoute: ChromaPaletteRoute,
+  ChromaPickerRoute: ChromaPickerRoute,
+  ChromaPreviewRoute: ChromaPreviewRoute,
+  ChromaSavedRoute: ChromaSavedRoute,
+  ChromaScaleRoute: ChromaScaleRoute,
+  ChromaScoringRoute: ChromaScoringRoute,
+  ChromaThemeRoute: ChromaThemeRoute,
+  ChromaUtilityRoute: ChromaUtilityRoute,
+}
+
+const ChromaRouteWithChildren =
+  ChromaRoute._addFileChildren(ChromaRouteChildren)
 
 interface ApiHelloRouteChildren {
   ApiHelloNameRoute: typeof ApiHelloNameRoute
@@ -98,7 +467,9 @@ const ApiHelloRouteWithChildren = ApiHelloRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ChromaRoute: ChromaRouteWithChildren,
   ApiHelloRoute: ApiHelloRouteWithChildren,
+  ApiPaletteRoute: ApiPaletteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

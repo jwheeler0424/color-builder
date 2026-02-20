@@ -1,13 +1,9 @@
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import { useMemo } from "react";
-import type { ChromaState } from "@/types";
 import { textColor, contrastRatio } from "@/lib/utils/colorMath";
 
-interface Props {
-  state: ChromaState;
-}
-
-export default function CssPreview({ state }: Props) {
-  const { slots } = state;
+export default function CssPreview() {
+  const { slots } = useChromaStore();
 
   const colors = useMemo(() => {
     if (!slots.length)
@@ -22,10 +18,10 @@ export default function CssPreview({ state }: Props) {
     // Assign semantic roles: darkest=bg, lightest=text, most-saturated=accent
     const sorted = [...slots].sort((a, b) => a.color.hsl.l - b.color.hsl.l);
     const bySat = [...slots].sort((a, b) => b.color.hsl.s - a.color.hsl.s);
-    const bg = sorted[0]!.color.hex;
-    const bgRgb = sorted[0]!.color.rgb;
-    const surface = sorted.length > 1 ? sorted[1]!.color.hex : "#1a1a1a";
-    const accent = bySat[0]!.color.hex;
+    const bg = sorted[0].color.hex;
+    const bgRgb = sorted[0].color.rgb;
+    const surface = sorted.length > 1 ? sorted[1].color.hex : "#1a1a1a";
+    const accent = bySat[0].color.hex;
     const textHex = textColor(bgRgb);
     const muted =
       slots.find(

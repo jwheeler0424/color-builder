@@ -1,16 +1,14 @@
-import React, { useState, useRef } from "react";
-import type { ChromaState, ChromaAction } from "@/types";
+import { useNavigate } from "@tanstack/react-router";
+import { useState, useRef } from "react";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import { rgbToHex, rgbToHsl } from "@/lib/utils/colorMath";
 import { nearestName, extractColors } from "@/lib/utils/paletteUtils";
-import Button from "../Button";
+import { Button } from "../ui/button";
 
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-  generate: () => void;
-}
-
-export default function ImageExtractView({ state, dispatch, generate }: Props) {
+export default function ImageExtractView() {
+  const { extractedColors, imgSrc, setExtracted, setSeeds, generate } =
+    useChromaStore();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [dragOver, setDragOver] = useState(false);
@@ -21,8 +19,8 @@ export default function ImageExtractView({ state, dispatch, generate }: Props) {
     setError(false);
     try {
       const colors = await extractColors(file, 8);
-      const imgSrc = URL.createObjectURL(file);
-      dispatch({ type: "SET_EXTRACTED", colors, imgSrc });
+      const objectUrl = URL.createObjectURL(file);
+      setExtracted(colors, objectUrl);
     } catch {
       setError(true);
     } finally {
@@ -31,23 +29,23 @@ export default function ImageExtractView({ state, dispatch, generate }: Props) {
   }
 
   const useOne = (index: number) => {
-    const rgb = state.extractedColors[index];
+    const rgb = extractedColors[index];
     if (!rgb) return;
     const hex = rgbToHex(rgb);
-    dispatch({ type: "SET_SEEDS", seeds: [{ hex, rgb, hsl: rgbToHsl(rgb) }] });
-    dispatch({ type: "SET_VIEW", view: "pal" });
+    setSeeds([{ hex, rgb, hsl: rgbToHsl(rgb) }]);
     generate();
+    navigate({ to: "/palette" });
   };
 
   const useAll = () => {
-    const seeds = state.extractedColors.slice(0, 5).map((rgb) => ({
+    const seeds = extractedColors.slice(0, 5).map((rgb) => ({
       hex: rgbToHex(rgb),
       rgb,
       hsl: rgbToHsl(rgb),
     }));
-    dispatch({ type: "SET_SEEDS", seeds });
-    dispatch({ type: "SET_VIEW", view: "pal" });
+    setSeeds(seeds);
     generate();
+    navigate({ to: "/palette" });
   };
 
   return (
@@ -91,15 +89,11 @@ export default function ImageExtractView({ state, dispatch, generate }: Props) {
         </div>
 
         {/* Preview + extracted colors */}
-        {(state.imgSrc || loading) && (
+        {(imgSrc || loading) && (
           <div className="ch-img-row">
-            {state.imgSrc && (
+            {imgSrc && (
               <div style={{ flex: 1, maxWidth: 380 }}>
-                <img
-                  src={state.imgSrc}
-                  alt="Uploaded"
-                  className="ch-img-preview"
-                />
+                <img src={imgSrc} alt="Uploaded" className="ch-img-preview" />
               </div>
             )}
             <div style={{ flex: 1 }}>
@@ -118,7 +112,7 @@ export default function ImageExtractView({ state, dispatch, generate }: Props) {
               )}
               {!loading &&
                 !error &&
-                state.extractedColors.map((rgb, i) => {
+                extractedColors.map((rgb, i) => {
                   const hex = rgbToHex(rgb);
                   return (
                     <div key={i} className="ch-img-color-row">
@@ -157,9 +151,9 @@ export default function ImageExtractView({ state, dispatch, generate }: Props) {
                     </div>
                   );
                 })}
-              {!loading && state.extractedColors.length > 0 && (
+              {!loading && extractedColors.length > 0 && (
                 <Button
-                  variant="primary"
+                  variant="default"
                   size="sm"
                   style={{ marginTop: 14 }}
                   onClick={useAll}

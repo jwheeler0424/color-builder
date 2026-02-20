@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import type { ChromaState, ChromaAction, HSL } from "@/types";
+import { useCallback } from "react";
+import type { HSL } from "@/types";
 import {
   hslToRgb,
   rgbToHex,
@@ -12,17 +12,26 @@ import {
   parseHex,
 } from "@/lib/utils/colorMath";
 import { nearestName, hexToStop } from "@/lib/utils/paletteUtils";
-import ColorWheel from "../ColorWheel";
-import Button from "../Button";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import { useNavigate } from "@tanstack/react-router";
+import ColorWheel from "../color-wheel";
+import { Button } from "../ui/button";
 
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-  generate: () => void;
-}
+export default function ColorPickerView() {
+  const {
+    pickerHsl,
+    pickerAlpha,
+    recentColors,
+    slots,
+    setPickerHsl,
+    setPickerAlpha,
+    setSeeds,
+    addRecent,
+    addSlot,
+    generate,
+  } = useChromaStore();
+  const navigate = useNavigate();
 
-export default function ColorPickerView({ state, dispatch, generate }: Props) {
-  const { pickerHsl, pickerAlpha } = state;
   const rgb = hslToRgb(pickerHsl);
   const hex = rgbToHex(rgb);
   const hsv = rgbToHsv(rgb);
@@ -39,38 +48,36 @@ export default function ColorPickerView({ state, dispatch, generate }: Props) {
 
   const setHsl = useCallback(
     (partial: Partial<HSL>) => {
-      dispatch({ type: "SET_PICKER_HSL", hsl: { ...pickerHsl, ...partial } });
+      setPickerHsl({ ...pickerHsl, ...partial });
     },
-    [dispatch, pickerHsl],
+    [setPickerHsl, pickerHsl],
   );
 
   const handleHexInput = useCallback(
     (v: string) => {
       const h = parseHex(v);
-      if (h)
-        dispatch({ type: "SET_PICKER_HSL", hsl: rgbToHsl(hexToStop(h).rgb) });
+      if (h) setPickerHsl(rgbToHsl(hexToStop(h).rgb));
     },
-    [dispatch],
+    [setPickerHsl],
   );
 
   const useSeed = useCallback(() => {
-    dispatch({ type: "SET_SEEDS", seeds: [hexToStop(hex)] });
-    dispatch({ type: "ADD_RECENT", hex });
-    dispatch({ type: "SET_VIEW", view: "pal" });
+    setSeeds([hexToStop(hex)]);
+    addRecent(hex);
     generate();
-  }, [dispatch, hex, generate]);
+    navigate({ to: "/palette" });
+  }, [hex, setSeeds, addRecent, generate, navigate]);
 
   const addToPalette = useCallback(() => {
-    dispatch({ type: "ADD_SLOT", color: hexToStop(hex) });
-    dispatch({ type: "ADD_RECENT", hex });
-  }, [dispatch, hex]);
+    addSlot(hexToStop(hex));
+    addRecent(hex);
+  }, [hex, addSlot, addRecent]);
 
   return (
     <div className="ch-view-picker">
       <div className="ch-picker-main">
         <ColorWheel hsl={pickerHsl} size={260} onChange={setHsl} />
 
-        {/* HSL Sliders */}
         <div className="ch-sliders">
           <div className="ch-slider-row">
             <div className="ch-slider-label">
@@ -125,7 +132,6 @@ export default function ColorPickerView({ state, dispatch, generate }: Props) {
               />
             </div>
           </div>
-          {/* Alpha — Phase 1.2 */}
           <div className="ch-slider-row">
             <div className="ch-slider-label">
               Alpha <span>{pickerAlpha}%</span>
@@ -142,15 +148,12 @@ export default function ColorPickerView({ state, dispatch, generate }: Props) {
                 min={0}
                 max={100}
                 value={pickerAlpha}
-                onChange={(e) =>
-                  dispatch({ type: "SET_PICKER_ALPHA", alpha: +e.target.value })
-                }
+                onChange={(e) => setPickerAlpha(+e.target.value)}
               />
             </div>
           </div>
         </div>
 
-        {/* Preview + Hex input */}
         <div className="ch-color-preview-row">
           <div className="ch-cprev" style={previewStyle} />
           <div className="ch-cprev-inputs">
@@ -168,7 +171,7 @@ export default function ColorPickerView({ state, dispatch, generate }: Props) {
               />
             </div>
             <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
-              <Button variant="primary" size="sm" onClick={useSeed}>
+              <Button variant="default" size="sm" onClick={useSeed}>
                 → Use as Seed
               </Button>
               <Button variant="ghost" size="sm" onClick={addToPalette}>
@@ -179,30 +182,22 @@ export default function ColorPickerView({ state, dispatch, generate }: Props) {
         </div>
       </div>
 
-      {/* Side panel */}
       <div className="ch-picker-panel">
-        {/* Recent */}
         <div>
           <div className="ch-slabel">Recent Colors</div>
           <div className="ch-recent-swatches">
-            {state.recentColors.map((rh, i) => (
+            {recentColors.map((rh, i) => (
               <div
                 key={i}
                 className="ch-rswatch"
                 style={{ background: rh }}
                 title={rh}
-                onClick={() =>
-                  dispatch({
-                    type: "SET_PICKER_HSL",
-                    hsl: rgbToHsl(hexToStop(rh).rgb),
-                  })
-                }
+                onClick={() => setPickerHsl(rgbToHsl(hexToStop(rh).rgb))}
               />
             ))}
           </div>
         </div>
 
-        {/* Color info */}
         <div>
           <div className="ch-slabel">Color Info</div>
           <div className="ch-picker-info">
@@ -243,20 +238,17 @@ export default function ColorPickerView({ state, dispatch, generate }: Props) {
           </div>
         </div>
 
-        {/* Palette colors — quick access */}
-        {state.slots.length > 0 && (
+        {slots.length > 0 && (
           <div>
             <div className="ch-slabel">Palette Colors</div>
             <div className="ch-recent-swatches">
-              {state.slots.map((slot, i) => (
+              {slots.map((slot, i) => (
                 <div
                   key={i}
                   className="ch-rswatch"
                   style={{ background: slot.color.hex }}
                   title={slot.color.hex}
-                  onClick={() =>
-                    dispatch({ type: "SET_PICKER_HSL", hsl: slot.color.hsl })
-                  }
+                  onClick={() => setPickerHsl(slot.color.hsl)}
                 />
               ))}
             </div>

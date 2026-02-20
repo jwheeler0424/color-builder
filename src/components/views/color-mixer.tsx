@@ -1,5 +1,7 @@
-import React, { useState, useMemo } from "react";
-import type { ChromaState, ChromaAction, MixSpace } from "@/types";
+import { useNavigate } from "@tanstack/react-router";
+import { useState, useMemo } from "react";
+import type { MixSpace } from "@/types";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import {
   parseHex,
   hexToRgb,
@@ -11,13 +13,7 @@ import {
   textColor,
 } from "@/lib/utils/colorMath";
 import { nearestName } from "@/lib/utils/paletteUtils";
-import Button from "./Button";
-
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-  generate: () => void;
-}
+import { Button } from "../ui/button";
 
 const STEPS = 7;
 const MIX_SPACES: { id: MixSpace; label: string; desc: string }[] = [
@@ -30,7 +26,9 @@ const MIX_SPACES: { id: MixSpace; label: string; desc: string }[] = [
   { id: "rgb", label: "RGB", desc: "Raw channel interpolation" },
 ];
 
-export default function ColorMixer({ state, dispatch, generate }: Props) {
+export default function ColorMixer() {
+  const { slots, setSeeds, addSlot, generate } = useChromaStore();
+  const navigate = useNavigate();
   const [colorA, setColorA] = useState("#e63946");
   const [colorB, setColorB] = useState("#457b9d");
   const [mixSpace, setMixSpace] = useState<MixSpace>("oklch");
@@ -80,17 +78,14 @@ export default function ColorMixer({ state, dispatch, generate }: Props) {
       rgb,
       hsl: rgbToHsl(rgb),
     }));
-    dispatch({ type: "SET_SEEDS", seeds });
-    dispatch({ type: "SET_VIEW", view: "pal" });
+    setSeeds(seeds);
     generate();
+    navigate({ to: "/palette" });
   };
 
   const addMidpoint = () => {
-    const mid = blendRow[Math.floor(STEPS / 2)]!;
-    dispatch({
-      type: "ADD_SLOT",
-      color: { hex: mid.hex, rgb: mid.rgb, hsl: rgbToHsl(mid.rgb) },
-    });
+    const mid = blendRow[Math.floor(STEPS / 2)];
+    addSlot({ hex: mid.hex, rgb: mid.rgb, hsl: rgbToHsl(mid.rgb) });
   };
 
   return (
@@ -147,13 +142,13 @@ export default function ColorMixer({ state, dispatch, generate }: Props) {
         </div>
 
         {/* Palette quick-pick */}
-        {state.slots.length > 0 && (
+        {slots.length > 0 && (
           <div style={{ marginBottom: 16 }}>
             <div className="ch-slabel" style={{ marginBottom: 6 }}>
               Pick from Palette (A / B)
             </div>
             <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-              {state.slots.map((slot, i) => (
+              {slots.map((slot, i) => (
                 <div key={i} style={{ position: "relative" }}>
                   <div
                     style={{
@@ -196,7 +191,7 @@ export default function ColorMixer({ state, dispatch, generate }: Props) {
             {MIX_SPACES.map((s) => (
               <Button
                 key={s.id}
-                variant={mixSpace === s.id ? "primary" : "ghost"}
+                variant={mixSpace === s.id ? "default" : "ghost"}
                 onClick={() => setMixSpace(s.id)}
               >
                 {s.label}
@@ -252,7 +247,7 @@ export default function ColorMixer({ state, dispatch, generate }: Props) {
 
         {/* Actions */}
         <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
-          <Button variant="primary" onClick={useMixAsSeeds}>
+          <Button variant="default" onClick={useMixAsSeeds}>
             Use Blend as Seeds →
           </Button>
           <Button variant="ghost" onClick={addMidpoint}>

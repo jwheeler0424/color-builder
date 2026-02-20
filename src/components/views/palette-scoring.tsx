@@ -1,12 +1,7 @@
-import React, { useMemo } from "react";
-import type { ChromaState, ChromaAction } from "@/types";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import { useMemo } from "react";
 import { scorePalette } from "@/lib/utils/colorMath";
 import { nearestName } from "@/lib/utils/paletteUtils";
-
-interface Props {
-  state: ChromaState;
-  dispatch: React.Dispatch<ChromaAction>;
-}
 
 // Pure SVG radar chart
 function RadarChart({ scores }: { scores: Record<string, number> }) {
@@ -28,7 +23,7 @@ function RadarChart({ scores }: { scores: Record<string, number> }) {
     };
   };
 
-  const dataPoints = entries.map(([, v], i) => polarPoint(angles[i]!, v));
+  const dataPoints = entries.map(([, v], i) => polarPoint(angles[i], v));
   const dataPath =
     dataPoints
       .map(
@@ -38,7 +33,7 @@ function RadarChart({ scores }: { scores: Record<string, number> }) {
 
   const labelOffset = 20;
   const labels = entries.map(([key, val], i) => {
-    const lp = polarPoint(angles[i]!, 100 + labelOffset);
+    const lp = polarPoint(angles[i], 100 + labelOffset);
     return { key, val, x: lp.x, y: lp.y };
   });
 
@@ -107,8 +102,8 @@ function RadarChart({ scores }: { scores: Record<string, number> }) {
   );
 }
 
-export default function PaletteScoring({ state }: Props) {
-  const { slots } = state;
+export default function PaletteScoring() {
+  const { slots } = useChromaStore();
   const score = useMemo(() => scorePalette(slots), [slots]);
 
   if (!slots.length) {

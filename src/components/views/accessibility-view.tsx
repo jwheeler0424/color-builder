@@ -1,13 +1,9 @@
-import type { ChromaState, PaletteSlot } from "@/types";
+import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import {
   contrastRatio,
   wcagLevel,
   type WcagLevel,
 } from "@/lib/utils/colorMath";
-
-interface Props {
-  state: ChromaState;
-}
 
 const BADGE: Record<WcagLevel, { bg: string; color: string }> = {
   AAA: { bg: "rgba(0,230,118,.18)", color: "#00e676" },
@@ -36,8 +32,8 @@ function Badge({ level }: { level: WcagLevel }) {
   );
 }
 
-export default function AccessibilityView({ state }: Props) {
-  const { slots } = state;
+export default function AccessibilityView() {
+  const { slots } = useChromaStore();
 
   if (!slots.length) {
     return (
@@ -61,15 +57,10 @@ export default function AccessibilityView({ state }: Props) {
   }[] = [];
   for (let i = 0; i < slots.length; i++) {
     for (let j = i + 1; j < slots.length; j++) {
-      const ratio = contrastRatio(slots[i]!.color.rgb, slots[j]!.color.rgb);
+      const ratio = contrastRatio(slots[i].color.rgb, slots[j].color.rgb);
       const level = wcagLevel(ratio);
       if (level !== "Fail")
-        pairs.push({
-          a: slots[i] as PaletteSlot,
-          b: slots[j] as PaletteSlot,
-          ratio,
-          level,
-        });
+        pairs.push({ a: slots[i], b: slots[j], ratio, level });
     }
   }
   pairs.sort((a, b) => b.ratio - a.ratio);

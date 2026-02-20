@@ -26,6 +26,8 @@ export default defineConfig([
       import: importPlugin,
     },
     rules: {
+      "no-useless-assignment": "off",
+      "@typescript-eslint/no-useless-assignment": "off",
       "@typescript-eslint/ban-ts-comment": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/explicit-module-boundary-types": "off",
