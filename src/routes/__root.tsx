@@ -14,7 +14,7 @@ import * as React from "react";
 import type { QueryClient } from "@tanstack/react-query";
 import { DefaultCatchBoundary } from "@/components/default-catch-boundary";
 import { NotFound } from "@/components/not-found";
-import appCss from "@/styles/app.css?url";
+import appCss from "@/styles/globals.css?url";
 import { seo } from "@/lib/utils/seo";
 
 export const Route = createRootRouteWithContext<{

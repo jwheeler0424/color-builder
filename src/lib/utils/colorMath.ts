@@ -5,6 +5,7 @@ import type {
   OKLCH,
   OKLab,
   RGB,
+  SemanticToken,
   ThemeTokenSet,
   UtilityColor,
   UtilityColorSet,
@@ -553,7 +554,6 @@ const UTILITY_DEFS: Record<
 export function generateUtilityColors(
   slots: { color: { hex: string; rgb: RGB; hsl: HSL } }[],
 ): UtilityColorSet {
-  // Derive palette character in OKLCH
   const oklchSlots = slots.map((s) => rgbToOklch(s.color.rgb));
   const avgL = oklchSlots.length
     ? oklchSlots.reduce((a, c) => a + c.L, 0) / oklchSlots.length
@@ -562,14 +562,12 @@ export function generateUtilityColors(
     ? oklchSlots.reduce((a, c) => a + c.C, 0) / oklchSlots.length
     : 0.12;
 
-  // Derive primary: highest-chroma slot
+  // Primary: highest-chroma slot — the brand anchor
   const primary = oklchSlots.reduce(
-    (best, c, _i) => (c.C > (best?.C ?? 0) ? c : best),
+    (best, c) => (c.C > best.C ? c : best),
     oklchSlots[0] ?? { L: 0.55, C: 0.15, H: 230 },
   );
 
-  // Target lightness/chroma for utility colors — slightly lower L than palette average for
-  // semantic distinction; chroma is strong but sRGB-clamped
   const targetL = clamp(
     avgL > 0.65 ? 0.52 : avgL < 0.35 ? 0.58 : 0.55,
     0.46,
@@ -577,21 +575,26 @@ export function generateUtilityColors(
   );
   const targetC = clamp(avgC * 0.8 + 0.07, 0.1, 0.22);
 
-  /** Nudge hue away from palette hues by up to 18° to avoid clash */
-  function nudgeHue(h: number): number {
-    if (!oklchSlots.length) return h;
-    const nearest = oklchSlots.reduce(
-      (best, c) => {
-        const d = Math.min(Math.abs(c.H - h), 360 - Math.abs(c.H - h));
-        return d < best.d ? { d, h: c.H } : best;
+  /**
+   * Resolve hue for a utility role by pulling from the closest palette slot.
+   *
+   * If a palette slot is within 15° of the semantic anchor hue, use that
+   * slot's exact hue — so the utility color feels like it belongs to the
+   * palette rather than being an arbitrary external color.
+   * Falls back to the fixed anchor hue if nothing is close enough.
+   */
+  function resolveHue(anchorHue: number): number {
+    if (!oklchSlots.length) return anchorHue;
+    const hueDist = (a: number, b: number) =>
+      Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
+    const best = oklchSlots.reduce(
+      (b, c) => {
+        const d = hueDist(c.H, anchorHue);
+        return d < b.d ? { d, H: c.H } : b;
       },
-      { d: Infinity, h },
+      { d: Infinity, H: anchorHue },
     );
-    if (nearest.d < 18) {
-      const dir = (h - nearest.h + 360) % 360 > 180 ? -1 : 1;
-      return (h + dir * (18 - nearest.d) + 360) % 360;
-    }
-    return h;
+    return best.d <= 15 ? best.H : anchorHue;
   }
 
   function makeOklchStop(
@@ -617,42 +620,38 @@ export function generateUtilityColors(
     };
   }
 
+  const infoH = resolveHue(UTILITY_DEFS.info.anchorHue);
+  const successH = resolveHue(UTILITY_DEFS.success.anchorHue);
+  const warningH = resolveHue(UTILITY_DEFS.warning.anchorHue);
+  const errorH = resolveHue(UTILITY_DEFS.error.anchorHue);
+
   return {
-    info: makeUtility(
-      "info",
-      targetL,
-      targetC,
-      nudgeHue(UTILITY_DEFS.info.anchorHue),
-    ),
-    success: makeUtility(
-      "success",
-      targetL,
-      targetC,
-      nudgeHue(UTILITY_DEFS.success.anchorHue),
-    ),
+    info: makeUtility("info", targetL, targetC, infoH),
+    success: makeUtility("success", targetL, targetC, successH),
+    // Warning (yellow H≈85°) is perceptually very bright — lower L to match visual weight
     warning: makeUtility(
       "warning",
-      targetL + 0.06,
-      clamp(targetC * 1.2, 0.1, 0.2),
-      nudgeHue(UTILITY_DEFS.warning.anchorHue),
+      clamp(targetL - 0.06, 0.44, 0.58),
+      clamp(targetC * 1.1, 0.09, 0.2),
+      warningH,
     ),
     error: makeUtility(
       "error",
       targetL,
       clamp(targetC * 1.1, 0.12, 0.24),
-      nudgeHue(UTILITY_DEFS.error.anchorHue),
+      errorH,
     ),
+    // Neutral: primary hue at near-zero chroma — tinted gray, palette-related
     neutral: makeUtility(
       "neutral",
-      targetL + 0.04,
-      clamp(primary.C * 0.08, 0.01, 0.04),
+      clamp(targetL + 0.02, 0.5, 0.65),
+      clamp(primary.C * 0.09, 0.008, 0.04),
       primary.H,
     ),
-
-    // Focus = primary palette color, lightness normalised to ~0.62 for ring visibility
+    // Focus: primary palette color, L normalised for focus ring visibility
     focus: makeUtility(
       "focus",
-      clamp(primary.L, 0.55, 0.72),
+      clamp(primary.L, 0.52, 0.7),
       clamp(primary.C, 0.12, 0.3),
       primary.H,
     ),
@@ -717,161 +716,267 @@ export function deriveThemeTokens(
   // ── Palette analysis in OKLCH ──────────────────────────────────────────────
   const oklchSlots = slots.map((s) => rgbToOklch(s.color.rgb));
 
-  // Primary: highest chroma — the "brand" color
+  // Primary: highest chroma — the "brand" color (maps to 10% accent in 60-30-10)
   const primaryIdx = oklchSlots.reduce(
     (bi, c, i) => (c.C > oklchSlots[bi].C ? i : bi),
     0,
   );
   const primaryLch = oklchSlots[primaryIdx];
 
-  // Secondary: highest chroma excluding primary, or next slot
-  const secondaryIdx = oklchSlots.reduce(
-    (bi, c, i) =>
-      i !== primaryIdx && c.C > (bi < 0 ? 0 : oklchSlots[bi].C) ? i : bi,
-    primaryIdx === 0 ? 1 : 0,
-  );
-  const secondaryLch = oklchSlots[secondaryIdx] ?? primaryLch;
-
-  // Dominant hue for chromatic neutrals (carries the palette character)
+  // Dominant hue for chromatic neutrals — carries subtle palette character
+  // Shadcn/ui uses ~0.006–0.016 chroma for background tints
   const dominantH = primaryLch.H;
-  // Chromatic neutral chroma: very subtle tint — ~0.008–0.014 (shadcn uses ~0.006–0.012)
-  const tintC = clamp(primaryLch.C * 0.06, 0.006, 0.016);
+  const tintC = clamp(primaryLch.C * 0.055, 0.005, 0.015);
 
   // ── OKLCH neutral builder ─────────────────────────────────────────────────
-  /** Make a near-neutral (low-chroma) color at a given perceived lightness */
-  function mkN(L: number, C = tintC): string {
-    return rgbToHex(oklchToRgb({ L: clamp(L, 0.01, 0.99), C, H: dominantH }));
+  /** Near-neutral at target lightness, tinted with the palette's dominant hue.
+   *  In dark mode, M3 uses tonal elevation (lighter = higher surface level). */
+  function mkN(L: number, C = tintC, H = dominantH): string {
+    return rgbToHex(oklchToRgb({ L: clamp(L, 0.01, 0.995), C, H }));
   }
 
-  // ── Primary accent tokens ─────────────────────────────────────────────────
-  // Light mode primary: vivid, at L≈0.30 (dark enough to read on white bg)
+  // ── Primary brand tokens ─────────────────────────────────────────────────
+  // Light mode: vivid, L≈0.30–0.38 so it reads well on near-white backgrounds
   const primaryLight = rgbToHex(
     oklchToRgb({
-      L: clamp(primaryLch.L, 0.22, 0.38),
-      C: clamp(primaryLch.C, 0.14, 0.32),
+      L: clamp(primaryLch.L, 0.26, 0.4),
+      C: clamp(primaryLch.C, 0.14, 0.3),
       H: primaryLch.H,
     }),
   );
-  // Dark mode primary: lighter version, L≈0.75 (legible on dark bg)
+  // Dark mode: L≈0.70–0.82 for legibility on dark backgrounds
   const primaryDark = rgbToHex(
     oklchToRgb({
-      L: clamp(primaryLch.L + 0.35, 0.6, 0.85),
-      C: clamp(primaryLch.C * 0.85, 0.1, 0.28),
+      L: clamp(primaryLch.L + 0.36, 0.62, 0.82),
+      C: clamp(primaryLch.C * 0.88, 0.1, 0.28),
       H: primaryLch.H,
     }),
   );
-  // Foreground on primary: always high contrast
-  const primaryFgLight = mkN(0.98, 0.005);
+  // Foreground on primary: must always pass WCAG AA (4.5:1)
+  // Near-white for light-mode primary, near-black for dark-mode primary
+  const primaryFgLight = mkN(0.985, 0.004);
   const primaryFgDark = mkN(0.12, 0.01);
 
-  // ── Secondary tokens ─────────────────────────────────────────────────────
-  const secondaryLight = mkN(0.96); // light bg, near-white with tint
-  const secondaryDark = mkN(0.2); // dark bg, elevated surface
-  const secondaryFgLight = mkN(0.15);
-  const secondaryFgDark = mkN(0.95);
+  // ── Primary container tokens (M3 pattern: lighter/softer version for backgrounds) ──
+  // Used for large sections, hero areas, secondary buttons
+  const primaryContainerLight = rgbToHex(
+    oklchToRgb({
+      L: 0.92,
+      C: clamp(primaryLch.C * 0.38, 0.03, 0.1),
+      H: primaryLch.H,
+    }),
+  );
+  const primaryContainerDark = rgbToHex(
+    oklchToRgb({
+      L: 0.24,
+      C: clamp(primaryLch.C * 0.35, 0.03, 0.09),
+      H: primaryLch.H,
+    }),
+  );
+  const primaryContainerFgLight = rgbToHex(
+    oklchToRgb({
+      L: 0.2,
+      C: clamp(primaryLch.C * 0.5, 0.06, 0.16),
+      H: primaryLch.H,
+    }),
+  );
+  const primaryContainerFgDark = rgbToHex(
+    oklchToRgb({
+      L: 0.88,
+      C: clamp(primaryLch.C * 0.45, 0.05, 0.14),
+      H: primaryLch.H,
+    }),
+  );
 
-  // ── Accent (same as primary, slightly shifted) ────────────────────────────
+  // ── Secondary tokens ─────────────────────────────────────────────────────
+  // shadcn: secondary = muted elevated surface (30% role in 60-30-10)
+  const secondaryLight = mkN(0.96);
+  const secondaryDark = mkN(0.18);
+  const secondaryFgLight = mkN(0.14);
+  const secondaryFgDark = mkN(0.93);
+
+  // ── Accent tokens ────────────────────────────────────────────────────────
+  // Used for hover states, selected states, highlights — a tinted surface
   const accentLight = rgbToHex(
     oklchToRgb({
-      L: 0.94,
-      C: clamp(primaryLch.C * 0.4, 0.04, 0.12),
+      L: 0.935,
+      C: clamp(primaryLch.C * 0.38, 0.03, 0.11),
       H: primaryLch.H,
     }),
   );
   const accentDark = rgbToHex(
     oklchToRgb({
-      L: 0.26,
-      C: clamp(primaryLch.C * 0.4, 0.04, 0.1),
+      L: 0.24,
+      C: clamp(primaryLch.C * 0.38, 0.03, 0.1),
       H: primaryLch.H,
     }),
   );
-  const accentFgLight = primaryLight;
-  const accentFgDark = primaryDark;
+  const accentFgLight = mkN(0.14);
+  const accentFgDark = mkN(0.93);
 
   // ── Destructive = error utility ───────────────────────────────────────────
   const errLch = rgbToOklch(utility.error.color.rgb);
+  // Light mode: saturated red, dark enough for white bg (L≈0.46)
   const destructiveLight = rgbToHex(
     oklchToRgb({
-      L: clamp(errLch.L, 0.44, 0.56),
+      L: clamp(errLch.L, 0.42, 0.52),
       C: clamp(errLch.C, 0.18, 0.28),
       H: errLch.H,
     }),
   );
+  // Dark mode: lighter red for dark bg readability
   const destructiveDark = rgbToHex(
     oklchToRgb({
-      L: clamp(errLch.L + 0.08, 0.52, 0.68),
-      C: clamp(errLch.C * 0.9, 0.14, 0.26),
+      L: clamp(errLch.L + 0.12, 0.56, 0.72),
+      C: clamp(errLch.C * 0.88, 0.14, 0.26),
       H: errLch.H,
     }),
   );
+  // Subtle destructive: for alert backgrounds
+  const destructiveSubtleLight = rgbToHex(
+    oklchToRgb({ L: 0.94, C: clamp(errLch.C * 0.28, 0.03, 0.08), H: errLch.H }),
+  );
+  const destructiveSubtleDark = rgbToHex(
+    oklchToRgb({ L: 0.18, C: clamp(errLch.C * 0.28, 0.03, 0.07), H: errLch.H }),
+  );
 
-  // ── Ring (focus ring) = focus utility = primary ───────────────────────────
+  // ── M3-style surface elevation tiers ─────────────────────────────────────
+  // In light mode: surfaces get slightly darker as elevation rises
+  // In dark mode: surfaces get progressively LIGHTER (tonal elevation via primary hue)
+  // Elevation 0 = page background, Elevation 5 = floating tooltips/modals
+  // Based on M3: each level adds ~5% primary tint in dark mode
+  const surfaceElevationDark = (level: number) => {
+    const tonalL = 0.08 + level * 0.028; // 0.08 → 0.22 across 5 levels
+    const tonalC = clamp(primaryLch.C * (0.04 + level * 0.012), 0.004, 0.025);
+    return mkN(tonalL, tonalC);
+  };
+
+  // 5-level surface containers (M3 tone-based surfaces)
+  // Level 0 = background, Level 1–5 = increasing elevation
+  const surfaceLight = [
+    mkN(0.99), // Lv0 = page bg
+    mkN(0.972), // Lv1 = subtle / striped rows
+    mkN(0.955), // Lv2 = card
+    mkN(0.935), // Lv3 = raised card
+    mkN(0.98), // Lv4 = popover (near-white, floating)
+  ];
+  const surfaceDark = [
+    surfaceElevationDark(0), // Lv0 = page bg
+    surfaceElevationDark(1), // Lv1 = subtle
+    surfaceElevationDark(2), // Lv2 = card
+    surfaceElevationDark(3), // Lv3 = raised card
+    surfaceElevationDark(5), // Lv4 = popover (highest)
+  ];
+
+  // ── Ring = primary ────────────────────────────────────────────────────────
   const ringLight = primaryLight;
   const ringDark = primaryDark;
 
-  const semantic = [
-    // ── Page background / foreground ──────────────────────────────────────
+  const semantic: SemanticToken[] = [
+    // ── Layer 0: Page background ─────────────────────────── 60% zone (neutral)
     {
       name: "--background",
-      light: mkN(0.99),
-      dark: mkN(0.07),
-      description: "Page / canvas background",
+      light: surfaceLight[0],
+      dark: surfaceDark[0],
+      description: "Page / canvas background (60% dominant)",
     },
     {
       name: "--foreground",
       light: mkN(0.1),
-      dark: mkN(0.96),
-      description: "Default text color",
+      dark: mkN(0.94),
+      description: "Default body text",
     },
 
-    // ── Card ─────────────────────────────────────────────────────────────
+    // ── Layer 1: Subtle / alternate ──────────────────────── 60% zone
+    {
+      name: "--surface-dim",
+      light: surfaceLight[1],
+      dark: surfaceDark[1],
+      description: "Subtle bg: striped rows, aside panels, code wells",
+    },
+    {
+      name: "--surface-dim-foreground",
+      light: mkN(0.25),
+      dark: mkN(0.8),
+      description: "Text on dim surface",
+    },
+
+    // ── Layer 2: Card ────────────────────────────────────── 30% zone (secondary)
     {
       name: "--card",
-      light: mkN(1.0),
-      dark: mkN(0.11),
-      description: "Card background",
+      light: surfaceLight[2],
+      dark: surfaceDark[2],
+      description: "Card / content block background",
     },
     {
       name: "--card-foreground",
       light: mkN(0.1),
-      dark: mkN(0.96),
+      dark: mkN(0.94),
       description: "Card text",
     },
 
-    // ── Popover ──────────────────────────────────────────────────────────
+    // ── Layer 3: Raised card / sidebar ───────────────────── 30% zone
+    {
+      name: "--card-raised",
+      light: surfaceLight[3],
+      dark: surfaceDark[3],
+      description: "Raised card, sidebar, drawer (slightly elevated)",
+    },
+    {
+      name: "--card-raised-foreground",
+      light: mkN(0.1),
+      dark: mkN(0.94),
+      description: "Text on raised card",
+    },
+
+    // ── Layer 4: Popover / modal ──────────────────────────── highest surface
     {
       name: "--popover",
-      light: mkN(1.0),
-      dark: mkN(0.15),
-      description: "Popover / tooltip background",
+      light: surfaceLight[4],
+      dark: surfaceDark[4],
+      description: "Popover, tooltip, dropdown, modal background",
     },
     {
       name: "--popover-foreground",
       light: mkN(0.1),
-      dark: mkN(0.96),
+      dark: mkN(0.94),
       description: "Popover text",
     },
 
-    // ── Primary brand ────────────────────────────────────────────────────
+    // ── Primary brand (10% accent role) ──────────────────────────────────────
     {
       name: "--primary",
       light: primaryLight,
       dark: primaryDark,
-      description: "Primary brand / CTA color",
+      description:
+        "Primary CTA: buttons, links, active nav (use sparingly — 10%)",
     },
     {
       name: "--primary-foreground",
       light: primaryFgLight,
       dark: primaryFgDark,
-      description: "Text on primary",
+      description: "Text/icon on primary (always high-contrast)",
+    },
+    {
+      name: "--primary-container",
+      light: primaryContainerLight,
+      dark: primaryContainerDark,
+      description:
+        "Primary container: large sections, hero bg, secondary CTA surface",
+    },
+    {
+      name: "--primary-container-foreground",
+      light: primaryContainerFgLight,
+      dark: primaryContainerFgDark,
+      description: "Text on primary-container (brand-tinted, not full primary)",
     },
 
-    // ── Secondary ────────────────────────────────────────────────────────
+    // ── Secondary ────────────────────────────────────────────────────────────
     {
       name: "--secondary",
       light: secondaryLight,
       dark: secondaryDark,
-      description: "Secondary / muted action color",
+      description: "Secondary buttons, less-prominent surfaces",
     },
     {
       name: "--secondary-foreground",
@@ -880,88 +985,81 @@ export function deriveThemeTokens(
       description: "Text on secondary",
     },
 
-    // ── Muted ────────────────────────────────────────────────────────────
+    // ── Muted ────────────────────────────────────────────────────────────────
     {
       name: "--muted",
-      light: mkN(0.95),
+      light: mkN(0.94),
       dark: mkN(0.2),
-      description: "Muted / disabled background",
+      description: "Muted surface: disabled states, placeholder backgrounds",
     },
     {
       name: "--muted-foreground",
-      light: mkN(0.44),
-      dark: mkN(0.6),
-      description: "Muted / placeholder text",
+      light: mkN(0.46),
+      dark: mkN(0.62),
+      description: "Secondary / placeholder text (reduced emphasis)",
     },
 
-    // ── Accent ───────────────────────────────────────────────────────────
+    // ── Accent (tinted hover / selection surface) ──────────────────────────
     {
       name: "--accent",
       light: accentLight,
       dark: accentDark,
-      description: "Accent tint (hover states, highlights)",
+      description: "Hover surface, selected state, highlight chip bg",
     },
     {
       name: "--accent-foreground",
       light: accentFgLight,
       dark: accentFgDark,
-      description: "Text on accent",
+      description: "Text on accent surface",
     },
 
-    // ── Destructive ──────────────────────────────────────────────────────
+    // ── Destructive ──────────────────────────────────────────────────────────
     {
       name: "--destructive",
       light: destructiveLight,
       dark: destructiveDark,
-      description: "Destructive action (delete, error)",
+      description: "Error / delete actions (filled)",
     },
     {
       name: "--destructive-foreground",
-      light: mkN(0.98, 0.005),
-      dark: mkN(0.98, 0.005),
+      light: mkN(0.985, 0.004),
+      dark: mkN(0.985, 0.004),
       description: "Text on destructive",
     },
+    {
+      name: "--destructive-subtle",
+      light: destructiveSubtleLight,
+      dark: destructiveSubtleDark,
+      description: "Error alert background / inline error tint",
+    },
 
-    // ── Borders / inputs ─────────────────────────────────────────────────
+    // ── Borders & inputs ─────────────────────────────────────────────────────
     {
       name: "--border",
-      light: mkN(0.88),
-      dark: mkN(0.24),
-      description: "Default border",
+      light: mkN(0.86),
+      dark: mkN(0.26),
+      description:
+        "Default divider / border — use sparingly (shadow often better)",
+    },
+    {
+      name: "--border-strong",
+      light: mkN(0.72),
+      dark: mkN(0.4),
+      description: "High-emphasis border: active inputs, selected cards",
     },
     {
       name: "--input",
-      light: mkN(0.88),
-      dark: mkN(0.22),
-      description: "Input border",
+      light: mkN(0.86),
+      dark: mkN(0.24),
+      description: "Form input border (normal state)",
     },
 
-    // ── Focus ring = primary ──────────────────────────────────────────────
+    // ── Focus ring = primary brand ────────────────────────────────────────────
     {
       name: "--ring",
       light: ringLight,
       dark: ringDark,
-      description: "Focus ring (matches primary brand color)",
-    },
-
-    // ── Extended (not in shadcn core, useful additions) ──────────────────
-    {
-      name: "--bg-subtle",
-      light: mkN(0.95),
-      dark: mkN(0.1),
-      description: "Subtle alt background (stripes, well)",
-    },
-    {
-      name: "--surface-raised",
-      light: mkN(1.0),
-      dark: mkN(0.18),
-      description: "Raised surface above card (tooltip, dropdown)",
-    },
-    {
-      name: "--text-disabled",
-      light: mkN(0.64),
-      dark: mkN(0.38),
-      description: "Disabled / placeholder text",
+      description: "Keyboard focus ring — always matches primary brand color",
     },
   ];
 
@@ -978,27 +1076,46 @@ export function deriveThemeTokens(
   for (const role of roles) {
     const lch = rgbToOklch(utility[role].color.rgb);
     const base = utility[role].color.hex;
-    // Light mode: slightly darker/more saturated for readability on white
+
+    // Warning is perceptually very bright (yellow), so lighten less in light mode
+    const lightLAdj = role === "warning" ? -0.1 : -0.06;
+    const darkLAdj = role === "warning" ? +0.04 : +0.08;
+
+    // Light mode: darker/more saturated — readable on white
     const light = rgbToHex(
       oklchToRgb({
-        L: clamp(lch.L - 0.06, 0.36, 0.52),
-        C: clamp(lch.C, 0.1, 0.24),
+        L: clamp(lch.L + lightLAdj, 0.34, 0.55),
+        C: clamp(lch.C * 1.05, 0.1, 0.26),
         H: lch.H,
       }),
     );
-    // Dark mode: lighter for readability on dark backgrounds
+    // Dark mode: lighter — readable on dark surface
     const dark = rgbToHex(
       oklchToRgb({
-        L: clamp(lch.L + 0.06, 0.52, 0.72),
-        C: clamp(lch.C * 0.9, 0.09, 0.22),
+        L: clamp(lch.L + darkLAdj, 0.5, 0.78),
+        C: clamp(lch.C * 0.88, 0.08, 0.22),
         H: lch.H,
       }),
     );
-    // Subtle: very low chroma at high lightness — for alert backgrounds
+    // Subtle light: alert background — near-white with a tint of the role hue
     const subtle = rgbToHex(
-      oklchToRgb({ L: 0.94, C: clamp(lch.C * 0.35, 0.02, 0.08), H: lch.H }),
+      oklchToRgb({
+        L: 0.945,
+        C: clamp(lch.C * 0.3, 0.02, 0.07),
+        H: lch.H,
+      }),
     );
-    utilityTokens[role] = { base, light, dark, subtle };
+    // Subtle dark: alert background in dark mode — near-dark with a tint of the role hue
+    // Sits above the card surface (L≈0.11) so it's clearly a tinted surface, not flat black
+    const subtleDark = rgbToHex(
+      oklchToRgb({
+        L: 0.16,
+        C: clamp(lch.C * 0.32, 0.02, 0.08),
+        H: lch.H,
+      }),
+    );
+
+    utilityTokens[role] = { base, light, dark, subtle, subtleDark };
   }
 
   return {
@@ -1012,7 +1129,6 @@ export function deriveThemeTokens(
 }
 
 export function buildThemeCss(tokens: ThemeTokenSet): string {
-  // tokens.semantic[*].name already includes the -- prefix
   const semLight = tokens.semantic
     .map((t) => `  ${t.name}: ${t.light};`)
     .join("\n");
@@ -1021,28 +1137,53 @@ export function buildThemeCss(tokens: ThemeTokenSet): string {
     .join("\n");
   const utilVars = (mode: "light" | "dark") =>
     Object.entries(tokens.utility)
-      .map(
-        ([role, v]) =>
-          `  --${role}: ${mode === "light" ? v.light : v.dark};\n  --${role}-subtle: ${v.subtle};`,
-      )
+      .map(([role, v]) => {
+        const subtle = mode === "light" ? v.subtle : v.subtleDark;
+        return `  --${role}: ${mode === "light" ? v.light : v.dark};\n  --${role}-subtle: ${subtle};`;
+      })
       .join("\n");
   const palVars = tokens.palette
     .map((p) => `  --${p.name}: ${p.hex};`)
     .join("\n");
 
+  const header = `/**
+ * ─────────────────────────────────────────────────────────
+ *  Color System — Generated by Chroma
+ * ─────────────────────────────────────────────────────────
+ *
+ *  Layer 1 · PRIMITIVE  — raw palette values (--palette-1, --palette-2…)
+ *  Layer 2 · SEMANTIC   — purpose-named tokens (--background, --primary…)
+ *  Layer 3 · COMPONENT  — apply via var(): bg-[--primary] or className=""
+ *
+ *  60-30-10 proportion guide:
+ *   60%  →  --background, --surface-dim          (neutral canvas)
+ *   30%  →  --card, --card-raised, --secondary   (content surfaces)
+ *   10%  →  --primary                            (brand/CTA — use sparingly!)
+ *
+ *  Surface elevation (light → dark both work via OKLCH tonal tints):
+ *   --background < --surface-dim < --card < --card-raised < --popover
+ *
+ *  Dark mode: uses tonal elevation (lighter surface = higher level)
+ *  based on Material Design 3 / Google HCT research.
+ * ─────────────────────────────────────────────────────────
+ */`;
+
   return [
-    `/* ─── Light mode (default) ─────────────────── */`,
+    header,
+    ``,
+    `/* ─── Light mode (default) ──────────────────────────── */`,
     `:root {`,
+    `  /* ── Semantic tokens ─────────────────────────────── */`,
     semLight,
     ``,
-    `  /* Utility */`,
+    `  /* ── Utility / semantic state colors ────────────── */`,
     utilVars("light"),
     ``,
-    `  /* Palette */`,
+    `  /* ── Primitive palette ───────────────────────────── */`,
     palVars,
     `}`,
     ``,
-    `/* ─── Dark mode (auto) ─────────────────────── */`,
+    `/* ─── Dark mode (system preference) ─────────────────── */`,
     `@media (prefers-color-scheme: dark) {`,
     `  :root {`,
     semDark
@@ -1058,7 +1199,7 @@ export function buildThemeCss(tokens: ThemeTokenSet): string {
     `  }`,
     `}`,
     ``,
-    `/* ─── Force dark: add class="dark" to <html> ─ */`,
+    `/* ─── Manual dark: add class="dark" to <html> ────────── */`,
     `.dark {`,
     semDark,
     ``,

@@ -19,6 +19,32 @@ import {
   savePrefs,
 } from "@/lib/utils/paletteUtils";
 
+// ─── Slot sanitizer ────────────────────────────────────────────────────────────
+// Defends against stale persisted data where rgb values may be 0-1 floats (old
+// format) or otherwise corrupt. Re-derives rgb/hsl from the authoritative hex.
+function sanitizeSlots(slots: unknown[]): PaletteSlot[] {
+  if (!Array.isArray(slots)) return [];
+  return slots.flatMap((slot) => {
+    if (!slot || typeof slot !== "object") return [];
+    const s = slot as Record<string, unknown>;
+    const hex = (s.color as Record<string, unknown>)?.hex;
+    if (typeof hex !== "string" || !/^#[0-9a-fA-F]{6}$/.test(hex)) return [];
+    // Check if rgb values look like 0-1 floats (all < 2) or are missing/NaN
+    const rgb = (s.color as Record<string, unknown>)?.rgb as
+      | Record<string, unknown>
+      | undefined;
+    const needsRegen =
+      !rgb ||
+      typeof rgb.r !== "number" ||
+      isNaN(rgb.r as number) ||
+      ((rgb.r as number) < 2 && (rgb.g as number) < 2 && (rgb.b as number) < 2);
+    const color = needsRegen
+      ? hexToStop(hex)
+      : (s.color as ReturnType<typeof hexToStop>);
+    return [{ color, locked: !!(s as Record<string, unknown>).locked }];
+  });
+}
+
 // ─── Initial state builder ────────────────────────────────────────────────────
 
 function makeInitialState(): ChromaState {
@@ -288,10 +314,23 @@ export const useChromaStore = create<ChromaStore>()(
       }),
 
       // URL params always win over persisted state
-      merge: (persisted, current) =>
-        decodeUrl()
-          ? current
-          : { ...current, ...(persisted as Partial<ChromaStore>) },
+      merge: (persisted, current) => {
+        if (decodeUrl()) return current;
+        const p = persisted as Partial<ChromaStore>;
+        // Sanitize slots on rehydration — guards against stale rgb values from
+        // old versions (0–1 float range) that would break all contrast checks
+        const slots = p.slots
+          ? sanitizeSlots(p.slots as unknown[])
+          : current.slots;
+        const utilityColors =
+          slots !== current.slots
+            ? mergeUtilityColors(
+                current.utilityColors,
+                generateUtilityColors(slots),
+              )
+            : current.utilityColors;
+        return { ...current, ...p, slots, utilityColors };
+      },
 
       version: 1,
     },

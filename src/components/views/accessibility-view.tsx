@@ -1,8 +1,9 @@
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import { useChromaStore } from "@/hooks/useChromaStore";
 import {
-  contrastRatio,
-  wcagLevel,
   type WcagLevel,
+  contrastRatio,
+  hexToRgb,
+  wcagLevel,
 } from "@/lib/utils/colorMath";
 
 const BADGE: Record<WcagLevel, { bg: string; color: string }> = {
@@ -57,7 +58,10 @@ export default function AccessibilityView() {
   }[] = [];
   for (let i = 0; i < slots.length; i++) {
     for (let j = i + 1; j < slots.length; j++) {
-      const ratio = contrastRatio(slots[i].color.rgb, slots[j].color.rgb);
+      const ratio = contrastRatio(
+        hexToRgb(slots[i].color.hex),
+        hexToRgb(slots[j].color.hex),
+      );
       const level = wcagLevel(ratio);
       if (level !== "Fail")
         pairs.push({ a: slots[i], b: slots[j], ratio, level });
@@ -111,7 +115,10 @@ export default function AccessibilityView() {
                           —
                         </td>
                       );
-                    const ratio = contrastRatio(sa.color.rgb, sb.color.rgb);
+                    const ratio = contrastRatio(
+                      hexToRgb(sa.color.hex),
+                      hexToRgb(sb.color.hex),
+                    );
                     const level = wcagLevel(ratio);
                     return (
                       <td key={j}>

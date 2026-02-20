@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { UtilityRole, UtilityColor } from "@/types";
 import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import {
@@ -8,6 +8,7 @@ import {
   wcagLevel,
   hslToRgb,
   rgbToHex,
+  deriveThemeTokens,
 } from "@/lib/utils/colorMath";
 import { hexToStop } from "@/lib/utils/paletteUtils";
 import { Button } from "../ui/button";
@@ -249,11 +250,16 @@ function UtilityCard({
 /** Live alert/toast/banner preview using all 6 utility colors */
 function LivePreview() {
   const { utilityColors, slots } = useChromaStore();
+  const tokens = useMemo(
+    () => deriveThemeTokens(slots, utilityColors),
+    [slots, utilityColors],
+  );
+
   const bySat = [...slots].sort((a, b) => b.color.hsl.s - a.color.hsl.s);
-  const bgHex =
-    slots.length > 0
-      ? [...slots].sort((a, b) => a.color.hsl.l - b.color.hsl.l)[0].color.hex
-      : "#0f0f0f";
+  const bgHex = tokens.semantic[0];
+  // slots.length > 0
+  //   ? [...slots].sort((a, b) => a.color.hsl.l - b.color.hsl.l)[0].color.hex
+  //   : "#0f0f0f";
   const surfaceHex =
     slots.length > 1
       ? [...slots].sort((a, b) => a.color.hsl.l - b.color.hsl.l)[1].color.hex
@@ -262,7 +268,9 @@ function LivePreview() {
   const roles: UtilityRole[] = ["info", "success", "warning", "error"];
 
   return (
-    <div className="ch-utility-live-preview" style={{ background: bgHex }}>
+    <div
+      className={`ch-utility-live-preview ${bgHex.light} dark:${bgHex.dark}`}
+    >
       <div
         style={{
           fontSize: 10,

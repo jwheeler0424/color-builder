@@ -1,39 +1,634 @@
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
-import { useMemo } from "react";
-import { textColor, contrastRatio } from "@/lib/utils/colorMath";
+import React, { useMemo, useState } from "react";
+import { useChromaStore } from "@/hooks/useChromaStore";
+import {
+  deriveThemeTokens,
+  textColor,
+  rgbToOklch,
+} from "@/lib/utils/colorMath";
+import type { PaletteSlot } from "@/types";
+
+type PreviewMode = "light" | "dark" | "split";
+
+/** Parse hex → RGB for textColor() inline use */
+function hexToRgb(hex: string) {
+  const h = hex.replace("#", "");
+  return {
+    r: parseInt(h.substring(0, 2), 16),
+    g: parseInt(h.substring(2, 4), 16),
+    b: parseInt(h.substring(4, 6), 16),
+  };
+}
+
+// ─── Mini App Preview ─────────────────────────────────────────────────────────
+
+function MiniApp({
+  tokens,
+  slots,
+  mode,
+}: {
+  tokens: ReturnType<typeof deriveThemeTokens>;
+  slots: PaletteSlot[];
+  mode: "light" | "dark";
+}) {
+  const get = (name: string) =>
+    tokens.semantic.find((t) => t.name === name)?.[mode] ?? "#888";
+
+  const bg = get("--background");
+  const fg = get("--foreground");
+  const fgMuted = get("--muted-foreground");
+  const card = get("--card");
+  const surfaceDim = get("--surface-dim");
+  const cardRaised = get("--card-raised");
+  const primary = get("--primary");
+  const primaryFg = get("--primary-foreground");
+  const primaryCont = get("--primary-container");
+  const primaryContFg = get("--primary-container-foreground");
+  const secondary = get("--secondary");
+  const secondaryFg = get("--secondary-foreground");
+  const muted = get("--muted");
+  const border = get("--border");
+  const destructive = get("--destructive");
+  const destructiveFg = get("--destructive-foreground");
+  const ring = get("--ring");
+
+  const util = tokens.utility;
+  const successColor =
+    mode === "light" ? util.success?.light : util.success?.dark;
+  const successSubtle =
+    mode === "light" ? util.success?.subtle : util.success?.subtleDark;
+  const infoColor = mode === "light" ? util.info?.light : util.info?.dark;
+  const infoSubtle =
+    mode === "light" ? util.info?.subtle : util.info?.subtleDark;
+  const errorColor = mode === "light" ? util.error?.light : util.error?.dark;
+  const warningColor =
+    mode === "light" ? util.warning?.light : util.warning?.dark;
+  const warningSubtle =
+    mode === "light" ? util.warning?.subtle : util.warning?.subtleDark;
+
+  const accentColors = [...slots]
+    .sort((a, b) => rgbToOklch(b.color.rgb).C - rgbToOklch(a.color.rgb).C)
+    .slice(0, 4)
+    .map((s) => s.color.hex);
+  const a1 = accentColors[0] ?? primary;
+  const a2 = accentColors[1] ?? primary;
+  const a3 = accentColors[2] ?? primary;
+
+  const btnPrimary: React.CSSProperties = {
+    background: primary,
+    color: primaryFg,
+    border: "none",
+    borderRadius: 5,
+    padding: "6px 14px",
+    fontSize: 11,
+    fontWeight: 700,
+    cursor: "pointer",
+  };
+  const btnOutline: React.CSSProperties = {
+    background: "transparent",
+    color: fg,
+    border: `1px solid ${border}`,
+    borderRadius: 5,
+    padding: "6px 14px",
+    fontSize: 11,
+    cursor: "pointer",
+  };
+
+  return (
+    <div
+      style={{
+        background: bg,
+        color: fg,
+        borderRadius: 8,
+        overflow: "hidden",
+        border: `1px solid ${border}`,
+        fontFamily: "system-ui, sans-serif",
+        fontSize: 11,
+        lineHeight: 1.5,
+      }}
+    >
+      {/* Mode badge row */}
+      <div
+        style={{
+          background: surfaceDim,
+          borderBottom: `1px solid ${border}`,
+          padding: "5px 12px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", gap: 4 }}>
+          {accentColors.map((hex, i) => (
+            <div
+              key={i}
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: hex,
+              }}
+            />
+          ))}
+        </div>
+        <span
+          style={{
+            fontSize: 9,
+            color: fgMuted,
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: ".06em",
+          }}
+        >
+          {mode === "light" ? "☀ Light" : "☾ Dark"}
+        </span>
+      </div>
+
+      {/* Nav */}
+      <div
+        style={{
+          background: card,
+          borderBottom: `1px solid ${border}`,
+          padding: "9px 14px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
+        <div
+          style={{
+            width: 16,
+            height: 16,
+            borderRadius: 4,
+            background: a1,
+            flexShrink: 0,
+          }}
+        />
+        <span style={{ fontWeight: 800, fontSize: 12, color: fg, flex: 1 }}>
+          Brand
+        </span>
+        {["Docs", "Pricing", "Blog"].map((l) => (
+          <span key={l} style={{ color: fgMuted, fontSize: 10 }}>
+            {l}
+          </span>
+        ))}
+        <button style={{ ...btnPrimary, padding: "4px 10px", fontSize: 10 }}>
+          Sign in
+        </button>
+      </div>
+
+      {/* Hero — primary-container */}
+      <div
+        style={{
+          background: primaryCont,
+          padding: "16px 14px",
+          borderBottom: `1px solid ${border}`,
+        }}
+      >
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 5,
+            background: primary,
+            color: primaryFg,
+            borderRadius: 20,
+            padding: "2px 8px",
+            fontSize: 8.5,
+            fontWeight: 700,
+            letterSpacing: ".05em",
+            marginBottom: 7,
+          }}
+        >
+          <div
+            style={{
+              width: 5,
+              height: 5,
+              borderRadius: "50%",
+              background: primaryFg,
+              opacity: 0.7,
+            }}
+          />
+          JUST LAUNCHED
+        </div>
+        <div
+          style={{
+            color: primaryContFg,
+            fontSize: 16,
+            fontWeight: 800,
+            letterSpacing: "-0.025em",
+            marginBottom: 5,
+          }}
+        >
+          Design at the speed of thought
+        </div>
+        <div
+          style={{
+            color: primaryContFg,
+            opacity: 0.72,
+            fontSize: 10,
+            marginBottom: 12,
+            lineHeight: 1.6,
+          }}
+        >
+          Your palette, your tokens, your system — built automatically.
+        </div>
+        <div style={{ display: "flex", gap: 7 }}>
+          <button style={btnPrimary}>Get started →</button>
+          <button style={btnOutline}>View demo</button>
+        </div>
+      </div>
+
+      {/* Feature cards */}
+      <div
+        style={{
+          padding: "12px 14px",
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 8,
+          borderBottom: `1px solid ${border}`,
+        }}
+      >
+        {[
+          {
+            title: "Color Science",
+            desc: "OKLCH perceptual palette",
+            accent: a1,
+          },
+          {
+            title: "Dark Mode",
+            desc: "M3 tonal surface elevation",
+            accent: a2,
+          },
+          { title: "Accessibility", desc: "WCAG AA/AAA contrast", accent: a3 },
+        ].map(({ title, desc, accent }) => (
+          <div
+            key={title}
+            style={{
+              background: card,
+              border: `1px solid ${border}`,
+              borderRadius: 6,
+              padding: 10,
+            }}
+          >
+            <div
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: 5,
+                background: accent,
+                marginBottom: 7,
+                opacity: 0.9,
+              }}
+            />
+            <div style={{ fontWeight: 700, fontSize: 10.5, marginBottom: 3 }}>
+              {title}
+            </div>
+            <div style={{ color: fgMuted, fontSize: 9.5, lineHeight: 1.5 }}>
+              {desc}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Alerts — utility colors, fully mode-aware */}
+      <div
+        style={{
+          padding: "10px 14px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 5,
+          borderBottom: `1px solid ${border}`,
+        }}
+      >
+        {[
+          {
+            bg: successSubtle ?? surfaceDim,
+            borderColor: successColor ?? primary,
+            icon: "✓",
+            label: "Deployment complete",
+            sub: "All checks passed",
+          },
+          {
+            bg: infoSubtle ?? surfaceDim,
+            borderColor: infoColor ?? primary,
+            icon: "ℹ",
+            label: "New version available",
+            sub: "v3.2.1 ready to install",
+          },
+          {
+            bg: warningSubtle ?? muted,
+            borderColor: warningColor ?? primary,
+            icon: "⚠",
+            label: "Usage at 84%",
+            sub: "Consider upgrading your plan",
+          },
+        ].map(({ bg: alertBg, borderColor, icon, label, sub }) => (
+          <div
+            key={label}
+            style={{
+              background: alertBg,
+              border: `1px solid ${borderColor}`,
+              borderRadius: 5,
+              padding: "6px 10px",
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+            }}
+          >
+            <div
+              style={{
+                width: 18,
+                height: 18,
+                borderRadius: "50%",
+                background: borderColor,
+                color: textColor(hexToRgb(borderColor)),
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 10,
+                fontWeight: 700,
+                flexShrink: 0,
+              }}
+            >
+              {icon}
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 10 }}>{label}</div>
+              <div style={{ fontSize: 9, color: fgMuted }}>{sub}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Input + focus ring demo */}
+      <div
+        style={{
+          padding: "10px 14px",
+          background: surfaceDim,
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{
+            flex: 1,
+            background: card,
+            border: `2px solid ${ring}`,
+            borderRadius: 5,
+            padding: "6px 10px",
+            color: fgMuted,
+            fontSize: 10,
+            boxShadow: `0 0 0 3px ${ring}40`,
+          }}
+        >
+          Enter your email…
+        </div>
+        <button style={btnPrimary}>Subscribe</button>
+        <button
+          style={{
+            background: destructive,
+            color: destructiveFg,
+            border: "none",
+            borderRadius: 5,
+            padding: "6px 10px",
+            fontSize: 10,
+            fontWeight: 600,
+          }}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Token Role Legend ────────────────────────────────────────────────────────
+
+function TokenLegend({
+  tokens,
+  mode,
+}: {
+  tokens: ReturnType<typeof deriveThemeTokens>;
+  mode: "light" | "dark";
+}) {
+  const groups = [
+    {
+      label: "60% Neutral surface",
+      ids: ["--background", "--surface-dim", "--card", "--card-raised"],
+    },
+    {
+      label: "30% Content surface",
+      ids: ["--secondary", "--muted", "--popover"],
+    },
+    {
+      label: "10% Brand / CTA",
+      ids: ["--primary", "--primary-container", "--ring"],
+    },
+  ];
+
+  return (
+    <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+      {groups.map(({ label, ids }) => (
+        <div key={label} style={{ flex: "1 1 160px" }}>
+          <div
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              color: "var(--ch-t3)",
+              textTransform: "uppercase",
+              letterSpacing: ".07em",
+              marginBottom: 6,
+            }}
+          >
+            {label}
+          </div>
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            {ids.map((id) => {
+              const tok = tokens.semantic.find((t) => t.name === id);
+              const hex = tok?.[mode];
+              if (!hex) return null;
+              return (
+                <div
+                  key={id}
+                  title={id}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 2,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 5,
+                      background: hex,
+                      border: "1px solid rgba(128,128,128,.2)",
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: 7.5,
+                      color: "var(--ch-t3)",
+                      fontFamily: "var(--ch-fm)",
+                      maxWidth: 28,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      textAlign: "center",
+                    }}
+                  >
+                    {id.replace("--", "")}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Utility Color Panel ──────────────────────────────────────────────────────
+
+function UtilityPanel({
+  tokens,
+}: {
+  tokens: ReturnType<typeof deriveThemeTokens>;
+}) {
+  const ICONS: Record<string, string> = {
+    info: "ℹ",
+    success: "✓",
+    warning: "⚠",
+    error: "✕",
+    neutral: "○",
+    focus: "◎",
+  };
+  const roles = Object.keys(tokens.utility) as (keyof typeof tokens.utility)[];
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+      {(["light", "dark"] as const).map((m) => (
+        <div key={m}>
+          <div
+            style={{
+              fontSize: 9.5,
+              fontWeight: 700,
+              color: "var(--ch-t3)",
+              textTransform: "uppercase",
+              letterSpacing: ".07em",
+              marginBottom: 7,
+            }}
+          >
+            {m === "light" ? "☀ Light" : "☾ Dark"}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {roles.map((role) => {
+              const color =
+                m === "light"
+                  ? tokens.utility[role].light
+                  : tokens.utility[role].dark;
+              const subtle =
+                m === "light"
+                  ? tokens.utility[role].subtle
+                  : tokens.utility[role].subtleDark;
+              return (
+                <div
+                  key={role}
+                  style={{
+                    background: subtle,
+                    border: `1px solid ${color}`,
+                    borderRadius: 6,
+                    padding: "6px 10px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: "50%",
+                      background: color,
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 10,
+                    }}
+                  >
+                    <span style={{ color: textColor(hexToRgb(color)) }}>
+                      {ICONS[role]}
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontWeight: 700,
+                      fontSize: 10,
+                      textTransform: "capitalize",
+                      flex: 1,
+                    }}
+                  >
+                    {role}
+                  </span>
+                  <div
+                    style={{ display: "flex", gap: 3, alignItems: "center" }}
+                  >
+                    <div
+                      title="filled"
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: 3,
+                        background: color,
+                        border: "1px solid rgba(128,128,128,.2)",
+                      }}
+                    />
+                    <div
+                      title="subtle"
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: 3,
+                        background: subtle,
+                        border: `1px solid ${color}`,
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontSize: 8.5,
+                        color: "var(--ch-t3)",
+                        fontFamily: "var(--ch-fm)",
+                        marginLeft: 2,
+                      }}
+                    >
+                      {color}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main Export ──────────────────────────────────────────────────────────────
 
 export default function CssPreview() {
-  const { slots } = useChromaStore();
+  const { slots, utilityColors } = useChromaStore();
+  const [previewMode, setPreviewMode] = useState<PreviewMode>("split");
 
-  const colors = useMemo(() => {
-    if (!slots.length)
-      return {
-        bg: "#0f0f0f",
-        surface: "#1a1a1a",
-        accent: "#e8ff00",
-        text: "#f0f0f0",
-        muted: "#666",
-        border: "#222",
-      };
-    // Assign semantic roles: darkest=bg, lightest=text, most-saturated=accent
-    const sorted = [...slots].sort((a, b) => a.color.hsl.l - b.color.hsl.l);
-    const bySat = [...slots].sort((a, b) => b.color.hsl.s - a.color.hsl.s);
-    const bg = sorted[0].color.hex;
-    const bgRgb = sorted[0].color.rgb;
-    const surface = sorted.length > 1 ? sorted[1].color.hex : "#1a1a1a";
-    const accent = bySat[0].color.hex;
-    const textHex = textColor(bgRgb);
-    const muted =
-      slots.find(
-        (s) =>
-          contrastRatio(s.color.rgb, bgRgb) >= 2 &&
-          contrastRatio(s.color.rgb, bgRgb) < 4.5,
-      )?.color.hex ?? textHex;
-
-    return { bg, surface, accent, text: textHex, muted, border: surface };
-  }, [slots]);
-
-  const { bg, surface, accent, text, muted, border } = colors;
+  const tokens = useMemo(
+    () => deriveThemeTokens(slots, utilityColors),
+    [slots, utilityColors],
+  );
 
   if (!slots.length) {
     return (
@@ -42,317 +637,87 @@ export default function CssPreview() {
           <h2>Live CSS Preview</h2>
         </div>
         <p style={{ color: "var(--ch-t3)", fontSize: 12 }}>
-          Generate a palette first.
+          Generate a palette first to see the preview.
         </p>
       </div>
     );
   }
 
+  const showLight = previewMode === "light" || previewMode === "split";
+  const showDark = previewMode === "dark" || previewMode === "split";
+
   return (
     <div className="ch-view-scroll ch-view-pad">
-      <div style={{ maxWidth: 860, margin: "0 auto" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto" }}>
         <div className="ch-view-hd">
           <h2>Live CSS Preview</h2>
           <p>
-            Your palette applied to a real UI component. Colors are semantically
-            assigned based on lightness and saturation.
+            Your palette applied to a real UI — nav, hero, cards, alerts (with
+            correct dark subtle backgrounds), inputs with focus ring, and
+            destructive actions. Both light and dark use your generated theme
+            tokens throughout.
           </p>
         </div>
 
-        {/* Role legend */}
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-            marginBottom: 20,
-          }}
-        >
-          {[
-            { role: "Background", hex: bg },
-            { role: "Surface", hex: surface },
-            { role: "Accent", hex: accent },
-          ].map(({ role, hex }) => (
-            <div
-              key={role}
+        {/* Mode toggle */}
+        <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+          {(
+            [
+              { key: "split", label: "⬛ Split" },
+              { key: "light", label: "☀ Light only" },
+              { key: "dark", label: "☾ Dark only" },
+            ] as { key: PreviewMode; label: string }[]
+          ).map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setPreviewMode(key)}
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
+                background:
+                  previewMode === key ? "var(--ch-a)" : "var(--ch-s2)",
+                color: previewMode === key ? "#fff" : "var(--ch-t2)",
+                border: "none",
+                borderRadius: 5,
+                padding: "5px 12px",
                 fontSize: 11,
-              }}
-            >
-              <div
-                style={{
-                  width: 14,
-                  height: 14,
-                  borderRadius: 2,
-                  background: hex,
-                  border: "1px solid rgba(255,255,255,.1)",
-                }}
-              />
-              <span style={{ color: "var(--ch-t3)" }}>{role}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Simulated app UI */}
-        <div
-          style={{
-            background: bg,
-            border: `1px solid ${border}`,
-            borderRadius: 8,
-            overflow: "hidden",
-            fontFamily: "system-ui, sans-serif",
-          }}
-        >
-          {/* Nav bar */}
-          <div
-            style={{
-              background: surface,
-              borderBottom: `1px solid ${border}`,
-              padding: "12px 20px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: accent,
-                }}
-              />
-              <span style={{ color: text, fontWeight: 700, fontSize: 14 }}>
-                App Name
-              </span>
-              {["Home", "Products", "About"].map((item) => (
-                <span
-                  key={item}
-                  style={{ color: muted, fontSize: 13, cursor: "pointer" }}
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
-            <div
-              style={{
-                background: accent,
-                color: textColor(
-                  slots.find((s) => s.color.hex === accent)?.color.rgb ?? {
-                    r: 232,
-                    g: 255,
-                    b: 0,
-                  },
-                ),
-                padding: "6px 14px",
-                borderRadius: 4,
-                fontSize: 12,
-                fontWeight: 700,
+                fontWeight: 600,
                 cursor: "pointer",
               }}
             >
-              Sign Up
-            </div>
-          </div>
-
-          {/* Hero */}
-          <div
-            style={{
-              padding: "40px 20px",
-              borderBottom: `1px solid ${border}`,
-            }}
-          >
-            <div
-              style={{
-                display: "inline-block",
-                padding: "3px 10px",
-                borderRadius: 12,
-                background: `${accent}22`,
-                color: accent,
-                fontSize: 11,
-                fontWeight: 700,
-                marginBottom: 12,
-              }}
-            >
-              New Release
-            </div>
-            <div
-              style={{
-                color: text,
-                fontSize: 28,
-                fontWeight: 800,
-                marginBottom: 8,
-                lineHeight: 1.2,
-              }}
-            >
-              Beautiful by default
-            </div>
-            <div
-              style={{
-                color: muted,
-                fontSize: 14,
-                marginBottom: 20,
-                maxWidth: 440,
-                lineHeight: 1.6,
-              }}
-            >
-              A design system built around your palette. Every component
-              responds to your color choices automatically.
-            </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <div
-                style={{
-                  background: accent,
-                  color: textColor(
-                    slots.find((s) => s.color.hex === accent)?.color.rgb ?? {
-                      r: 232,
-                      g: 255,
-                      b: 0,
-                    },
-                  ),
-                  padding: "10px 20px",
-                  borderRadius: 4,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                Get Started
-              </div>
-              <div
-                style={{
-                  border: `1px solid ${border}`,
-                  color: text,
-                  padding: "10px 20px",
-                  borderRadius: 4,
-                  fontSize: 13,
-                  cursor: "pointer",
-                }}
-              >
-                Learn More
-              </div>
-            </div>
-          </div>
-
-          {/* Cards row */}
-          <div
-            style={{
-              padding: "24px 20px",
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: 12,
-            }}
-          >
-            {["Analytics", "Automation", "Integrations"].map((title, i) => (
-              <div
-                key={title}
-                style={{
-                  background: surface,
-                  border: `1px solid ${border}`,
-                  borderRadius: 6,
-                  padding: 16,
-                }}
-              >
-                <div
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 6,
-                    background: `${accent}33`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: 10,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: 2,
-                      background: accent,
-                    }}
-                  />
-                </div>
-                <div
-                  style={{
-                    color: text,
-                    fontWeight: 700,
-                    fontSize: 13,
-                    marginBottom: 4,
-                  }}
-                >
-                  {title}
-                </div>
-                <div style={{ color: muted, fontSize: 11, lineHeight: 1.5 }}>
-                  Powerful {title.toLowerCase()} built right into your workflow.
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Input + button row */}
-          <div
-            style={{
-              padding: "16px 20px",
-              background: surface,
-              borderTop: `1px solid ${border}`,
-              display: "flex",
-              gap: 8,
-              alignItems: "center",
-            }}
-          >
-            <div
-              style={{
-                flex: 1,
-                background: bg,
-                border: `1px solid ${border}`,
-                borderRadius: 4,
-                padding: "8px 12px",
-                color: muted,
-                fontSize: 12,
-              }}
-            >
-              Enter your email address…
-            </div>
-            <div
-              style={{
-                background: accent,
-                color: textColor(
-                  slots.find((s) => s.color.hex === accent)?.color.rgb ?? {
-                    r: 232,
-                    g: 255,
-                    b: 0,
-                  },
-                ),
-                padding: "8px 16px",
-                borderRadius: 4,
-                fontSize: 12,
-                fontWeight: 700,
-              }}
-            >
-              Subscribe
-            </div>
-          </div>
+              {label}
+            </button>
+          ))}
         </div>
 
-        {/* CSS vars output */}
-        <div style={{ marginTop: 20 }}>
-          <div className="ch-slabel" style={{ marginBottom: 8 }}>
-            Generated CSS Variables
+        {/* App previews */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: showLight && showDark ? "1fr 1fr" : "1fr",
+            gap: 16,
+            marginBottom: 28,
+          }}
+        >
+          {showLight && <MiniApp tokens={tokens} slots={slots} mode="light" />}
+          {showDark && <MiniApp tokens={tokens} slots={slots} mode="dark" />}
+        </div>
+
+        {/* Token legend */}
+        <div style={{ marginBottom: 28 }}>
+          <div className="ch-slabel" style={{ marginBottom: 10 }}>
+            Token roles ({previewMode === "dark" ? "dark" : "light"} mode)
           </div>
-          <pre className="ch-token-pre">{`:root {
-  --color-bg:      ${bg};
-  --color-surface: ${surface};
-  --color-accent:  ${accent};
-  --color-text:    ${text};
-  --color-muted:   ${muted};
-  --color-border:  ${border};
-}`}</pre>
+          <TokenLegend
+            tokens={tokens}
+            mode={previewMode === "dark" ? "dark" : "light"}
+          />
+        </div>
+
+        {/* Utility panel */}
+        <div>
+          <div className="ch-slabel" style={{ marginBottom: 10 }}>
+            Utility colors — filled + correct subtle backgrounds for both modes
+          </div>
+          <UtilityPanel tokens={tokens} />
         </div>
       </div>
     </div>

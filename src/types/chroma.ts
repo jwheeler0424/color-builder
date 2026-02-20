@@ -162,7 +162,13 @@ export interface ThemeTokenSet {
   semantic: SemanticToken[];
   utility: Record<
     UtilityRole,
-    { base: string; light: string; dark: string; subtle: string }
+    {
+      base: string;
+      light: string;
+      dark: string;
+      subtle: string;
+      subtleDark: string;
+    }
   >;
   palette: { name: string; hex: string }[];
 }

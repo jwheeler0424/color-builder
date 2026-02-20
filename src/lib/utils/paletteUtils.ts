@@ -1,3 +1,4 @@
+import { useLocation } from "@tanstack/react-router";
 import type {
   HarmonyMode,
   ColorStop,
@@ -14,7 +15,7 @@ import {
   clamp,
   colorDist,
 } from "./colorMath";
-import { NAMED } from "./constants";
+import { NAMED } from "@/lib/constants/chroma";
 
 // ─── Color Naming ─────────────────────────────────────────────────────────────
 
@@ -477,7 +478,8 @@ export function loadPrefs(): { mode: HarmonyMode; count: number } | null {
 // ─── URL encode/decode ────────────────────────────────────────────────────────
 
 export function encodeUrl(hexes: string[], mode: HarmonyMode): string {
-  const base = `${location.origin}${location.pathname}`;
+  const location = useLocation();
+  const base = `${location.href}`;
   return `${base}#p=${hexes.map((h) => h.replace("#", "")).join("-")}&m=${mode}`;
 }
 
