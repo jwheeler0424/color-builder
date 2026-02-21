@@ -30,14 +30,15 @@ export function fromLinear(v: number): number {
 
 export function hexToRgb(hex: string): RGB {
   const c = hex.replace("#", "");
-  const f =
+  // Normalise: expand 3-char, strip any alpha bytes from 8-char (#RRGGBBAA)
+  const f6 =
     c.length === 3
       ? c
           .split("")
           .map((x) => x + x)
           .join("")
-      : c;
-  const n = parseInt(f, 16);
+      : c.slice(0, 6); // safe for both 6-char and 8-char input
+  const n = parseInt(f6, 16);
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
 }
 
@@ -343,7 +344,33 @@ export function parseHex(s: string): string | null {
         .join("")
     );
   if (/^[0-9a-fA-F]{6}$/.test(c)) return "#" + c;
+  // 8-char hex (#RRGGBBAA) — strip alpha bytes, return 6-char opaque hex
+  if (/^[0-9a-fA-F]{8}$/.test(c)) return "#" + c.slice(0, 6);
   return null;
+}
+
+/** Parse 8-char hex and return alpha 0–100, or null if not an 8-char hex */
+export function parseHexAlpha(s: string): number | null {
+  const c = s.trim().replace(/^#/, "");
+  if (!/^[0-9a-fA-F]{8}$/.test(c)) return null;
+  return Math.round((parseInt(c.slice(6), 16) / 255) * 100);
+}
+
+/** Strip any alpha bytes from a hex string, returning a safe 6-char hex */
+export function opaqueHex(hex: string): string {
+  const c = hex.replace(/^#/, "");
+  return (
+    "#" +
+    (c.length === 8
+      ? c.slice(0, 6)
+      : c.length === 4
+        ? c
+            .slice(0, 3)
+            .split("")
+            .map((x) => x + x)
+            .join("")
+        : c.slice(0, 6))
+  );
 }
 
 export function parseRgbStr(s: string): RGB | null {
@@ -369,6 +396,68 @@ export function parseHslStr(s: string): RGB | null {
 export function parseAny(s: string): RGB | null {
   const h = parseHex(s);
   return h ? hexToRgb(h) : parseRgbStr(s) || parseHslStr(s);
+}
+
+// ─── Alpha-aware CSS string formatters ───────────────────────────────────────
+
+/** Format an 0-255 integer alpha to 0-1 string, dropping decimals when whole */
+function fmtA(alpha: number): string {
+  const a = clamp(alpha, 0, 100) / 100;
+  return a === 1 ? "1" : a === 0 ? "0" : a.toFixed(2).replace(/0+$/, "");
+}
+
+export function toCssRgb(rgb: RGB, alpha = 100): string {
+  const a = fmtA(alpha);
+  return alpha >= 100
+    ? `rgb(${rgb.r} ${rgb.g} ${rgb.b})`
+    : `rgb(${rgb.r} ${rgb.g} ${rgb.b} / ${a})`;
+}
+
+export function toCssHsl(hsl: HSL, alpha = 100): string {
+  const h = Math.round(hsl.h);
+  const s = Math.round(hsl.s);
+  const l = Math.round(hsl.l);
+  return alpha >= 100
+    ? `hsl(${h} ${s}% ${l}%)`
+    : `hsl(${h} ${s}% ${l}% / ${fmtA(alpha)})`;
+}
+
+export function toCssHsv(hsv: HSV, alpha = 100): string {
+  // HSV is not a CSS color space — format as a comment/reference string
+  const h = Math.round(hsv.h);
+  const s = Math.round(hsv.s);
+  const v = Math.round(hsv.v);
+  return alpha >= 100
+    ? `hsv(${h} ${s}% ${v}%)`
+    : `hsv(${h} ${s}% ${v}% / ${fmtA(alpha)})`;
+}
+
+export function toCssOklch(lch: OKLCH, alpha = 100): string {
+  // OKLCH in CSS: oklch(L% C H) — L is 0-1, C is 0-0.4, H is 0-360
+  const L = lch.L.toFixed(4);
+  const C = lch.C.toFixed(4);
+  const H = Math.round(lch.H);
+  return alpha >= 100
+    ? `oklch(${L} ${C} ${H})`
+    : `oklch(${L} ${C} ${H} / ${fmtA(alpha)})`;
+}
+
+export function toCssOklab(lab: OKLab, alpha = 100): string {
+  const L = lab.L.toFixed(4);
+  const a = lab.a.toFixed(4);
+  const b = lab.b.toFixed(4);
+  return alpha >= 100
+    ? `oklab(${L} ${a} ${b})`
+    : `oklab(${L} ${a} ${b} / ${fmtA(alpha)})`;
+}
+
+/** 8-char hex with alpha: #RRGGBBAA */
+export function toHexAlpha(hex: string, alpha: number): string {
+  if (alpha >= 100) return hex;
+  const aa = Math.round((clamp(alpha, 0, 100) / 100) * 255)
+    .toString(16)
+    .padStart(2, "0");
+  return `${hex}${aa}`;
 }
 
 // ─── Color Blindness Simulation ───────────────────────────────────────────────
@@ -446,7 +535,7 @@ export interface PaletteScore {
 }
 
 export function scorePalette(
-  slots: { color: { rgb: RGB; hsl: HSL } }[],
+  slots: { color: { hex: string } }[],
 ): PaletteScore {
   if (slots.length < 2)
     return {
@@ -457,8 +546,12 @@ export function scorePalette(
       overall: 0,
     };
 
-  // Hue balance: std-dev of hue gaps on circle
-  const hues = slots.map((s) => s.color.hsl.h).sort((a, b) => a - b);
+  // Always derive from hex — immune to stale stored rgb/hsl values
+  const rgbs = slots.map((s) => hexToRgb(s.color.hex));
+  const oklchs = rgbs.map((rgb) => rgbToOklch(rgb));
+
+  // ── Hue balance: std-dev of circular hue gaps ────────────────────────────
+  const hues = oklchs.map((c) => c.H).sort((a, b) => a - b);
   const gaps = hues.map(
     (h, i) => (hues[(i + 1) % hues.length] - h + 360) % 360,
   );
@@ -468,30 +561,37 @@ export function scorePalette(
   );
   const balance = Math.round(Math.max(0, 100 - (gapDev / idealGap) * 100));
 
-  // Accessibility: pairs passing AA (4.5:1)
-  let passPairs = 0,
-    totalPairs = 0;
-  for (let i = 0; i < slots.length; i++)
-    for (let j = i + 1; j < slots.length; j++) {
-      totalPairs++;
-      if (contrastRatio(slots[i].color.rgb, slots[j].color.rgb) >= 4.5)
-        passPairs++;
-    }
-  const accessibility = Math.round((passPairs / totalPairs) * 100);
+  // ── Accessibility: how many colors can display readable text ────────────
+  // Measures each swatch's best contrast (on white OR black), not palette-vs-palette.
+  // Harmonic palettes intentionally cluster luminance so color-vs-color contrast
+  // is expected to be low — this dimension instead asks: is each color usable in a UI?
+  // Score = % of colors that achieve AA (4.5:1) on at least one background.
+  const WHITE = { r: 255, g: 255, b: 255 } as RGB;
+  const BLACK = { r: 0, g: 0, b: 0 } as RGB;
+  const aaCount = rgbs.filter(
+    (rgb) =>
+      Math.max(contrastRatio(rgb, WHITE), contrastRatio(rgb, BLACK)) >= 4.5,
+  ).length;
+  const accessibility = Math.round((aaCount / rgbs.length) * 100);
 
-  // Saturation harmony: inverse of std-dev of saturations
-  const sats = slots.map((s) => s.color.hsl.s);
-  const avgS = sats.reduce((a, b) => a + b, 0) / sats.length;
-  const satDev = Math.sqrt(
-    sats.reduce((acc, s) => acc + (s - avgS) ** 2, 0) / sats.length,
+  // ── Saturation harmony: consistency of chroma in OKLCH ──────────────────
+  // Use OKLCH chroma (perceptually uniform) instead of HSL saturation
+  const chromas = oklchs.map((c) => c.C);
+  const avgC = chromas.reduce((a, b) => a + b, 0) / chromas.length;
+  const chromaDev = Math.sqrt(
+    chromas.reduce((acc, c) => acc + (c - avgC) ** 2, 0) / chromas.length,
   );
-  const harmony = Math.round(Math.max(0, 100 - satDev * 1.5));
+  // Normalise: max expected deviation ~0.15 (wide range) → score 0
+  const harmony = Math.round(Math.max(0, 100 - (chromaDev / 0.15) * 100));
 
-  // Uniqueness: average pairwise OKLab distance, normalised
-  let totalDist = 0;
-  for (let i = 0; i < slots.length; i++)
-    for (let j = i + 1; j < slots.length; j++)
-      totalDist += colorDist(slots[i].color.rgb, slots[j].color.rgb);
+  // ── Uniqueness: average pairwise OKLab distance, normalised ─────────────
+  let totalDist = 0,
+    totalPairs = 0;
+  for (let i = 0; i < rgbs.length; i++)
+    for (let j = i + 1; j < rgbs.length; j++) {
+      totalDist += colorDist(rgbs[i], rgbs[j]);
+      totalPairs++;
+    }
   const avgDist = totalDist / totalPairs;
   const uniqueness = Math.round(Math.min(100, avgDist * 500));
 
@@ -554,7 +654,10 @@ const UTILITY_DEFS: Record<
 export function generateUtilityColors(
   slots: { color: { hex: string; rgb: RGB; hsl: HSL } }[],
 ): UtilityColorSet {
-  const oklchSlots = slots.map((s) => rgbToOklch(s.color.rgb));
+  // ── 1. Analyse the palette in OKLCH ────────────────────────────────────────
+  // Always derive from hex (canonical) to be immune to stale stored rgb values
+  const oklchSlots = slots.map((s) => rgbToOklch(hexToRgb(s.color.hex)));
+
   const avgL = oklchSlots.length
     ? oklchSlots.reduce((a, c) => a + c.L, 0) / oklchSlots.length
     : 0.55;
@@ -562,41 +665,109 @@ export function generateUtilityColors(
     ? oklchSlots.reduce((a, c) => a + c.C, 0) / oklchSlots.length
     : 0.12;
 
-  // Primary: highest-chroma slot — the brand anchor
+  // Primary: highest-chroma slot — dominant brand hue
   const primary = oklchSlots.reduce(
     (best, c) => (c.C > best.C ? c : best),
     oklchSlots[0] ?? { L: 0.55, C: 0.15, H: 230 },
   );
 
-  const targetL = clamp(
-    avgL > 0.65 ? 0.52 : avgL < 0.35 ? 0.58 : 0.55,
-    0.46,
-    0.62,
-  );
-  const targetC = clamp(avgC * 0.8 + 0.07, 0.1, 0.22);
+  // Palette L range — used to keep utility colors visually consistent with palette
+  const minL = oklchSlots.length
+    ? Math.min(...oklchSlots.map((c) => c.L))
+    : 0.35;
+  const maxL = oklchSlots.length
+    ? Math.max(...oklchSlots.map((c) => c.L))
+    : 0.72;
 
-  /**
-   * Resolve hue for a utility role by pulling from the closest palette slot.
-   *
-   * If a palette slot is within 15° of the semantic anchor hue, use that
-   * slot's exact hue — so the utility color feels like it belongs to the
-   * palette rather than being an arbitrary external color.
-   * Falls back to the fixed anchor hue if nothing is close enough.
-   */
-  function resolveHue(anchorHue: number): number {
-    if (!oklchSlots.length) return anchorHue;
-    const hueDist = (a: number, b: number) =>
-      Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
-    const best = oklchSlots.reduce(
+  // Target L for utility icons/text — mid of palette range, clamped to readable band
+  // If palette is very light, pull utility darker; very dark → pull lighter
+  const targetL = clamp(
+    avgL > 0.68 ? avgL - 0.14 : avgL < 0.38 ? avgL + 0.14 : avgL,
+    0.44,
+    0.64,
+  );
+  // Target C — match palette saturation character, minimum 0.10 for semantic clarity
+  const targetC = clamp(avgC * 0.9 + 0.04, 0.1, 0.22);
+
+  // ── 2. Circular hue distance helper ────────────────────────────────────────
+  const hueDist = (a: number, b: number) =>
+    Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
+
+  // ── 3. Semantic role definitions with hue ranges ────────────────────────────
+  // Each role has a canonical hue centre and a tolerance arc.
+  // Error/orange are treated as separate ranges to distinguish red vs warm-orange.
+  const ROLE_HUES: Record<UtilityRole, { center: number; arc: number }> = {
+    info: { center: 220, arc: 60 }, // blue family: 160°–280°
+    success: { center: 148, arc: 50 }, // green family: 98°–198°
+    warning: { center: 75, arc: 35 }, // yellow-amber: 40°–110°
+    error: { center: 27, arc: 35 }, // orange-red: 352°–62° (wraps), centred at red-orange
+    neutral: { center: primary.H, arc: 360 }, // any hue — uses primary
+    focus: { center: primary.H, arc: 360 }, // any hue — uses primary
+  };
+
+  // ── 4. Core hue resolver ───────────────────────────────────────────────────
+  //
+  // Strategy:
+  //   a) Find all palette slots within `arc` degrees of the role's center hue.
+  //   b) If multiple slots qualify, pick the one whose L and C are closest to
+  //      the role's target — so we get a "same box" match rather than just
+  //      nearest-hue.
+  //   c) If a match exists, use its exact hue so the utility color feels
+  //      pulled directly from the palette.
+  //   d) If no palette slot is close enough, blend between the nearest palette
+  //      hue and the canonical role center (weighted by distance) — ensuring
+  //      the utility color still feels palette-related rather than generic.
+  //
+  function resolveRoleHue(role: UtilityRole): number {
+    if (!oklchSlots.length) return ROLE_HUES[role].center;
+    const { center, arc } = ROLE_HUES[role];
+
+    // Slots within the hue arc for this role
+    const candidates = oklchSlots
+      .map((c, i) => ({ ...c, i, dist: hueDist(c.H, center) }))
+      .filter((c) => c.dist <= arc);
+
+    if (candidates.length > 0) {
+      // Score each candidate: prefer slots whose L and C are close to the
+      // role targets. Combine hue fit (0–1), L fit, C fit into one score.
+      const scored = candidates.map((c) => {
+        const hueFit = 1 - c.dist / arc; // 1 = perfect hue match
+        const lFit = 1 - Math.abs(c.L - targetL); // 1 = L matches target
+        const cFit = 1 - Math.abs(c.C - targetC); // 1 = C matches target
+        const score = hueFit * 0.5 + lFit * 0.3 + cFit * 0.2;
+        return { ...c, score };
+      });
+      scored.sort((a, b) => b.score - a.score);
+      return scored[0].H;
+    }
+
+    // No slot in arc — find nearest slot and blend its hue toward the role center
+    // proportional to distance: very far = mostly canonical, nearby = mostly palette
+    const nearest = oklchSlots.reduce(
       (b, c) => {
-        const d = hueDist(c.H, anchorHue);
+        const d = hueDist(c.H, center);
         return d < b.d ? { d, H: c.H } : b;
       },
-      { d: Infinity, H: anchorHue },
+      { d: Infinity, H: center },
     );
-    return best.d <= 15 ? best.H : anchorHue;
+
+    // Blend weight: at arc→ 0% palette, at 0°→ 100% palette (linear)
+    // Clamp to 120° max distance so we don't go fully canonical for remote hues
+    const blendFactor = clamp(1 - nearest.d / 120, 0, 0.6);
+    // Shortest-path angular blend
+    const delta = ((center - nearest.H + 540) % 360) - 180; // signed shortest arc
+    return (nearest.H + delta * (1 - blendFactor) + 360) % 360;
   }
 
+  // ── 5. Warning-specific L adjustment ──────────────────────────────────────
+  // Yellow-amber (H≈75°) is perceptually very bright at high L — pull it down
+  // so it has similar visual weight to the other semantic colors.
+  function warningL(h: number): number {
+    const yellowness = Math.max(0, 1 - hueDist(h, 75) / 40); // 1 at H=75, 0 at ±40°
+    return clamp(targetL - yellowness * 0.08, 0.42, 0.62);
+  }
+
+  // ── 6. Build utility color objects ────────────────────────────────────────
   function makeOklchStop(
     L: number,
     C: number,
@@ -605,7 +776,6 @@ export function generateUtilityColors(
     const rgb = oklchToRgb({ L, C, H });
     return { hex: rgbToHex(rgb), rgb, hsl: rgbToHsl(rgb) };
   }
-
   function makeUtility(
     role: UtilityRole,
     L: number,
@@ -620,19 +790,18 @@ export function generateUtilityColors(
     };
   }
 
-  const infoH = resolveHue(UTILITY_DEFS.info.anchorHue);
-  const successH = resolveHue(UTILITY_DEFS.success.anchorHue);
-  const warningH = resolveHue(UTILITY_DEFS.warning.anchorHue);
-  const errorH = resolveHue(UTILITY_DEFS.error.anchorHue);
+  const infoH = resolveRoleHue("info");
+  const successH = resolveRoleHue("success");
+  const warningH = resolveRoleHue("warning");
+  const errorH = resolveRoleHue("error");
 
   return {
     info: makeUtility("info", targetL, targetC, infoH),
     success: makeUtility("success", targetL, targetC, successH),
-    // Warning (yellow H≈85°) is perceptually very bright — lower L to match visual weight
     warning: makeUtility(
       "warning",
-      clamp(targetL - 0.06, 0.44, 0.58),
-      clamp(targetC * 1.1, 0.09, 0.2),
+      warningL(warningH),
+      clamp(targetC * 1.05, 0.09, 0.2),
       warningH,
     ),
     error: makeUtility(
@@ -641,17 +810,17 @@ export function generateUtilityColors(
       clamp(targetC * 1.1, 0.12, 0.24),
       errorH,
     ),
-    // Neutral: primary hue at near-zero chroma — tinted gray, palette-related
+    // Neutral: primary hue at near-zero chroma — palette-tinted gray, not generic
     neutral: makeUtility(
       "neutral",
-      clamp(targetL + 0.02, 0.5, 0.65),
-      clamp(primary.C * 0.09, 0.008, 0.04),
+      clamp(targetL + 0.05, 0.5, 0.68),
+      clamp(primary.C * 0.08, 0.006, 0.035),
       primary.H,
     ),
-    // Focus: primary palette color, L normalised for focus ring visibility
+    // Focus ring: primary color, lightness normalised to be visible as a ring
     focus: makeUtility(
       "focus",
-      clamp(primary.L, 0.52, 0.7),
+      clamp(primary.L, 0.5, 0.7),
       clamp(primary.C, 0.12, 0.3),
       primary.H,
     ),
@@ -703,7 +872,7 @@ export function mergeUtilityColors(
  *   text-disabled
  */
 export function deriveThemeTokens(
-  slots: { color: { hex: string; rgb: RGB; hsl: HSL } }[],
+  slots: { color: { hex: string } }[],
   utility: UtilityColorSet,
 ): ThemeTokenSet {
   if (!slots.length)
@@ -714,7 +883,8 @@ export function deriveThemeTokens(
     };
 
   // ── Palette analysis in OKLCH ──────────────────────────────────────────────
-  const oklchSlots = slots.map((s) => rgbToOklch(s.color.rgb));
+  // Always derive from hex — immune to stale stored rgb values
+  const oklchSlots = slots.map((s) => rgbToOklch(hexToRgb(s.color.hex)));
 
   // Primary: highest chroma — the "brand" color (maps to 10% accent in 60-30-10)
   const primaryIdx = oklchSlots.reduce(

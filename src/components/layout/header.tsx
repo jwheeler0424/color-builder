@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Button } from "../ui/button";
 import { useChromaStore } from "@/stores/chroma-store/chroma.store";
-import { ExportModal, SaveModal, ShareModal, ShortcutsModal } from "../Modals";
+import { ExportModal, SaveModal, ShareModal, ShortcutsModal } from "../modals";
+import { ThemeToggle } from "../theme-toggle";
 
 const NAV = [
   { to: "/palette", label: "Palette" },
@@ -60,6 +61,7 @@ export default function Header() {
           </Link>
         ))}
       </nav>
+      <ThemeToggle />
       <div className="ch-hbtns">
         <Button variant="ghost" size="sm" onClick={undo} title="Undo (Ctrl+Z)">
           ↩

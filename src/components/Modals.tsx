@@ -5,6 +5,8 @@ import {
   deriveThemeTokens,
   buildFigmaTokens,
   buildTailwindConfig,
+  toHexAlpha,
+  toCssRgb,
 } from "@/lib/utils/colorMath";
 import type { ExportTab } from "@/types";
 import { Button } from "./ui/button";
@@ -40,7 +42,12 @@ export function ExportModal() {
     openModal,
     setExportTab,
   } = useChromaStore();
-  const hexes = slots.map((s) => s.color.hex);
+  // Include alpha bytes in hex when a slot has transparency (#RRGGBBAA format)
+  const hexes = slots.map((s) =>
+    s.color.a !== undefined && s.color.a < 100
+      ? toHexAlpha(s.color.hex, s.color.a)
+      : s.color.hex,
+  );
   const [copied, setCopied] = useState(false);
 
   const tokens = useMemo(
@@ -52,8 +59,18 @@ export function ExportModal() {
     switch (exportTab) {
       case "hex":
         return hexes.join("\n");
-      case "css":
-        return `:root {\n${hexes.map((h, i) => `  --color-${i + 1}: ${h};`).join("\n")}\n}`;
+      case "css": {
+        const cssVars = slots
+          .map((s, i) => {
+            const val =
+              s.color.a !== undefined && s.color.a < 100
+                ? toCssRgb(s.color.rgb, s.color.a)
+                : s.color.hex;
+            return `  --color-${i + 1}: ${val};`;
+          })
+          .join("\n");
+        return `:root {\n${cssVars}\n}`;
+      }
       case "array":
         return `const palette = [\n${hexes.map((h) => `  '${h}'`).join(",\n")}\n];`;
       case "scss":
@@ -90,7 +107,7 @@ export function ExportModal() {
           </Button>
         }
       />
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="sm:max-w-sm text-primary-foreground bg-background">
         <DialogHeader>
           <DialogTitle>Export</DialogTitle>
         </DialogHeader>
@@ -114,18 +131,18 @@ export function ExportModal() {
           ))}
         </div>
         {exportTab === "figma" && (
-          <p style={{ fontSize: 11, color: "var(--ch-t3)", marginBottom: 8 }}>
+          <p>
             Style Dictionary / Figma Tokens JSON — includes palette, semantic
             tokens, and utility colors.
           </p>
         )}
         {exportTab === "tailwind" && (
-          <p style={{ fontSize: 11, color: "var(--ch-t3)", marginBottom: 8 }}>
+          <p>
             Tailwind config snippet — pair with CSS Variables output for full
             light/dark support.
           </p>
         )}
-        <pre className="ch-expre">{content}</pre>
+        <pre className="">{content}</pre>
         <div
           style={{
             display: "flex",

@@ -27,9 +27,10 @@ function sanitizeSlots(slots: unknown[]): PaletteSlot[] {
   return slots.flatMap((slot) => {
     if (!slot || typeof slot !== "object") return [];
     const s = slot as Record<string, unknown>;
-    const hex = (s.color as Record<string, unknown>)?.hex;
-    if (typeof hex !== "string" || !/^#[0-9a-fA-F]{6}$/.test(hex)) return [];
-    // Check if rgb values look like 0-1 floats (all < 2) or are missing/NaN
+    const rawHex = (s.color as Record<string, unknown>)?.hex;
+    // Accept 6-char or 8-char hex (legacy alpha storage)
+    if (typeof rawHex !== "string" || !/^#[0-9a-fA-F]{6,8}$/.test(rawHex))
+      return [];
     const rgb = (s.color as Record<string, unknown>)?.rgb as
       | Record<string, unknown>
       | undefined;
@@ -38,9 +39,14 @@ function sanitizeSlots(slots: unknown[]): PaletteSlot[] {
       typeof rgb.r !== "number" ||
       isNaN(rgb.r as number) ||
       ((rgb.r as number) < 2 && (rgb.g as number) < 2 && (rgb.b as number) < 2);
+    // Preserve stored alpha — either from the color.a field or from 8-char hex
+    const storedA = (s.color as Record<string, unknown>)?.a;
+    const alpha = typeof storedA === "number" ? storedA : undefined;
     const color = needsRegen
-      ? hexToStop(hex)
+      ? hexToStop(rawHex, alpha)
       : (s.color as ReturnType<typeof hexToStop>);
+    // Re-attach alpha if it came from the stored field but got dropped in regen
+    if (alpha !== undefined && color.a === undefined) color.a = alpha;
     return [{ color, locked: !!(s as Record<string, unknown>).locked }];
   });
 }
@@ -48,8 +54,6 @@ function sanitizeSlots(slots: unknown[]): PaletteSlot[] {
 // ─── Initial state builder ────────────────────────────────────────────────────
 
 function makeInitialState(): ChromaState {
-  const fromUrl = decodeUrl();
-
   const defaultGradient = {
     type: "linear" as const,
     dir: "to right",
@@ -60,47 +64,43 @@ function makeInitialState(): ChromaState {
     selectedStop: 0,
   };
 
-  const base: Omit<ChromaState, "slots" | "utilityColors" | "mode" | "count"> =
-    {
-      seeds: [],
-      history: [],
-      recentColors: [],
-      gradient: defaultGradient,
-      pickerHsl: { h: 210, s: 80, l: 55 },
-      pickerAlpha: 100,
-      scaleHex: "#6366f1",
-      scaleName: "primary",
-      scaleTokenTab: "css",
-      convInput: "#e07a5f",
-      exportTab: "hex",
-      modal: null,
-      saveName: "",
-      extractedColors: [],
-      imgSrc: null,
-    };
-
-  if (fromUrl) {
-    const slots: PaletteSlot[] = fromUrl.hexes.map((hex) => ({
-      color: hexToStop(hex),
-      locked: false,
-    }));
-    return {
-      ...base,
-      mode: fromUrl.mode,
-      count: fromUrl.hexes.length,
-      slots,
-      utilityColors: generateUtilityColors(slots),
-    };
-  }
-
+  // Deterministic placeholder palette used during SSR.
+  // Math.random() must never run on the server — it would differ from the
+  // client's first render and cause a React hydration mismatch.
+  // rehydrate() (called in ChromaShell's useEffect) will immediately replace
+  // this with the real persisted palette after mount.
+  const SSR_SEEDS = [
+    "#6366f1",
+    "#ec4899",
+    "#f59e0b",
+    "#10b981",
+    "#3b82f6",
+    "#8b5cf6",
+  ];
   const mode: HarmonyMode = "analogous";
   const count = 6;
-  const slots = genPalette(mode, count, null).map((color) => ({
-    color,
+  const slots: PaletteSlot[] = SSR_SEEDS.map((hex) => ({
+    color: hexToStop(hex),
     locked: false,
   }));
+
   return {
-    ...base,
+    seeds: [],
+    history: [],
+    recentColors: [],
+    gradient: defaultGradient,
+    pickerHex: "#3b82f6",
+    pickerAlpha: 100,
+    pickerMode: "hsl" as const,
+    scaleHex: "#6366f1",
+    scaleName: "primary",
+    scaleTokenTab: "css",
+    convInput: "#e07a5f",
+    exportTab: "hex",
+    modal: null,
+    saveName: "",
+    extractedColors: [],
+    imgSrc: null,
     mode,
     count,
     slots,
@@ -197,13 +197,17 @@ export const useChromaStore = create<ChromaStore>()(
 
       // ── Picker ──────────────────────────────────────────────────────────────
 
-      setPickerHsl: (hsl) =>
+      setPickerHex: (hex) =>
         set((s) => {
-          s.pickerHsl = hsl;
+          s.pickerHex = hex;
         }),
       setPickerAlpha: (alpha) =>
         set((s) => {
           s.pickerAlpha = alpha;
+        }),
+      setPickerMode: (mode) =>
+        set((s) => {
+          s.pickerMode = mode;
         }),
       addRecent: (hex) =>
         set((s) => {
@@ -302,8 +306,9 @@ export const useChromaStore = create<ChromaStore>()(
         slots: state.slots,
         recentColors: state.recentColors,
         gradient: state.gradient,
-        pickerHsl: state.pickerHsl,
+        pickerHex: state.pickerHex,
         pickerAlpha: state.pickerAlpha,
+        pickerMode: state.pickerMode,
         scaleHex: state.scaleHex,
         scaleName: state.scaleName,
         scaleTokenTab: state.scaleTokenTab,
@@ -333,6 +338,12 @@ export const useChromaStore = create<ChromaStore>()(
       },
 
       version: 1,
+
+      // Prevent auto-hydration from localStorage on the server (SSR).
+      // Chroma.tsx calls useChromaStore.persist.rehydrate() in a useEffect
+      // so the server and first client render are always identical (default
+      // state), and localStorage is only applied after mount.
+      skipHydration: true,
     },
   ),
 );

@@ -1,5 +1,10 @@
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
-import { applySimMatrix, rgbToHex, textColor } from "@/lib/utils/colorMath";
+import { useChromaStore } from "@/hooks/useChromaStore";
+import {
+  applySimMatrix,
+  hexToRgb,
+  rgbToHex,
+  textColor,
+} from "@/lib/utils/colorMath";
 import { CB_TYPES } from "@/lib/constants/chroma";
 
 export default function ColorBlindView() {
@@ -36,9 +41,12 @@ export default function ColorBlindView() {
                   ...slot,
                   color: {
                     ...slot.color,
-                    rgb: applySimMatrix(slot.color.rgb, cbType.matrix),
+                    rgb: applySimMatrix(
+                      hexToRgb(slot.color.hex),
+                      cbType.matrix,
+                    ),
                     hex: rgbToHex(
-                      applySimMatrix(slot.color.rgb, cbType.matrix),
+                      applySimMatrix(hexToRgb(slot.color.hex), cbType.matrix),
                     ),
                   },
                 }));
@@ -51,7 +59,7 @@ export default function ColorBlindView() {
               </div>
               <div className="ch-sim-strip">
                 {simSlots.map((slot, i) => {
-                  const tc = textColor(slot.color.rgb);
+                  const tc = textColor(hexToRgb(slot.color.hex));
                   return (
                     <div
                       key={i}

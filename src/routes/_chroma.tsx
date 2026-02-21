@@ -5,7 +5,7 @@ import {
   SaveModal,
   ShareModal,
   ShortcutsModal,
-} from "@/components/Modals";
+} from "@/components/modals";
 import { useChromaStore } from "@/stores/chroma-store/chroma.store";
 import "@/styles/chroma.css";
 

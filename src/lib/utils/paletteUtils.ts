@@ -1,4 +1,3 @@
-import { useLocation } from "@tanstack/react-router";
 import type {
   HarmonyMode,
   ColorStop,
@@ -14,6 +13,8 @@ import {
   oklchToRgb,
   clamp,
   colorDist,
+  parseHexAlpha,
+  opaqueHex,
 } from "./colorMath";
 import { NAMED } from "@/lib/constants/chroma";
 
@@ -318,19 +319,25 @@ export function genPalette(
 // ─── Slot Helpers ────────────────────────────────────────────────────────────
 
 export function cloneSlot(slot: PaletteSlot): PaletteSlot {
-  return {
-    locked: slot.locked,
-    color: {
-      hex: slot.color.hex,
-      rgb: { ...slot.color.rgb },
-      hsl: { ...slot.color.hsl },
-    },
+  const color: ColorStop = {
+    hex: slot.color.hex,
+    rgb: { ...slot.color.rgb },
+    hsl: { ...slot.color.hsl },
   };
+  if (slot.color.a !== undefined) color.a = slot.color.a;
+  return { locked: slot.locked, color };
 }
 
-export function hexToStop(hex: string): ColorStop {
-  const rgb = hexToRgb(hex);
-  return { hex, rgb, hsl: rgbToHsl(rgb) };
+export function hexToStop(hex: string, alpha?: number): ColorStop {
+  // Handle 8-char hex (#RRGGBBAA) — extract alpha, normalise hex to 6-char
+  const rawAlpha = parseHexAlpha(hex);
+  const safeHex = opaqueHex(hex);
+  const rgb = hexToRgb(safeHex);
+  const resolvedAlpha = rawAlpha !== null ? rawAlpha : alpha;
+  const stop: ColorStop = { hex: safeHex, rgb, hsl: rgbToHsl(rgb) };
+  if (resolvedAlpha !== undefined && resolvedAlpha < 100)
+    stop.a = resolvedAlpha;
+  return stop;
 }
 
 // ─── Image Extraction — median-cut quantization ───────────────────────────────
@@ -477,13 +484,17 @@ export function loadPrefs(): { mode: HarmonyMode; count: number } | null {
 
 // ─── URL encode/decode ────────────────────────────────────────────────────────
 
+/** Safe check — returns false during SSR where window/location don't exist */
+const isBrowser = typeof window !== "undefined";
+
 export function encodeUrl(hexes: string[], mode: HarmonyMode): string {
-  const location = useLocation();
-  const base = `${location.href}`;
+  if (!isBrowser) return "";
+  const base = `${location.origin}${location.pathname}`;
   return `${base}#p=${hexes.map((h) => h.replace("#", "")).join("-")}&m=${mode}`;
 }
 
 export function decodeUrl(): { hexes: string[]; mode: HarmonyMode } | null {
+  if (!isBrowser) return null; // SSR — no location, no hash
   try {
     const p = new URLSearchParams(location.hash.slice(1));
     const hexes = (p.get("p") || "")

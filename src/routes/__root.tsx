@@ -16,6 +16,7 @@ import { DefaultCatchBoundary } from "@/components/default-catch-boundary";
 import { NotFound } from "@/components/not-found";
 import appCss from "@/styles/globals.css?url";
 import { seo } from "@/lib/utils/seo";
+import { ThemeProvider } from "@/providers/theme.provider";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -90,7 +91,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body style={{ margin: 0, padding: 0, overflow: "hidden" }}>
-        {children}
+        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+          {children}
+        </ThemeProvider>
         <TanStackDevtools
           config={{
             position: "bottom-right",

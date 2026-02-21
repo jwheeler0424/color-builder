@@ -35,9 +35,10 @@ export interface OKLCH {
 // ─── Palette ──────────────────────────────────────────────────────────────────
 
 export interface ColorStop {
-  hex: string;
+  hex: string; // Always 6-char opaque hex (#RRGGBB) — alpha is separate
   rgb: RGB;
   hsl: HSL;
+  a?: number; // Alpha 0–100 (optional; omitted or 100 = fully opaque)
 }
 
 export interface PaletteSlot {
@@ -192,8 +193,9 @@ export interface ChromaState {
   history: PaletteSlot[][];
   recentColors: string[];
   gradient: GradientState;
-  pickerHsl: HSL;
-  pickerAlpha: number;
+  pickerHex: string; // Canonical picker color — all modes derive from this
+  pickerAlpha: number; // 0–100, universal across all modes
+  pickerMode: "rgb" | "hsl" | "hsv" | "oklch";
   scaleHex: string;
   scaleName: string;
   scaleTokenTab: TokenFormat;
@@ -221,8 +223,9 @@ export interface ChromaActions {
   addSlot: (color: ColorStop) => void;
   removeSlot: (index: number) => void;
   loadPalette: (slots: PaletteSlot[], mode: HarmonyMode, count: number) => void;
-  setPickerHsl: (hsl: HSL) => void;
+  setPickerHex: (hex: string) => void;
   setPickerAlpha: (alpha: number) => void;
+  setPickerMode: (mode: ChromaState["pickerMode"]) => void;
   addRecent: (hex: string) => void;
   setGradient: (partial: Partial<GradientState>) => void;
   setScaleHex: (hex: string) => void;

@@ -1,6 +1,6 @@
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import { useChromaStore } from "@/hooks/useChromaStore";
 import { useMemo } from "react";
-import { scorePalette } from "@/lib/utils/colorMath";
+import { scorePalette, hexToRgb } from "@/lib/utils/colorMath";
 import { nearestName } from "@/lib/utils/paletteUtils";
 
 // Pure SVG radar chart
@@ -141,20 +141,20 @@ export default function PaletteScoring() {
       value: accessibility,
       note:
         accessibility >= 75
-          ? "Most color pairs pass WCAG AA — great for UI use."
+          ? "Most colors can display readable text on white or black — great for UI use."
           : accessibility >= 40
-            ? "Some pairs pass, but contrast could be improved."
-            : "Few pairs meet WCAG AA. Increase lightness range between colors.",
+            ? "Some colors support AA text. Consider adding lighter or darker tones."
+            : "Few colors pass AA text contrast. Add a very light or very dark color to the palette.",
     },
     {
-      label: "Saturation Harmony",
+      label: "Chroma Harmony",
       value: harmony,
       note:
         harmony >= 75
-          ? "Saturations are consistent — palette feels cohesive."
+          ? "Chroma is consistent — palette feels cohesive and balanced."
           : harmony >= 50
-            ? "Some saturation variation. Can work for an expressive palette."
-            : "High saturation variance. Mix saturated and muted tones intentionally.",
+            ? "Moderate chroma variation. Can work well for expressive palettes."
+            : "High chroma variance. Mix vivid and muted tones more intentionally.",
     },
     {
       label: "Uniqueness",
@@ -293,7 +293,7 @@ export default function PaletteScoring() {
                     fontFamily: "var(--ch-fm)",
                   }}
                 >
-                  {nearestName(slot.color.rgb).split(" ")[0]}
+                  {nearestName(hexToRgb(slot.color.hex)).split(" ")[0]}
                 </span>
               </div>
             ))}
