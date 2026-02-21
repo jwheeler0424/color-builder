@@ -33,7 +33,7 @@ export function RouterSheet({
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetTrigger render={() => trigger as any} />
+      <SheetTrigger render={trigger as React.ReactElement} />
       <SheetContent>
         <SheetHeader>
           <SheetTitle>{title}</SheetTitle>
