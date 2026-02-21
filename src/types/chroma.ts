@@ -195,7 +195,7 @@ export interface ChromaState {
   gradient: GradientState;
   pickerHex: string; // Canonical picker color — all modes derive from this
   pickerAlpha: number; // 0–100, universal across all modes
-  pickerMode: "rgb" | "hsl" | "hsv" | "oklch";
+  pickerMode: "rgb" | "hsl" | "hsv" | "oklch" | "oklab";
   scaleHex: string;
   scaleName: string;
   scaleTokenTab: TokenFormat;

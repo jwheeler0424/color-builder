@@ -2,17 +2,21 @@ import { useState } from "react";
 import {
   contrastRatio,
   wcagLevel,
+  apcaContrast,
+  apcaLevel,
   parseHex,
   hexToRgb,
   rgbToHex,
+  suggestContrastFix,
 } from "@/lib/utils/colorMath";
 import { nearestName } from "@/lib/utils/paletteUtils";
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import { useChromaStore } from "@/hooks/useChromaStore";
 
 export default function ContrastChecker() {
   const { slots } = useChromaStore();
   const [fg, setFg] = useState("#ffffff");
   const [bg, setBg] = useState("#1a1a2e");
+  const [useApca, setUseApca] = useState(false);
 
   const fgRgb = parseHex(fg)
     ? hexToRgb(parseHex(fg)!)
@@ -67,21 +71,86 @@ export default function ContrastChecker() {
           </div>
         </div>
 
+        {/* APCA / WCAG toggle */}
+        <div
+          style={{
+            display: "flex",
+            gap: 4,
+            justifyContent: "flex-end",
+            marginBottom: 8,
+          }}
+        >
+          <span
+            style={{ fontSize: 10, color: "var(--ch-t3)", alignSelf: "center" }}
+          >
+            Mode:
+          </span>
+          {([false, true] as const).map((apca) => (
+            <button
+              key={String(apca)}
+              className={`ch-btn ch-btn-sm ${useApca === apca ? "ch-btn-primary" : "ch-btn-ghost"}`}
+              onClick={() => setUseApca(apca)}
+            >
+              {apca ? "APCA" : "WCAG 2.1"}
+            </button>
+          ))}
+        </div>
+
         {/* Ratio display */}
         <div className="ch-contrast-ratio-row">
-          <div className="ch-contrast-ratio-num">{ratio.toFixed(2)}:1</div>
-          <span
-            style={{
-              padding: "4px 12px",
-              borderRadius: 3,
-              fontWeight: 700,
-              fontSize: 14,
-              background: BADGE_BG[level],
-              color: BADGE_COLOR[level],
-            }}
-          >
-            {level}
-          </span>
+          {!useApca && (
+            <>
+              <div className="ch-contrast-ratio-num">{ratio.toFixed(2)}:1</div>
+              <span
+                style={{
+                  padding: "4px 12px",
+                  borderRadius: 3,
+                  fontWeight: 700,
+                  fontSize: 14,
+                  background: BADGE_BG[level],
+                  color: BADGE_COLOR[level],
+                }}
+              >
+                {level}
+              </span>
+            </>
+          )}
+          {useApca &&
+            (() => {
+              const lc = Math.abs(apcaContrast(fgRgb, bgRgb));
+              const al = apcaLevel(lc);
+              const aC: Record<string, string> = {
+                Preferred: "#00e676",
+                Body: "#69f0ae",
+                Large: "#fff176",
+                UI: "#ce93d8",
+                Fail: "#ff4455",
+              };
+              const aBg: Record<string, string> = {
+                Preferred: "rgba(0,230,118,.18)",
+                Body: "rgba(105,240,174,.15)",
+                Large: "rgba(255,241,118,.12)",
+                UI: "rgba(206,147,216,.12)",
+                Fail: "rgba(255,68,85,.15)",
+              };
+              return (
+                <>
+                  <div className="ch-contrast-ratio-num">Lc{lc.toFixed(0)}</div>
+                  <span
+                    style={{
+                      padding: "4px 12px",
+                      borderRadius: 3,
+                      fontWeight: 700,
+                      fontSize: 14,
+                      background: aBg[al],
+                      color: aC[al],
+                    }}
+                  >
+                    {al}
+                  </span>
+                </>
+              );
+            })()}
         </div>
 
         {/* Criteria */}
@@ -106,6 +175,50 @@ export default function ContrastChecker() {
             </div>
           ))}
         </div>
+
+        {/* Fix suggestion */}
+        {!useApca &&
+          level === "Fail" &&
+          (() => {
+            const fix = suggestContrastFix(fg, bgRgb);
+            return fix ? (
+              <div
+                style={{
+                  fontSize: 10.5,
+                  color: "var(--ch-t3)",
+                  marginBottom: 8,
+                  padding: "6px 10px",
+                  background: "var(--ch-s1)",
+                  borderRadius: 5,
+                  border: "1px solid var(--ch-s2)",
+                  lineHeight: 1.6,
+                }}
+              >
+                💡 To reach AA: {fix.direction} foreground to{" "}
+                <span
+                  style={{
+                    fontFamily: "var(--ch-fm)",
+                    fontWeight: 700,
+                    color: fix.hex,
+                  }}
+                >
+                  {fix.hex}
+                </span>
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 12,
+                    height: 12,
+                    borderRadius: 2,
+                    background: fix.hex,
+                    marginLeft: 5,
+                    verticalAlign: "middle",
+                    border: "1px solid rgba(128,128,128,.3)",
+                  }}
+                />
+              </div>
+            ) : null;
+          })()}
 
         {/* Color pickers */}
         <div className="ch-contrast-pickers">

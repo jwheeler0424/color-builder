@@ -131,18 +131,18 @@ export function ExportModal() {
           ))}
         </div>
         {exportTab === "figma" && (
-          <p>
+          <p style={{ fontSize: 11, color: "var(--ch-t3)", marginBottom: 8 }}>
             Style Dictionary / Figma Tokens JSON — includes palette, semantic
             tokens, and utility colors.
           </p>
         )}
         {exportTab === "tailwind" && (
-          <p>
+          <p style={{ fontSize: 11, color: "var(--ch-t3)", marginBottom: 8 }}>
             Tailwind config snippet — pair with CSS Variables output for full
             light/dark support.
           </p>
         )}
-        <pre className="">{content}</pre>
+        <pre className="ch-expre">{content}</pre>
         <div
           style={{
             display: "flex",

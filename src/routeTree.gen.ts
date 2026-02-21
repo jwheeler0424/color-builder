@@ -24,6 +24,7 @@ import { Route as ChromaPaletteRouteImport } from './routes/_chroma/palette'
 import { Route as ChromaMixerRouteImport } from './routes/_chroma/mixer'
 import { Route as ChromaGradientRouteImport } from './routes/_chroma/gradient'
 import { Route as ChromaExtractRouteImport } from './routes/_chroma/extract'
+import { Route as ChromaDesignsystemRouteImport } from './routes/_chroma/designsystem'
 import { Route as ChromaConverterRouteImport } from './routes/_chroma/converter'
 import { Route as ChromaContrastRouteImport } from './routes/_chroma/contrast'
 import { Route as ChromaColorblindRouteImport } from './routes/_chroma/colorblind'
@@ -104,6 +105,11 @@ const ChromaExtractRoute = ChromaExtractRouteImport.update({
   path: '/extract',
   getParentRoute: () => ChromaRoute,
 } as any)
+const ChromaDesignsystemRoute = ChromaDesignsystemRouteImport.update({
+  id: '/designsystem',
+  path: '/designsystem',
+  getParentRoute: () => ChromaRoute,
+} as any)
 const ChromaConverterRoute = ChromaConverterRouteImport.update({
   id: '/converter',
   path: '/converter',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/colorblind': typeof ChromaColorblindRoute
   '/contrast': typeof ChromaContrastRoute
   '/converter': typeof ChromaConverterRoute
+  '/designsystem': typeof ChromaDesignsystemRoute
   '/extract': typeof ChromaExtractRoute
   '/gradient': typeof ChromaGradientRoute
   '/mixer': typeof ChromaMixerRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/colorblind': typeof ChromaColorblindRoute
   '/contrast': typeof ChromaContrastRoute
   '/converter': typeof ChromaConverterRoute
+  '/designsystem': typeof ChromaDesignsystemRoute
   '/extract': typeof ChromaExtractRoute
   '/gradient': typeof ChromaGradientRoute
   '/mixer': typeof ChromaMixerRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/_chroma/colorblind': typeof ChromaColorblindRoute
   '/_chroma/contrast': typeof ChromaContrastRoute
   '/_chroma/converter': typeof ChromaConverterRoute
+  '/_chroma/designsystem': typeof ChromaDesignsystemRoute
   '/_chroma/extract': typeof ChromaExtractRoute
   '/_chroma/gradient': typeof ChromaGradientRoute
   '/_chroma/mixer': typeof ChromaMixerRoute
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
     | '/colorblind'
     | '/contrast'
     | '/converter'
+    | '/designsystem'
     | '/extract'
     | '/gradient'
     | '/mixer'
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
     | '/colorblind'
     | '/contrast'
     | '/converter'
+    | '/designsystem'
     | '/extract'
     | '/gradient'
     | '/mixer'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/_chroma/colorblind'
     | '/_chroma/contrast'
     | '/_chroma/converter'
+    | '/_chroma/designsystem'
     | '/_chroma/extract'
     | '/_chroma/gradient'
     | '/_chroma/mixer'
@@ -376,6 +388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChromaExtractRouteImport
       parentRoute: typeof ChromaRoute
     }
+    '/_chroma/designsystem': {
+      id: '/_chroma/designsystem'
+      path: '/designsystem'
+      fullPath: '/designsystem'
+      preLoaderRoute: typeof ChromaDesignsystemRouteImport
+      parentRoute: typeof ChromaRoute
+    }
     '/_chroma/converter': {
       id: '/_chroma/converter'
       path: '/converter'
@@ -419,6 +438,7 @@ interface ChromaRouteChildren {
   ChromaColorblindRoute: typeof ChromaColorblindRoute
   ChromaContrastRoute: typeof ChromaContrastRoute
   ChromaConverterRoute: typeof ChromaConverterRoute
+  ChromaDesignsystemRoute: typeof ChromaDesignsystemRoute
   ChromaExtractRoute: typeof ChromaExtractRoute
   ChromaGradientRoute: typeof ChromaGradientRoute
   ChromaMixerRoute: typeof ChromaMixerRoute
@@ -437,6 +457,7 @@ const ChromaRouteChildren: ChromaRouteChildren = {
   ChromaColorblindRoute: ChromaColorblindRoute,
   ChromaContrastRoute: ChromaContrastRoute,
   ChromaConverterRoute: ChromaConverterRoute,
+  ChromaDesignsystemRoute: ChromaDesignsystemRoute,
   ChromaExtractRoute: ChromaExtractRoute,
   ChromaGradientRoute: ChromaGradientRoute,
   ChromaMixerRoute: ChromaMixerRoute,

@@ -19,10 +19,10 @@ export const clamp = (v: number, lo: number, hi: number): number =>
 
 // ─── sRGB linearization (single source of truth) ─────────────────────────────
 
-export function toLinear(v: number): number {
+function toLinear(v: number): number {
   return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
 }
-export function fromLinear(v: number): number {
+function fromLinear(v: number): number {
   return v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
 }
 
@@ -156,7 +156,7 @@ export function oklabToLch({ L, a, b }: OKLab): OKLCH {
 
 // ─── OKLab → linear RGB → sRGB (shared kernel) ────────────────────────────────
 
-function oklabToRgb({ L, a, b }: OKLab): RGB {
+export function oklabToRgb({ L, a, b }: OKLab): RGB {
   const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
   const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
   const s_ = L - 0.0894841775 * a - 1.291485548 * b;
@@ -321,6 +321,116 @@ export function textColor(bg: RGB): string {
     : "#000000";
 }
 
+// ─── APCA Contrast (WCAG 3 / Accessible Perceptual Contrast Algorithm) ────────
+// Reference implementation: https://github.com/Myndex/apca-w3
+// Lc value scale: ≥60 = body text, ≥45 = large text, ≥30 = non-text UI
+// Positive = dark text on light bg; negative = light text on dark bg.
+
+function apcaSRGB(c: number): number {
+  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+
+/** APCA perceptual luminance (Ys) — uses APCA-specific exponent 2.4 */
+function apcaLuminance({ r, g, b }: RGB): number {
+  return (
+    0.2126729 * apcaSRGB(r / 255) +
+    0.7151522 * apcaSRGB(g / 255) +
+    0.072175 * apcaSRGB(b / 255)
+  );
+}
+
+/**
+ * APCA Lc value — the Accessible Perceptual Contrast Algorithm.
+ * Returns a signed value: positive = dark text on light bg, negative = light on dark.
+ * Use Math.abs(apcaContrast(fg, bg)) for the magnitude.
+ *
+ * Interpretation (magnitude):
+ *   ≥ 75 → Preferred body text (7pt–11pt)
+ *   ≥ 60 → Minimum body text, preferred for non-critical content
+ *   ≥ 45 → Large text (18pt+), UI components, input borders
+ *   ≥ 30 → Non-text elements, icons, decorative
+ *   < 30 → Insufficient for any meaningful visual distinction
+ */
+export function apcaContrast(fg: RGB, bg: RGB): number {
+  const Yfg = apcaLuminance(fg);
+  const Ybg = apcaLuminance(bg);
+  const Ntxt = 0.57,
+    Nbg = 0.56,
+    Rtxt = 0.62,
+    Rbg = 0.65;
+  const scale = 1.14,
+    offset = 0.027;
+
+  let Sapc = 0;
+  if (Ybg > Yfg) {
+    // Dark text on light bg (positive Lc)
+    const Spl = Math.pow(Ybg, Nbg) - Math.pow(Yfg, Ntxt);
+    Sapc = Spl < 0.1 ? 0 : Spl * scale - offset;
+  } else {
+    // Light text on dark bg (negative Lc)
+    const Spl = Math.pow(Ybg, Rbg) - Math.pow(Yfg, Rtxt);
+    Sapc = Spl > -0.1 ? 0 : Spl * scale + offset;
+  }
+  return Math.round(Sapc * 100);
+}
+
+export type ApcaLevel = "Preferred" | "Body" | "Large" | "UI" | "Fail";
+
+export function apcaLevel(lc: number): ApcaLevel {
+  const mag = Math.abs(lc);
+  if (mag >= 75) return "Preferred";
+  if (mag >= 60) return "Body";
+  if (mag >= 45) return "Large";
+  if (mag >= 30) return "UI";
+  return "Fail";
+}
+
+// ─── Contrast Fix Suggestions ─────────────────────────────────────────────────
+
+/**
+ * Find the minimum OKLCH lightness adjustment to reach a target WCAG contrast.
+ * Returns the adjusted hex, or null if already passing.
+ * Direction: 'lighten' pushes toward white, 'darken' pushes toward black.
+ */
+export function suggestContrastFix(
+  hex: string,
+  bg: RGB,
+  targetRatio = 4.5,
+): { hex: string; direction: "lighten" | "darken" } | null {
+  const rgb = hexToRgb(hex);
+  if (contrastRatio(rgb, bg) >= targetRatio) return null;
+
+  const lch = rgbToOklch(rgb);
+  const bgLum = luminance(bg);
+  const direction: "lighten" | "darken" = bgLum > 0.5 ? "darken" : "lighten";
+
+  // Binary search: find L that achieves target ratio
+  let lo = direction === "lighten" ? lch.L : 0;
+  let hi = direction === "lighten" ? 1 : lch.L;
+  let best = hex;
+
+  for (let i = 0; i < 32; i++) {
+    const mid = (lo + hi) / 2;
+    const candidate = oklchToRgb({
+      L: mid,
+      C: lch.C * (1 - Math.abs(mid - lch.L) * 0.3),
+      H: lch.H,
+    });
+    const ratio = contrastRatio(candidate, bg);
+    if (ratio >= targetRatio) {
+      best = rgbToHex(candidate);
+      if (direction === "lighten") hi = mid;
+      else lo = mid;
+    } else {
+      if (direction === "lighten") lo = mid;
+      else hi = mid;
+    }
+    if (hi - lo < 0.001) break;
+  }
+
+  return best === hex ? null : { hex: best, direction };
+}
+
 // ─── Perceptual Distance ──────────────────────────────────────────────────────
 
 export function colorDist(a: RGB, b: RGB): number {
@@ -373,7 +483,7 @@ export function opaqueHex(hex: string): string {
   );
 }
 
-export function parseRgbStr(s: string): RGB | null {
+function parseRgbStr(s: string): RGB | null {
   const m = s.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);
   if (!m) return null;
   return {
@@ -383,7 +493,7 @@ export function parseRgbStr(s: string): RGB | null {
   };
 }
 
-export function parseHslStr(s: string): RGB | null {
+function parseHslStr(s: string): RGB | null {
   const m = s.match(/hsla?\(\s*([\d.]+)[,\s]\s*([\d.]+)%?[,\s]\s*([\d.]+)%?/);
   if (!m) return null;
   return hslToRgb({
@@ -481,9 +591,7 @@ export function applySimMatrix(rgb: RGB, M: number[]): RGB {
 
 // ─── Scale Generation ─────────────────────────────────────────────────────────
 
-export const SCALE_STEPS = [
-  50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950,
-];
+const SCALE_STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
 /**
  * Generate a perceptually uniform tint/shade scale in OKLCH space.
@@ -1291,9 +1399,9 @@ export function deriveThemeTokens(
   return {
     semantic,
     utility: utilityTokens,
-    palette: slots.map((sl, i) => ({
-      name: `palette-${i + 1}`,
-      hex: sl.color.hex,
+    palette: semanticSlotNames(slots).map((name, i) => ({
+      name,
+      hex: slots[i].color.hex,
     })),
   };
 }
@@ -1465,6 +1573,178 @@ export function buildTailwindConfig(
     `      },`,
     `    },`,
     `  },`,
+    `}`,
+  ].join("\n");
+}
+
+// ─── Semantic slot naming ─────────────────────────────────────────────────────
+
+/**
+ * Assign semantic names to palette slots based on their OKLCH properties.
+ * Highest chroma → "primary", second highest → "secondary", rest get nearest color name.
+ */
+export function semanticSlotNames(
+  slots: { color: { hex: string } }[],
+): string[] {
+  if (!slots.length) return [];
+  const oklchs = slots.map((s) => rgbToOklch(hexToRgb(s.color.hex)));
+  const indexed = oklchs
+    .map((c, i) => ({ i, C: c.C }))
+    .sort((a, b) => b.C - a.C);
+
+  const names = new Array(slots.length).fill("");
+  const used = new Set<string>();
+
+  const assign = (i: number, name: string) => {
+    // Ensure uniqueness by appending -2, -3 etc.
+    let n = name;
+    let counter = 2;
+    while (used.has(n)) n = `${name}-${counter++}`;
+    names[i] = n;
+    used.add(n);
+  };
+
+  indexed.forEach((s, rank) => {
+    if (rank === 0) assign(s.i, "primary");
+    else if (rank === 1) assign(s.i, "secondary");
+    else {
+      // Use nearest color name, slugified
+      const rgb = hexToRgb(slots[s.i].color.hex);
+      // Inline simple name lookup from the LAB nearest approach
+      const name = slugify(approxColorName(rgb));
+      assign(s.i, name);
+    }
+  });
+  return names;
+}
+
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+/** Very lightweight color name approximation for semantic slug generation.
+ *  Not as accurate as the full NAMED lookup — that lives in paletteUtils —
+ *  but colorMath can't import paletteUtils (circular). Uses basic hue buckets. */
+function approxColorName(rgb: RGB): string {
+  const lch = rgbToOklch(rgb);
+  const h = lch.H,
+    C = lch.C,
+    L = lch.L;
+  if (C < 0.04) return L > 0.75 ? "light-gray" : L < 0.3 ? "dark-gray" : "gray";
+  if (h < 30 || h >= 340) return "red";
+  if (h < 60) return "orange";
+  if (h < 110) return "yellow";
+  if (h < 160) return "green";
+  if (h < 220) return "teal";
+  if (h < 270) return "blue";
+  if (h < 310) return "purple";
+  return "pink";
+}
+
+// ─── Style Dictionary export ──────────────────────────────────────────────────
+
+export function buildStyleDictionary(
+  tokens: ThemeTokenSet,
+  utility: UtilityColorSet,
+): string {
+  const names = tokens.palette.map((p) => p.name); // already slugified
+
+  const obj: Record<string, unknown> = {
+    color: {
+      primitive: Object.fromEntries(
+        tokens.palette.map((p, i) => [
+          names[i],
+          {
+            $value: p.hex,
+            $type: "color",
+            $description: `Palette slot ${i + 1}`,
+          },
+        ]),
+      ),
+      semantic: {
+        light: Object.fromEntries(
+          tokens.semantic.map((t) => [
+            t.name.replace(/^--/, "").replace(/-/g, "_"),
+            { $value: t.light, $type: "color", $description: t.description },
+          ]),
+        ),
+        dark: Object.fromEntries(
+          tokens.semantic.map((t) => [
+            t.name.replace(/^--/, "").replace(/-/g, "_"),
+            { $value: t.dark, $type: "color", $description: t.description },
+          ]),
+        ),
+      },
+      utility: Object.fromEntries(
+        (Object.keys(utility) as UtilityRole[]).map((role) => [
+          role,
+          {
+            base: {
+              $value: tokens.utility[role].base,
+              $type: "color",
+              $description: utility[role].description,
+            },
+            light: { $value: tokens.utility[role].light, $type: "color" },
+            dark: { $value: tokens.utility[role].dark, $type: "color" },
+            subtle: { $value: tokens.utility[role].subtle, $type: "color" },
+            subtle_dark: {
+              $value: tokens.utility[role].subtleDark,
+              $type: "color",
+            },
+          },
+        ]),
+      ),
+    },
+  };
+  return JSON.stringify(obj, null, 2);
+}
+
+// ─── Tailwind v4 CSS-first export ─────────────────────────────────────────────
+
+export function buildTailwindV4(
+  tokens: ThemeTokenSet,
+  _utility: UtilityColorSet,
+): string {
+  const semVars = tokens.semantic
+    .map((t) => {
+      const key = t.name.replace(/^--/, "");
+      return `  --color-${key}: var(${t.name});`;
+    })
+    .join("\n");
+
+  const utilVars = Object.entries(tokens.utility)
+    .map(([role, v]) =>
+      [
+        `  --color-${role}: ${v.base};`,
+        `  --color-${role}-light: ${v.light};`,
+        `  --color-${role}-dark: ${v.dark};`,
+        `  --color-${role}-subtle: ${v.subtle};`,
+      ].join("\n"),
+    )
+    .join("\n");
+
+  const palVars = tokens.palette
+    .map((p) => `  --color-${p.name}: ${p.hex};`)
+    .join("\n");
+
+  return [
+    `/* Tailwind v4 — paste this into your main CSS file */`,
+    `/* Then add the CSS Variables block from the CSS tab to the same file */`,
+    ``,
+    `@import "tailwindcss";`,
+    ``,
+    `@theme {`,
+    `  /* Semantic colors (auto light/dark via CSS vars) */`,
+    semVars,
+    ``,
+    `  /* Utility / state colors */`,
+    utilVars,
+    ``,
+    `  /* Raw palette */`,
+    palVars,
     `}`,
   ].join("\n");
 }

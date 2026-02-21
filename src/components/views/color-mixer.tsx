@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import type { MixSpace } from "@/types";
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import { useChromaStore } from "@/hooks/useChromaStore";
 import {
   parseHex,
   hexToRgb,

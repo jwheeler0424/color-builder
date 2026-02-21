@@ -32,8 +32,8 @@ export const Route = createRootRouteWithContext<{
       },
       ...seo({
         title:
-          "Chroma v3 - A powerful color palette generator and editor built with TanStack Router",
-        description: `Chroma v3 is a type-safe, client-first, color palette generator and editor built with TanStack Router. `,
+          "Chroma ELITE - A powerful color palette generator and editor built with TanStack Router",
+        description: `Chroma ELITE is a type-safe, client-first, color palette generator and editor built with TanStack Router. `,
       }),
     ],
     links: [

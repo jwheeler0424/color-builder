@@ -1,25 +1,31 @@
-import { useMemo, useState } from "react";
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import React, { useMemo, useState } from "react";
+import { useChromaStore } from "@/hooks/useChromaStore";
 import {
   deriveThemeTokens,
   buildThemeCss,
   buildFigmaTokens,
   buildTailwindConfig,
+  buildStyleDictionary,
+  buildTailwindV4,
+  semanticSlotNames,
   textColor,
   contrastRatio,
   rgbToOklch,
+  hexToRgb,
 } from "@/lib/utils/colorMath";
 import { hexToStop } from "@/lib/utils/paletteUtils";
+import type { PaletteSlot } from "@/types";
 import { Button } from "../ui/button";
-import { PaletteSlot } from "@/types";
 
-type ThemeTab = "css" | "figma" | "tailwind";
+type ThemeTab = "css" | "figma" | "tailwind" | "tailwind4" | "styledictionary";
 type PreviewMode = "light" | "dark";
 
 const TAB_LABELS: Record<ThemeTab, string> = {
   css: "CSS Variables",
-  figma: "Figma Tokens",
-  tailwind: "Tailwind Config",
+  figma: "Figma / SD",
+  tailwind: "Tailwind v3",
+  tailwind4: "Tailwind v4",
+  styledictionary: "Style Dictionary",
 };
 
 // ─── Palette Source Strip ─────────────────────────────────────────────────────
@@ -65,8 +71,9 @@ function PaletteSourceStrip({
       >
         {slots.map((slot, i) => {
           const hex = slot.color.hex;
-          const lch = rgbToOklch(slot.color.rgb);
-          const tc = textColor(slot.color.rgb);
+          const slotRgb = hexToRgb(slot.color.hex);
+          const lch = rgbToOklch(slotRgb);
+          const tc = textColor(slotRgb);
 
           // Determine which role this slot contributes to
           const isPrimary = hex === primaryHex;
@@ -203,7 +210,8 @@ function WebsiteMockup({
   // Palette-derived colors for UI accents — use actual slot colors adjusted for mode
   // Sort slots by chroma descending to get most saturated first
   const sortedSlots = [...slots].sort(
-    (a, b) => rgbToOklch(b.color.rgb).C - rgbToOklch(a.color.rgb).C,
+    (a, b) =>
+      rgbToOklch(hexToRgb(b.color.hex)).C - rgbToOklch(hexToRgb(a.color.hex)).C,
   );
   // Pick up to 4 accent colors from the actual palette for variety in the mockup
   const accentColors = sortedSlots.slice(0, 4).map((s) => s.color.hex);
@@ -1131,6 +1139,7 @@ export default function ThemeGeneratorView() {
     () => deriveThemeTokens(slots, utilityColors),
     [slots, utilityColors],
   );
+  const slotNames = useMemo(() => semanticSlotNames(slots), [slots]);
 
   const content = useMemo((): string => {
     if (!slots.length) return "";
@@ -1141,6 +1150,10 @@ export default function ThemeGeneratorView() {
         return buildFigmaTokens(tokens, utilityColors);
       case "tailwind":
         return buildTailwindConfig(tokens, utilityColors);
+      case "tailwind4":
+        return buildTailwindV4(tokens, utilityColors);
+      case "styledictionary":
+        return buildStyleDictionary(tokens, utilityColors);
       default:
         return "";
     }

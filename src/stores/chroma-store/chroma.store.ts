@@ -295,7 +295,7 @@ export const useChromaStore = create<ChromaStore>()(
         }),
     })),
     {
-      name: "chroma-v3",
+      name: "chroma-v4",
       storage: createJSONStorage(() => localStorage),
 
       // Persist user data only — exclude ephemeral state
@@ -337,7 +337,7 @@ export const useChromaStore = create<ChromaStore>()(
         return { ...current, ...p, slots, utilityColors };
       },
 
-      version: 1,
+      version: 2,
 
       // Prevent auto-hydration from localStorage on the server (SSR).
       // Chroma.tsx calls useChromaStore.persist.rehydrate() in a useEffect

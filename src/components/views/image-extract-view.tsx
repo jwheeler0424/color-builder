@@ -1,8 +1,12 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState, useRef } from "react";
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
-import { rgbToHex, rgbToHsl } from "@/lib/utils/colorMath";
-import { nearestName, extractColors } from "@/lib/utils/paletteUtils";
+import { useChromaStore } from "@/hooks/useChromaStore";
+import { rgbToHex } from "@/lib/utils/colorMath";
+import {
+  nearestName,
+  extractColors,
+  hexToStop,
+} from "@/lib/utils/paletteUtils";
 import { Button } from "../ui/button";
 
 export default function ImageExtractView() {
@@ -32,17 +36,15 @@ export default function ImageExtractView() {
     const rgb = extractedColors[index];
     if (!rgb) return;
     const hex = rgbToHex(rgb);
-    setSeeds([{ hex, rgb, hsl: rgbToHsl(rgb) }]);
+    setSeeds([hexToStop(hex)]);
     generate();
     navigate({ to: "/palette" });
   };
 
   const useAll = () => {
-    const seeds = extractedColors.slice(0, 5).map((rgb) => ({
-      hex: rgbToHex(rgb),
-      rgb,
-      hsl: rgbToHsl(rgb),
-    }));
+    const seeds = extractedColors
+      .slice(0, 5)
+      .map((rgb) => hexToStop(rgbToHex(rgb)));
     setSeeds(seeds);
     generate();
     navigate({ to: "/palette" });

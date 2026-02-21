@@ -10,6 +10,7 @@ const NAV = [
   { to: "/picker", label: "Picker" },
   { to: "/utility", label: "Utility" },
   { to: "/theme", label: "Theme" },
+  { to: "/designsystem", label: "Design System" },
   { to: "/scale", label: "Tint Scale" },
   { to: "/gradient", label: "Gradients" },
   { to: "/mixer", label: "Mixer" },
@@ -48,7 +49,7 @@ export default function Header() {
   return (
     <header className="ch-hdr">
       <div className="ch-brand">
-        Chroma<sup>v3</sup>
+        Chroma<sup>ELITE</sup>
       </div>
       <nav className="ch-nav">
         {NAV.map(({ to, label }) => (

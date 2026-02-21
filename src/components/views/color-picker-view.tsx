@@ -11,6 +11,7 @@ import {
   rgbToOklch,
   oklchToRgb,
   oklabToLch,
+  oklabToRgb,
   luminance,
   parseHex,
   parseHexAlpha,
@@ -26,12 +27,12 @@ import {
 import { nearestName, hexToStop } from "@/lib/utils/paletteUtils";
 import { useChromaStore } from "@/hooks/useChromaStore";
 import { useNavigate } from "@tanstack/react-router";
-import ColorWheel from "../color-wheel";
+import ColorWheel from "@/components/color-wheel";
 import { Button } from "../ui/button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type PickerMode = "rgb" | "hsl" | "hsv" | "oklch";
+type PickerMode = "rgb" | "hsl" | "hsv" | "oklch" | "oklab";
 
 const MODES: { id: PickerMode; label: string; desc: string }[] = [
   { id: "rgb", label: "RGB", desc: "Red, Green, Blue — 0 to 255 per channel" },
@@ -45,6 +46,11 @@ const MODES: { id: PickerMode; label: string; desc: string }[] = [
     id: "oklch",
     label: "OKLCH",
     desc: "Perceptually uniform — same space as palette generation",
+  },
+  {
+    id: "oklab",
+    label: "OKLab",
+    desc: "Perceptual Lab — a/b axes match Photoshop Lab mode",
   },
 ];
 
@@ -139,6 +145,21 @@ function oklchChannelGrad(channel: "L" | "C" | "H", oklch: OKLCH) {
   });
 }
 
+function oklabChannelGrad(
+  channel: "L" | "a" | "b",
+  oklab: { L: number; a: number; b: number },
+) {
+  return channelGrad(8, (t) => {
+    const c =
+      channel === "L"
+        ? { ...oklab, L: t }
+        : channel === "a"
+          ? { ...oklab, a: (t - 0.5) * 0.8 }
+          : { ...oklab, b: (t - 0.5) * 0.8 };
+    return rgbToHex(oklabToRgb(c));
+  });
+}
+
 function alphaGrad(hex: string) {
   return `linear-gradient(to right, transparent, ${hex})`;
 }
@@ -176,13 +197,6 @@ function SliderRow({
         style={{ background: trackBg }}
       >
         {isAlpha && <div className="ch-alpha-checker" />}
-
-        {isAlpha && (
-          <div
-            className="absolute inset-0 rounded-[5px]"
-            style={{ background: trackBg }}
-          />
-        )}
         <input
           type="range"
           min={min}
@@ -463,6 +477,68 @@ function OklchSliders({
   );
 }
 
+function OklabSliders({
+  oklab,
+  alpha,
+  hex,
+  onOklab,
+  onAlpha,
+}: {
+  oklab: { L: number; a: number; b: number };
+  alpha: number;
+  hex: string;
+  onOklab: (o: { L: number; a: number; b: number }) => void;
+  onAlpha: (a: number) => void;
+}) {
+  return (
+    <div className="ch-sliders">
+      <SliderRow
+        label="Lightness"
+        display={`${Math.round(oklab.L * 100)}%`}
+        value={Math.round(oklab.L * 1000)}
+        min={0}
+        max={1000}
+        trackBg={oklabChannelGrad("L", oklab)}
+        onChange={(v) => onOklab({ ...oklab, L: v / 1000 })}
+      />
+      <SliderRow
+        label="a (green↔red)"
+        display={oklab.a.toFixed(3)}
+        value={Math.round((oklab.a + 0.4) * 1000)}
+        min={0}
+        max={800}
+        trackBg={oklabChannelGrad("a", oklab)}
+        onChange={(v) => onOklab({ ...oklab, a: v / 1000 - 0.4 })}
+      />
+      <SliderRow
+        label="b (blue↔yellow)"
+        display={oklab.b.toFixed(3)}
+        value={Math.round((oklab.b + 0.4) * 1000)}
+        min={0}
+        max={800}
+        trackBg={oklabChannelGrad("b", oklab)}
+        onChange={(v) => onOklab({ ...oklab, b: v / 1000 - 0.4 })}
+      />
+      <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} />
+      <div
+        style={{
+          padding: "5px 8px",
+          borderRadius: 4,
+          background: "rgba(99,102,241,.08)",
+          border: "1px solid rgba(99,102,241,.18)",
+          fontSize: 9.5,
+          color: "var(--ch-t3)",
+          lineHeight: 1.5,
+        }}
+      >
+        <strong style={{ color: "var(--ch-t2)" }}>OKLab</strong> — perceptual
+        Lab space. a = green↔red axis, b = blue↔yellow axis. Same axes as
+        Photoshop Lab.
+      </div>
+    </div>
+  );
+}
+
 // ─── CSS output string for current mode ──────────────────────────────────────
 
 function cssString(
@@ -471,6 +547,7 @@ function cssString(
   hsl: HSL,
   hsv: HSV,
   oklch: OKLCH,
+  oklab: { L: number; a: number; b: number },
   alpha: number,
 ): string {
   switch (mode) {
@@ -482,6 +559,8 @@ function cssString(
       return toCssHsv(hsv, alpha);
     case "oklch":
       return toCssOklch(oklch, alpha);
+    case "oklab":
+      return toCssOklab(oklab, alpha);
   }
 }
 
@@ -552,7 +631,15 @@ export default function ColorPickerView() {
   const lch = useMemo(() => oklabToLch(oklab), [oklab]); // for display only
 
   const displayHex = toHexAlpha(pickerHex, pickerAlpha);
-  const cssOut = cssString(pickerMode, rgb, hsl, hsv, oklch, pickerAlpha);
+  const cssOut = cssString(
+    pickerMode,
+    rgb,
+    hsl,
+    hsv,
+    oklch,
+    oklab,
+    pickerAlpha,
+  );
   const previewStyle =
     pickerAlpha < 100
       ? {
@@ -575,6 +662,11 @@ export default function ColorPickerView() {
   );
   const setOklch = useCallback(
     (o: OKLCH) => setPickerHex(rgbToHex(oklchToRgb(o))),
+    [setPickerHex],
+  );
+  const setOklab = useCallback(
+    (o: { L: number; a: number; b: number }) =>
+      setPickerHex(rgbToHex(oklabToRgb(o))),
     [setPickerHex],
   );
 
@@ -687,6 +779,15 @@ export default function ColorPickerView() {
             onAlpha={setPickerAlpha}
           />
         )}
+        {pickerMode === "oklab" && (
+          <OklabSliders
+            oklab={oklab}
+            alpha={pickerAlpha}
+            hex={pickerHex}
+            onOklab={setOklab}
+            onAlpha={setPickerAlpha}
+          />
+        )}
 
         {/* Preview + hex input */}
         <div className="ch-color-preview-row" style={{ marginTop: 12 }}>
@@ -774,6 +875,28 @@ export default function ColorPickerView() {
               <Button variant="ghost" size="sm" onClick={addToPalette}>
                 + Add
               </Button>
+              {typeof window !== "undefined" && "EyeDropper" in window && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  title="Sample color from screen (EyeDropper API)"
+                  onClick={async () => {
+                    try {
+                      const dropper = new (window as any).EyeDropper();
+                      const { sRGBHex } = await dropper.open();
+                      const h = parseHex(sRGBHex);
+                      if (h) {
+                        setPickerHex(h);
+                        addRecent(h);
+                      }
+                    } catch {
+                      /* user cancelled */
+                    }
+                  }}
+                >
+                  ⊕ Pick
+                </Button>
+              )}
             </div>
           </div>
         </div>

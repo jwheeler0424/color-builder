@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import type { GradientStop, GradientState, GradientType } from "@/types";
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import { useChromaStore } from "@/hooks/useChromaStore";
 import { parseHex, clamp } from "@/lib/utils/colorMath";
 import { GRAD_PRESETS } from "@/lib/constants/chroma";
 import GradientStopBar from "../gradient-stop-bar";
@@ -17,21 +17,28 @@ const DIRECTIONS = [
   { label: "45°", val: "45deg" },
 ];
 
-function buildCss(grad: GradientState): string {
+function buildCss(
+  grad: GradientState,
+  interp: "srgb" | "oklab" | "oklch" = "srgb",
+): string {
   const sorted = grad.stops.slice().sort((a, b) => a.pos - b.pos);
   const str = sorted.map((x) => `${x.hex} ${x.pos}%`).join(", ");
+  const inSpace = interp !== "srgb" ? ` in ${interp}` : "";
   if (grad.type === "radial")
-    return `radial-gradient(circle at center, ${str})`;
+    return `radial-gradient(circle at center${inSpace}, ${str})`;
   if (grad.type === "conic")
     return `conic-gradient(${grad.dir || "from 0deg"}, ${str})`;
-  return `linear-gradient(${grad.dir}, ${str})`;
+  return `linear-gradient(${inSpace ? inSpace.trim() + ", " : ""}${grad.dir}, ${str})`;
 }
 
 export default function GradientView() {
   const { gradient, slots, setGradient } = useChromaStore();
   const [copied, setCopied] = useState(false);
+  const [interpSpace, setInterpSpace] = useState<"srgb" | "oklab" | "oklch">(
+    "srgb",
+  );
   const g = gradient;
-  const css = useMemo(() => buildCss(g), [g]);
+  const css = useMemo(() => buildCss(g, interpSpace), [g, interpSpace]);
   const selectedStop = g.stops[g.selectedStop] ?? g.stops[0];
 
   const setGrad = useCallback(
@@ -250,12 +257,63 @@ export default function GradientView() {
           />
         </div>
 
+        {/* Interpolation space */}
+        <div>
+          <div className="ch-slabel">Interpolation Space</div>
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            {(
+              [
+                {
+                  id: "srgb",
+                  label: "sRGB",
+                  title:
+                    "Standard CSS — can produce muddy midpoints on complementary pairs",
+                },
+                {
+                  id: "oklab",
+                  label: "OKLab",
+                  title: "CSS Color 4 — perceptually uniform, vivid midpoints",
+                },
+                {
+                  id: "oklch",
+                  label: "OKLCH",
+                  title:
+                    "CSS Color 4 — hue-aware, great for analogous gradients",
+                },
+              ] as const
+            ).map(({ id, label, title }) => (
+              <Button
+                key={id}
+                variant={interpSpace === id ? "default" : "ghost"}
+                size="sm"
+                title={title}
+                onClick={() => setInterpSpace(id)}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+          {interpSpace !== "srgb" && (
+            <div
+              style={{
+                fontSize: 9.5,
+                color: "var(--ch-t3)",
+                marginTop: 5,
+                lineHeight: 1.5,
+              }}
+            >
+              CSS Color 4 syntax — requires Chrome 111+ / Safari 16.4+. Firefox
+              support landing soon.
+            </div>
+          )}
+        </div>
+
         {/* Presets */}
         <div>
           <div className="ch-slabel">Presets</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {GRAD_PRESETS.map((p, i) => (
-              <Button
+              <button
                 key={i}
                 className="ch-btn ch-btn-ghost ch-btn-sm"
                 style={{
@@ -286,7 +344,7 @@ export default function GradientView() {
                   }}
                 />
                 {p.name}
-              </Button>
+              </button>
             ))}
           </div>
         </div>

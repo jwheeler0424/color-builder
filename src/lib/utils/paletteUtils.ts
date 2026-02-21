@@ -15,7 +15,7 @@ import {
   colorDist,
   parseHexAlpha,
   opaqueHex,
-} from "./colorMath";
+} from "@/lib/utils/colorMath";
 import { NAMED } from "@/lib/constants/chroma";
 
 // ─── Color Naming ─────────────────────────────────────────────────────────────
@@ -473,13 +473,6 @@ export function clearSaved(): void {
 // Persist user prefs (mode + count)
 export function savePrefs(mode: HarmonyMode, count: number): void {
   localStorage.setItem(LS_PREF_KEY, JSON.stringify({ mode, count }));
-}
-export function loadPrefs(): { mode: HarmonyMode; count: number } | null {
-  try {
-    return JSON.parse(localStorage.getItem(LS_PREF_KEY) || "null");
-  } catch {
-    return null;
-  }
 }
 
 // ─── URL encode/decode ────────────────────────────────────────────────────────

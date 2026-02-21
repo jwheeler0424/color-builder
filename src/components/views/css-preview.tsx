@@ -4,20 +4,11 @@ import {
   deriveThemeTokens,
   textColor,
   rgbToOklch,
+  hexToRgb,
 } from "@/lib/utils/colorMath";
 import type { PaletteSlot } from "@/types";
 
 type PreviewMode = "light" | "dark" | "split";
-
-/** Parse hex → RGB for textColor() inline use */
-function hexToRgb(hex: string) {
-  const h = hex.replace("#", "");
-  return {
-    r: parseInt(h.substring(0, 2), 16),
-    g: parseInt(h.substring(2, 4), 16),
-    b: parseInt(h.substring(4, 6), 16),
-  };
-}
 
 // ─── Mini App Preview ─────────────────────────────────────────────────────────
 
@@ -66,7 +57,11 @@ function MiniApp({
     mode === "light" ? util.warning?.subtle : util.warning?.subtleDark;
 
   const accentColors = [...slots]
-    .sort((a, b) => rgbToOklch(b.color.rgb).C - rgbToOklch(a.color.rgb).C)
+    .sort(
+      (a, b) =>
+        rgbToOklch(hexToRgb(b.color.hex)).C -
+        rgbToOklch(hexToRgb(a.color.hex)).C,
+    )
     .slice(0, 4)
     .map((s) => s.color.hex);
   const a1 = accentColors[0] ?? primary;
