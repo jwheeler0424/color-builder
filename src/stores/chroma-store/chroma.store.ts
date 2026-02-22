@@ -104,6 +104,8 @@ function makeInitialState(): ChromaState {
     mode,
     count,
     slots,
+    seedMode: "influence" as const,
+    temperature: 0,
     utilityColors: generateUtilityColors(slots),
   };
 }
@@ -146,11 +148,14 @@ export const useChromaStore = create<ChromaStore>()(
             s.mode,
             s.count,
             seedHsls.length ? seedHsls : null,
+            s.seedMode,
+            s.temperature,
           );
+          const seedCount = s.seedMode === "pin" ? s.seeds.length : 0;
           s.slots = newColors.map((color, i) =>
             s.slots[i]?.locked
               ? cloneSlot(s.slots[i])
-              : { color, locked: false },
+              : { color, locked: i < seedCount },
           );
           s.utilityColors = mergeUtilityColors(
             s.utilityColors,
@@ -197,6 +202,14 @@ export const useChromaStore = create<ChromaStore>()(
 
       // ── Picker ──────────────────────────────────────────────────────────────
 
+      setSeedMode: (mode) =>
+        set((s) => {
+          s.seedMode = mode;
+        }),
+      setTemperature: (t) =>
+        set((s) => {
+          s.temperature = t;
+        }),
       setPickerHex: (hex) =>
         set((s) => {
           s.pickerHex = hex;
@@ -306,6 +319,8 @@ export const useChromaStore = create<ChromaStore>()(
         slots: state.slots,
         recentColors: state.recentColors,
         gradient: state.gradient,
+        seedMode: state.seedMode,
+        temperature: state.temperature,
         pickerHex: state.pickerHex,
         pickerAlpha: state.pickerAlpha,
         pickerMode: state.pickerMode,

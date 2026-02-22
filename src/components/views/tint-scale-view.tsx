@@ -1,9 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
 import React, { useState, useMemo } from "react";
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import { useChromaStore } from "@/hooks/useChromaStore";
 import { generateScale, textColor, parseHex } from "@/lib/utils/colorMath";
 import { hexToStop } from "@/lib/utils/paletteUtils";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
+import ColorPickerModal from "@/components/modals/color-picker.modal";
 
 const TOKEN_TABS = ["css", "js", "tailwind", "json"] as const;
 
@@ -47,6 +48,7 @@ export default function TintScaleView() {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [inputVal, setInputVal] = useState(scaleHex);
+  const [showPicker, setShowPicker] = useState(false);
 
   // Keep local input in sync if scaleHex changes from the store (e.g. after undo)
   React.useEffect(() => {
@@ -89,120 +91,140 @@ export default function TintScaleView() {
   };
 
   return (
-    <div className="ch-view-scale">
-      <div className="ch-scale-main">
-        <div className="ch-view-hd">
-          <h2>Tint / Shade Scale</h2>
-          <p>
-            50–950 design token scale from any base color. Click a chip to copy.
-          </p>
+    <>
+      <div className="ch-view-scale">
+        <div className="ch-scale-main">
+          <div className="ch-view-hd">
+            <h2>Tint / Shade Scale</h2>
+            <p>
+              50–950 design token scale from any base color. Click a chip to
+              copy.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              marginBottom: 24,
+              maxWidth: 600,
+            }}
+          >
+            <div
+              className="ch-scale-swatch"
+              style={{ background: scaleHex, cursor: "pointer" }}
+              title="Click to pick color"
+              onClick={() => setShowPicker(true)}
+            />
+            <input
+              className="ch-inp"
+              value={inputVal}
+              onChange={(e) => handleInput(e.target.value)}
+              placeholder="#3B82F6"
+              maxLength={7}
+              spellCheck={false}
+              autoComplete="off"
+              style={{ flex: 1 }}
+            />
+            <Button variant="default" size="sm" onClick={handleGenerate}>
+              Generate
+            </Button>
+          </div>
+
+          <div className="ch-scale-row">
+            {scale.map(({ step, hex, rgb }) => {
+              const tc = textColor(rgb);
+              return (
+                <div
+                  key={step}
+                  className="ch-scale-chip"
+                  style={{ background: hex }}
+                  title={`${step}: ${hex} — click to copy`}
+                  onClick={() => {
+                    navigator.clipboard.writeText(hex).catch(() => {});
+                  }}
+                >
+                  <div className="ch-scale-step" style={{ color: tc }}>
+                    {step}
+                  </div>
+                  <div className="ch-scale-hex" style={{ color: tc }}>
+                    {hex.toUpperCase()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            alignItems: "center",
-            marginBottom: 24,
-            maxWidth: 600,
-          }}
-        >
-          <div className="ch-scale-swatch" style={{ background: scaleHex }} />
+        <div className="ch-scale-panel">
+          <div className="ch-slabel">Token Name</div>
           <input
             className="ch-inp"
-            value={inputVal}
-            onChange={(e) => handleInput(e.target.value)}
-            placeholder="#3B82F6"
-            maxLength={7}
-            spellCheck={false}
+            value={scaleName}
+            onChange={(e) => setScaleName(e.target.value.trim() || "primary")}
+            placeholder="primary"
+            maxLength={24}
             autoComplete="off"
-            style={{ flex: 1 }}
+            style={{ marginBottom: 12 }}
           />
-          <Button variant="default" size="sm" onClick={handleGenerate}>
-            Generate
+
+          <div className="ch-slabel">Export Format</div>
+          <div
+            style={{
+              display: "flex",
+              gap: 4,
+              marginBottom: 10,
+              flexWrap: "wrap",
+            }}
+          >
+            {TOKEN_TABS.map((tab) => (
+              <Button
+                key={tab}
+                variant={scaleTokenTab === tab ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setScaleTokenTab(tab)}
+              >
+                {tab.toUpperCase()}
+              </Button>
+            ))}
+          </div>
+
+          <pre className="ch-token-pre">{tokens}</pre>
+          <Button
+            variant="ghost"
+            size="sm"
+            style={{ width: "100%", marginTop: 8 }}
+            onClick={copyTokens}
+          >
+            {copied ? "✓ Copied" : "Copy"}
+          </Button>
+
+          <div className="ch-slabel" style={{ marginTop: 16 }}>
+            Use in Palette
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            style={{ width: "100%" }}
+            onClick={useAsSeeds}
+          >
+            Use scale as seeds →
           </Button>
         </div>
-
-        <div className="ch-scale-row">
-          {scale.map(({ step, hex, rgb }) => {
-            const tc = textColor(rgb);
-            return (
-              <div
-                key={step}
-                className="ch-scale-chip"
-                style={{ background: hex }}
-                title={`${step}: ${hex} — click to copy`}
-                onClick={() => {
-                  navigator.clipboard.writeText(hex).catch(() => {});
-                }}
-              >
-                <div className="ch-scale-step" style={{ color: tc }}>
-                  {step}
-                </div>
-                <div className="ch-scale-hex" style={{ color: tc }}>
-                  {hex.toUpperCase()}
-                </div>
-              </div>
-            );
-          })}
-        </div>
       </div>
-
-      <div className="ch-scale-panel">
-        <div className="ch-slabel">Token Name</div>
-        <input
-          className="ch-inp"
-          value={scaleName}
-          onChange={(e) => setScaleName(e.target.value.trim() || "primary")}
-          placeholder="primary"
-          maxLength={24}
-          autoComplete="off"
-          style={{ marginBottom: 12 }}
-        />
-
-        <div className="ch-slabel">Export Format</div>
-        <div
-          style={{
-            display: "flex",
-            gap: 4,
-            marginBottom: 10,
-            flexWrap: "wrap",
+      {showPicker && (
+        <ColorPickerModal
+          initialHex={scaleHex}
+          title="Base color — Tint Scale"
+          onApply={(hex) => {
+            setScaleHex(hex);
+            setInputVal(hex);
+            setShowPicker(false);
           }}
-        >
-          {TOKEN_TABS.map((tab) => (
-            <Button
-              key={tab}
-              variant={scaleTokenTab === tab ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setScaleTokenTab(tab)}
-            >
-              {tab.toUpperCase()}
-            </Button>
-          ))}
-        </div>
-
-        <pre className="ch-token-pre">{tokens}</pre>
-        <Button
-          variant="ghost"
-          size="sm"
-          style={{ width: "100%", marginTop: 8 }}
-          onClick={copyTokens}
-        >
-          {copied ? "✓ Copied" : "Copy"}
-        </Button>
-
-        <div className="ch-slabel" style={{ marginTop: 16 }}>
-          Use in Palette
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          style={{ width: "100%" }}
-          onClick={useAsSeeds}
-        >
-          Use scale as seeds →
-        </Button>
-      </div>
-    </div>
+          onClose={() => setShowPicker(false)}
+        />
+      )}
+    </>
   );
 }

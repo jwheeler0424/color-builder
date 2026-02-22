@@ -21,12 +21,15 @@ import { Route as ChromaSavedRouteImport } from './routes/_chroma/saved'
 import { Route as ChromaPreviewRouteImport } from './routes/_chroma/preview'
 import { Route as ChromaPickerRouteImport } from './routes/_chroma/picker'
 import { Route as ChromaPaletteRouteImport } from './routes/_chroma/palette'
+import { Route as ChromaP3RouteImport } from './routes/_chroma/p3'
+import { Route as ChromaMultiscaleRouteImport } from './routes/_chroma/multiscale'
 import { Route as ChromaMixerRouteImport } from './routes/_chroma/mixer'
 import { Route as ChromaGradientRouteImport } from './routes/_chroma/gradient'
 import { Route as ChromaExtractRouteImport } from './routes/_chroma/extract'
 import { Route as ChromaDesignsystemRouteImport } from './routes/_chroma/designsystem'
 import { Route as ChromaConverterRouteImport } from './routes/_chroma/converter'
 import { Route as ChromaContrastRouteImport } from './routes/_chroma/contrast'
+import { Route as ChromaComparisonRouteImport } from './routes/_chroma/comparison'
 import { Route as ChromaColorblindRouteImport } from './routes/_chroma/colorblind'
 import { Route as ChromaAccessibilityRouteImport } from './routes/_chroma/accessibility'
 import { Route as ApiHelloNameRouteImport } from './routes/api/hello.$name'
@@ -90,6 +93,16 @@ const ChromaPaletteRoute = ChromaPaletteRouteImport.update({
   path: '/palette',
   getParentRoute: () => ChromaRoute,
 } as any)
+const ChromaP3Route = ChromaP3RouteImport.update({
+  id: '/p3',
+  path: '/p3',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaMultiscaleRoute = ChromaMultiscaleRouteImport.update({
+  id: '/multiscale',
+  path: '/multiscale',
+  getParentRoute: () => ChromaRoute,
+} as any)
 const ChromaMixerRoute = ChromaMixerRouteImport.update({
   id: '/mixer',
   path: '/mixer',
@@ -120,6 +133,11 @@ const ChromaContrastRoute = ChromaContrastRouteImport.update({
   path: '/contrast',
   getParentRoute: () => ChromaRoute,
 } as any)
+const ChromaComparisonRoute = ChromaComparisonRouteImport.update({
+  id: '/comparison',
+  path: '/comparison',
+  getParentRoute: () => ChromaRoute,
+} as any)
 const ChromaColorblindRoute = ChromaColorblindRouteImport.update({
   id: '/colorblind',
   path: '/colorblind',
@@ -140,12 +158,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accessibility': typeof ChromaAccessibilityRoute
   '/colorblind': typeof ChromaColorblindRoute
+  '/comparison': typeof ChromaComparisonRoute
   '/contrast': typeof ChromaContrastRoute
   '/converter': typeof ChromaConverterRoute
   '/designsystem': typeof ChromaDesignsystemRoute
   '/extract': typeof ChromaExtractRoute
   '/gradient': typeof ChromaGradientRoute
   '/mixer': typeof ChromaMixerRoute
+  '/multiscale': typeof ChromaMultiscaleRoute
+  '/p3': typeof ChromaP3Route
   '/palette': typeof ChromaPaletteRoute
   '/picker': typeof ChromaPickerRoute
   '/preview': typeof ChromaPreviewRoute
@@ -162,12 +183,15 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessibility': typeof ChromaAccessibilityRoute
   '/colorblind': typeof ChromaColorblindRoute
+  '/comparison': typeof ChromaComparisonRoute
   '/contrast': typeof ChromaContrastRoute
   '/converter': typeof ChromaConverterRoute
   '/designsystem': typeof ChromaDesignsystemRoute
   '/extract': typeof ChromaExtractRoute
   '/gradient': typeof ChromaGradientRoute
   '/mixer': typeof ChromaMixerRoute
+  '/multiscale': typeof ChromaMultiscaleRoute
+  '/p3': typeof ChromaP3Route
   '/palette': typeof ChromaPaletteRoute
   '/picker': typeof ChromaPickerRoute
   '/preview': typeof ChromaPreviewRoute
@@ -186,12 +210,15 @@ export interface FileRoutesById {
   '/_chroma': typeof ChromaRouteWithChildren
   '/_chroma/accessibility': typeof ChromaAccessibilityRoute
   '/_chroma/colorblind': typeof ChromaColorblindRoute
+  '/_chroma/comparison': typeof ChromaComparisonRoute
   '/_chroma/contrast': typeof ChromaContrastRoute
   '/_chroma/converter': typeof ChromaConverterRoute
   '/_chroma/designsystem': typeof ChromaDesignsystemRoute
   '/_chroma/extract': typeof ChromaExtractRoute
   '/_chroma/gradient': typeof ChromaGradientRoute
   '/_chroma/mixer': typeof ChromaMixerRoute
+  '/_chroma/multiscale': typeof ChromaMultiscaleRoute
+  '/_chroma/p3': typeof ChromaP3Route
   '/_chroma/palette': typeof ChromaPaletteRoute
   '/_chroma/picker': typeof ChromaPickerRoute
   '/_chroma/preview': typeof ChromaPreviewRoute
@@ -210,12 +237,15 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/colorblind'
+    | '/comparison'
     | '/contrast'
     | '/converter'
     | '/designsystem'
     | '/extract'
     | '/gradient'
     | '/mixer'
+    | '/multiscale'
+    | '/p3'
     | '/palette'
     | '/picker'
     | '/preview'
@@ -232,12 +262,15 @@ export interface FileRouteTypes {
     | '/'
     | '/accessibility'
     | '/colorblind'
+    | '/comparison'
     | '/contrast'
     | '/converter'
     | '/designsystem'
     | '/extract'
     | '/gradient'
     | '/mixer'
+    | '/multiscale'
+    | '/p3'
     | '/palette'
     | '/picker'
     | '/preview'
@@ -255,12 +288,15 @@ export interface FileRouteTypes {
     | '/_chroma'
     | '/_chroma/accessibility'
     | '/_chroma/colorblind'
+    | '/_chroma/comparison'
     | '/_chroma/contrast'
     | '/_chroma/converter'
     | '/_chroma/designsystem'
     | '/_chroma/extract'
     | '/_chroma/gradient'
     | '/_chroma/mixer'
+    | '/_chroma/multiscale'
+    | '/_chroma/p3'
     | '/_chroma/palette'
     | '/_chroma/picker'
     | '/_chroma/preview'
@@ -367,6 +403,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChromaPaletteRouteImport
       parentRoute: typeof ChromaRoute
     }
+    '/_chroma/p3': {
+      id: '/_chroma/p3'
+      path: '/p3'
+      fullPath: '/p3'
+      preLoaderRoute: typeof ChromaP3RouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/multiscale': {
+      id: '/_chroma/multiscale'
+      path: '/multiscale'
+      fullPath: '/multiscale'
+      preLoaderRoute: typeof ChromaMultiscaleRouteImport
+      parentRoute: typeof ChromaRoute
+    }
     '/_chroma/mixer': {
       id: '/_chroma/mixer'
       path: '/mixer'
@@ -409,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChromaContrastRouteImport
       parentRoute: typeof ChromaRoute
     }
+    '/_chroma/comparison': {
+      id: '/_chroma/comparison'
+      path: '/comparison'
+      fullPath: '/comparison'
+      preLoaderRoute: typeof ChromaComparisonRouteImport
+      parentRoute: typeof ChromaRoute
+    }
     '/_chroma/colorblind': {
       id: '/_chroma/colorblind'
       path: '/colorblind'
@@ -436,12 +493,15 @@ declare module '@tanstack/react-router' {
 interface ChromaRouteChildren {
   ChromaAccessibilityRoute: typeof ChromaAccessibilityRoute
   ChromaColorblindRoute: typeof ChromaColorblindRoute
+  ChromaComparisonRoute: typeof ChromaComparisonRoute
   ChromaContrastRoute: typeof ChromaContrastRoute
   ChromaConverterRoute: typeof ChromaConverterRoute
   ChromaDesignsystemRoute: typeof ChromaDesignsystemRoute
   ChromaExtractRoute: typeof ChromaExtractRoute
   ChromaGradientRoute: typeof ChromaGradientRoute
   ChromaMixerRoute: typeof ChromaMixerRoute
+  ChromaMultiscaleRoute: typeof ChromaMultiscaleRoute
+  ChromaP3Route: typeof ChromaP3Route
   ChromaPaletteRoute: typeof ChromaPaletteRoute
   ChromaPickerRoute: typeof ChromaPickerRoute
   ChromaPreviewRoute: typeof ChromaPreviewRoute
@@ -455,12 +515,15 @@ interface ChromaRouteChildren {
 const ChromaRouteChildren: ChromaRouteChildren = {
   ChromaAccessibilityRoute: ChromaAccessibilityRoute,
   ChromaColorblindRoute: ChromaColorblindRoute,
+  ChromaComparisonRoute: ChromaComparisonRoute,
   ChromaContrastRoute: ChromaContrastRoute,
   ChromaConverterRoute: ChromaConverterRoute,
   ChromaDesignsystemRoute: ChromaDesignsystemRoute,
   ChromaExtractRoute: ChromaExtractRoute,
   ChromaGradientRoute: ChromaGradientRoute,
   ChromaMixerRoute: ChromaMixerRoute,
+  ChromaMultiscaleRoute: ChromaMultiscaleRoute,
+  ChromaP3Route: ChromaP3Route,
   ChromaPaletteRoute: ChromaPaletteRoute,
   ChromaPickerRoute: ChromaPickerRoute,
   ChromaPreviewRoute: ChromaPreviewRoute,

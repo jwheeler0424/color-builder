@@ -36,8 +36,11 @@ export interface OKLCH {
 
 export interface ColorStop {
   hex: string; // Always 6-char opaque hex (#RRGGBB) — alpha is separate
-  rgb: RGB;
-  hsl: HSL;
+  /** @derived Always re-derive from hex via hexToRgb() for authoritative values.
+   *  Stored for convenience but hexToStop() is the canonical constructor. */
+  readonly rgb: RGB;
+  /** @derived Always re-derive from hex via rgbToHsl(hexToRgb()) for authoritative values. */
+  readonly hsl: HSL;
   a?: number; // Alpha 0–100 (optional; omitted or 100 = fully opaque)
 }
 
@@ -206,6 +209,8 @@ export interface ChromaState {
   extractedColors: RGB[];
   imgSrc: string | null;
   utilityColors: UtilityColorSet;
+  seedMode: "influence" | "pin";
+  temperature: number; // 0–1000, used for random mode and seed influence
 }
 
 // ─── Store actions (methods replace old dispatch pattern) ─────────────────────
@@ -223,6 +228,8 @@ export interface ChromaActions {
   addSlot: (color: ColorStop) => void;
   removeSlot: (index: number) => void;
   loadPalette: (slots: PaletteSlot[], mode: HarmonyMode, count: number) => void;
+  setSeedMode: (mode: "influence" | "pin") => void;
+  setTemperature: (t: number) => void;
   setPickerHex: (hex: string) => void;
   setPickerAlpha: (alpha: number) => void;
   setPickerMode: (mode: ChromaState["pickerMode"]) => void;

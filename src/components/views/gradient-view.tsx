@@ -1,10 +1,34 @@
 import { useState, useMemo, useCallback } from "react";
 import type { GradientStop, GradientState, GradientType } from "@/types";
 import { useChromaStore } from "@/hooks/useChromaStore";
-import { parseHex, clamp } from "@/lib/utils/colorMath";
-import { GRAD_PRESETS } from "@/lib/constants/chroma";
+import {
+  parseHex,
+  clamp,
+  applySimMatrix,
+  hexToRgb,
+  rgbToHex,
+} from "@/lib/utils/colorMath";
+import { GRAD_PRESETS, CB_TYPES } from "@/lib/constants/chroma";
 import GradientStopBar from "../gradient-stop-bar";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
+
+// Apply easing to redistribute stop positions (redistributes evenly-spaced stops)
+function applyEasing(t: number, mode: string): number {
+  switch (mode) {
+    case "ease-in":
+      return t * t;
+    case "ease-out":
+      return 1 - (1 - t) * (1 - t);
+    case "ease-in-out":
+      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    case "front-loaded":
+      return Math.pow(t, 0.5); // square root — fast at start
+    case "back-loaded":
+      return Math.pow(t, 2.5); // cubic — slow then fast
+    default:
+      return t; // linear
+  }
+}
 
 const DIRECTIONS = [
   { label: "→", val: "to right" },
@@ -37,6 +61,15 @@ export default function GradientView() {
   const [interpSpace, setInterpSpace] = useState<"srgb" | "oklab" | "oklch">(
     "srgb",
   );
+  const [showCvd, setShowCvd] = useState(false);
+  const [easing, setEasing] = useState<
+    | "linear"
+    | "ease-in"
+    | "ease-out"
+    | "ease-in-out"
+    | "front-loaded"
+    | "back-loaded"
+  >("linear");
   const g = gradient;
   const css = useMemo(() => buildCss(g, interpSpace), [g, interpSpace]);
   const selectedStop = g.stops[g.selectedStop] ?? g.stops[0];
@@ -123,6 +156,66 @@ export default function GradientView() {
 
         {/* Full-width preview */}
         <div className="ch-grad-preview" style={{ background: css }} />
+
+        {/* CVD simulation preview */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            margin: "8px 0 4px",
+          }}
+        >
+          <button
+            className="ch-btn ch-btn-ghost ch-btn-sm"
+            onClick={() => setShowCvd((v) => !v)}
+          >
+            {showCvd ? "▾ Hide CVD Preview" : "▸ Color Blindness Preview"}
+          </button>
+        </div>
+        {showCvd && (
+          <div style={{ marginBottom: 10 }}>
+            {CB_TYPES.filter((t) => t.id !== "normal").map((cbType) => {
+              const simStops = g.stops.map((stop) => {
+                const rgb = applySimMatrix(hexToRgb(stop.hex), cbType.matrix);
+                return { ...stop, hex: rgbToHex(rgb) };
+              });
+              const simState = { ...g, stops: simStops };
+              const simCss = buildCss(simState, interpSpace);
+              return (
+                <div
+                  key={cbType.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 4,
+                  }}
+                >
+                  <div
+                    style={{
+                      height: 18,
+                      flex: 1,
+                      borderRadius: 4,
+                      background: simCss,
+                      border: "1px solid rgba(128,128,128,.15)",
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: 9,
+                      color: "var(--ch-t3)",
+                      minWidth: 90,
+                      textAlign: "right",
+                    }}
+                  >
+                    {cbType.name}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Draggable stop bar — Phase 1.1 */}
         <GradientStopBar
@@ -306,6 +399,55 @@ export default function GradientView() {
               support landing soon.
             </div>
           )}
+        </div>
+
+        {/* Easing */}
+        <div>
+          <div className="ch-slabel">Stop Distribution Easing</div>
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            {(
+              [
+                { id: "linear", label: "Linear" },
+                { id: "ease-in", label: "Ease In" },
+                { id: "ease-out", label: "Ease Out" },
+                { id: "ease-in-out", label: "S-Curve" },
+                { id: "front-loaded", label: "Front" },
+                { id: "back-loaded", label: "Back" },
+              ] as const
+            ).map(({ id, label }) => (
+              <Button
+                key={id}
+                variant={easing === id ? "default" : "ghost"}
+                size="sm"
+                onClick={() => {
+                  setEasing(id);
+                  if (g.stops.length < 2) return;
+                  // Re-distribute stops according to easing function
+                  const sorted = [...g.stops].sort((a, b) => a.pos - b.pos);
+                  const n = sorted.length - 1;
+                  const newStops = sorted.map((s, i) => {
+                    if (i === 0 || i === n) return s;
+                    const t = i / n;
+                    return { ...s, pos: Math.round(applyEasing(t, id) * 100) };
+                  });
+                  setGrad({ stops: newStops });
+                }}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+          <div
+            style={{
+              fontSize: 9.5,
+              color: "var(--ch-t3)",
+              marginTop: 4,
+              lineHeight: 1.5,
+            }}
+          >
+            Redistributes middle stop positions. First and last stops stay
+            fixed.
+          </div>
         </div>
 
         {/* Presets */}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import type { UtilityRole, UtilityColor } from "@/types";
 import { useChromaStore } from "@/hooks/useChromaStore";
 import {
@@ -12,7 +12,7 @@ import {
   rgbToOklch,
 } from "@/lib/utils/colorMath";
 import { hexToStop } from "@/lib/utils/paletteUtils";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 
 const ROLE_ICONS: Record<UtilityRole, string> = {
   info: "ℹ",
@@ -27,10 +27,12 @@ function UtilityCard({
   utility,
   onColorChange,
   onToggleLock,
+  onEdit,
 }: {
   utility: UtilityColor;
   onColorChange: (role: UtilityRole, hex: string) => void;
   onToggleLock: (role: UtilityRole) => void;
+  onEdit?: () => void;
 }) {
   const [editVal, setEditVal] = useState(utility.color.hex);
   const [editErr, setEditErr] = useState(false);
@@ -367,6 +369,9 @@ function LivePreview() {
 }
 
 export default function UtilityColorsView() {
+  const [editingRole, setEditingRole] = React.useState<UtilityRole | null>(
+    null,
+  );
   const {
     utilityColors,
     slots,

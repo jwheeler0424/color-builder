@@ -4,14 +4,17 @@ import { textColor, hexToRgb, parseHex, rgbToHsl } from "@/lib/utils/colorMath";
 import { nearestName, hexToStop } from "@/lib/utils/paletteUtils";
 import { HARMONIES, THEMES } from "@/lib/constants/chroma";
 import { useChromaStore } from "@/hooks/useChromaStore";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
+import ColorPickerModal from "@/components/modals/color-picker.modal";
 
 function PaletteSlotComponent({
   slot,
   index,
+  onEdit,
 }: {
   slot: PaletteSlot;
   index: number;
+  onEdit: (index: number) => void;
 }) {
   const { toggleLock, editSlotColor } = useChromaStore();
   const [toastVisible, setToastVisible] = useState(false);
@@ -29,6 +32,7 @@ function PaletteSlotComponent({
   return (
     <div
       className="ch-slot"
+      onDoubleClick={() => onEdit(index)}
       style={{
         background:
           slot.color.a !== undefined && slot.color.a < 100
@@ -73,57 +77,14 @@ function PaletteSlotComponent({
   );
 }
 
-function SlotEditPopover({
-  slotHex,
-  onClose,
-  onApply,
-}: {
-  slotHex: string;
-  onClose: () => void;
-  onApply: (hex: string) => void;
-}) {
-  const [value, setValue] = useState(slotHex);
-  const [error, setError] = useState(false);
-  const handleChange = (v: string) => {
-    setValue(v);
-    const h = parseHex(v);
-    if (h) {
-      setError(false);
-      onApply(h);
-    } else setError(true);
-  };
-  return (
-    <div className="ch-slot-edit-popover" onClick={(e) => e.stopPropagation()}>
-      <div
-        className="ch-slot-edit-swatch"
-        style={{ background: parseHex(value) || slotHex }}
-      />
-      <input
-        className={`ch-inp${error ? " err" : ""}`}
-        value={value}
-        onChange={(e) => handleChange(e.target.value)}
-        maxLength={7}
-        spellCheck={false}
-        autoFocus
-        style={{
-          fontFamily: "var(--ch-fm)",
-          letterSpacing: ".06em",
-          width: 100,
-        }}
-      />
-      <Button variant="default" size="sm" onClick={onClose}>
-        Done
-      </Button>
-    </div>
-  );
-}
-
 export default function PaletteView() {
   const {
     slots,
     seeds,
     count,
     mode,
+    seedMode,
+    temperature,
     generate,
     setMode,
     setCount,
@@ -131,10 +92,13 @@ export default function PaletteView() {
     removeSeed,
     setSeeds,
     editSlotColor,
+    setSeedMode,
+    setTemperature,
   } = useChromaStore();
   const [seedInp, setSeedInp] = useState("");
   const [seedErr, setSeedErr] = useState(false);
   const [editingSlot, setEditingSlot] = useState<number | null>(null);
+  const [editingSeed, setEditingSeed] = useState<number | null>(null);
 
   const handleAddSeed = useCallback(() => {
     const hex = parseHex(seedInp);
@@ -149,44 +113,45 @@ export default function PaletteView() {
 
   return (
     <div className="ch-view-pal">
-      <div
-        className="ch-pstrip"
-        onClick={() => editingSlot !== null && setEditingSlot(null)}
-      >
+      <div className="ch-pstrip">
         {slots.map((slot, i) => (
-          <div
+          <PaletteSlotComponent
             key={i}
-            style={{
-              flex: 1,
-              position: "relative",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <PaletteSlotComponent slot={slot} index={i} />
-            {editingSlot === i && (
-              <SlotEditPopover
-                slotHex={slot.color.hex}
-                onClose={() => setEditingSlot(null)}
-                onApply={(hex) => editSlotColor(i, hexToStop(hex))}
-              />
-            )}
-            <button
-              className="ch-sbtn"
-              style={{
-                position: "absolute",
-                bottom: 8,
-                right: 8,
-                color: textColor(hexToRgb(slot.color.hex)),
-              }}
-              onClick={() => setEditingSlot(editingSlot === i ? null : i)}
-              title="Edit color"
-            >
-              ✏️
-            </button>
-          </div>
+            slot={slot}
+            index={i}
+            onEdit={setEditingSlot}
+          />
         ))}
       </div>
+
+      {/* Slot color picker modal */}
+      {editingSlot !== null && slots[editingSlot] && (
+        <ColorPickerModal
+          initialHex={slots[editingSlot].color.hex}
+          title={`Slot ${editingSlot + 1} — ${nearestName(hexToRgb(slots[editingSlot].color.hex))}`}
+          onApply={(hex) => {
+            editSlotColor(editingSlot, hexToStop(hex));
+            setEditingSlot(null);
+          }}
+          onClose={() => setEditingSlot(null)}
+        />
+      )}
+
+      {/* Seed color picker modal */}
+      {editingSeed !== null && seeds[editingSeed] && (
+        <ColorPickerModal
+          initialHex={seeds[editingSeed].hex}
+          title={`Seed ${editingSeed + 1} — ${nearestName(hexToRgb(seeds[editingSeed].hex))}`}
+          onApply={(hex) => {
+            const updated = seeds.map((s, i) =>
+              i === editingSeed ? hexToStop(hex) : s,
+            );
+            setSeeds(updated);
+            setEditingSeed(null);
+          }}
+          onClose={() => setEditingSeed(null)}
+        />
+      )}
 
       <aside className="ch-panel">
         <div className="ch-pscroll">
@@ -240,8 +205,19 @@ export default function PaletteView() {
             <div className="ch-seedlist">
               {seeds.map((s, i) => (
                 <div key={i} className="ch-seeditem">
-                  <div className="ch-seedsw" style={{ background: s.hex }} />
-                  <span className="ch-seedhex">{s.hex.toUpperCase()}</span>
+                  <div
+                    className="ch-seedsw"
+                    style={{ background: s.hex, cursor: "pointer" }}
+                    title="Click to edit seed color"
+                    onClick={() => setEditingSeed(i)}
+                  />
+                  <span
+                    className="ch-seedhex"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setEditingSeed(i)}
+                  >
+                    {s.hex.toUpperCase()}
+                  </span>
                   <button className="ch-seedrm" onClick={() => removeSeed(i)}>
                     ×
                   </button>
@@ -263,6 +239,75 @@ export default function PaletteView() {
               <Button variant="ghost" size="sm" onClick={handleAddSeed}>
                 + Add
               </Button>
+            </div>
+          </div>
+
+          <div className="ch-psec">
+            <div className="ch-slabel">Seed Behavior</div>
+            <div style={{ display: "flex", gap: 4, marginBottom: 8 }}>
+              {(
+                [
+                  {
+                    id: "influence",
+                    label: "Influence",
+                    title:
+                      "Seed hue and lightness guide generation — exact color not forced",
+                  },
+                  {
+                    id: "pin",
+                    label: "Pin",
+                    title: "Seed color appears verbatim as a locked slot",
+                  },
+                ] as const
+              ).map(({ id, label, title }) => (
+                <Button
+                  key={id}
+                  variant={seedMode === id ? "default" : "ghost"}
+                  size="sm"
+                  title={title}
+                  onClick={() => setSeedMode(id)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+            <div
+              style={{
+                fontSize: 9.5,
+                color: "var(--ch-t3)",
+                lineHeight: 1.5,
+                marginBottom: 8,
+              }}
+            >
+              {seedMode === "pin"
+                ? "Seed colors appear exactly in the palette as locked slots."
+                : "Seed hue guides generation but the exact color may shift."}
+            </div>
+          </div>
+
+          <div className="ch-psec">
+            <div className="ch-slabel">
+              Temperature{" "}
+              <span style={{ fontWeight: 400, color: "var(--ch-t3)" }}>
+                {temperature < -0.2
+                  ? "❄ Cool"
+                  : temperature > 0.2
+                    ? "🌅 Warm"
+                    : "⚪ Neutral"}
+              </span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 9, color: "var(--ch-t3)" }}>❄</span>
+              <input
+                type="range"
+                min={-100}
+                max={100}
+                value={Math.round(temperature * 100)}
+                onChange={(e) => setTemperature(+e.target.value / 100)}
+                className="ch-range"
+                style={{ flex: 1 }}
+              />
+              <span style={{ fontSize: 9, color: "var(--ch-t3)" }}>🌅</span>
             </div>
           </div>
 

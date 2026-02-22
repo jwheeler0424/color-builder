@@ -209,6 +209,8 @@ export function genPalette(
   mode: HarmonyMode,
   count: number,
   seeds: { h: number; s: number; l: number }[] | null, // incoming seeds are still in HSL (from picker/store)
+  seedMode: "influence" | "pin" = "influence",
+  temperature: number = 0, // -1 (cool) to +1 (warm) — biases base hue
 ): ColorStop[] {
   // Convert seed HSL → OKLCH for internal work
   const seedsOklch = seeds?.length
@@ -216,11 +218,32 @@ export function genPalette(
     : null;
 
   // Base color in OKLCH
-  const base = seedsOklch?.[0] ?? {
+  const baseRaw = seedsOklch?.[0] ?? {
     L: 0.42 + Math.random() * 0.25,
     C: 0.1 + Math.random() * 0.14,
     H: Math.random() * 360,
   };
+
+  // Temperature bias: nudge hue toward warm (0-120) or cool (180-300) arc
+  // when no seed is present. With a seed, temperature nudges the hue slightly.
+  let base = baseRaw;
+  if (temperature !== 0 && !seeds?.length) {
+    // Warm target hue: 30 (orange-red), cool target: 240 (blue)
+    const warmH = 30,
+      coolH = 240;
+    const targetH = temperature > 0 ? warmH : coolH;
+    const blend = Math.abs(temperature) * 0.6; // max 60% blend toward target
+    const dH = ((targetH - baseRaw.H + 540) % 360) - 180; // shortest path
+    base = { ...baseRaw, H: (baseRaw.H + dH * blend + 360) % 360 };
+  } else if (temperature !== 0 && seeds?.length) {
+    // With seed: gentle nudge only — respect the seed's intent
+    const warmH = 30,
+      coolH = 240;
+    const targetH = temperature > 0 ? warmH : coolH;
+    const blend = Math.abs(temperature) * 0.18;
+    const dH = ((targetH - baseRaw.H + 540) % 360) - 180;
+    base = { ...baseRaw, H: (baseRaw.H + dH * blend + 360) % 360 };
+  }
 
   // Target chroma — inherit from seed or use moderate default
   const targetC = clamp(base.C, 0.08, 0.26);
@@ -279,13 +302,51 @@ export function genPalette(
     });
   }
 
-  // ── Multi-seed: honour all seeds, fill gaps from harmony hues ──────────────
-  if (seedsOklch && seedsOklch.length > 1) {
-    const stops = seedsOklch.map((s) => makeStop(s.L, s.C, s.H));
-    const need = count - stops.length;
+  // ── Pin mode: single seed appears verbatim as first slot ──────────────────
+  // When seedMode === 'pin', the first seed color is placed exactly as-is.
+  // If there are multiple pinned seeds, all appear verbatim; rest are generated.
+  if (seedMode === "pin" && seedsOklch && seedsOklch.length > 0) {
+    const pinned = seedsOklch.map((s) => makeStop(s.L, s.C, s.H));
+    const need = Math.max(0, count - pinned.length);
     const hues = anchorHues(mode, seedsOklch[0].H);
+    const generated: ColorStop[] = [];
     for (let i = 0; i < need; i++) {
       const H = hues[i % hues.length];
+      const L = clamp(targetL + (Math.random() - 0.5) * 0.22, 0.28, 0.75);
+      const C = clamp(targetC + (Math.random() - 0.5) * 0.06, 0.06, 0.28);
+      generated.push(makeStop(L, C, H));
+    }
+    return [...pinned, ...generated].slice(0, count);
+  }
+
+  // ── Multi-seed influence: honour all seeds, fill gaps from harmony hues ────
+  if (seedsOklch && seedsOklch.length > 1) {
+    // Multi-seed compositing: find the rotation that minimises total angular distance
+    const allHues = seedsOklch.map((s) => s.H);
+    const hues0 = anchorHues(mode, seedsOklch[0].H);
+    // Try rotating template to each seed; pick the orientation with min total dist
+    let bestHues = hues0,
+      bestCost = Infinity;
+    for (const seedH of allHues) {
+      const candidate = anchorHues(mode, seedH);
+      const cost = allHues.reduce((sum, sh) => {
+        const minDist = Math.min(
+          ...candidate.map((ch) => {
+            const d = Math.abs(ch - sh);
+            return Math.min(d, 360 - d);
+          }),
+        );
+        return sum + minDist;
+      }, 0);
+      if (cost < bestCost) {
+        bestCost = cost;
+        bestHues = candidate;
+      }
+    }
+    const stops = seedsOklch.map((s) => makeStop(s.L, s.C, s.H));
+    const need = count - stops.length;
+    for (let i = 0; i < need; i++) {
+      const H = bestHues[i % bestHues.length];
       const L = clamp(targetL + (Math.random() - 0.5) * 0.22, 0.28, 0.75);
       const C = clamp(targetC + (Math.random() - 0.5) * 0.06, 0.06, 0.28);
       stops.push(makeStop(L, C, H));
@@ -319,7 +380,7 @@ export function genPalette(
 // ─── Slot Helpers ────────────────────────────────────────────────────────────
 
 export function cloneSlot(slot: PaletteSlot): PaletteSlot {
-  const color: ColorStop = {
+  const color: import("@/types").ColorStop = {
     hex: slot.color.hex,
     rgb: { ...slot.color.rgb },
     hsl: { ...slot.color.hsl },

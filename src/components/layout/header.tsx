@@ -22,6 +22,9 @@ const NAV = [
   { to: "/converter", label: "Converter" },
   { to: "/extract", label: "Image Extract" },
   { to: "/saved", label: "Saved" },
+  { to: "/comparison", label: "Compare" },
+  { to: "/multiscale", label: "Multi-Scale" },
+  { to: "/p3", label: "P3 Gamut" },
 ] as const;
 
 export default function Header() {

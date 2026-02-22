@@ -15,7 +15,8 @@ import {
 } from "@/lib/utils/colorMath";
 import { hexToStop } from "@/lib/utils/paletteUtils";
 import type { PaletteSlot } from "@/types";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
+import HexInput from "@/components/hex-input";
 
 type ThemeTab = "css" | "figma" | "tailwind" | "tailwind4" | "styledictionary";
 type PreviewMode = "light" | "dark";
@@ -1125,6 +1126,595 @@ function TokenTable({
   );
 }
 
+// ─── Editable Token Table ─────────────────────────────────────────────────────
+
+function EditableTokenTable({
+  tokens,
+  overrides,
+  onOverride,
+  onRevert,
+}: {
+  tokens: ReturnType<typeof deriveThemeTokens>;
+  overrides: Record<string, { light: string; dark: string }>;
+  onOverride: (name: string, mode: "light" | "dark", hex: string) => void;
+  onRevert: (name: string) => void;
+}) {
+  const groups = [
+    {
+      label: "Surface Layers (60–30%)",
+      ids: [
+        "--background",
+        "--surface-dim",
+        "--card",
+        "--card-raised",
+        "--popover",
+        "--surface-dim-foreground",
+        "--card-foreground",
+        "--card-raised-foreground",
+        "--popover-foreground",
+      ],
+    },
+    {
+      label: "Primary Brand (10% CTA)",
+      ids: [
+        "--primary",
+        "--primary-foreground",
+        "--primary-container",
+        "--primary-container-foreground",
+      ],
+    },
+    {
+      label: "Secondary & Accent",
+      ids: [
+        "--secondary",
+        "--secondary-foreground",
+        "--accent",
+        "--accent-foreground",
+        "--muted",
+        "--muted-foreground",
+      ],
+    },
+    { label: "Text", ids: ["--foreground"] },
+    {
+      label: "Destructive / Error",
+      ids: [
+        "--destructive",
+        "--destructive-foreground",
+        "--destructive-subtle",
+      ],
+    },
+    {
+      label: "Borders, Inputs & Focus",
+      ids: ["--border", "--border-strong", "--input", "--ring"],
+    },
+  ];
+
+  return (
+    <div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "160px 110px 110px 1fr 28px",
+          gap: 6,
+          padding: "4px 0",
+          marginBottom: 4,
+        }}
+      >
+        {["Token", "Light", "Dark", "Usage", ""].map((h) => (
+          <span
+            key={h}
+            style={{
+              fontSize: 9,
+              fontWeight: 700,
+              color: "var(--ch-t3)",
+              textTransform: "uppercase",
+            }}
+          >
+            {h}
+          </span>
+        ))}
+      </div>
+      {groups.map(({ label, ids }) => {
+        const groupTokens = ids.flatMap((id) =>
+          tokens.semantic.filter((t) => t.name === id),
+        );
+        if (!groupTokens.length) return null;
+        return (
+          <div key={label} style={{ marginBottom: 14 }}>
+            <div
+              style={{
+                fontSize: 9.5,
+                fontWeight: 700,
+                color: "var(--ch-t3)",
+                textTransform: "uppercase",
+                letterSpacing: ".08em",
+                marginBottom: 5,
+                paddingBottom: 4,
+                borderBottom: "1px solid var(--ch-s2)",
+              }}
+            >
+              {label}
+            </div>
+            {groupTokens.map((t) => {
+              const isOverridden = !!overrides[t.name];
+              return (
+                <div
+                  key={t.name}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "160px 110px 110px 1fr 28px",
+                    gap: 6,
+                    alignItems: "center",
+                    padding: "4px 0",
+                    borderBottom: "1px solid var(--ch-s2)",
+                    background: isOverridden
+                      ? "rgba(99,102,241,.04)"
+                      : undefined,
+                  }}
+                >
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 3 }}
+                  >
+                    {isOverridden && (
+                      <span style={{ fontSize: 8, color: "var(--ch-a)" }}>
+                        ✎
+                      </span>
+                    )}
+                    <code
+                      style={{
+                        fontSize: 9,
+                        color: "var(--ch-t2)",
+                        fontFamily: "var(--ch-fm)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {t.name}
+                    </code>
+                  </div>
+                  <HexInput
+                    value={t.light}
+                    onChange={(hex) => onOverride(t.name, "light", hex)}
+                    showSwatch
+                    style={{ minWidth: 0 }}
+                  />
+                  <HexInput
+                    value={t.dark}
+                    onChange={(hex) => onOverride(t.name, "dark", hex)}
+                    showSwatch
+                    style={{ minWidth: 0 }}
+                  />
+                  <span
+                    style={{
+                      fontSize: 9,
+                      color: "var(--ch-t3)",
+                      lineHeight: 1.4,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {t.description}
+                  </span>
+                  {isOverridden ? (
+                    <button
+                      onClick={() => onRevert(t.name)}
+                      title="Revert to generated"
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: 11,
+                        color: "var(--ch-t3)",
+                        padding: 0,
+                      }}
+                    >
+                      ↩
+                    </button>
+                  ) : (
+                    <span />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Component Showcase ───────────────────────────────────────────────────────
+
+function ComponentShowcase({
+  tokens,
+  mode,
+}: {
+  tokens: ReturnType<typeof deriveThemeTokens>;
+  mode: PreviewMode;
+}) {
+  const get = (name: string) =>
+    tokens.semantic.find((t) => t.name === name)?.[mode] ?? "#888";
+  const pri = get("--primary"),
+    priFg = get("--primary-foreground");
+  const sec = get("--secondary"),
+    secFg = get("--secondary-foreground");
+  const bg = get("--background"),
+    fg = get("--foreground");
+  const muted = get("--muted"),
+    fgM = get("--muted-foreground");
+  const des = get("--destructive"),
+    desFg = get("--destructive-foreground");
+  const border = get("--border"),
+    input = get("--input"),
+    ring = get("--ring");
+  const card = get("--card"),
+    cardFg = get("--card-foreground");
+  const accent = get("--accent");
+  const u = tokens.utility;
+
+  const Btn = ({
+    bg: b,
+    color: c,
+    label,
+    width,
+  }: {
+    bg: string;
+    color: string;
+    label: string;
+    width?: string;
+  }) => (
+    <button
+      style={{
+        background: b,
+        color: c,
+        border: `1px solid ${border}`,
+        borderRadius: 5,
+        padding: "5px 12px",
+        fontSize: 10,
+        fontWeight: 700,
+        cursor: "pointer",
+        width: width ?? "auto",
+      }}
+    >
+      {label}
+    </button>
+  );
+
+  const Badge = ({
+    bg: b,
+    color: c,
+    label,
+  }: {
+    bg: string;
+    color: string;
+    label: string;
+  }) => (
+    <span
+      style={{
+        background: b,
+        color: c,
+        borderRadius: 20,
+        padding: "2px 8px",
+        fontSize: 9,
+        fontWeight: 700,
+        letterSpacing: "0.04em",
+      }}
+    >
+      {label}
+    </span>
+  );
+
+  const Alert = ({
+    color,
+    subtle,
+    icon,
+    title,
+    body,
+  }: {
+    color: string;
+    subtle: string;
+    icon: string;
+    title: string;
+    body: string;
+  }) => (
+    <div
+      style={{
+        background: subtle,
+        border: `1px solid ${color}`,
+        borderRadius: 6,
+        padding: "8px 10px",
+        display: "flex",
+        gap: 8,
+        alignItems: "flex-start",
+      }}
+    >
+      <span style={{ fontSize: 12, lineHeight: 1.4 }}>{icon}</span>
+      <div style={{ fontSize: 9.5 }}>
+        <span style={{ fontWeight: 700, color }}>{title}</span>
+        <span style={{ color: fg, opacity: 0.8 }}> — {body}</span>
+      </div>
+    </div>
+  );
+
+  const lOrD = (l: string, d: string) => (mode === "light" ? l : d);
+  const infoL = u.info?.light ?? pri,
+    infoS = lOrD(u.info?.subtle ?? muted, u.info?.subtleDark ?? muted);
+  const successL = u.success?.light ?? pri,
+    successS = lOrD(u.success?.subtle ?? muted, u.success?.subtleDark ?? muted);
+  const warnL = u.warning?.light ?? pri,
+    warnS = lOrD(u.warning?.subtle ?? muted, u.warning?.subtleDark ?? muted);
+  const errL = u.error?.light ?? des,
+    errS = lOrD(u.error?.subtle ?? muted, u.error?.subtleDark ?? muted);
+
+  return (
+    <div
+      style={{
+        background: bg,
+        color: fg,
+        borderRadius: 8,
+        border: `1px solid ${border}`,
+        padding: 16,
+        fontFamily: "system-ui,sans-serif",
+        userSelect: "none",
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: 16,
+      }}
+    >
+      {/* Buttons */}
+      <div>
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: fgM,
+            textTransform: "uppercase",
+            letterSpacing: ".07em",
+            marginBottom: 8,
+          }}
+        >
+          Buttons
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          <Btn bg={pri} color={priFg} label="Primary" />
+          <Btn bg={sec} color={secFg} label="Secondary" />
+          <Btn bg="transparent" color={fg} label="Ghost" />
+          <Btn bg={des} color={desFg} label="Destructive" />
+          <Btn bg={accent} color={fg} label="Accent" />
+        </div>
+      </div>
+
+      {/* Badges */}
+      <div>
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: fgM,
+            textTransform: "uppercase",
+            letterSpacing: ".07em",
+            marginBottom: 8,
+          }}
+        >
+          Badges
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+          <Badge bg={`${pri}22`} color={pri} label="Default" />
+          <Badge bg={successS} color={successL} label="Success" />
+          <Badge bg={warnS} color={warnL} label="Warning" />
+          <Badge bg={errS} color={errL} label="Error" />
+          <Badge bg={muted} color={fgM} label="Neutral" />
+        </div>
+      </div>
+
+      {/* Input */}
+      <div>
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: fgM,
+            textTransform: "uppercase",
+            letterSpacing: ".07em",
+            marginBottom: 8,
+          }}
+        >
+          Input
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div>
+            <div
+              style={{
+                fontSize: 9.5,
+                fontWeight: 600,
+                color: fg,
+                marginBottom: 3,
+              }}
+            >
+              Email address
+            </div>
+            <div
+              style={{
+                background: input,
+                border: `1px solid ${border}`,
+                borderRadius: 5,
+                padding: "5px 9px",
+                fontSize: 9.5,
+                color: fgM,
+                marginBottom: 3,
+                outline: `2px solid ${ring}`,
+              }}
+            >
+              name@company.com
+            </div>
+            <div style={{ fontSize: 9, color: infoL }}>
+              We'll never share your email.
+            </div>
+          </div>
+          <div>
+            <div
+              style={{
+                fontSize: 9.5,
+                fontWeight: 600,
+                color: fg,
+                marginBottom: 3,
+              }}
+            >
+              Password
+            </div>
+            <div
+              style={{
+                background: input,
+                border: `1px solid ${errL}`,
+                borderRadius: 5,
+                padding: "5px 9px",
+                fontSize: 9.5,
+                color: fg,
+                marginBottom: 3,
+              }}
+            >
+              ••••••
+            </div>
+            <div style={{ fontSize: 9, color: errL }}>
+              Password must be 8+ characters.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Alerts */}
+      <div>
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: fgM,
+            textTransform: "uppercase",
+            letterSpacing: ".07em",
+            marginBottom: 8,
+          }}
+        >
+          Alerts
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+          <Alert
+            color={infoL}
+            subtle={infoS}
+            icon="ℹ"
+            title="Note"
+            body="v3.2 now available."
+          />
+          <Alert
+            color={successL}
+            subtle={successS}
+            icon="✓"
+            title="Success"
+            body="Deployment complete."
+          />
+          <Alert
+            color={warnL}
+            subtle={warnS}
+            icon="⚠"
+            title="Warning"
+            body="Storage at 90%."
+          />
+          <Alert
+            color={errL}
+            subtle={errS}
+            icon="✕"
+            title="Error"
+            body="Payment failed."
+          />
+        </div>
+      </div>
+
+      {/* Card */}
+      <div style={{ gridColumn: "1 / -1" }}>
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: fgM,
+            textTransform: "uppercase",
+            letterSpacing: ".07em",
+            marginBottom: 8,
+          }}
+        >
+          Cards
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 8,
+          }}
+        >
+          {[
+            {
+              title: "Total Revenue",
+              val: "$24,521",
+              change: "+12.5%",
+              positive: true,
+              accent: infoL,
+            },
+            {
+              title: "Active Users",
+              val: "3,842",
+              change: "+4.1%",
+              positive: true,
+              accent: successL,
+            },
+            {
+              title: "Churn Rate",
+              val: "1.8%",
+              change: "+0.3%",
+              positive: false,
+              accent: errL,
+            },
+          ].map(({ title, val, change, positive, accent: a }) => (
+            <div
+              key={title}
+              style={{
+                background: card,
+                border: `1px solid ${border}`,
+                borderRadius: 7,
+                padding: "10px 12px",
+                borderTop: `3px solid ${a}`,
+              }}
+            >
+              <div style={{ fontSize: 9, color: fgM, marginBottom: 4 }}>
+                {title}
+              </div>
+              <div
+                style={{
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: cardFg,
+                  letterSpacing: "-0.03em",
+                  lineHeight: 1.1,
+                }}
+              >
+                {val}
+              </div>
+              <div
+                style={{
+                  fontSize: 9.5,
+                  color: positive ? successL : errL,
+                  marginTop: 4,
+                }}
+              >
+                {change}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 export default function ThemeGeneratorView() {
@@ -1134,30 +1724,75 @@ export default function ThemeGeneratorView() {
   const [copied, setCopied] = useState(false);
   const [expandTokens, setExpandTokens] = useState(false);
   const [expandContrast, setExpandContrast] = useState(false);
+  const [expandComponents, setExpandComponents] = useState(false);
 
   const tokens = useMemo(
     () => deriveThemeTokens(slots, utilityColors),
     [slots, utilityColors],
   );
   const slotNames = useMemo(() => semanticSlotNames(slots), [slots]);
+  const [tokenOverrides, setTokenOverrides] = useState<
+    Record<string, { light: string; dark: string }>
+  >({});
+
+  const mergedTokens = useMemo(
+    () => ({
+      ...tokens,
+      semantic: tokens.semantic.map((t) => {
+        const o = tokenOverrides[t.name];
+        return o
+          ? { ...t, light: o.light ?? t.light, dark: o.dark ?? t.dark }
+          : t;
+      }),
+    }),
+    [tokens, tokenOverrides],
+  );
+
+  const overrideToken = (name: string, mode: "light" | "dark", hex: string) => {
+    setTokenOverrides((prev) => ({
+      ...prev,
+      [name]: {
+        light:
+          mode === "light"
+            ? hex
+            : (prev[name]?.light ??
+              tokens.semantic.find((t) => t.name === name)?.light ??
+              hex),
+        dark:
+          mode === "dark"
+            ? hex
+            : (prev[name]?.dark ??
+              tokens.semantic.find((t) => t.name === name)?.dark ??
+              hex),
+      },
+    }));
+  };
+  const revertToken = (name: string) => {
+    setTokenOverrides((prev) => {
+      const n = { ...prev };
+      delete n[name];
+      return n;
+    });
+  };
+  const overrideCount = Object.keys(tokenOverrides).length;
 
   const content = useMemo((): string => {
     if (!slots.length) return "";
     switch (activeTab) {
       case "css":
-        return buildThemeCss(tokens);
+        return buildThemeCss(mergedTokens);
       case "figma":
-        return buildFigmaTokens(tokens, utilityColors);
+        return buildFigmaTokens(mergedTokens, utilityColors);
       case "tailwind":
-        return buildTailwindConfig(tokens, utilityColors);
+        return buildTailwindConfig(mergedTokens, utilityColors);
       case "tailwind4":
-        return buildTailwindV4(tokens, utilityColors);
+        return buildTailwindV4(mergedTokens, utilityColors);
       case "styledictionary":
-        return buildStyleDictionary(tokens, utilityColors);
+        return buildStyleDictionary(mergedTokens, utilityColors);
       default:
         return "";
     }
-  }, [tokens, utilityColors, activeTab, slots.length]);
+  }, [mergedTokens, utilityColors, activeTab, slots.length]);
 
   const copy = () => {
     navigator.clipboard.writeText(content).catch(() => {});
@@ -1226,6 +1861,29 @@ export default function ThemeGeneratorView() {
           />
 
           <WebsiteMockup tokens={tokens} slots={slots} mode={previewMode} />
+
+          {/* Component Showcase */}
+          <div style={{ marginTop: 16 }}>
+            <button
+              onClick={() => setExpandComponents((v) => !v)}
+              className="ch-btn ch-btn-ghost ch-btn-sm"
+              style={{
+                width: "100%",
+                justifyContent: "space-between",
+                display: "flex",
+              }}
+            >
+              <span>
+                Component Showcase — Buttons · Badges · Inputs · Alerts · Cards
+              </span>
+              <span>{expandComponents ? "▾" : "▸"}</span>
+            </button>
+            {expandComponents && (
+              <div style={{ marginTop: 8 }}>
+                <ComponentShowcase tokens={tokens} mode={previewMode} />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ─── Utility Colors ───────────────────────────────────────────── */}
@@ -1313,7 +1971,34 @@ export default function ThemeGeneratorView() {
                   </span>
                 ))}
               </div>
-              <TokenTable tokens={tokens} />
+              {overrideCount > 0 && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
+                  }}
+                >
+                  <span style={{ fontSize: 10, color: "var(--ch-a)" }}>
+                    ✎ {overrideCount} token{overrideCount > 1 ? "s" : ""}{" "}
+                    overridden
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setTokenOverrides({})}
+                  >
+                    ↩ Revert all
+                  </Button>
+                </div>
+              )}
+              <EditableTokenTable
+                tokens={mergedTokens}
+                overrides={tokenOverrides}
+                onOverride={overrideToken}
+                onRevert={revertToken}
+              />
             </>
           )}
           {!expandTokens && (
