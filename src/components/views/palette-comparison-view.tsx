@@ -67,7 +67,7 @@ function SwatchStrip({ hexes, label }: { hexes: string[]; label: string }) {
                 setCopiedIdx(i);
                 setTimeout(() => setCopiedIdx(null), 900);
               }}
-              className="rounded-md cursor-pointer flex items-center justify-center flex-shrink-0"
+              className="rounded-md cursor-pointer flex items-center justify-center shrink-0"
               style={{
                 width: 48,
                 height: 48,
@@ -311,7 +311,7 @@ export default function PaletteComparisonView() {
             { label: "Palette B", sel: selB ?? saved[0]?.id, setSel: setSelB },
           ].map(({ label, sel, setSel }) => (
             <div key={label}>
-              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
                 {label}
               </div>
               <select
@@ -339,7 +339,7 @@ export default function PaletteComparisonView() {
           <>
             {/* Hue diff visualization */}
             <div className="mb-6">
-              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
                 Hue / Chroma Spread
               </div>
               <div className="text-muted-foreground mb-1.5 text-[9.5px]">
@@ -422,7 +422,7 @@ export default function PaletteComparisonView() {
 
             {/* Color name overlap */}
             <div className="mb-6">
-              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
                 Color Name Overlap
               </div>
               <div className="text-muted-foreground mb-2 text-[9.5px]">

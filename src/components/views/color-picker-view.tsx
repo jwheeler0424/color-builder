@@ -28,6 +28,7 @@ import { useNavigate } from "@tanstack/react-router";
 import ColorWheel from "../color-wheel";
 import { Button } from "@/components/ui/button";
 import { ColorPickerPanel } from "../elements/color-picker.panel";
+import { ColorSlider } from "../ui/slider-color";
 
 // EyeDropper is a browser API not yet in lib.dom.d.ts
 interface EyeDropper {
@@ -174,8 +175,7 @@ function alphaGrad(hex: string) {
 }
 
 // ─── Shared slider row ────────────────────────────────────────────────────────
-
-function SliderRow({
+export function SliderRow({
   label,
   value,
   display,
@@ -198,24 +198,25 @@ function SliderRow({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex justify-between text-[11px] text-muted-foreground">
-        {label} <span>{display}</span>
+      <div className="flex justify-between items-center text-[11px] font-medium px-0.5">
+        <span className="text-muted-foreground uppercase tracking-tight">
+          {label}
+        </span>
+        <span className="font-mono text-foreground tabular-nums bg-secondary/30 px-1.5 py-0.5 rounded leading-none">
+          {display}
+        </span>
       </div>
-      <div className="track-wrapper">
-        {isAlpha && (
-          <div className="absolute inset-0 rounded-full alpha-track z-0" />
-        )}
-        <div className={"sat-track"} style={{ background: trackBg }}>
-          <input
-            type="range"
-            min={min}
-            max={max}
-            step={step}
-            value={value}
-            onChange={(e) => onChange(+e.target.value)}
-          />
-        </div>
-      </div>
+      <ColorSlider
+        // Use a key based on label to reset internal state if we switch modes (RGB -> HSL)
+        key={label}
+        value={value}
+        onValueChange={onChange}
+        min={min}
+        max={max}
+        step={step}
+        trackBg={trackBg}
+        isAlpha={isAlpha}
+      />
     </div>
   );
 }

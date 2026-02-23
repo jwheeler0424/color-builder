@@ -212,10 +212,7 @@ function ComponentPreview({
           gap: 10,
         }}
       >
-        <div
-          className="rounded flex-shrink-0 w-4 h-4"
-          style={{ background: a1 }}
-        />
+        <div className="rounded shrink-0 w-4 h-4" style={{ background: a1 }} />
         <span className="font-extrabold text-[12px] tracking-[-0.02em]">
           Brand
         </span>
@@ -615,7 +612,7 @@ function UtilityTokenRow({
   return (
     <div className="flex items-center gap-2 py-1 px-0 border-b border-muted">
       <div
-        className="rounded flex items-center justify-center flex-shrink-0 text-[10px] font-bold"
+        className="rounded flex items-center justify-center shrink-0 text-[10px] font-bold"
         style={{ width: 24, height: 24, background: color, color: tc }}
       >
         {role[0].toUpperCase()}
@@ -775,7 +772,7 @@ function AccessibilityPanel({
           >
             {/* Preview swatch */}
             <div
-              className="rounded flex-shrink-0 flex items-center justify-center"
+              className="rounded shrink-0 flex items-center justify-center"
               style={{
                 width: 32,
                 height: 20,
@@ -993,7 +990,7 @@ export default function DesignSystemView() {
                 brand color.
               </p>
             </div>
-            <div className="items-center flex flex-shrink-0 gap-1">
+            <div className="items-center flex shrink-0 gap-1">
               {(["light", "dark"] as const).map((m) => (
                 <Button
                   key={m}

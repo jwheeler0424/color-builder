@@ -211,12 +211,12 @@ export default function ContrastChecker() {
           {/* Color pickers */}
           <div className="flex items-end gap-3">
             <div className="flex-1">
-              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
                 Foreground
               </div>
               <div className="items-center flex gap-2">
                 <div
-                  className="rounded border-2 border-input flex-shrink-0 cursor-pointer"
+                  className="rounded border-2 border-input shrink-0 cursor-pointer"
                   style={{ width: 40, height: 40, background: rgbToHex(fgRgb) }}
                   title="Click to pick foreground color"
                   onClick={() => setEditingColor("fg")}
@@ -236,7 +236,7 @@ export default function ContrastChecker() {
             </div>
 
             <button
-              className="bg-secondary border border-border rounded-full w-9 h-9 flex items-center justify-center cursor-pointer text-secondary-foreground text-base flex-shrink-0 mb-5 hover:border-input hover:text-foreground transition-colors"
+              className="bg-secondary border border-border rounded-full w-9 h-9 flex items-center justify-center cursor-pointer text-secondary-foreground text-base shrink-0 mb-5 hover:border-input hover:text-foreground transition-colors"
               onClick={swap}
               title="Swap colors"
             >
@@ -244,12 +244,12 @@ export default function ContrastChecker() {
             </button>
 
             <div className="flex-1">
-              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
                 Background
               </div>
               <div className="items-center flex gap-2">
                 <div
-                  className="rounded border-2 border-input flex-shrink-0 cursor-pointer"
+                  className="rounded border-2 border-input shrink-0 cursor-pointer"
                   style={{ width: 40, height: 40, background: rgbToHex(bgRgb) }}
                   title="Click to pick background color"
                   onClick={() => setEditingColor("bg")}
@@ -272,7 +272,7 @@ export default function ContrastChecker() {
           {/* Palette quick-pick */}
           {slots.length > 0 && (
             <div className="mt-6">
-              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
                 Quick-pick from Palette
               </div>
               <div className="flex-wrap flex mt-1.5 gap-1">

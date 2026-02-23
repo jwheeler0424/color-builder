@@ -91,7 +91,7 @@ function UtilityCard({
       {/* Swatch + lock */}
       <div className="flex items-start gap-3">
         <div
-          className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-white/10"
+          className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0 border-2 border-white/10"
           style={{ background: hex }}
         >
           <span className="text-lg" style={{ color: tc }}>
@@ -230,7 +230,7 @@ function LivePreview() {
       className="rounded-lg p-5 border border-border"
       style={{ background: bgHex }}
     >
-      <div className="text-muted-foreground uppercase tracking-[.1em] mb-3 text-[10px]">
+      <div className="text-muted-foreground uppercase tracking-widest mb-3 text-[10px]">
         Live Component Preview
       </div>
       {/* Alert banners */}
@@ -268,7 +268,7 @@ function LivePreview() {
             }}
           >
             <span
-              className="text-sm flex-shrink-0"
+              className="text-sm shrink-0"
               style={{ color: u.color.hex, marginTop: 1 }}
             >
               {ROLE_ICONS[role]}
@@ -405,7 +405,7 @@ export default function UtilityColorsView() {
 
         {/* Live component preview */}
         <div style={{ marginTop: 32 }}>
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-3">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-3">
             Component Preview
           </div>
           <LivePreview />
@@ -413,7 +413,7 @@ export default function UtilityColorsView() {
 
         {/* Quick CSS vars */}
         <div className="mt-6">
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
             CSS Variables
           </div>
           <pre className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-[300px] overflow-y-auto">{`:root {\n${cssVars}\n}`}</pre>

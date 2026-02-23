@@ -255,7 +255,7 @@ function WebsiteMockup({
         {/* Logo uses first palette color */}
         <div className="items-center flex gap-1.5">
           <div
-            className="rounded flex-shrink-0 w-[18px]"
+            className="rounded shrink-0 w-[18px]"
             style={{ height: 18, background: accent1 }}
           />
           <span
@@ -470,7 +470,7 @@ function WebsiteMockup({
               }}
             >
               <div
-                className="flex-shrink-0 w-[14px] h-[14px]"
+                className="shrink-0 w-[14px] h-[14px]"
                 style={{ borderRadius: 7, background: color, marginTop: 1 }}
               />
               <div className="text-[9.5px]">
@@ -776,7 +776,7 @@ function ContrastMatrix({
                 className="flex items-center gap-1.5 py-1 px-0 border-b border-muted"
               >
                 <div
-                  className="rounded flex items-center justify-center flex-shrink-0"
+                  className="rounded flex items-center justify-center shrink-0"
                   style={{
                     width: 28,
                     height: 18,
@@ -890,7 +890,7 @@ function TokenTable({
                 {(["light", "dark"] as const).map((m) => (
                   <div key={m} className="items-center flex gap-[5px]">
                     <div
-                      className="rounded flex-shrink-0 w-4 h-4"
+                      className="rounded shrink-0 w-4 h-4"
                       style={{
                         background: t[m],
                         border: "1px solid rgba(128,128,128,.2)",
@@ -1525,7 +1525,7 @@ export default function ThemeGeneratorView() {
         {/* ─── Palette source + preview ────────────────────────────────── */}
         <div className="mb-7">
           <div className="justify-between items-center mb-2.5 flex">
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
               Website Preview
             </div>
             <div className="flex gap-1">
@@ -1572,7 +1572,7 @@ export default function ThemeGeneratorView() {
 
         {/* ─── Utility Colors ───────────────────────────────────────────── */}
         <div className="mb-7">
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
             Utility Colors — derived from palette hues ({previewMode} mode)
           </div>
           <UtilityStrip tokens={tokens} mode={previewMode} />
@@ -1588,7 +1588,7 @@ export default function ThemeGeneratorView() {
               marginBottom: expandContrast ? 10 : 0,
             }}
           >
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
               Accessibility / Contrast Pairs
             </div>
             <Button
@@ -1618,7 +1618,7 @@ export default function ThemeGeneratorView() {
               marginBottom: expandTokens ? 10 : 0,
             }}
           >
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
               All Semantic Tokens ({tokens.semantic.length} tokens, light +
               dark)
             </div>
@@ -1676,7 +1676,7 @@ export default function ThemeGeneratorView() {
         {/* ─── Code Export ─────────────────────────────────────────────── */}
         <div>
           <div className="justify-between items-center mb-2.5 flex">
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
               Export
             </div>
             <div className="flex gap-1">

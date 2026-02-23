@@ -140,10 +140,7 @@ function MiniApp({
           gap: 10,
         }}
       >
-        <div
-          className="rounded flex-shrink-0 w-4 h-4"
-          style={{ background: a1 }}
-        />
+        <div className="rounded shrink-0 w-4 h-4" style={{ background: a1 }} />
         <span
           className="font-extrabold text-[12px] flex-1"
           style={{ color: fg }}
@@ -299,7 +296,7 @@ function MiniApp({
             }}
           >
             <div
-              className="rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 w-[18px]"
+              className="rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 w-[18px]"
               style={{
                 height: 18,
                 background: borderColor,
@@ -461,7 +458,7 @@ function UtilityPanel({
                   }}
                 >
                   <div
-                    className="rounded-full flex-shrink-0 flex items-center justify-center text-[10px]"
+                    className="rounded-full shrink-0 flex items-center justify-center text-[10px]"
                     style={{ width: 20, height: 20, background: color }}
                   >
                     <span style={{ color: textColor(hexToRgb(color)) }}>
@@ -593,7 +590,7 @@ export default function CssPreview() {
 
         {/* Token legend */}
         <div className="mb-7">
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
             Token roles ({previewMode === "dark" ? "dark" : "light"} mode)
           </div>
           <TokenLegend
@@ -604,7 +601,7 @@ export default function CssPreview() {
 
         {/* Utility panel */}
         <div>
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
             Utility colors — filled + correct subtle backgrounds for both modes
           </div>
           <UtilityPanel tokens={tokens} />

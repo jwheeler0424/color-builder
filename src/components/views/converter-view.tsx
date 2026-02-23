@@ -32,7 +32,7 @@ function ConvCard({
   };
   return (
     <div className="bg-card border border-border rounded p-3.5 relative">
-      <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-1.5 font-display">
+      <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-1.5 font-display">
         {label}
       </div>
       <div className="font-mono text-[12px] break-all mb-0.5">{value}</div>
@@ -69,7 +69,7 @@ export default function ConverterView() {
   return (
     <>
       <div className="flex-1 overflow-auto p-7">
-        <div className="mx-auto max-w-[660px]">
+        <div className="mx-auto max-w-165">
           <div className="mb-5">
             <h2>Color Format Converter</h2>
             <p>
@@ -80,13 +80,13 @@ export default function ConverterView() {
           {/* Input row */}
           <div className="flex gap-2.5 mb-6 items-center">
             <div
-              className="w-14 h-14 rounded border-2 border-input flex-shrink-0 transition-colors duration-150 cursor-pointer"
+              className="w-14 h-14 rounded border-2 border-input shrink-0 transition-colors duration-150 cursor-pointer"
               style={{ background: hex }}
               title="Click to pick color"
               onClick={() => setShowPicker(true)}
             />
             <input
-              className="w-full bg-muted border border-border rounded px-3 py-[11px] text-[13px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
+              className="w-full bg-muted border border-border rounded px-3 py-2.75 text-[13px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
               value={convInput}
               onChange={(e) => setConvInput(e.target.value)}
               placeholder="#F4A261  ·  rgb(244,162,97)  ·  hsl(27,89%,67%)"
@@ -132,18 +132,17 @@ export default function ConverterView() {
         </div>
       </div>
 
-      {/* Modal rendered at view root — never inside a child component */}
-      {showPicker && (
-        <ColorPickerModal
-          initialHex={hex}
-          title="Color Converter"
-          onApply={(h) => {
-            setConvInput(h);
-            setShowPicker(false);
-          }}
-          onClose={() => setShowPicker(false)}
-        />
-      )}
+      {/* Modern Modal Implementation */}
+      <ColorPickerModal
+        isOpen={showPicker}
+        initialHex={hex}
+        title="Converter Picker"
+        onApply={(newHex) => {
+          setConvInput(newHex);
+          setShowPicker(false);
+        }}
+        onClose={() => setShowPicker(false)}
+      />
     </>
   );
 }

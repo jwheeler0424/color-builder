@@ -341,7 +341,7 @@ export default function P3GamutView() {
         {/* Export */}
         <div>
           <div className="justify-between items-center mb-2.5 flex">
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
               CSS with P3 @supports fallback
             </div>
             <Button variant="ghost" size="sm" onClick={copyP3}>

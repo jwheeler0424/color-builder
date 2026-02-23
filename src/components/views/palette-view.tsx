@@ -132,7 +132,7 @@ function SortableSlot({
       {...attributes}
     >
       {/* ── Top bar: drag handle + lock ── */}
-      <div className="flex items-start justify-between p-2 gap-1">
+      <div className="flex items-start justify-between p-2 gap-1  text-black dark:text-white rounded">
         {/* Explicit drag handle button */}
         <button
           ref={setActivatorNodeRef}
@@ -141,7 +141,6 @@ function SortableSlot({
             "cursor-grab active:cursor-grabbing touch-none",
             overlay && "cursor-grabbing",
           )}
-          style={{ color: tc }}
           title="Drag to reorder"
           {...listeners}
           onClick={(e) => e.stopPropagation()}
@@ -152,103 +151,97 @@ function SortableSlot({
         {/* Lock */}
         <button
           className={iconBtn}
-          style={{ color: slot.locked ? "var(--color-primary, #6366f1)" : tc }}
+          style={{
+            color: slot.locked ? "var(--color-primary, #6366f1)" : undefined,
+          }}
           onClick={(e) => {
             e.stopPropagation();
             toggleLock(index);
           }}
           title={slot.locked ? "Unlock slot" : "Lock slot"}
         >
-          {slot.locked ? <Lock size={13} /> : <LockOpen size={13} />}
+          {slot.locked ? <Lock size={14} /> : <LockOpen size={14} />}
         </button>
       </div>
 
       <div className="grow" />
 
       {/* ── Bottom info ── */}
-      <div className="flex flex-col shrink-0 gap-1 p-2.5 pt-0">
-        {/* Token name */}
-        {editingName ? (
-          <input
-            ref={nameInputRef}
-            className="font-mono text-[10px] font-semibold bg-black/35 border border-white/30
+      <div className="flex flex-col shrink-0 gap-1 p-2.5">
+        <div className="flex flex-col shrink-0 gap-1 p-2.5 bg-background/50 text-black dark:text-white rounded">
+          {/* Token name */}
+          {editingName ? (
+            <input
+              ref={nameInputRef}
+              className="font-mono text-[10px] font-semibold bg-black/35 border border-white/30
               rounded px-1.5 py-0.5 text-white outline-none w-full"
-            value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
-            onBlur={commitName}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commitName();
-              if (e.key === "Escape") setEditingName(false);
-            }}
-            placeholder={autoName}
-            maxLength={32}
-            onClick={(e) => e.stopPropagation()}
-          />
-        ) : (
-          <button
-            className="text-left font-mono text-[10px] font-semibold opacity-60
-              hover:opacity-100 transition-opacity leading-none"
-            style={{ color: tc }}
-            title="Click to rename token"
-            onClick={startNameEdit}
-          >
-            {displayName}
-            {slot.name && (
-              <Pencil size={9} className="inline ml-1 opacity-50" />
-            )}
-          </button>
-        )}
-
-        {/* Hex */}
-        <button
-          className="text-left font-mono text-[13px] font-bold tracking-widest uppercase
-            leading-none hover:opacity-80 transition-opacity"
-          style={{ color: tc }}
-          onClick={handleCopy}
-          title="Copy hex"
-        >
-          {slot.color.hex.toUpperCase()}
-        </button>
-
-        {/* HSL */}
-        <div
-          className="font-mono text-[10px] opacity-55 leading-none"
-          style={{ color: tc }}
-        >
-          {Math.round(hsl.h)}° {Math.round(hsl.s)}% {Math.round(hsl.l)}%
-          {slot.color.a !== undefined && slot.color.a < 100 && (
-            <span className="ml-1">· {slot.color.a}%</span>
-          )}
-        </div>
-
-        {/* Bottom row: contrast + edit + copy */}
-        <div className="flex items-center justify-between mt-0.5 gap-1">
-          <span
-            className="font-mono text-[9px] opacity-45 leading-none"
-            style={{ color: tc }}
-          >
-            {contrastVsWhite.toFixed(1)}:1
-          </span>
-          <div className="flex items-center gap-1">
-            <button
-              className={cn(iconBtn, "w-6 h-6")}
-              style={{ color: tc }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(index);
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onBlur={commitName}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitName();
+                if (e.key === "Escape") setEditingName(false);
               }}
-              title="Edit color"
-            >
-              <Pencil size={11} />
-            </button>
+              placeholder={autoName}
+              maxLength={32}
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
             <button
-              className={cn(iconBtn, "w-6 h-6")}
-              style={{ color: tc }}
-              onClick={handleCopy}
-              title="Copy hex"
+              className="text-left font-mono text-[10px] font-medium opacity-65
+              hover:opacity-100 transition-opacity leading-none"
+              title="Click to rename token"
+              onClick={startNameEdit}
             >
-              {copied ? <Check size={11} /> : <Copy size={11} />}
+              {displayName}
+              {slot.name && (
+                <Pencil size={9} className="inline ml-1 opacity-50" />
+              )}
             </button>
+          )}
+
+          {/* Hex */}
+          <button
+            className="text-left font-mono text-sm font-bold tracking-widest uppercase
+            leading-none hover:opacity-80 transition-opacity"
+            onClick={handleCopy}
+            title="Copy hex"
+          >
+            {slot.color.hex.toUpperCase()}
+          </button>
+
+          {/* HSL */}
+          <div className="font-mono text-[10px] opacity-65 leading-none">
+            {Math.round(hsl.h)}° {Math.round(hsl.s)}% {Math.round(hsl.l)}%
+            {slot.color.a !== undefined && slot.color.a < 100 && (
+              <span className="ml-1">· {slot.color.a}%</span>
+            )}
+          </div>
+
+          {/* Bottom row: contrast + edit + copy */}
+          <div className="flex items-center justify-between mt-0.5 gap-1">
+            <span className="font-mono text-[10px] opacity-65 leading-none">
+              {contrastVsWhite.toFixed(1)}:1
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                className={cn(iconBtn, "w-6 h-6")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(index);
+                }}
+                title="Edit color"
+              >
+                <Pencil size={13} />
+              </button>
+              <button
+                className={cn(iconBtn, "w-6 h-6")}
+                onClick={handleCopy}
+                title="Copy hex"
+              >
+                {copied ? <Check size={13} /> : <Copy size={13} />}
+              </button>
+            </div>
           </div>
         </div>
       </div>

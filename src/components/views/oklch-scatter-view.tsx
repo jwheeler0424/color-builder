@@ -307,7 +307,7 @@ export default function OklchScatterView() {
         <div className="flex gap-8 flex-wrap items-start">
           {/* Scatter plot */}
           <div>
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2 font-display font-semibold">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2 font-display font-semibold">
               Chroma vs Lightness
             </div>
             <canvas
@@ -319,7 +319,7 @@ export default function OklchScatterView() {
 
           {/* Hue wheel */}
           <div>
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2 font-display font-semibold">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2 font-display font-semibold">
               Hue Distribution
             </div>
             <canvas
@@ -347,7 +347,7 @@ export default function OklchScatterView() {
                 key={label}
                 className="bg-card border border-border rounded-lg p-3 text-center"
               >
-                <div className="text-[9px] tracking-[.1em] uppercase text-muted-foreground mb-1 font-display">
+                <div className="text-[9px] tracking-widest uppercase text-muted-foreground mb-1 font-display">
                   {label}
                 </div>
                 <div className="font-mono text-[15px] font-bold text-primary">

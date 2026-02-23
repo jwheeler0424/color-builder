@@ -108,14 +108,14 @@ export default function BrandComplianceView() {
 
         {/* Brand color input */}
         <div className="bg-card border border-border rounded-lg p-4 mb-6">
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-3 font-display font-semibold">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-3 font-display font-semibold">
             Add Brand Color
           </div>
           <div className="flex gap-2 flex-wrap">
             <div className="flex gap-2 items-center">
               {hexInput && parseHex(hexInput) && (
                 <div
-                  className="w-8 h-8 rounded border border-border flex-shrink-0"
+                  className="w-8 h-8 rounded border border-border shrink-0"
                   style={{ background: parseHex(hexInput) || undefined }}
                 />
               )}

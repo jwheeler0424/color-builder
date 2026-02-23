@@ -158,7 +158,7 @@ export default function GradientView() {
 
         {/* Full-width preview */}
         <div
-          className="w-full h-[200px] rounded border border-border mb-4 flex-shrink-0 max-w-[960px]"
+          className="w-full h-[200px] rounded border border-border mb-4 shrink-0 max-w-[960px]"
           style={{ background: css }}
         />
 
@@ -231,10 +231,10 @@ export default function GradientView() {
       </div>
 
       {/* Side panel */}
-      <div className="w-[320px] bg-card border-l border-border overflow-y-auto flex-shrink-0 p-4 flex flex-col gap-3.5">
+      <div className="w-[320px] bg-card border-l border-border overflow-y-auto shrink-0 p-4 flex flex-col gap-3.5">
         {/* Type */}
         <div>
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Type
           </div>
           <div className="flex gap-1">
@@ -254,7 +254,7 @@ export default function GradientView() {
         {/* Direction (linear only) */}
         {g.type === "linear" && (
           <div>
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
               Direction
             </div>
             <div className="flex-wrap flex gap-1">
@@ -275,7 +275,7 @@ export default function GradientView() {
         {/* Conic from angle */}
         {g.type === "conic" && (
           <div>
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
               Starting Angle
             </div>
             <div className="flex-wrap flex gap-1">
@@ -297,7 +297,7 @@ export default function GradientView() {
 
         {/* Selected stop editor */}
         <div>
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Selected Stop ({g.selectedStop + 1} of {g.stops.length})
           </div>
           <div className="items-center mb-2.5 flex gap-2">
@@ -334,7 +334,7 @@ export default function GradientView() {
 
         {/* Interpolation space */}
         <div>
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Interpolation Space
           </div>
           <div className="flex-wrap flex gap-1">
@@ -380,7 +380,7 @@ export default function GradientView() {
 
         {/* Easing */}
         <div>
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Stop Distribution Easing
           </div>
           <div className="flex-wrap flex gap-1">
@@ -424,7 +424,7 @@ export default function GradientView() {
 
         {/* Presets */}
         <div>
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Presets
           </div>
           <div className="flex-col flex gap-1">
@@ -441,7 +441,7 @@ export default function GradientView() {
                 }
               >
                 <span
-                  className="inline-block rounded flex-shrink-0 h-2.5"
+                  className="inline-block rounded shrink-0 h-2.5"
                   style={{
                     width: 32,
                     background: buildCss({

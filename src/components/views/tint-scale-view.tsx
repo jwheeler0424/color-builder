@@ -103,7 +103,7 @@ export default function TintScaleView() {
 
           <div className="flex gap-2 items-center mb-6 max-w-[600px]">
             <div
-              className="w-11 h-11 rounded border-2 border-input flex-shrink-0 cursor-pointer"
+              className="w-11 h-11 rounded border-2 border-input shrink-0 cursor-pointer"
               style={{ background: scaleHex }}
               title="Click to pick color"
               onClick={() => setShowPicker(true)}
@@ -150,8 +150,8 @@ export default function TintScaleView() {
           </div>
         </div>
 
-        <div className="w-[320px] bg-card border-l border-border overflow-y-auto flex-shrink-0 p-4">
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+        <div className="w-[320px] bg-card border-l border-border overflow-y-auto shrink-0 p-4">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Token Name
           </div>
           <input
@@ -163,7 +163,7 @@ export default function TintScaleView() {
             autoComplete="off"
           />
 
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Export Format
           </div>
           <div className="flex-wrap mb-2.5 flex gap-1">
@@ -191,7 +191,7 @@ export default function TintScaleView() {
             {copied ? "✓ Copied" : "Copy"}
           </Button>
 
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mt-4">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mt-4">
             Use in Palette
           </div>
           <Button

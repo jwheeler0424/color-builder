@@ -184,7 +184,7 @@ export default function PaletteScoring() {
 
         <div className="flex gap-8 items-start mt-2">
           {/* Radar */}
-          <div className="flex flex-col items-center gap-3 flex-shrink-0">
+          <div className="flex flex-col items-center gap-3 shrink-0">
             <RadarChart scores={radarData} />
             <div className="text-center">
               <div
@@ -193,7 +193,7 @@ export default function PaletteScoring() {
               >
                 {overall}
               </div>
-              <div className="text-muted-foreground uppercase tracking-[.1em] text-[10px]">
+              <div className="text-muted-foreground uppercase tracking-widest text-[10px]">
                 Overall
               </div>
             </div>
@@ -236,7 +236,7 @@ export default function PaletteScoring() {
 
         {/* Palette preview */}
         <div className="mt-6">
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
             Your Palette
           </div>
           <div className="flex h-[52px] rounded overflow-hidden">

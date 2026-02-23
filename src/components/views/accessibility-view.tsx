@@ -268,14 +268,14 @@ function PairsMatrix({
               }}
             >
               <div
-                className="rounded flex-shrink-0 w-[14px] h-[14px]"
+                className="rounded shrink-0 w-[14px] h-[14px]"
                 style={{
                   background: a,
                   border: "1px solid rgba(128,128,128,.2)",
                 }}
               />
               <div
-                className="rounded flex-shrink-0 w-[14px] h-[14px]"
+                className="rounded shrink-0 w-[14px] h-[14px]"
                 style={{
                   background: b,
                   border: "1px solid rgba(128,128,128,.2)",
@@ -360,7 +360,7 @@ export default function AccessibilityView() {
               </p>
             </div>
             {/* WCAG / APCA toggle */}
-            <div className="items-center flex flex-shrink-0 mt-1 gap-1">
+            <div className="items-center flex shrink-0 mt-1 gap-1">
               <span className="text-muted-foreground text-[10px]">Mode:</span>
               {([false, true] as const).map((apca) => (
                 <button
@@ -455,7 +455,7 @@ export default function AccessibilityView() {
               marginBottom: showPairs ? 12 : 0,
             }}
           >
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
               Palette color pairs
             </div>
             <button

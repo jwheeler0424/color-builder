@@ -100,7 +100,7 @@ export default function ImageExtractView() {
               </div>
             )}
             <div className="flex-1">
-              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
+              <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
                 Extracted Colors
               </div>
               {loading && (
@@ -120,7 +120,7 @@ export default function ImageExtractView() {
                   return (
                     <div key={i} className="flex items-center gap-2 mb-1.5">
                       <div
-                        className="rounded flex-shrink-0"
+                        className="rounded shrink-0"
                         style={{
                           width: 32,
                           height: 32,

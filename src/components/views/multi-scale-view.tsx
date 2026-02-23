@@ -140,7 +140,7 @@ export default function MultiScaleView() {
                   >
                     <div className="items-center flex gap-1.5">
                       <div
-                        className="rounded flex-shrink-0 w-[14px] h-[14px]"
+                        className="rounded shrink-0 w-[14px] h-[14px]"
                         style={{
                           background: scale.hex,
                           border: "1px solid rgba(128,128,128,.2)",
@@ -224,7 +224,7 @@ export default function MultiScaleView() {
                 className="flex items-center gap-1.5 bg-card rounded-md border border-muted px-2.5 py-1.5"
               >
                 <div
-                  className="rounded flex-shrink-0"
+                  className="rounded shrink-0"
                   style={{
                     width: 20,
                     height: 20,
@@ -248,7 +248,7 @@ export default function MultiScaleView() {
         {/* Export */}
         <div>
           <div className="justify-between items-center flex-wrap mb-2.5 flex gap-1.5">
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
               Export All Scales
             </div>
             <div className="flex gap-1">

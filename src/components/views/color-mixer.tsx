@@ -106,12 +106,12 @@ export default function ColorMixer() {
             { label: "Color B", val: colorB, set: setColorB, rgb: rgbB },
           ].map(({ label, val, set, rgb }) => (
             <div key={label} className="flex-1">
-              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
                 {label}
               </div>
               <div className="items-center flex gap-2">
                 <div
-                  className="rounded border-2 border-input flex-shrink-0"
+                  className="rounded border-2 border-input shrink-0"
                   style={{ width: 48, height: 48, background: rgbToHex(rgb) }}
                 />
                 <div>
@@ -135,7 +135,7 @@ export default function ColorMixer() {
         {/* Palette quick-pick */}
         {slots.length > 0 && (
           <div className="mb-4">
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-1.5">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-1.5">
               Pick from Palette (A / B)
             </div>
             <div className="flex-wrap flex gap-1">
@@ -167,7 +167,7 @@ export default function ColorMixer() {
 
         {/* Space selector */}
         <div className="mb-5">
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
             Blend Space
           </div>
           <div className="flex gap-1">
@@ -187,7 +187,7 @@ export default function ColorMixer() {
         </div>
 
         {/* Active blend strip */}
-        <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
+        <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
           Result
         </div>
         <div className="flex h-[60px] rounded overflow-hidden mb-2">
@@ -212,13 +212,13 @@ export default function ColorMixer() {
         </div>
 
         {/* Comparison of all spaces */}
-        <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mt-6 mb-2.5">
+        <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mt-6 mb-2.5">
           Space Comparison
         </div>
         <div className="flex flex-col gap-1.5">
           {allSpaces.map((space) => (
             <div key={space.id} className="flex items-center gap-2.5">
-              <div className="w-[52px] text-[10px] text-muted-foreground text-right flex-shrink-0">
+              <div className="w-[52px] text-[10px] text-muted-foreground text-right shrink-0">
                 {space.label}
               </div>
               <div className="flex-1 h-7 flex rounded overflow-hidden">
