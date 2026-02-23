@@ -1,8 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
-import type { SavedPalette } from "@/types";
-import { useChromaStore } from "@/hooks/useChromaStore";
-import { hexToRgb, contrastRatio, rgbToOklch } from "@/lib/utils/colorMath";
-import { nearestName, loadSaved, hexToStop } from "@/lib/utils/paletteUtils";
+import type { PaletteSlot, SavedPalette } from "@/types";
+import { useChromaStore } from "@/hooks/use-chroma-store";
+import {
+  hexToRgb,
+  contrastRatio,
+  rgbToOklch,
+  nearestName,
+  loadSaved,
+  hexToStop,
+} from "@/lib/utils";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
@@ -41,20 +47,11 @@ function paletteStats(hexes: string[]) {
 function SwatchStrip({ hexes, label }: { hexes: string[]; label: string }) {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   return (
-    <div style={{ marginBottom: 8 }}>
-      <div
-        style={{
-          fontSize: 10,
-          fontWeight: 700,
-          color: "var(--ch-t3)",
-          marginBottom: 5,
-          textTransform: "uppercase",
-          letterSpacing: ".07em",
-        }}
-      >
+    <div className="mb-2">
+      <div className="text-muted-foreground uppercase tracking-[.07em] mb-[5px] font-bold text-[10px]">
         {label}
       </div>
-      <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+      <div className="flex-wrap flex gap-[3px]">
         {hexes.map((hex, i) => {
           const rgb = hexToRgb(hex);
           const tc =
@@ -70,21 +67,16 @@ function SwatchStrip({ hexes, label }: { hexes: string[]; label: string }) {
                 setCopiedIdx(i);
                 setTimeout(() => setCopiedIdx(null), 900);
               }}
+              className="rounded-md cursor-pointer flex items-center justify-center flex-shrink-0"
               style={{
                 width: 48,
                 height: 48,
-                borderRadius: 6,
                 background: hex,
-                cursor: "pointer",
                 border: "1px solid rgba(128,128,128,.2)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
               }}
             >
               {copiedIdx === i && (
-                <span style={{ fontSize: 9, fontWeight: 700, color: tc }}>
+                <span className="text-[9px] font-bold" style={{ color: tc }}>
                   ✓
                 </span>
               )}
@@ -133,24 +125,18 @@ function StatRow({
         : v.toFixed(3);
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 80px 80px",
-        gap: 8,
-        alignItems: "center",
-        padding: "5px 0",
-        borderBottom: "1px solid var(--ch-s2)",
-      }}
-    >
-      <span style={{ fontSize: 10, color: "var(--ch-t2)" }}>{label}</span>
+    <div className="grid gap-2 items-center border-b border-muted [grid-template-columns:1fr_80px_80px] py-[5px] px-0">
+      <span className="text-secondary-foreground text-[10px]">{label}</span>
       <span
         style={{
           fontSize: 10,
-          fontFamily: "var(--ch-fm)",
+          fontFamily: "var(--font-mono)",
           textAlign: "right",
           fontWeight: betterSide === "a" ? 700 : 400,
-          color: betterSide === "a" ? "var(--ch-t1)" : "var(--ch-t3)",
+          color:
+            betterSide === "a"
+              ? "var(--color-foreground)"
+              : "var(--color-muted-foreground)",
         }}
       >
         {fmt(a)}
@@ -158,10 +144,13 @@ function StatRow({
       <span
         style={{
           fontSize: 10,
-          fontFamily: "var(--ch-fm)",
+          fontFamily: "var(--font-mono)",
           textAlign: "right",
           fontWeight: betterSide === "b" ? 700 : 400,
-          color: betterSide === "b" ? "var(--ch-t1)" : "var(--ch-t3)",
+          color:
+            betterSide === "b"
+              ? "var(--color-foreground)"
+              : "var(--color-muted-foreground)",
         }}
       >
         {fmt(b)}
@@ -177,15 +166,7 @@ function HueDiff({ hexesA, hexesB }: { hexesA: string[]; hexesB: string[] }) {
   const oklchsB = hexesB.map((h) => rgbToOklch(hexToRgb(h)));
 
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: 2,
-        alignItems: "flex-end",
-        height: 48,
-        marginTop: 8,
-      }}
-    >
+    <div className="flex gap-0.5 items-end h-12 mt-2">
       {/* Hue wheel ticks */}
       {[
         ...oklchsA.map((c, i) => ({ ...c, src: "a", hex: hexesA[i] })),
@@ -199,7 +180,7 @@ function HueDiff({ hexesA, hexesB }: { hexesA: string[]; hexesB: string[] }) {
             minHeight: 8,
             borderRadius: 3,
             background: c.hex,
-            border: `2px solid ${c.src === "a" ? "var(--ch-t1)" : "var(--ch-a)"}`,
+            border: `2px solid ${c.src === "a" ? "var(--color-foreground)" : "var(--color-primary)"}`,
             flexShrink: 0,
           }}
           title={`${c.src === "a" ? "A" : "B"}: ${c.hex} H=${Math.round(c.H)}° C=${c.C.toFixed(2)}`}
@@ -217,7 +198,7 @@ function NameDiff({ hexesA, hexesB }: { hexesA: string[]; hexesB: string[] }) {
   const allNames = Array.from(new Set([...namesA, ...namesB])).sort();
 
   return (
-    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+    <div className="flex-wrap flex gap-1">
       {allNames.map((name) => {
         const inA = namesA.includes(name);
         const inB = namesB.includes(name);
@@ -236,7 +217,7 @@ function NameDiff({ hexesA, hexesB }: { hexesA: string[]; hexesB: string[] }) {
               fontSize: 9,
               fontWeight: 600,
               background: both ? hexA : onlyA ? hexA : hexB,
-              border: `2px solid ${both ? "var(--ch-t1)" : onlyA ? "rgba(99,102,241,.6)" : "rgba(236,72,153,.6)"}`,
+              border: `2px solid ${both ? "var(--color-foreground)" : onlyA ? "rgba(99,102,241,.6)" : "rgba(236,72,153,.6)"}`,
               color:
                 contrastRatio(hexToRgb(both ? hexA : onlyA ? hexA : hexB), {
                   r: 255,
@@ -250,7 +231,7 @@ function NameDiff({ hexesA, hexesB }: { hexesA: string[]; hexesB: string[] }) {
             title={both ? "In both" : onlyA ? "Only in A" : "Only in B"}
           >
             {name}
-            <span style={{ marginLeft: 4, opacity: 0.7 }}>
+            <span className="ml-1" style={{ opacity: 0.7 }}>
               {both ? "✓✓" : onlyA ? "A" : "B"}
             </span>
           </div>
@@ -263,7 +244,9 @@ function NameDiff({ hexesA, hexesB }: { hexesA: string[]; hexesB: string[] }) {
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 export default function PaletteComparisonView() {
-  const { slots, mode, loadPalette } = useChromaStore();
+  const slots = useChromaStore((s) => s.slots);
+  const mode = useChromaStore((s) => s.mode);
+  const loadPalette = useChromaStore((s) => s.loadPalette);
   const navigate = useNavigate();
   const [saved, setSaved] = useState<SavedPalette[]>([]);
   const [selA, setSelA] = useState<string | null>(null);
@@ -301,9 +284,9 @@ export default function PaletteComparisonView() {
   );
 
   return (
-    <div className="ch-view-scroll ch-view-pad">
-      <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-        <div className="ch-view-hd">
+    <div className="flex-1 overflow-auto p-6">
+      <div className="mx-auto" style={{ maxWidth: 1000 }}>
+        <div className="mb-5">
           <h2>Palette Comparison</h2>
           <p>
             Compare two palettes side-by-side — hue spread, chroma, lightness,
@@ -313,7 +296,8 @@ export default function PaletteComparisonView() {
 
         {saved.length === 0 && (
           <div
-            style={{ color: "var(--ch-t3)", fontSize: 12, padding: "20px 0" }}
+            className="text-muted-foreground text-[12px]"
+            style={{ padding: "20px 0" }}
           >
             Save some palettes first using ♡ in the header, then compare them
             here.
@@ -321,25 +305,19 @@ export default function PaletteComparisonView() {
         )}
 
         {/* Palette selectors */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 16,
-            marginBottom: 24,
-          }}
-        >
+        <div className="grid gap-4 mb-6 grid-cols-2">
           {[
             { label: "Palette A", sel: selA ?? "__current__", setSel: setSelA },
             { label: "Palette B", sel: selB ?? saved[0]?.id, setSel: setSelB },
           ].map(({ label, sel, setSel }) => (
             <div key={label}>
-              <div className="ch-slabel">{label}</div>
+              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+                {label}
+              </div>
               <select
                 value={sel ?? ""}
                 onChange={(e) => setSel(e.target.value)}
-                className="ch-inp"
-                style={{ width: "100%", marginBottom: 8 }}
+                className="w-full bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground mb-2"
               >
                 {options.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -360,30 +338,22 @@ export default function PaletteComparisonView() {
         {palA && palB && statsA && statsB && (
           <>
             {/* Hue diff visualization */}
-            <div style={{ marginBottom: 24 }}>
-              <div className="ch-slabel">Hue / Chroma Spread</div>
-              <div
-                style={{
-                  fontSize: 9.5,
-                  color: "var(--ch-t3)",
-                  marginBottom: 6,
-                }}
-              >
+            <div className="mb-6">
+              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+                Hue / Chroma Spread
+              </div>
+              <div className="text-muted-foreground mb-1.5 text-[9.5px]">
                 Bar height = chroma.{" "}
                 <span
-                  style={{
-                    borderBottom: "2px solid var(--ch-t1)",
-                    paddingBottom: 1,
-                  }}
+                  className="pb-px"
+                  style={{ borderBottom: "2px solid var(--color-foreground)" }}
                 >
                   A
                 </span>{" "}
                 vs{" "}
                 <span
-                  style={{
-                    borderBottom: "2px solid var(--ch-a)",
-                    paddingBottom: 1,
-                  }}
+                  className="pb-px"
+                  style={{ borderBottom: "2px solid var(--color-primary)" }}
                 >
                   B
                 </span>
@@ -392,43 +362,15 @@ export default function PaletteComparisonView() {
             </div>
 
             {/* Stats comparison */}
-            <div style={{ marginBottom: 24 }}>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 80px 80px",
-                  gap: 8,
-                  marginBottom: 6,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color: "var(--ch-t3)",
-                    textTransform: "uppercase",
-                  }}
-                >
+            <div className="mb-6">
+              <div className="grid gap-2 mb-1.5 [grid-template-columns:1fr_80px_80px]">
+                <span className="text-muted-foreground uppercase font-bold text-[9px]">
                   Metric
                 </span>
-                <span
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color: "var(--ch-t1)",
-                    textAlign: "right",
-                  }}
-                >
+                <span className="text-foreground text-right font-bold text-[9px]">
                   {palA.name.slice(0, 10)}
                 </span>
-                <span
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color: "var(--ch-a)",
-                    textAlign: "right",
-                  }}
-                >
+                <span className="text-primary text-right font-bold text-[9px]">
                   {palB.name.slice(0, 10)}
                 </span>
               </div>
@@ -479,15 +421,11 @@ export default function PaletteComparisonView() {
             </div>
 
             {/* Color name overlap */}
-            <div style={{ marginBottom: 24 }}>
-              <div className="ch-slabel">Color Name Overlap</div>
-              <div
-                style={{
-                  fontSize: 9.5,
-                  color: "var(--ch-t3)",
-                  marginBottom: 8,
-                }}
-              >
+            <div className="mb-6">
+              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+                Color Name Overlap
+              </div>
+              <div className="text-muted-foreground mb-2 text-[9.5px]">
                 Chips shared by both palettes are shown at full opacity. Unique
                 to A or B are muted.
               </div>
@@ -495,17 +433,20 @@ export default function PaletteComparisonView() {
             </div>
 
             {/* Load buttons */}
-            <div style={{ display: "flex", gap: 8 }}>
+            <div className="flex gap-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
                   const p = palA;
                   loadPalette(
-                    p.hexes.map((h) => ({
-                      color: hexToStop(h),
-                      locked: false,
-                    })),
+                    p.hexes.map(
+                      (h) =>
+                        ({
+                          color: hexToStop(h),
+                          locked: false,
+                        }) as PaletteSlot,
+                    ),
                     p.mode,
                     p.hexes.length,
                   );
@@ -520,10 +461,13 @@ export default function PaletteComparisonView() {
                 onClick={() => {
                   const p = palB;
                   loadPalette(
-                    p.hexes.map((h) => ({
-                      color: hexToStop(h),
-                      locked: false,
-                    })),
+                    p.hexes.map(
+                      (h) =>
+                        ({
+                          color: hexToStop(h),
+                          locked: false,
+                        }) as PaletteSlot,
+                    ),
                     p.mode,
                     p.hexes.length,
                   );

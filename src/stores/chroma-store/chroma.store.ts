@@ -5,30 +5,30 @@ import type {
   ChromaStore,
   ChromaState,
   PaletteSlot,
+  PaletteSnapshot,
   HarmonyMode,
+  BrandColor,
 } from "@/types";
 import {
   generateUtilityColors,
   mergeUtilityColors,
-} from "@/lib/utils/colorMath";
+} from "@/lib/utils/color-math.utils";
 import {
   genPalette,
   cloneSlot,
   hexToStop,
   decodeUrl,
   savePrefs,
-} from "@/lib/utils/paletteUtils";
+} from "@/lib/utils/palette.utils";
 
-// ─── Slot sanitizer ────────────────────────────────────────────────────────────
-// Defends against stale persisted data where rgb values may be 0-1 floats (old
-// format) or otherwise corrupt. Re-derives rgb/hsl from the authoritative hex.
+// ─── Slot sanitizer ───────────────────────────────────────────────────────────
+
 function sanitizeSlots(slots: unknown[]): PaletteSlot[] {
   if (!Array.isArray(slots)) return [];
   return slots.flatMap((slot) => {
     if (!slot || typeof slot !== "object") return [];
     const s = slot as Record<string, unknown>;
     const rawHex = (s.color as Record<string, unknown>)?.hex;
-    // Accept 6-char or 8-char hex (legacy alpha storage)
     if (typeof rawHex !== "string" || !/^#[0-9a-fA-F]{6,8}$/.test(rawHex))
       return [];
     const rgb = (s.color as Record<string, unknown>)?.rgb as
@@ -39,19 +39,47 @@ function sanitizeSlots(slots: unknown[]): PaletteSlot[] {
       typeof rgb.r !== "number" ||
       isNaN(rgb.r as number) ||
       ((rgb.r as number) < 2 && (rgb.g as number) < 2 && (rgb.b as number) < 2);
-    // Preserve stored alpha — either from the color.a field or from 8-char hex
     const storedA = (s.color as Record<string, unknown>)?.a;
     const alpha = typeof storedA === "number" ? storedA : undefined;
     const color = needsRegen
       ? hexToStop(rawHex, alpha)
       : (s.color as ReturnType<typeof hexToStop>);
-    // Re-attach alpha if it came from the stored field but got dropped in regen
     if (alpha !== undefined && color.a === undefined) color.a = alpha;
-    return [{ color, locked: !!(s as Record<string, unknown>).locked }];
+    // Ensure stable id — old persisted slots may not have one
+    const id = typeof s.id === "string" ? s.id : crypto.randomUUID();
+    return [
+      {
+        id,
+        color,
+        locked: !!s.locked,
+        name: typeof s.name === "string" ? s.name : undefined,
+      },
+    ];
   });
 }
 
-// ─── Initial state builder ────────────────────────────────────────────────────
+// ─── Snapshot helper ──────────────────────────────────────────────────────────
+
+function makeSnapshot(
+  slots: PaletteSlot[],
+  mode: HarmonyMode,
+  label: string,
+): PaletteSnapshot {
+  return {
+    id: crypto.randomUUID(),
+    label,
+    mode,
+    createdAt: Date.now(),
+    slots: slots.map((s) => ({
+      id: s.id,
+      hex: s.color.hex,
+      name: s.name,
+      locked: s.locked,
+    })),
+  };
+}
+
+// ─── Initial state ────────────────────────────────────────────────────────────
 
 function makeInitialState(): ChromaState {
   const defaultGradient = {
@@ -63,12 +91,6 @@ function makeInitialState(): ChromaState {
     ],
     selectedStop: 0,
   };
-
-  // Deterministic placeholder palette used during SSR.
-  // Math.random() must never run on the server — it would differ from the
-  // client's first render and cause a React hydration mismatch.
-  // rehydrate() (called in ChromaShell's useEffect) will immediately replace
-  // this with the real persisted palette after mount.
   const SSR_SEEDS = [
     "#6366f1",
     "#ec4899",
@@ -80,6 +102,7 @@ function makeInitialState(): ChromaState {
   const mode: HarmonyMode = "analogous";
   const count = 6;
   const slots: PaletteSlot[] = SSR_SEEDS.map((hex) => ({
+    id: crypto.randomUUID(),
     color: hexToStop(hex),
     locked: false,
   }));
@@ -87,6 +110,7 @@ function makeInitialState(): ChromaState {
   return {
     seeds: [],
     history: [],
+    paletteSnapshots: [],
     recentColors: [],
     gradient: defaultGradient,
     pickerHex: "#3b82f6",
@@ -107,10 +131,11 @@ function makeInitialState(): ChromaState {
     seedMode: "influence" as const,
     temperature: 0,
     utilityColors: generateUtilityColors(slots),
+    brandColors: [],
   };
 }
 
-// ─── Zustand store with immer + persist ───────────────────────────────────────
+// ─── Store ────────────────────────────────────────────────────────────────────
 
 export const useChromaStore = create<ChromaStore>()(
   persist(
@@ -142,7 +167,13 @@ export const useChromaStore = create<ChromaStore>()(
 
       generate: () =>
         set((s) => {
+          // Push to in-memory undo history (last 25)
           s.history = [...s.history, s.slots.map(cloneSlot)].slice(-25);
+          // Push persistent snapshot (last 50)
+          s.paletteSnapshots = [
+            makeSnapshot(s.slots as PaletteSlot[], s.mode, "Before generate"),
+            ...s.paletteSnapshots,
+          ].slice(0, 50);
           const seedHsls = s.seeds.map((seed) => ({ ...seed.hsl }));
           const newColors = genPalette(
             s.mode,
@@ -155,7 +186,12 @@ export const useChromaStore = create<ChromaStore>()(
           s.slots = newColors.map((color, i) =>
             s.slots[i]?.locked
               ? cloneSlot(s.slots[i])
-              : { color, locked: i < seedCount },
+              : {
+                  id: s.slots[i]?.id ?? crypto.randomUUID(),
+                  color,
+                  locked: i < seedCount,
+                  name: undefined,
+                },
           );
           s.utilityColors = mergeUtilityColors(
             s.utilityColors,
@@ -181,16 +217,31 @@ export const useChromaStore = create<ChromaStore>()(
         }),
       addSlot: (color) =>
         set((s) => {
-          s.slots.push({ color, locked: false });
+          s.slots.push({ id: crypto.randomUUID(), color, locked: false });
         }),
       removeSlot: (index) =>
         set((s) => {
           s.slots.splice(index, 1);
         }),
 
+      reorderSlots: (fromIndex, toIndex) =>
+        set((s) => {
+          const moved = s.slots.splice(fromIndex, 1)[0];
+          s.slots.splice(toIndex, 0, moved);
+        }),
+
+      renameSlot: (index, name) =>
+        set((s) => {
+          s.slots[index].name = name;
+        }),
+
       loadPalette: (slots, mode, count) =>
         set((s) => {
           s.history = [...s.history, s.slots.map(cloneSlot)].slice(-25);
+          s.paletteSnapshots = [
+            makeSnapshot(s.slots as PaletteSlot[], s.mode, `Before load`),
+            ...s.paletteSnapshots,
+          ].slice(0, 50);
           s.slots = slots;
           s.mode = mode;
           s.count = count;
@@ -198,6 +249,18 @@ export const useChromaStore = create<ChromaStore>()(
             s.utilityColors,
             generateUtilityColors(slots),
           );
+        }),
+
+      restoreSnapshot: (snap) =>
+        set((s) => {
+          s.history = [...s.history, s.slots.map(cloneSlot)].slice(-25);
+          s.slots = snap.slots.map((ss) => ({
+            id: ss.id,
+            color: hexToStop(ss.hex),
+            locked: ss.locked,
+            name: ss.name,
+          }));
+          s.mode = snap.mode;
         }),
 
       // ── Picker ──────────────────────────────────────────────────────────────
@@ -306,12 +369,26 @@ export const useChromaStore = create<ChromaStore>()(
             generateUtilityColors(s.slots),
           );
         }),
+
+      // ── Brand colors ─────────────────────────────────────────────────────────
+
+      addBrandColor: (hex, label) =>
+        set((s) => {
+          s.brandColors.push({ id: crypto.randomUUID(), hex, label });
+        }),
+      removeBrandColor: (id) =>
+        set((s) => {
+          s.brandColors = s.brandColors.filter((b: BrandColor) => b.id !== id);
+        }),
+      updateBrandColor: (id, patch) =>
+        set((s) => {
+          const b = s.brandColors.find((b: BrandColor) => b.id === id);
+          if (b) Object.assign(b, patch);
+        }),
     })),
     {
       name: "chroma-v4",
       storage: createJSONStorage(() => localStorage),
-
-      // Persist user data only — exclude ephemeral state
       partialize: (state) => ({
         mode: state.mode,
         count: state.count,
@@ -330,15 +407,12 @@ export const useChromaStore = create<ChromaStore>()(
         convInput: state.convInput,
         exportTab: state.exportTab,
         utilityColors: state.utilityColors,
-        // Excluded: history, modal, saveName, extractedColors, imgSrc
+        paletteSnapshots: state.paletteSnapshots,
+        brandColors: state.brandColors,
       }),
-
-      // URL params always win over persisted state
       merge: (persisted, current) => {
         if (decodeUrl()) return current;
         const p = persisted as Partial<ChromaStore>;
-        // Sanitize slots on rehydration — guards against stale rgb values from
-        // old versions (0–1 float range) that would break all contrast checks
         const slots = p.slots
           ? sanitizeSlots(p.slots as unknown[])
           : current.slots;
@@ -351,13 +425,7 @@ export const useChromaStore = create<ChromaStore>()(
             : current.utilityColors;
         return { ...current, ...p, slots, utilityColors };
       },
-
-      version: 2,
-
-      // Prevent auto-hydration from localStorage on the server (SSR).
-      // Chroma.tsx calls useChromaStore.persist.rehydrate() in a useEffect
-      // so the server and first client render are always identical (default
-      // state), and localStorage is only applied after mount.
+      version: 3,
       skipHydration: true,
     },
   ),

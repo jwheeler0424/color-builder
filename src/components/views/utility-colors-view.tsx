@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { UtilityRole, UtilityColor } from "@/types";
-import { useChromaStore } from "@/hooks/useChromaStore";
+import { useChromaStore } from "@/hooks/use-chroma-store";
 import {
   parseHex,
   textColor,
@@ -9,9 +9,9 @@ import {
   hslToRgb,
   rgbToHex,
   hexToRgb,
+  hexToStop,
   rgbToOklch,
-} from "@/lib/utils/colorMath";
-import { hexToStop } from "@/lib/utils/paletteUtils";
+} from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const ROLE_ICONS: Record<UtilityRole, string> = {
@@ -87,26 +87,24 @@ function UtilityCard({
   };
 
   return (
-    <div className="ch-utility-card">
+    <div className="bg-secondary border border-border rounded-md p-4 hover:border-input transition-colors">
       {/* Swatch + lock */}
-      <div className="ch-utility-swatch-row">
-        <div className="ch-utility-swatch" style={{ background: hex }}>
-          <span style={{ color: tc, fontSize: 18 }}>
+      <div className="flex items-start gap-3">
+        <div
+          className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 border-2 border-white/10"
+          style={{ background: hex }}
+        >
+          <span className="text-lg" style={{ color: tc }}>
             {ROLE_ICONS[utility.role]}
           </span>
         </div>
-        <div className="ch-utility-meta">
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: 4,
-            }}
-          >
-            <span className="ch-utility-label">{utility.label}</span>
+        <div className="flex-1 min-w-0">
+          <div className="items-center flex mb-1 gap-2">
+            <span className="font-display text-sm font-bold text-foreground">
+              {utility.label}
+            </span>
             <button
-              className={`ch-utility-lock${utility.locked ? " locked" : ""}`}
+              className={`bg-transparent border-none cursor-pointer text-[13px] p-0 opacity-50 hover:opacity-100 transition-opacity leading-none${utility.locked ? " locked" : ""}`}
               onClick={() => onToggleLock(utility.role)}
               title={
                 utility.locked
@@ -117,94 +115,62 @@ function UtilityCard({
               {utility.locked ? "🔒" : "🔓"}
             </button>
           </div>
-          <div className="ch-utility-desc">{utility.description}</div>
+          <div className="text-[10px] text-muted-foreground leading-relaxed mt-0.5">
+            {utility.description}
+          </div>
         </div>
       </div>
 
       {/* Hex edit */}
       <input
-        className={`ch-inp${editErr ? " err" : ""}`}
+        className={`w-full bg-muted border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground ${editErr ? "border-destructive" : "border-border"}`}
         value={editVal}
         onChange={(e) => handleInput(e.target.value)}
         maxLength={7}
         spellCheck={false}
         autoComplete="off"
-        style={{
-          fontFamily: "var(--ch-fm)",
-          letterSpacing: ".06em",
-          fontSize: 11,
-          marginTop: 10,
-        }}
+        style={{ marginTop: 10 }}
       />
 
       {/* Usage previews */}
-      <div className="ch-utility-previews">
+      <div className="flex gap-2.5 mt-3 flex-wrap">
         {/* Filled badge */}
-        <div className="ch-utility-preview-item">
-          <span
-            style={{
-              fontSize: 10,
-              color: "var(--ch-t3)",
-              marginBottom: 4,
-              display: "block",
-            }}
-          >
+        <div className="flex flex-col">
+          <span className="text-muted-foreground block mb-1 text-[10px]">
             Filled
           </span>
           <span
+            className="text-[11px] font-bold inline-flex items-center gap-[5px]"
             style={{
               background: hex,
               color: tc,
               padding: "3px 10px",
               borderRadius: 12,
-              fontSize: 11,
-              fontWeight: 700,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
             }}
           >
             {ROLE_ICONS[utility.role]} {utility.label}
           </span>
         </div>
         {/* Subtle badge */}
-        <div className="ch-utility-preview-item">
-          <span
-            style={{
-              fontSize: 10,
-              color: "var(--ch-t3)",
-              marginBottom: 4,
-              display: "block",
-            }}
-          >
+        <div className="flex flex-col">
+          <span className="text-muted-foreground block mb-1 text-[10px]">
             Subtle
           </span>
           <span
+            className="text-[11px] font-bold inline-flex items-center gap-[5px]"
             style={{
               background: subtleBg,
               color: subtleText,
               padding: "3px 10px",
               borderRadius: 12,
-              fontSize: 11,
-              fontWeight: 700,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
             }}
           >
             {ROLE_ICONS[utility.role]} {utility.label}
           </span>
         </div>
         {/* Outline badge */}
-        <div className="ch-utility-preview-item">
-          <span
-            style={{
-              fontSize: 10,
-              color: "var(--ch-t3)",
-              marginBottom: 4,
-              display: "block",
-            }}
-          >
+        <div className="flex flex-col">
+          <span className="text-muted-foreground block mb-1 text-[10px]">
             Outline
           </span>
           <span
@@ -227,22 +193,18 @@ function UtilityCard({
       </div>
 
       {/* WCAG badge */}
-      <div
-        style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}
-      >
+      <div className="items-center flex mt-2 gap-1.5">
         <span
+          className="rounded text-[10px] font-bold"
           style={{
             padding: "2px 7px",
-            borderRadius: 3,
-            fontSize: 10,
-            fontWeight: 700,
             background: BADGE_BG[level],
             color: BADGE_COLOR[level],
           }}
         >
           {level}
         </span>
-        <span style={{ fontSize: 10, color: "var(--ch-t3)" }}>
+        <span className="text-muted-foreground text-[10px]">
           {bestContrast.toFixed(1)}:1 on {onWhite > onBlack ? "white" : "black"}
         </span>
       </div>
@@ -264,16 +226,11 @@ function LivePreview() {
   const roles: UtilityRole[] = ["info", "success", "warning", "error"];
 
   return (
-    <div className="ch-utility-live-preview" style={{ background: bgHex }}>
-      <div
-        style={{
-          fontSize: 10,
-          color: "var(--ch-t3)",
-          textTransform: "uppercase",
-          letterSpacing: ".1em",
-          marginBottom: 12,
-        }}
-      >
+    <div
+      className="rounded-lg p-5 border border-border"
+      style={{ background: bgHex }}
+    >
+      <div className="text-muted-foreground uppercase tracking-[.1em] mb-3 text-[10px]">
         Live Component Preview
       </div>
       {/* Alert banners */}
@@ -311,27 +268,22 @@ function LivePreview() {
             }}
           >
             <span
-              style={{
-                color: u.color.hex,
-                fontSize: 14,
-                flexShrink: 0,
-                marginTop: 1,
-              }}
+              className="text-sm flex-shrink-0"
+              style={{ color: u.color.hex, marginTop: 1 }}
             >
               {ROLE_ICONS[role]}
             </span>
             <div>
               <div
-                style={{
-                  color: subtleText,
-                  fontWeight: 700,
-                  fontSize: 12,
-                  marginBottom: 2,
-                }}
+                className="font-bold text-[12px] mb-0.5"
+                style={{ color: subtleText }}
               >
                 {u.label} alert
               </div>
-              <div style={{ color: subtleText, fontSize: 11, opacity: 0.8 }}>
+              <div
+                className="text-[11px]"
+                style={{ color: subtleText, opacity: 0.8 }}
+              >
                 This is an example {u.label.toLowerCase()} message component.
               </div>
             </div>
@@ -340,7 +292,7 @@ function LivePreview() {
       })}
 
       {/* Focus ring demo */}
-      <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div className="flex-wrap flex mt-3 gap-2">
         {(["neutral", "focus"] as UtilityRole[]).map((role) => {
           const u = utilityColors[role];
           return (
@@ -413,9 +365,9 @@ export default function UtilityColorsView() {
   };
 
   return (
-    <div className="ch-view-scroll ch-view-pad">
-      <div style={{ maxWidth: 960, margin: "0 auto" }}>
-        <div className="ch-view-hd">
+    <div className="flex-1 overflow-auto p-6">
+      <div className="max-w-[960px] mx-auto">
+        <div className="mb-5">
           <h2>Utility Colors</h2>
           <p>
             Semantic UI colors derived from your palette. They share the
@@ -424,14 +376,7 @@ export default function UtilityColorsView() {
           </p>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            marginBottom: 24,
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="flex gap-2.5 mb-6 flex-wrap">
           <Button variant="default" onClick={regenAll}>
             ↻ Regenerate All
           </Button>
@@ -441,13 +386,13 @@ export default function UtilityColorsView() {
         </div>
 
         {!slots.length && (
-          <p style={{ color: "var(--ch-t3)", fontSize: 12, marginBottom: 24 }}>
+          <p className="text-muted-foreground text-[12px] mb-6">
             Generate a palette first to derive contextual utility colors.
           </p>
         )}
 
         {/* Color cards grid */}
-        <div className="ch-utility-grid">
+        <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(280px,1fr))]">
           {roles.map((role) => (
             <UtilityCard
               key={role}
@@ -460,18 +405,18 @@ export default function UtilityColorsView() {
 
         {/* Live component preview */}
         <div style={{ marginTop: 32 }}>
-          <div className="ch-slabel" style={{ marginBottom: 12 }}>
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-3">
             Component Preview
           </div>
           <LivePreview />
         </div>
 
         {/* Quick CSS vars */}
-        <div style={{ marginTop: 24 }}>
-          <div className="ch-slabel" style={{ marginBottom: 8 }}>
+        <div className="mt-6">
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
             CSS Variables
           </div>
-          <pre className="ch-token-pre">{`:root {\n${cssVars}\n}`}</pre>
+          <pre className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-[300px] overflow-y-auto">{`:root {\n${cssVars}\n}`}</pre>
         </div>
       </div>
     </div>

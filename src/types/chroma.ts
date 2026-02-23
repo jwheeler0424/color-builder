@@ -35,18 +35,19 @@ export interface OKLCH {
 // ─── Palette ──────────────────────────────────────────────────────────────────
 
 export interface ColorStop {
-  hex: string; // Always 6-char opaque hex (#RRGGBB) — alpha is separate
-  /** @derived Always re-derive from hex via hexToRgb() for authoritative values.
-   *  Stored for convenience but hexToStop() is the canonical constructor. */
+  hex: string;
   readonly rgb: RGB;
-  /** @derived Always re-derive from hex via rgbToHsl(hexToRgb()) for authoritative values. */
   readonly hsl: HSL;
-  a?: number; // Alpha 0–100 (optional; omitted or 100 = fully opaque)
+  a?: number;
 }
 
 export interface PaletteSlot {
+  /** Stable UUID – used as React key and for drag-reorder identity */
+  id: string;
   color: ColorStop;
   locked: boolean;
+  /** User-assigned token name. Undefined = auto-named from nearestName() */
+  name?: string;
 }
 
 export type HarmonyMode =
@@ -72,7 +73,6 @@ export interface HarmonyDef {
   label: string;
   desc: string;
 }
-
 export interface ThemeDef {
   name: string;
   mode: HarmonyMode;
@@ -87,14 +87,12 @@ export interface GradientStop {
   hex: string;
   pos: number;
 }
-
 export interface GradientState {
   type: GradientType;
   dir: string;
   stops: GradientStop[];
   selectedStop: number;
 }
-
 export interface GradientPreset {
   name: string;
   type: GradientType;
@@ -119,7 +117,6 @@ export interface ScaleEntry {
   rgb: RGB;
   hsl: HSL;
 }
-
 export type TokenFormat = "css" | "js" | "tailwind" | "json";
 
 // ─── Saved ────────────────────────────────────────────────────────────────────
@@ -128,6 +125,19 @@ export interface SavedPalette {
   id: string;
   name: string;
   hexes: string[];
+  /** Parallel to hexes – user token names */
+  slotNames?: (string | undefined)[];
+  mode: HarmonyMode;
+  createdAt: number;
+}
+
+// ─── Palette History (persistent snapshots) ───────────────────────────────────
+
+export interface PaletteSnapshot {
+  id: string;
+  /** Human label, e.g. "Before generate" */
+  label: string;
+  slots: Array<{ id: string; hex: string; name?: string; locked: boolean }>;
   mode: HarmonyMode;
   createdAt: number;
 }
@@ -141,7 +151,6 @@ export type UtilityRole =
   | "error"
   | "neutral"
   | "focus";
-
 export interface UtilityColor {
   role: UtilityRole;
   label: string;
@@ -150,7 +159,6 @@ export interface UtilityColor {
   color: ColorStop;
   locked: boolean;
 }
-
 export type UtilityColorSet = Record<UtilityRole, UtilityColor>;
 
 // ─── Theme Tokens ─────────────────────────────────────────────────────────────
@@ -161,7 +169,6 @@ export interface SemanticToken {
   dark: string;
   description: string;
 }
-
 export interface ThemeTokenSet {
   semantic: SemanticToken[];
   utility: Record<
@@ -181,12 +188,26 @@ export interface ThemeTokenSet {
 
 export type MixSpace = "oklch" | "hsl" | "rgb";
 
-// ─── Export tabs ──────────────────────────────────────────────────────────────
+// ─── Export ───────────────────────────────────────────────────────────────────
 
-export type ExportTab = "hex" | "css" | "array" | "scss" | "figma" | "tailwind";
+export type ExportTab =
+  | "hex"
+  | "css"
+  | "array"
+  | "scss"
+  | "figma"
+  | "tailwind"
+  | "svg";
+
+// ─── Brand Compliance ─────────────────────────────────────────────────────────
+
+export interface BrandColor {
+  id: string;
+  label: string;
+  hex: string;
+}
 
 // ─── App State ────────────────────────────────────────────────────────────────
-// NOTE: view is removed — navigation is owned by TanStack Router.
 
 export interface ChromaState {
   mode: HarmonyMode;
@@ -194,10 +215,13 @@ export interface ChromaState {
   seeds: ColorStop[];
   slots: PaletteSlot[];
   history: PaletteSlot[][];
+  paletteSnapshots: PaletteSnapshot[];
   recentColors: string[];
   gradient: GradientState;
-  pickerHex: string; // Canonical picker color — all modes derive from this
-  pickerAlpha: number; // 0–100, universal across all modes
+  seedMode: "influence" | "pin";
+  temperature: number;
+  pickerHex: string;
+  pickerAlpha: number;
   pickerMode: "rgb" | "hsl" | "hsv" | "oklch" | "oklab";
   scaleHex: string;
   scaleName: string;
@@ -209,11 +233,10 @@ export interface ChromaState {
   extractedColors: RGB[];
   imgSrc: string | null;
   utilityColors: UtilityColorSet;
-  seedMode: "influence" | "pin";
-  temperature: number; // 0–1000, used for random mode and seed influence
+  brandColors: BrandColor[];
 }
 
-// ─── Store actions (methods replace old dispatch pattern) ─────────────────────
+// ─── Store Actions ────────────────────────────────────────────────────────────
 
 export interface ChromaActions {
   setMode: (mode: HarmonyMode) => void;
@@ -227,7 +250,10 @@ export interface ChromaActions {
   editSlotColor: (index: number, color: ColorStop) => void;
   addSlot: (color: ColorStop) => void;
   removeSlot: (index: number) => void;
+  reorderSlots: (fromIndex: number, toIndex: number) => void;
+  renameSlot: (index: number, name: string | undefined) => void;
   loadPalette: (slots: PaletteSlot[], mode: HarmonyMode, count: number) => void;
+  restoreSnapshot: (snap: PaletteSnapshot) => void;
   setSeedMode: (mode: "influence" | "pin") => void;
   setTemperature: (t: number) => void;
   setPickerHex: (hex: string) => void;
@@ -247,6 +273,12 @@ export interface ChromaActions {
   setUtilityColor: (role: UtilityRole, color: ColorStop) => void;
   toggleUtilityLock: (role: UtilityRole) => void;
   regenUtilityColors: () => void;
+  addBrandColor: (hex: string, label: string) => void;
+  removeBrandColor: (id: string) => void;
+  updateBrandColor: (
+    id: string,
+    patch: Partial<Omit<BrandColor, "id">>,
+  ) => void;
 }
 
 export type ChromaStore = ChromaState & ChromaActions;

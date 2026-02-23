@@ -12,6 +12,8 @@ import {
   oklchToRgb,
   oklabToLch,
   oklabToRgb,
+  nearestName,
+  hexToStop,
   luminance,
   parseHex,
   parseHexAlpha,
@@ -23,12 +25,21 @@ import {
   toCssOklch,
   toCssOklab,
   toHexAlpha,
-} from "@/lib/utils/colorMath";
-import { nearestName, hexToStop } from "@/lib/utils/paletteUtils";
-import { useChromaStore } from "@/hooks/useChromaStore";
+} from "@/lib/utils";
+import { useChromaStore } from "@/hooks/use-chroma-store";
 import { useNavigate } from "@tanstack/react-router";
-import ColorWheel from "@/components/color-wheel";
-import { Button } from "../ui/button";
+import ColorWheel from "../color-wheel";
+import { Button } from "@/components/ui/button";
+
+// EyeDropper is a browser API not yet in lib.dom.d.ts
+interface EyeDropper {
+  open(): Promise<{ sRGBHex: string }>;
+}
+declare global {
+  interface Window {
+    EyeDropper?: new () => EyeDropper;
+  }
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -188,23 +199,24 @@ function SliderRow({
   isAlpha?: boolean;
 }) {
   return (
-    <div className="ch-slider-row">
-      <div className="ch-slider-label">
+    <div className="flex flex-col gap-1.5">
+      <div className="flex justify-between text-[11px] text-muted-foreground">
         {label} <span>{display}</span>
       </div>
-      <div
-        className={isAlpha ? "ch-alpha-track" : "ch-sat-track"}
-        style={{ background: trackBg }}
-      >
-        {isAlpha && <div className="ch-alpha-checker" />}
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={(e) => onChange(+e.target.value)}
-        />
+      <div className="track-wrapper">
+        {isAlpha && (
+          <div className="absolute inset-0 rounded-full alpha-track z-0" />
+        )}
+        <div className={"sat-track"} style={{ background: trackBg }}>
+          <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={value}
+            onChange={(e) => onChange(+e.target.value)}
+          />
+        </div>
       </div>
     </div>
   );
@@ -251,7 +263,7 @@ function RgbSliders({
   onAlpha: (a: number) => void;
 }) {
   return (
-    <div className="ch-sliders">
+    <div className="w-full max-w-[400px] flex flex-col gap-3.5">
       <SliderRow
         label="Red"
         display={String(rgb.r)}
@@ -279,7 +291,7 @@ function RgbSliders({
         trackBg={rgbChannelGrad("b", rgb)}
         onChange={(v) => onRgb({ ...rgb, b: v })}
       />
-      <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} />
+      {/* <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} /> */}
     </div>
   );
 }
@@ -298,7 +310,7 @@ function HslSliders({
   onAlpha: (a: number) => void;
 }) {
   return (
-    <div className="ch-sliders">
+    <div className="w-full max-w-[400px] flex flex-col gap-3.5">
       <SliderRow
         label="Hue"
         display={`${Math.round(hsl.h)}°`}
@@ -344,45 +356,8 @@ function HsvSliders({
   onHsv: (hsv: HSV) => void;
   onAlpha: (a: number) => void;
 }) {
-  // HSV -> RGB inline for commit
-  function hsvToRgb(h: HSV): RGB {
-    const sn = h.s / 100,
-      vn = h.v / 100;
-    const c = vn * sn,
-      x = c * (1 - Math.abs(((h.h / 60) % 2) - 1)),
-      m = vn - c;
-    let r = 0,
-      g = 0,
-      b = 0;
-    const seg = Math.floor(h.h / 60) % 6;
-    if (seg === 0) {
-      r = c;
-      g = x;
-    } else if (seg === 1) {
-      r = x;
-      g = c;
-    } else if (seg === 2) {
-      g = c;
-      b = x;
-    } else if (seg === 3) {
-      g = x;
-      b = c;
-    } else if (seg === 4) {
-      r = x;
-      b = c;
-    } else {
-      r = c;
-      b = x;
-    }
-    return {
-      r: Math.round((r + m) * 255),
-      g: Math.round((g + m) * 255),
-      b: Math.round((b + m) * 255),
-    };
-  }
-  const commit = (h: HSV) => onHsv(h);
   return (
-    <div className="ch-sliders">
+    <div className="w-full max-w-[400px] flex flex-col gap-3.5">
       <SliderRow
         label="Hue"
         display={`${Math.round(hsv.h)}°`}
@@ -390,7 +365,7 @@ function HsvSliders({
         min={0}
         max={359}
         trackBg={hsvChannelGrad("h", hsv)}
-        onChange={(v) => commit({ ...hsv, h: v })}
+        onChange={(v) => onHsv({ ...hsv, h: v })}
       />
       <SliderRow
         label="Saturation"
@@ -399,7 +374,7 @@ function HsvSliders({
         min={0}
         max={100}
         trackBg={hsvChannelGrad("s", hsv)}
-        onChange={(v) => commit({ ...hsv, s: v })}
+        onChange={(v) => onHsv({ ...hsv, s: v })}
       />
       <SliderRow
         label="Value"
@@ -408,9 +383,9 @@ function HsvSliders({
         min={0}
         max={100}
         trackBg={hsvChannelGrad("v", hsv)}
-        onChange={(v) => commit({ ...hsv, v: v })}
+        onChange={(v) => onHsv({ ...hsv, v: v })}
       />
-      <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} />
+      {/* <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} /> */}
     </div>
   );
 }
@@ -429,7 +404,7 @@ function OklchSliders({
   onAlpha: (a: number) => void;
 }) {
   return (
-    <div className="ch-sliders">
+    <div className="w-full max-w-[400px] flex flex-col gap-3.5">
       <SliderRow
         label="Lightness"
         display={`${Math.round(oklch.L * 100)}%`}
@@ -459,19 +434,15 @@ function OklchSliders({
       />
       <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} />
       <div
+        className="rounded text-[9.5px] text-muted-foreground leading-[1.5] px-2 py-[5px]"
         style={{
-          padding: "5px 8px",
-          borderRadius: 4,
           background: "rgba(99,102,241,.08)",
           border: "1px solid rgba(99,102,241,.18)",
-          fontSize: 9.5,
-          color: "var(--ch-t3)",
-          lineHeight: 1.5,
         }}
       >
-        <strong style={{ color: "var(--ch-t2)" }}>OKLCH</strong> — perceptually
-        uniform. Chroma = vividness (0 = gray, 0.4 = max). Lightness shifts
-        won't change perceived hue.
+        <strong className="text-secondary-foreground">OKLCH</strong> —
+        perceptually uniform. Chroma = vividness (0 = gray, 0.4 = max).
+        Lightness shifts won't change perceived hue.
       </div>
     </div>
   );
@@ -491,7 +462,7 @@ function OklabSliders({
   onAlpha: (a: number) => void;
 }) {
   return (
-    <div className="ch-sliders">
+    <div className="w-full max-w-[400px] flex flex-col gap-3.5">
       <SliderRow
         label="Lightness"
         display={`${Math.round(oklab.L * 100)}%`}
@@ -519,21 +490,17 @@ function OklabSliders({
         trackBg={oklabChannelGrad("b", oklab)}
         onChange={(v) => onOklab({ ...oklab, b: v / 1000 - 0.4 })}
       />
-      <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} />
+      {/* <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} /> */}
       <div
+        className="rounded text-[9.5px] text-muted-foreground leading-[1.5] px-2 py-[5px]"
         style={{
-          padding: "5px 8px",
-          borderRadius: 4,
           background: "rgba(99,102,241,.08)",
           border: "1px solid rgba(99,102,241,.18)",
-          fontSize: 9.5,
-          color: "var(--ch-t3)",
-          lineHeight: 1.5,
         }}
       >
-        <strong style={{ color: "var(--ch-t2)" }}>OKLab</strong> — perceptual
-        Lab space. a = green↔red axis, b = blue↔yellow axis. Same axes as
-        Photoshop Lab.
+        <strong className="text-secondary-foreground">OKLab</strong> —
+        perceptual Lab space. a = green↔red axis, b = blue↔yellow axis. Same
+        axes as Photoshop Lab.
       </div>
     </div>
   );
@@ -600,6 +567,56 @@ function hsvToRgbFn(h: number, s: number, v: number): RGB {
     g: Math.round((g + m) * 255),
     b: Math.round((b + m) * 255),
   };
+}
+
+// ─── Controlled hex input — allows mid-type editing without key reset trick ───
+
+function HexInputField({
+  hex,
+  onCommit,
+}: {
+  hex: string;
+  onCommit: (v: string) => void;
+}) {
+  const [raw, setRaw] = React.useState(hex);
+  const [invalid, setInvalid] = React.useState(false);
+
+  // Sync when the canonical hex changes from outside (e.g. slider move, wheel)
+  React.useEffect(() => {
+    setRaw(hex);
+    setInvalid(false);
+  }, [hex]);
+
+  const handleChange = (v: string) => {
+    setRaw(v);
+    const ok =
+      parseHex(v) ?? (v.length === 9 && /^#[0-9a-fA-F]{8}$/.test(v) ? v : null);
+    if (ok) {
+      setInvalid(false);
+      onCommit(v);
+    } else setInvalid(true);
+  };
+
+  const handleBlur = () => {
+    if (invalid) {
+      setRaw(hex);
+      setInvalid(false);
+    }
+  };
+
+  return (
+    <input
+      className="w-full bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors"
+      value={raw}
+      onChange={(e) => handleChange(e.target.value)}
+      onBlur={handleBlur}
+      onFocus={(e) => e.target.select()}
+      maxLength={9}
+      spellCheck={false}
+      autoComplete="off"
+      style={{ borderColor: invalid ? "rgba(239,68,68,.7)" : undefined }}
+    />
+  );
 }
 
 // ─── Main View ────────────────────────────────────────────────────────────────
@@ -711,13 +728,13 @@ export default function ColorPickerView() {
   };
 
   return (
-    <div className="ch-view-picker">
-      <div className="ch-picker-main">
+    <div className="flex flex-1 overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center gap-5 p-6 overflow-auto">
         {/* Color wheel — always visible, speaks HSL */}
         <ColorWheel hsl={hsl} size={240} onChange={handleWheelChange} />
 
         {/* Mode tabs */}
-        <div style={{ display: "flex", gap: 3, margin: "10px 0 6px" }}>
+        <div className="flex gap-[3px] mt-2.5 mb-1.5">
           {MODES.map((m) => (
             <button
               key={m.id}
@@ -732,8 +749,13 @@ export default function ColorPickerView() {
                 border: "none",
                 cursor: "pointer",
                 background:
-                  pickerMode === m.id ? "var(--ch-a)" : "var(--ch-s2)",
-                color: pickerMode === m.id ? "#fff" : "var(--ch-t2)",
+                  pickerMode === m.id
+                    ? "var(--color-primary)"
+                    : "var(--color-secondary)",
+                color:
+                  pickerMode === m.id
+                    ? "#fff"
+                    : "var(--color-secondary-foreground)",
                 transition: "background .12s",
               }}
             >
@@ -790,67 +812,29 @@ export default function ColorPickerView() {
         )}
 
         {/* Preview + hex input */}
-        <div className="ch-color-preview-row" style={{ marginTop: 12 }}>
+        <div className="flex items-center gap-3 w-full max-w-[400px] mt-3">
           {/* Checkerboard shows through for alpha */}
-          <div
-            style={{
-              position: "relative",
-              width: 56,
-              height: 56,
-              flexShrink: 0,
-            }}
-          >
+          <div className="relative w-14 h-14 flex-shrink-0">
             <div
+              className="absolute rounded inset-0"
               style={{
-                position: "absolute",
-                inset: 0,
-                borderRadius: 4,
                 background:
                   "repeating-conic-gradient(#444 0% 25%,#222 0% 50%) 0 0/10px 10px",
               }}
             />
             <div
-              className="ch-cprev"
-              style={{ ...previewStyle, position: "relative" }}
+              className="w-14 h-14 rounded border-2 border-input flex-shrink-0 relative"
+              style={{ ...previewStyle }}
             />
           </div>
-          <div className="ch-cprev-inputs">
-            <div className="ch-hex-inp-row">
+          <div className="flex-1 flex flex-col gap-1.5">
+            <div className="flex gap-1.5 items-center">
               <label>HEX</label>
-              <input
-                className="ch-inp"
-                defaultValue={displayHex}
-                key={displayHex}
-                onChange={(e) => handleHexInput(e.target.value)}
-                maxLength={9}
-                spellCheck={false}
-                autoComplete="off"
-                style={{ letterSpacing: ".06em", fontFamily: "var(--ch-fm)" }}
-              />
+              <HexInputField hex={displayHex} onCommit={handleHexInput} />
             </div>
             {/* CSS output string for current mode */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                marginTop: 4,
-                background: "var(--ch-s2)",
-                borderRadius: 4,
-                padding: "3px 6px",
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "var(--ch-fm)",
-                  fontSize: 9,
-                  color: "var(--ch-t3)",
-                  flex: 1,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
+            <div className="flex items-center gap-1 mt-1 bg-muted rounded px-[6px] py-[3px]">
+              <span className="font-mono text-muted-foreground overflow-ellipsis whitespace-nowrap overflow-hidden text-[9px] flex-1">
                 {cssOut}
               </span>
               <button
@@ -860,7 +844,7 @@ export default function ColorPickerView() {
                   border: "none",
                   cursor: "pointer",
                   fontSize: 9,
-                  color: copied ? "#4ade80" : "var(--ch-t3)",
+                  color: copied ? "#4ade80" : "var(--color-muted-foreground)",
                   padding: "0 2px",
                   flexShrink: 0,
                 }}
@@ -868,7 +852,7 @@ export default function ColorPickerView() {
                 {copied ? "✓" : "copy"}
               </button>
             </div>
-            <div style={{ display: "flex", gap: 5, marginTop: 5 }}>
+            <div className="flex gap-[5px] mt-[5px]">
               <Button variant="default" size="sm" onClick={useSeed}>
                 → Seed Palette
               </Button>
@@ -882,7 +866,7 @@ export default function ColorPickerView() {
                   title="Sample color from screen (EyeDropper API)"
                   onClick={async () => {
                     try {
-                      const dropper = new (window as any).EyeDropper();
+                      const dropper = new window.EyeDropper!();
                       const { sRGBHex } = await dropper.open();
                       const h = parseHex(sRGBHex);
                       if (h) {
@@ -903,16 +887,18 @@ export default function ColorPickerView() {
       </div>
 
       {/* Right panel */}
-      <div className="ch-picker-panel">
+      <div className="w-[320px] bg-card border-l border-border flex flex-col overflow-y-auto flex-shrink-0 p-4 gap-3.5">
         {/* Recent colors */}
         {recentColors.length > 0 && (
           <div>
-            <div className="ch-slabel">Recent</div>
-            <div className="ch-recent-swatches">
+            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              Recent
+            </div>
+            <div className="flex flex-wrap gap-1.5">
               {recentColors.map((rh, i) => (
                 <div
                   key={i}
-                  className="ch-rswatch"
+                  className="w-[22px] h-[22px] rounded cursor-pointer border border-white/10 transition-transform hover:scale-110"
                   style={{ background: rh }}
                   title={rh}
                   onClick={() => {
@@ -928,8 +914,10 @@ export default function ColorPickerView() {
 
         {/* Color info — all formats */}
         <div>
-          <div className="ch-slabel">Color Values</div>
-          <div className="ch-picker-info">
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+            Color Values
+          </div>
+          <div className="text-[11px] text-muted-foreground leading-[2.1]">
             <InfoRow label="Name" value={nearestName(rgb)} />
             <InfoRow label="HEX" value={displayHex.toUpperCase()} mono />
             <InfoRow label="RGB" value={toCssRgb(rgb, pickerAlpha)} mono />
@@ -959,12 +947,14 @@ export default function ColorPickerView() {
         {/* Palette quick-pick */}
         {slots.length > 0 && (
           <div>
-            <div className="ch-slabel">Palette</div>
-            <div className="ch-recent-swatches">
+            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              Palette
+            </div>
+            <div className="flex flex-wrap gap-1.5">
               {slots.map((slot, i) => (
                 <div
                   key={i}
-                  className="ch-rswatch"
+                  className="w-[22px] h-[22px] rounded cursor-pointer border border-white/10 transition-transform hover:scale-110"
                   style={{ background: slot.color.hex }}
                   title={slot.color.hex}
                   onClick={() => setPickerHex(slot.color.hex)}
@@ -994,22 +984,15 @@ function InfoRow({
     setTimeout(() => setCopied(false), 1000);
   };
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: 6,
-      }}
-    >
-      <span style={{ color: "var(--ch-t3)", flexShrink: 0, minWidth: 38 }}>
+    <div className="justify-between items-center flex gap-1.5">
+      <span className="text-muted-foreground flex-shrink-0 min-w-[38px]">
         {label}
       </span>
       <span
         style={{
-          fontFamily: mono ? "var(--ch-fm)" : undefined,
+          fontFamily: mono ? "var(--font-mono)" : undefined,
           fontSize: mono ? 9.5 : undefined,
-          color: "var(--ch-t1)",
+          color: "var(--color-foreground)",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",

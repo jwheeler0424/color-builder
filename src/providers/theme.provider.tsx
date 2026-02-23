@@ -1,4 +1,4 @@
-import { ThemeProviderContext } from "@/hooks/useTheme";
+import { ThemeProviderContext } from "@/hooks/use-theme";
 import { useEffect, useState } from "react";
 
 export type Theme = "dark" | "light" | "system";

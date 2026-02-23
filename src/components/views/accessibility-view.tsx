@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
-import { useChromaStore } from "@/hooks/useChromaStore";
+import { useChromaStore } from "@/hooks/use-chroma-store";
 import {
   contrastRatio,
   wcagLevel,
   hexToRgb,
+  nearestName,
   apcaContrast,
   apcaLevel,
   suggestContrastFix,
   type WcagLevel,
   type ApcaLevel,
-} from "@/lib/utils/colorMath";
-import { nearestName } from "@/lib/utils/paletteUtils";
+} from "@/lib/utils";
 
 const WHITE = { r: 255, g: 255, b: 255 };
 const BLACK = { r: 0, g: 0, b: 0 };
@@ -114,105 +114,52 @@ function SwatchCard({
   const name = nearestName(rgb);
 
   return (
-    <div
-      style={{
-        borderRadius: 8,
-        overflow: "hidden",
-        border: "1px solid var(--ch-s2)",
-        background: "var(--ch-s1)",
-      }}
-    >
+    <div className="border border-muted bg-card overflow-hidden rounded-md">
       <div
-        style={{
-          background: hex,
-          height: 72,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 3,
-        }}
+        className="flex flex-col items-center justify-center gap-0.75"
+        style={{ background: hex, height: 72 }}
       >
-        <span style={{ color: "#ffffff", fontSize: 13, fontWeight: 800 }}>
-          Aa
-        </span>
-        <span style={{ color: "#000000", fontSize: 13, fontWeight: 800 }}>
-          Aa
-        </span>
+        <span className="text-white text-[13px] font-extrabold">Aa</span>
+        <span className="text-black text-[13px] font-extrabold">Aa</span>
       </div>
 
-      <div style={{ padding: "8px 10px" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            marginBottom: 6,
-          }}
-        >
+      <div className="px-2.5 py-2">
+        <div className="items-center flex mb-1.5 gap-1.5">
           <div
+            className="rounded h-2.5"
             style={{
               width: 10,
-              height: 10,
-              borderRadius: 2,
               background: hex,
               border: "1px solid rgba(128,128,128,.2)",
             }}
           />
-          <span
-            style={{
-              fontSize: 9.5,
-              fontFamily: "var(--ch-fm)",
-              color: "var(--ch-t2)",
-              flex: 1,
-            }}
-          >
+          <span className="font-mono text-secondary-foreground text-[9.5px] flex-1">
             {hex.toUpperCase()}
           </span>
-          <span style={{ fontSize: 9, color: "var(--ch-t3)" }}>
-            #{index + 1}
-          </span>
+          <span className="text-muted-foreground text-[9px]">#{index + 1}</span>
         </div>
-        <div style={{ fontSize: 9, color: "var(--ch-t3)", marginBottom: 8 }}>
-          {name}
-        </div>
+        <div className="text-muted-foreground mb-2 text-[9px]">{name}</div>
 
         {/* vs White */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-            marginBottom: 5,
-          }}
-        >
+        <div className="items-center flex mb-1.25 gap-1.25">
           <div
+            className="rounded flex items-center justify-center shrink-0 w-4.5"
             style={{
-              width: 18,
               height: 18,
-              borderRadius: 3,
               background: hex,
               border: "1px solid rgba(128,128,128,.2)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
             }}
           >
-            <span style={{ color: "#fff", fontSize: 10, fontWeight: 700 }}>
-              A
-            </span>
+            <span className="font-bold text-white text-[10px]">A</span>
           </div>
-          <span style={{ fontSize: 9, color: "var(--ch-t2)", flex: 1 }}>
+          <span className="text-secondary-foreground text-[9px] flex-1">
             on White
           </span>
           {useApca ? (
             <ApcaBadge level={alW} lc={apW} size="xs" />
           ) : (
             <>
-              <span
-                style={{ fontSize: 9, color: "var(--ch-t3)", marginRight: 2 }}
-              >
+              <span className="text-muted-foreground mr-0.5 text-[9px]">
                 {onW.toFixed(1)}:1
               </span>
               <WcagBadge level={lvW} size="xs" />
@@ -220,17 +167,9 @@ function SwatchCard({
           )}
         </div>
         {fixW && !useApca && (
-          <div
-            style={{
-              fontSize: 8.5,
-              color: "var(--ch-t3)",
-              paddingLeft: 23,
-              marginBottom: 4,
-              lineHeight: 1.4,
-            }}
-          >
+          <div className="text-muted-foreground mb-1 pl-5.75 leading-[1.4] text-[8.5px]">
             💡 {fixW.direction === "darken" ? "Darken" : "Lighten"} to{" "}
-            <span style={{ fontFamily: "var(--ch-fm)", color: fixW.hex }}>
+            <span className="font-mono" style={{ color: fixW.hex }}>
               {fixW.hex}
             </span>{" "}
             for AA
@@ -238,34 +177,25 @@ function SwatchCard({
         )}
 
         {/* vs Black */}
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+        <div className="items-center flex gap-1.25">
           <div
+            className="rounded flex items-center justify-center shrink-0 w-4.5"
             style={{
-              width: 18,
               height: 18,
-              borderRadius: 3,
               background: hex,
               border: "1px solid rgba(128,128,128,.2)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
             }}
           >
-            <span style={{ color: "#000", fontSize: 10, fontWeight: 700 }}>
-              A
-            </span>
+            <span className="font-bold text-black text-[10px]">A</span>
           </div>
-          <span style={{ fontSize: 9, color: "var(--ch-t2)", flex: 1 }}>
+          <span className="text-secondary-foreground text-[9px] flex-1">
             on Black
           </span>
           {useApca ? (
             <ApcaBadge level={alB} lc={apB} size="xs" />
           ) : (
             <>
-              <span
-                style={{ fontSize: 9, color: "var(--ch-t3)", marginRight: 2 }}
-              >
+              <span className="text-muted-foreground mr-0.5 text-[9px]">
                 {onB.toFixed(1)}:1
               </span>
               <WcagBadge level={lvB} size="xs" />
@@ -273,17 +203,9 @@ function SwatchCard({
           )}
         </div>
         {fixB && !useApca && (
-          <div
-            style={{
-              fontSize: 8.5,
-              color: "var(--ch-t3)",
-              paddingLeft: 23,
-              marginTop: 4,
-              lineHeight: 1.4,
-            }}
-          >
+          <div className="text-muted-foreground pl-[23px] leading-[1.4] text-[8.5px] mt-1">
             💡 {fixB.direction === "darken" ? "Darken" : "Lighten"} to{" "}
-            <span style={{ fontFamily: "var(--ch-fm)", color: fixB.hex }}>
+            <span className="font-mono" style={{ color: fixB.hex }}>
               {fixB.hex}
             </span>{" "}
             for AA
@@ -322,17 +244,11 @@ function PairsMatrix({
 
   return (
     <div>
-      <div style={{ fontSize: 10.5, color: "var(--ch-t3)", marginBottom: 10 }}>
+      <div className="text-muted-foreground mb-2.5 text-[10.5px]">
         {passing.length} of {pairs.length} pairs pass{" "}
         {useApca ? "APCA Large (Lc≥45)" : "WCAG AA (4.5:1)"}
       </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))",
-          gap: 6,
-        }}
-      >
+      <div className="grid gap-1.5 [grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
         {pairs.map(({ a, b, wcag, apca }, i) => {
           const passes = useApca ? Math.abs(apca) >= 45 : wcag >= 4.5;
           return (
@@ -344,39 +260,28 @@ function PairsMatrix({
                 gap: 6,
                 padding: "5px 8px",
                 borderRadius: 5,
-                border: "1px solid var(--ch-s2)",
-                background: passes ? "rgba(34,197,94,.04)" : "var(--ch-s1)",
+                border: "1px solid var(--color-secondary)",
+                background: passes
+                  ? "rgba(34,197,94,.04)"
+                  : "var(--color-card)",
                 opacity: passes ? 1 : 0.5,
               }}
             >
               <div
+                className="rounded flex-shrink-0 w-[14px] h-[14px]"
                 style={{
-                  width: 14,
-                  height: 14,
-                  borderRadius: 2,
                   background: a,
                   border: "1px solid rgba(128,128,128,.2)",
-                  flexShrink: 0,
                 }}
               />
               <div
+                className="rounded flex-shrink-0 w-[14px] h-[14px]"
                 style={{
-                  width: 14,
-                  height: 14,
-                  borderRadius: 2,
                   background: b,
                   border: "1px solid rgba(128,128,128,.2)",
-                  flexShrink: 0,
                 }}
               />
-              <span
-                style={{
-                  fontSize: 8.5,
-                  color: "var(--ch-t3)",
-                  flex: 1,
-                  fontFamily: "var(--ch-fm)",
-                }}
-              >
+              <span className="font-mono text-muted-foreground text-[8.5px] flex-1">
                 {useApca ? `Lc${Math.abs(apca)}` : `${wcag.toFixed(1)}:1`}
               </span>
               <span
@@ -404,7 +309,7 @@ function PairsMatrix({
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function AccessibilityView() {
-  const { slots } = useChromaStore();
+  const slots = useChromaStore((s) => s.slots);
   const [useApca, setUseApca] = useState(false);
   const [showPairs, setShowPairs] = useState(false);
 
@@ -431,11 +336,11 @@ export default function AccessibilityView() {
 
   if (!slots.length) {
     return (
-      <div className="ch-view-scroll ch-view-pad">
-        <div className="ch-view-hd">
+      <div className="flex-1 overflow-auto p-6">
+        <div className="mb-5">
           <h2>Accessibility</h2>
         </div>
-        <p style={{ color: "var(--ch-t3)", fontSize: 12 }}>
+        <p className="text-muted-foreground text-[12px]">
           Generate a palette first.
         </p>
       </div>
@@ -443,18 +348,10 @@ export default function AccessibilityView() {
   }
 
   return (
-    <div className="ch-view-scroll ch-view-pad">
-      <div style={{ maxWidth: 900, margin: "0 auto" }}>
-        <div className="ch-view-hd">
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: 10,
-            }}
-          >
+    <div className="flex-1 overflow-auto p-6">
+      <div className="max-w-[900px] mx-auto">
+        <div className="mb-5">
+          <div className="justify-between items-start flex-wrap flex gap-2.5">
             <div>
               <h2>Accessibility</h2>
               <p>
@@ -463,20 +360,12 @@ export default function AccessibilityView() {
               </p>
             </div>
             {/* WCAG / APCA toggle */}
-            <div
-              style={{
-                display: "flex",
-                gap: 4,
-                alignItems: "center",
-                flexShrink: 0,
-                marginTop: 4,
-              }}
-            >
-              <span style={{ fontSize: 10, color: "var(--ch-t3)" }}>Mode:</span>
+            <div className="items-center flex flex-shrink-0 mt-1 gap-1">
+              <span className="text-muted-foreground text-[10px]">Mode:</span>
               {([false, true] as const).map((apca) => (
                 <button
                   key={String(apca)}
-                  className={`ch-btn ch-btn-sm ${useApca === apca ? "ch-btn-primary" : "ch-btn-ghost"}`}
+                  className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] border rounded font-mono font-bold tracking-[.04em] whitespace-nowrap cursor-pointer transition-colors ${useApca === apca ? "bg-primary text-primary-foreground border-primary hover:bg-white hover:border-white hover:text-black" : "bg-transparent text-secondary-foreground border-border hover:text-foreground hover:border-input"}`}
                   onClick={() => setUseApca(apca)}
                   title={
                     apca
@@ -491,18 +380,7 @@ export default function AccessibilityView() {
           </div>
 
           {useApca && (
-            <div
-              style={{
-                fontSize: 10.5,
-                color: "var(--ch-t3)",
-                lineHeight: 1.6,
-                marginTop: 6,
-                background: "var(--ch-s1)",
-                borderRadius: 6,
-                padding: "8px 12px",
-                border: "1px solid var(--ch-s2)",
-              }}
-            >
+            <div className="text-[10.5px] text-muted-foreground leading-relaxed mt-1.5 bg-card rounded-md px-3 py-2 border border-muted">
               <strong>APCA (WCAG 3 draft)</strong> — more perceptually accurate
               than WCAG 2.1. Lc ≥ 75 preferred · Lc ≥ 60 body text · Lc ≥ 45
               large text / UI · Lc ≥ 30 non-text. Fix suggestions shown for WCAG
@@ -512,14 +390,7 @@ export default function AccessibilityView() {
         </div>
 
         {/* Summary row */}
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            marginBottom: 20,
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="flex-wrap mb-5 flex gap-2">
           {[
             {
               label: "AA on white",
@@ -549,32 +420,18 @@ export default function AccessibilityView() {
           ].map(({ label, val, pass }) => (
             <div
               key={label}
-              style={{
-                flex: "1 1 100px",
-                background: "var(--ch-s1)",
-                borderRadius: 6,
-                border: "1px solid var(--ch-s2)",
-                padding: "8px 12px",
-              }}
+              className="bg-card rounded-md border border-muted flex-[1_1_100px] px-3 py-2"
             >
               <div
                 style={{
                   fontSize: 17,
                   fontWeight: 800,
-                  color: pass ? "#16a34a" : "var(--ch-t1)",
+                  color: pass ? "#16a34a" : "var(--color-foreground)",
                 }}
               >
                 {val}
               </div>
-              <div
-                style={{
-                  fontSize: 9,
-                  color: "var(--ch-t3)",
-                  marginTop: 2,
-                  textTransform: "uppercase",
-                  letterSpacing: ".05em",
-                }}
-              >
+              <div className="text-[9px] text-muted-foreground uppercase tracking-[.05em] mt-0.5">
                 {label}
               </div>
             </div>
@@ -582,21 +439,14 @@ export default function AccessibilityView() {
         </div>
 
         {/* Per-swatch cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))",
-            gap: 10,
-            marginBottom: 20,
-          }}
-        >
+        <div className="grid gap-2.5 mb-5 [grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]">
           {slots.map((s, i) => (
             <SwatchCard key={i} hex={s.color.hex} index={i} useApca={useApca} />
           ))}
         </div>
 
         {/* Pairs matrix */}
-        <div style={{ borderTop: "1px solid var(--ch-s2)", paddingTop: 16 }}>
+        <div className="border-t border-muted pt-4">
           <div
             style={{
               display: "flex",
@@ -605,11 +455,11 @@ export default function AccessibilityView() {
               marginBottom: showPairs ? 12 : 0,
             }}
           >
-            <div className="ch-slabel" style={{ margin: 0 }}>
+            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
               Palette color pairs
             </div>
             <button
-              className="ch-btn ch-btn-ghost ch-btn-sm"
+              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] border rounded font-mono font-bold tracking-[.04em] whitespace-nowrap cursor-pointer transition-colors bg-transparent text-secondary-foreground border-border hover:text-foreground hover:border-input"
               onClick={() => setShowPairs((v) => !v)}
             >
               {showPairs ? "Hide ↑" : "Show pairs ↓"}

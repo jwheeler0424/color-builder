@@ -1,14 +1,14 @@
 import { useMemo, useState } from "react";
-import { useChromaStore } from "@/hooks/useChromaStore";
+import { useChromaStore } from "@/hooks/use-chroma-store";
 import {
   hexToRgb,
   rgbToOklch,
   clamp,
   oklchToRgb,
+  nearestName,
   rgbToHex,
   textColor,
-} from "@/lib/utils/colorMath";
-import { nearestName } from "@/lib/utils/paletteUtils";
+} from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 // ─── P3 conversion helpers ────────────────────────────────────────────────────
@@ -89,12 +89,12 @@ function SwatchCard({
       style={{
         borderRadius: 8,
         overflow: "hidden",
-        border: `1px solid ${wide ? "rgba(99,102,241,.4)" : "var(--ch-s2)"}`,
-        background: "var(--ch-s1)",
+        border: `1px solid ${wide ? "rgba(99,102,241,.4)" : "var(--color-secondary)"}`,
+        background: "var(--color-card)",
       }}
     >
       {/* Swatch pair: sRGB top, P3 bottom (if enabled) */}
-      <div style={{ display: "flex", flexDirection: "column" }}>
+      <div className="flex-col flex">
         {/* sRGB swatch */}
         <div
           style={{
@@ -107,24 +107,15 @@ function SwatchCard({
           }}
         >
           <span
-            style={{ fontSize: 8.5, fontWeight: 700, color: tc, opacity: 0.8 }}
+            className="text-[8.5px] font-bold"
+            style={{ color: tc, opacity: 0.8 }}
           >
             sRGB
           </span>
           {wide && (
             <span
-              style={{
-                position: "absolute",
-                top: 4,
-                right: 4,
-                background: "rgba(99,102,241,.9)",
-                color: "#fff",
-                fontSize: 7,
-                fontWeight: 800,
-                padding: "1px 4px",
-                borderRadius: 3,
-                letterSpacing: ".04em",
-              }}
+              className="absolute text-white font-extrabold rounded tracking-[.04em] top-1 right-1 px-1 py-px"
+              style={{ background: "rgba(99,102,241,.9)", fontSize: 7 }}
             >
               P3+
             </span>
@@ -133,21 +124,12 @@ function SwatchCard({
         {/* P3 swatch — uses CSS color(display-p3 ...) syntax */}
         {showP3 && (
           <div
-            style={{
-              background: p3Css,
-              height: 44,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+            className="flex items-center justify-center"
+            style={{ background: p3Css, height: 44 }}
           >
             <span
-              style={{
-                fontSize: 8.5,
-                fontWeight: 700,
-                color: tc,
-                opacity: 0.8,
-              }}
+              className="text-[8.5px] font-bold"
+              style={{ color: tc, opacity: 0.8 }}
             >
               P3
             </span>
@@ -156,96 +138,49 @@ function SwatchCard({
       </div>
 
       {/* Info */}
-      <div style={{ padding: "8px 10px" }}>
-        <div
-          style={{
-            fontSize: 9.5,
-            fontFamily: "var(--ch-fm)",
-            color: "var(--ch-t2)",
-            marginBottom: 3,
-          }}
-        >
+      <div className="px-2.5 py-2">
+        <div className="text-[9.5px] font-mono text-secondary-foreground mb-[3px]">
           {hex.toUpperCase()}
         </div>
-        <div style={{ fontSize: 8.5, color: "var(--ch-t3)", marginBottom: 5 }}>
+        <div className="text-muted-foreground mb-[5px] text-[8.5px]">
           {name}
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 5,
-            alignItems: "center",
-            marginBottom: 4,
-          }}
-        >
-          <span style={{ fontSize: 8.5, color: "var(--ch-t3)" }}>
+        <div className="items-center flex mb-1 gap-[5px]">
+          <span className="text-muted-foreground text-[8.5px]">
             C={lch.C.toFixed(3)}
           </span>
-          <span style={{ fontSize: 8.5, color: "var(--ch-t3)" }}>
+          <span className="text-muted-foreground text-[8.5px]">
             H={Math.round(lch.H)}°
           </span>
         </div>
 
         {wide ? (
           <div
-            style={{
-              fontSize: 8,
-              fontWeight: 700,
-              padding: "2px 6px",
-              borderRadius: 3,
-              display: "inline-block",
-              background: "rgba(99,102,241,.15)",
-              color: "var(--ch-a)",
-            }}
+            className="text-[8px] font-bold rounded inline-block text-primary px-1.5 py-0.5"
+            style={{ background: "rgba(99,102,241,.15)" }}
           >
             P3-capable → higher chroma possible
           </div>
         ) : (
-          <div
-            style={{
-              fontSize: 8,
-              padding: "2px 6px",
-              borderRadius: 3,
-              display: "inline-block",
-              background: "var(--ch-s2)",
-              color: "var(--ch-t3)",
-            }}
-          >
+          <div className="text-[8px] rounded inline-block bg-muted text-muted-foreground px-1.5 py-0.5">
             sRGB gamut
           </div>
         )}
 
         {/* Expanded P3 preview hex */}
         {wide && showP3 && (
-          <div style={{ marginTop: 5 }}>
-            <div style={{ fontSize: 8, color: "var(--ch-t3)" }}>
-              P3 expanded:
-            </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                marginTop: 2,
-              }}
-            >
+          <div className="mt-[5px]">
+            <div className="text-muted-foreground text-[8px]">P3 expanded:</div>
+            <div className="flex items-center gap-1 mt-0.5">
               <div
+                className="rounded w-[14px] h-[14px]"
                 style={{
-                  width: 14,
-                  height: 14,
-                  borderRadius: 2,
                   background: expanded,
                   border: "1px solid rgba(128,128,128,.2)",
                 }}
               />
-              <span
-                style={{
-                  fontSize: 8.5,
-                  fontFamily: "var(--ch-fm)",
-                  color: "var(--ch-t3)",
-                }}
-              >
+              <span className="font-mono text-muted-foreground text-[8.5px]">
                 {expanded.toUpperCase()}
               </span>
             </div>
@@ -259,7 +194,7 @@ function SwatchCard({
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 export default function P3GamutView() {
-  const { slots } = useChromaStore();
+  const slots = useChromaStore((s) => s.slots);
   const [showP3, setShowP3] = useState(true);
   const [copiedCss, setCopiedCss] = useState(false);
 
@@ -294,11 +229,11 @@ export default function P3GamutView() {
 
   if (!slots.length) {
     return (
-      <div className="ch-view-scroll ch-view-pad">
-        <div className="ch-view-hd">
+      <div className="flex-1 overflow-auto p-6">
+        <div className="mb-5">
           <h2>P3 Wide Gamut</h2>
         </div>
-        <p style={{ color: "var(--ch-t3)", fontSize: 12 }}>
+        <p className="text-muted-foreground text-[12px]">
           Generate a palette first.
         </p>
       </div>
@@ -306,18 +241,10 @@ export default function P3GamutView() {
   }
 
   return (
-    <div className="ch-view-scroll ch-view-pad">
-      <div style={{ maxWidth: 900, margin: "0 auto" }}>
-        <div className="ch-view-hd">
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: 10,
-            }}
-          >
+    <div className="flex-1 overflow-auto p-6">
+      <div className="max-w-[900px] mx-auto">
+        <div className="mb-5">
+          <div className="justify-between items-start flex-wrap flex gap-2.5">
             <div>
               <h2>P3 / Wide Gamut Preview</h2>
               <p>
@@ -329,7 +256,7 @@ export default function P3GamutView() {
               </p>
             </div>
             <Button
-              variant={showP3 ? "primary" : "ghost"}
+              variant={showP3 ? "default" : "ghost"}
               size="sm"
               onClick={() => setShowP3((v) => !v)}
             >
@@ -339,14 +266,7 @@ export default function P3GamutView() {
         </div>
 
         {/* Summary */}
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            marginBottom: 20,
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="flex-wrap mb-5 flex gap-2.5">
           {[
             {
               label: "P3-capable colors",
@@ -364,9 +284,9 @@ export default function P3GamutView() {
               key={label}
               style={{
                 flex: "1 1 120px",
-                background: "var(--ch-s1)",
+                background: "var(--color-card)",
                 borderRadius: 6,
-                border: `1px solid ${accent ? "rgba(99,102,241,.3)" : "var(--ch-s2)"}`,
+                border: `1px solid ${accent ? "rgba(99,102,241,.3)" : "var(--color-secondary)"}`,
                 padding: "8px 12px",
               }}
             >
@@ -374,20 +294,14 @@ export default function P3GamutView() {
                 style={{
                   fontSize: 17,
                   fontWeight: 800,
-                  color: accent ? "var(--ch-a)" : "var(--ch-t1)",
+                  color: accent
+                    ? "var(--color-primary)"
+                    : "var(--color-foreground)",
                 }}
               >
                 {val}
               </div>
-              <div
-                style={{
-                  fontSize: 9,
-                  color: "var(--ch-t3)",
-                  marginTop: 2,
-                  textTransform: "uppercase",
-                  letterSpacing: ".05em",
-                }}
-              >
+              <div className="text-[9px] text-muted-foreground uppercase tracking-[.05em] mt-0.5">
                 {label}
               </div>
             </div>
@@ -395,50 +309,23 @@ export default function P3GamutView() {
         </div>
 
         {/* Info banner */}
-        <div
-          style={{
-            fontSize: 10.5,
-            color: "var(--ch-t3)",
-            lineHeight: 1.6,
-            marginBottom: 20,
-            background: "var(--ch-s1)",
-            borderRadius: 6,
-            padding: "10px 14px",
-            border: "1px solid var(--ch-s2)",
-          }}
-        >
-          <strong style={{ color: "var(--ch-t2)" }}>How P3 works:</strong> sRGB
-          swatches (top) render on all displays. P3 swatches (bottom) use{" "}
-          <code
-            style={{
-              background: "var(--ch-s2)",
-              padding: "0 3px",
-              borderRadius: 2,
-            }}
-          >
+        <div className="text-[10.5px] text-muted-foreground leading-relaxed mb-5 bg-card rounded-md px-[14px] py-2.5 border border-muted">
+          <strong className="text-secondary-foreground">How P3 works:</strong>{" "}
+          sRGB swatches (top) render on all displays. P3 swatches (bottom) use{" "}
+          <code className="bg-muted rounded px-[3px] py-0">
             color(display-p3 …)
           </code>{" "}
           CSS — they only show wider colors on P3-capable hardware. On sRGB
           displays, they fall back to the sRGB equivalent. Use the{" "}
-          <code
-            style={{
-              background: "var(--ch-s2)",
-              padding: "0 3px",
-              borderRadius: 2,
-            }}
-          >
-            @supports
-          </code>{" "}
+          <code className="bg-muted rounded px-[3px] py-0">@supports</code>{" "}
           block in the export to progressively enhance with P3.
         </div>
 
         {/* Swatch grid */}
         <div
+          className="grid gap-2.5 mb-7"
           style={{
-            display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-            gap: 10,
-            marginBottom: 28,
           }}
         >
           {slots.map((slot, i) => (
@@ -453,15 +340,8 @@ export default function P3GamutView() {
 
         {/* Export */}
         <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 10,
-            }}
-          >
-            <div className="ch-slabel" style={{ margin: 0 }}>
+          <div className="justify-between items-center mb-2.5 flex">
+            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold m-0">
               CSS with P3 @supports fallback
             </div>
             <Button variant="ghost" size="sm" onClick={copyP3}>
@@ -469,8 +349,8 @@ export default function P3GamutView() {
             </Button>
           </div>
           <pre
-            className="ch-token-pre"
-            style={{ maxHeight: 280, fontSize: 9.5 }}
+            className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-[300px] overflow-y-auto text-[9.5px]"
+            style={{ maxHeight: 280 }}
           >
             {p3Css}
           </pre>

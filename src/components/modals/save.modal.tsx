@@ -1,5 +1,5 @@
 import { useChromaStore } from "@/stores/chroma-store/chroma.store";
-import { savePalette } from "@/lib/utils/paletteUtils";
+import { savePalette } from "@/lib/utils";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -14,8 +14,14 @@ import {
 // ─── Save Modal ───────────────────────────────────────────────────────────────
 
 export function SaveModal() {
-  const { modal, slots, mode, saveName, setSaveName, closeModal, openModal } =
-    useChromaStore();
+  const modal = useChromaStore((s) => s.modal);
+  const slots = useChromaStore((s) => s.slots);
+  const mode = useChromaStore((s) => s.mode);
+  const saveName = useChromaStore((s) => s.saveName);
+  const setSaveName = useChromaStore((s) => s.setSaveName);
+  const closeModal = useChromaStore((s) => s.closeModal);
+  const openModal = useChromaStore((s) => s.openModal);
+
   const hexes = slots.map((s) => s.color.hex);
 
   const handleSave = () => {
@@ -47,22 +53,18 @@ export function SaveModal() {
         <DialogHeader>
           <DialogTitle>Save Palette</DialogTitle>
         </DialogHeader>
-        <div
-          style={{
-            display: "flex",
-            height: 36,
-            borderRadius: 3,
-            overflow: "hidden",
-            gap: 2,
-            marginBottom: 12,
-          }}
-        >
+        <div className="flex h-9 rounded overflow-hidden gap-px">
           {hexes.map((h, i) => (
-            <div key={i} style={{ flex: 1, background: h }} />
+            <div
+              key={`${h}-${i}`}
+              className="flex-1"
+              style={{ background: h }}
+            />
           ))}
         </div>
+
         <input
-          className="ch-inp"
+          className="w-full bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
           value={saveName}
           onChange={(e) => setSaveName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSave()}

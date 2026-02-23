@@ -1,15 +1,15 @@
 import { useState, useMemo, useCallback } from "react";
 import type { GradientStop, GradientState, GradientType } from "@/types";
-import { useChromaStore } from "@/hooks/useChromaStore";
+import { useChromaStore } from "@/hooks/use-chroma-store";
 import {
   parseHex,
   clamp,
   applySimMatrix,
   hexToRgb,
   rgbToHex,
-} from "@/lib/utils/colorMath";
+} from "@/lib/utils";
 import { GRAD_PRESETS, CB_TYPES } from "@/lib/constants/chroma";
-import GradientStopBar from "../gradient-stop-bar";
+import GradientStopBar from "@/components/gradient-stop-bar";
 import { Button } from "@/components/ui/button";
 
 // Apply easing to redistribute stop positions (redistributes evenly-spaced stops)
@@ -47,12 +47,14 @@ function buildCss(
 ): string {
   const sorted = grad.stops.slice().sort((a, b) => a.pos - b.pos);
   const str = sorted.map((x) => `${x.hex} ${x.pos}%`).join(", ");
-  const inSpace = interp !== "srgb" ? ` in ${interp}` : "";
+  // CSS Color 4 interpolation hint: "in <space>" goes at the START of the gradient args,
+  // before the direction/shape. e.g. linear-gradient(in oklab, to right, ...)
+  const inSpace = interp !== "srgb" ? `in ${interp}, ` : "";
   if (grad.type === "radial")
-    return `radial-gradient(circle at center${inSpace}, ${str})`;
+    return `radial-gradient(${inSpace}circle at center, ${str})`;
   if (grad.type === "conic")
-    return `conic-gradient(${grad.dir || "from 0deg"}, ${str})`;
-  return `linear-gradient(${inSpace ? inSpace.trim() + ", " : ""}${grad.dir}, ${str})`;
+    return `conic-gradient(${inSpace}${grad.dir || "from 0deg"}, ${str})`;
+  return `linear-gradient(${inSpace}${grad.dir}, ${str})`;
 }
 
 export default function GradientView() {
@@ -144,9 +146,9 @@ export default function GradientView() {
   };
 
   return (
-    <div className="ch-view-grad">
-      <div className="ch-grad-main">
-        <div className="ch-view-hd">
+    <div className="flex flex-1 overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-auto p-6">
+        <div className="mb-5">
           <h2>Gradient Generator</h2>
           <p>
             Build CSS gradients from your palette or custom color stops. Drag
@@ -155,26 +157,25 @@ export default function GradientView() {
         </div>
 
         {/* Full-width preview */}
-        <div className="ch-grad-preview" style={{ background: css }} />
+        <div
+          className="w-full h-[200px] rounded border border-border mb-4 flex-shrink-0 max-w-[960px]"
+          style={{ background: css }}
+        />
 
         {/* CVD simulation preview */}
         <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            margin: "8px 0 4px",
-          }}
+          className="flex items-center gap-1.5"
+          style={{ margin: "8px 0 4px" }}
         >
           <button
-            className="ch-btn ch-btn-ghost ch-btn-sm"
+            className="inline-flex items-center gap-1 px-2 py-1 text-[10px] border rounded font-mono font-bold tracking-[.04em] whitespace-nowrap cursor-pointer transition-colors bg-transparent text-secondary-foreground border-border hover:text-foreground hover:border-input"
             onClick={() => setShowCvd((v) => !v)}
           >
             {showCvd ? "▾ Hide CVD Preview" : "▸ Color Blindness Preview"}
           </button>
         </div>
         {showCvd && (
-          <div style={{ marginBottom: 10 }}>
+          <div className="mb-2.5">
             {CB_TYPES.filter((t) => t.id !== "normal").map((cbType) => {
               const simStops = g.stops.map((stop) => {
                 const rgb = applySimMatrix(hexToRgb(stop.hex), cbType.matrix);
@@ -183,32 +184,16 @@ export default function GradientView() {
               const simState = { ...g, stops: simStops };
               const simCss = buildCss(simState, interpSpace);
               return (
-                <div
-                  key={cbType.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    marginBottom: 4,
-                  }}
-                >
+                <div key={cbType.id} className="items-center flex mb-1 gap-2">
                   <div
+                    className="flex-1 rounded"
                     style={{
                       height: 18,
-                      flex: 1,
-                      borderRadius: 4,
                       background: simCss,
                       border: "1px solid rgba(128,128,128,.15)",
                     }}
                   />
-                  <span
-                    style={{
-                      fontSize: 9,
-                      color: "var(--ch-t3)",
-                      minWidth: 90,
-                      textAlign: "right",
-                    }}
-                  >
+                  <span className="text-[9px] text-muted-foreground min-w-[90px] text-right">
                     {cbType.name}
                   </span>
                 </div>
@@ -229,13 +214,13 @@ export default function GradientView() {
         />
 
         {/* CSS output */}
-        <div style={{ fontSize: 11, color: "var(--ch-t3)", marginBottom: 6 }}>
+        <div className="text-muted-foreground mb-1.5 text-[11px]">
           CSS Output
         </div>
-        <div className="ch-grad-css-box">
+        <div className="bg-secondary border border-border rounded p-3 font-mono text-[11px] leading-[1.8] text-muted-foreground whitespace-pre-wrap break-all max-w-[960px]">
           {`background: ${css};\nbackground-image: ${css};`}
         </div>
-        <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
+        <div className="flex mt-2 gap-1.5">
           <Button variant="ghost" size="sm" onClick={copyCss}>
             {copied ? "✓ Copied" : "Copy CSS"}
           </Button>
@@ -246,11 +231,13 @@ export default function GradientView() {
       </div>
 
       {/* Side panel */}
-      <div className="ch-grad-panel">
+      <div className="w-[320px] bg-card border-l border-border overflow-y-auto flex-shrink-0 p-4 flex flex-col gap-3.5">
         {/* Type */}
         <div>
-          <div className="ch-slabel">Type</div>
-          <div style={{ display: "flex", gap: 4 }}>
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+            Type
+          </div>
+          <div className="flex gap-1">
             {(["linear", "radial", "conic"] as GradientType[]).map((t) => (
               <Button
                 key={t}
@@ -267,8 +254,10 @@ export default function GradientView() {
         {/* Direction (linear only) */}
         {g.type === "linear" && (
           <div>
-            <div className="ch-slabel">Direction</div>
-            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              Direction
+            </div>
+            <div className="flex-wrap flex gap-1">
               {DIRECTIONS.map(({ label, val }) => (
                 <Button
                   key={val}
@@ -286,8 +275,10 @@ export default function GradientView() {
         {/* Conic from angle */}
         {g.type === "conic" && (
           <div>
-            <div className="ch-slabel">Starting Angle</div>
-            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              Starting Angle
+            </div>
+            <div className="flex-wrap flex gap-1">
               {["from 0deg", "from 45deg", "from 90deg", "from 180deg"].map(
                 (d) => (
                   <Button
@@ -306,45 +297,36 @@ export default function GradientView() {
 
         {/* Selected stop editor */}
         <div>
-          <div className="ch-slabel">
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Selected Stop ({g.selectedStop + 1} of {g.stops.length})
           </div>
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              alignItems: "center",
-              marginBottom: 10,
-            }}
-          >
+          <div className="items-center mb-2.5 flex gap-2">
             <div
               style={{
                 width: 28,
                 height: 28,
                 borderRadius: 3,
                 background: selectedStop?.hex,
-                border: "2px solid var(--ch-b2)",
+                border: "2px solid var(--color-input)",
                 flexShrink: 0,
               }}
             />
             <input
-              className="ch-inp"
+              className="w-full bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
               value={selectedStop?.hex ?? ""}
               onChange={(e) => handleStopColor(e.target.value)}
               maxLength={7}
               spellCheck={false}
               autoComplete="off"
-              style={{ fontFamily: "var(--ch-fm)", letterSpacing: ".06em" }}
             />
           </div>
-          <div className="ch-slider-label">
+          <div className="flex justify-between text-[11px] text-muted-foreground">
             Position: <span>{selectedStop?.pos ?? 0}%</span>
           </div>
           <input
             type="range"
             min={0}
             max={100}
-            className="ch-range"
             value={selectedStop?.pos ?? 0}
             onChange={(e) => handleMoveStop(g.selectedStop, +e.target.value)}
           />
@@ -352,8 +334,10 @@ export default function GradientView() {
 
         {/* Interpolation space */}
         <div>
-          <div className="ch-slabel">Interpolation Space</div>
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+            Interpolation Space
+          </div>
+          <div className="flex-wrap flex gap-1">
             {(
               [
                 {
@@ -387,14 +371,7 @@ export default function GradientView() {
             ))}
           </div>
           {interpSpace !== "srgb" && (
-            <div
-              style={{
-                fontSize: 9.5,
-                color: "var(--ch-t3)",
-                marginTop: 5,
-                lineHeight: 1.5,
-              }}
-            >
+            <div className="text-[9.5px] text-muted-foreground leading-[1.5] mt-[5px]">
               CSS Color 4 syntax — requires Chrome 111+ / Safari 16.4+. Firefox
               support landing soon.
             </div>
@@ -403,8 +380,10 @@ export default function GradientView() {
 
         {/* Easing */}
         <div>
-          <div className="ch-slabel">Stop Distribution Easing</div>
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+            Stop Distribution Easing
+          </div>
+          <div className="flex-wrap flex gap-1">
             {(
               [
                 { id: "linear", label: "Linear" },
@@ -437,14 +416,7 @@ export default function GradientView() {
               </Button>
             ))}
           </div>
-          <div
-            style={{
-              fontSize: 9.5,
-              color: "var(--ch-t3)",
-              marginTop: 4,
-              lineHeight: 1.5,
-            }}
-          >
+          <div className="text-muted-foreground leading-[1.5] text-[9.5px] mt-1">
             Redistributes middle stop positions. First and last stops stay
             fixed.
           </div>
@@ -452,17 +424,14 @@ export default function GradientView() {
 
         {/* Presets */}
         <div>
-          <div className="ch-slabel">Presets</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+            Presets
+          </div>
+          <div className="flex-col flex gap-1">
             {GRAD_PRESETS.map((p, i) => (
               <button
                 key={i}
-                className="ch-btn ch-btn-ghost ch-btn-sm"
-                style={{
-                  textAlign: "left",
-                  justifyContent: "flex-start",
-                  gap: 8,
-                }}
+                className="inline-flex items-center gap-2 px-2 py-1 text-[10px] border rounded font-mono font-bold tracking-[.04em] whitespace-nowrap cursor-pointer transition-colors bg-transparent text-secondary-foreground border-border hover:text-foreground hover:border-input justify-start text-left"
                 onClick={() =>
                   setGrad({
                     ...p,
@@ -472,12 +441,9 @@ export default function GradientView() {
                 }
               >
                 <span
+                  className="inline-block rounded flex-shrink-0 h-2.5"
                   style={{
-                    display: "inline-block",
                     width: 32,
-                    height: 10,
-                    borderRadius: 2,
-                    flexShrink: 0,
                     background: buildCss({
                       ...p,
                       stops: p.stops,

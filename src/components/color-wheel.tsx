@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback } from "react";
 import type { HSL } from "@/types";
-import { hslToRgb, clamp } from "@/lib/utils/colorMath";
+import { hslToRgb, clamp } from "@/lib/utils";
 
 interface ColorWheelProps {
   hsl: HSL;
@@ -128,16 +128,16 @@ export default function ColorWheel({
   const cy = size / 2 + r * Math.sin(angle);
 
   return (
-    <div className="ch-wheel-wrap" style={{ width: size, height: size }}>
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
       <canvas
         ref={canvasRef}
         width={size}
         height={size}
-        className="ch-wheel-canvas"
+        className="wheel-canvas"
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
       />
-      <div className="ch-wheel-cursor" style={{ left: cx, top: cy }} />
+      <div className="wheel-cursor" style={{ left: cx, top: cy }} />
     </div>
   );
 }

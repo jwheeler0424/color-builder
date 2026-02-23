@@ -1,22 +1,17 @@
-import { useChromaStore } from "@/hooks/useChromaStore";
-import {
-  applySimMatrix,
-  hexToRgb,
-  rgbToHex,
-  textColor,
-} from "@/lib/utils/colorMath";
+import { useChromaStore } from "@/hooks/use-chroma-store";
+import { applySimMatrix, hexToRgb, rgbToHex, textColor } from "@/lib/utils";
 import { CB_TYPES } from "@/lib/constants/chroma";
 
 export default function ColorBlindView() {
-  const { slots } = useChromaStore();
+  const slots = useChromaStore((s) => s.slots);
 
   if (!slots.length) {
     return (
-      <div className="ch-view-scroll ch-view-pad">
-        <div className="ch-view-hd">
+      <div className="flex-1 overflow-auto p-6">
+        <div className="mb-5">
           <h2>Color Blindness Simulator</h2>
         </div>
-        <p style={{ color: "var(--ch-t3)", fontSize: 12 }}>
+        <p className="text-muted-foreground text-[12px]">
           Generate a palette first.
         </p>
       </div>
@@ -24,15 +19,15 @@ export default function ColorBlindView() {
   }
 
   return (
-    <div className="ch-view-scroll ch-view-pad">
-      <div className="ch-view-hd">
+    <div className="flex-1 overflow-auto p-6">
+      <div className="mb-5">
         <h2>Color Blindness Simulator</h2>
         <p>
           How your palette appears under different types of color vision
           deficiency.
         </p>
       </div>
-      <div className="ch-sim-grid">
+      <div className="grid grid-cols-2 gap-3.5 max-w-[960px]">
         {CB_TYPES.map((cbType) => {
           const simSlots =
             cbType.id === "normal"
@@ -52,21 +47,31 @@ export default function ColorBlindView() {
                 }));
 
           return (
-            <div key={cbType.id} className="ch-sim-card">
-              <div className="ch-sim-card-hd">
-                <div className="ch-sim-card-title">{cbType.name}</div>
-                <div className="ch-sim-card-sub">{cbType.desc}</div>
+            <div
+              key={cbType.id}
+              className="bg-card border border-border rounded overflow-hidden"
+            >
+              <div className="px-3.5 py-2.5 border-b border-border flex justify-between items-baseline gap-2">
+                <div className="font-display text-[13px] font-bold">
+                  {cbType.name}
+                </div>
+                <div className="text-[10px] text-muted-foreground text-right">
+                  {cbType.desc}
+                </div>
               </div>
-              <div className="ch-sim-strip">
+              <div className="h-[60px] flex">
                 {simSlots.map((slot, i) => {
                   const tc = textColor(hexToRgb(slot.color.hex));
                   return (
                     <div
                       key={i}
-                      className="ch-sim-chip"
+                      className="flex-1 flex items-end p-1"
                       style={{ background: slot.color.hex }}
                     >
-                      <span className="ch-sim-hex" style={{ color: tc }}>
+                      <span
+                        className="text-[9px] font-mono [writing-mode:vertical-rl] rotate-180 opacity-70"
+                        style={{ color: tc }}
+                      >
                         {slot.color.hex.toUpperCase()}
                       </span>
                     </div>

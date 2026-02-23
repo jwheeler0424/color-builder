@@ -1,20 +1,21 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import type { SavedPalette } from "@/types";
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import type { PaletteSlot, SavedPalette } from "@/types";
+import { useChromaStore } from "@/hooks/use-chroma-store";
 import {
   hexToStop,
   loadSaved,
   deleteSaved,
   clearSaved,
   encodeUrl,
-} from "@/lib/utils/paletteUtils";
-import { Button } from "../ui/button";
+} from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export default function SavedView() {
-  const { loadPalette, openModal } = useChromaStore();
+  const loadPalette = useChromaStore((s) => s.loadPalette);
   const navigate = useNavigate();
   const [palettes, setPalettes] = useState<SavedPalette[]>([]);
+  const [sharedId, setSharedId] = useState<string | null>(null);
 
   const refresh = () => setPalettes(loadSaved());
 
@@ -24,10 +25,13 @@ export default function SavedView() {
 
   // Renamed to avoid collision with the store's loadPalette method
   const handleLoad = (p: SavedPalette) => {
-    const slots = p.hexes.map((hex) => ({
-      color: hexToStop(hex),
-      locked: false,
-    }));
+    const slots = p.hexes.map(
+      (hex) =>
+        ({
+          color: hexToStop(hex),
+          locked: false,
+        }) as PaletteSlot,
+    );
     loadPalette(slots, p.mode, p.hexes.length);
     navigate({ to: "/palette" });
   };
@@ -47,34 +51,24 @@ export default function SavedView() {
   const handleShare = (p: SavedPalette) => {
     const url = encodeUrl(p.hexes, p.mode);
     navigator.clipboard.writeText(url).catch(() => {});
-    openModal("share");
+    setSharedId(p.id);
+    setTimeout(() => setSharedId(null), 2000);
   };
 
   if (!palettes.length) {
     return (
-      <div className="ch-view-scroll ch-view-pad">
-        <div className="ch-view-hd">
+      <div className="flex-1 overflow-auto p-6">
+        <div className="mb-5">
           <h2>Saved Palettes</h2>
         </div>
         <div
-          style={{
-            textAlign: "center",
-            padding: "48px 20px",
-            color: "var(--ch-t3)",
-          }}
+          className="text-center text-muted-foreground"
+          style={{ padding: "48px 20px" }}
         >
-          <div
-            style={{
-              fontFamily: "var(--ch-fd)",
-              fontSize: 18,
-              fontWeight: 700,
-              color: "var(--ch-t2)",
-              marginBottom: 8,
-            }}
-          >
+          <div className="font-display text-secondary-foreground mb-2 font-bold text-lg">
             No saved palettes yet
           </div>
-          <p style={{ fontSize: 12 }}>
+          <p className="text-[12px]">
             Generate a palette you love, then click ♡ to save it.
           </p>
         </div>
@@ -83,60 +77,35 @@ export default function SavedView() {
   }
 
   return (
-    <div className="ch-view-scroll ch-view-pad">
-      <div style={{ maxWidth: 920, margin: "0 auto" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <h2
-            style={{
-              fontFamily: "var(--ch-fd)",
-              fontSize: 20,
-              fontWeight: 800,
-            }}
-          >
+    <div className="flex-1 overflow-auto p-6">
+      <div className="mx-auto" style={{ maxWidth: 920 }}>
+        <div className="justify-between items-center mb-4 flex">
+          <h2 className="font-display font-extrabold text-xl">
             Saved Palettes
           </h2>
           <Button variant="destructive" size="sm" onClick={handleClearAll}>
             Clear All
           </Button>
         </div>
-        <div className="ch-saved-grid">
+        <div className="grid gap-2.5 [grid-template-columns:repeat(auto-fill,minmax(270px,1fr))]">
           {palettes.map((p) => (
-            <div key={p.id} className="ch-saved-card">
-              <div style={{ height: 44, display: "flex" }}>
+            <div
+              key={p.id}
+              className="bg-card border border-border rounded overflow-hidden hover:border-input transition-colors"
+            >
+              <div className="h-11 flex">
                 {p.hexes.map((h, i) => (
-                  <div key={i} style={{ flex: 1, background: h }} />
+                  <div key={i} className="flex-1" style={{ background: h }} />
                 ))}
               </div>
               <div style={{ padding: "10px 12px" }}>
-                <div
-                  style={{
-                    fontFamily: "var(--ch-fd)",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    marginBottom: 2,
-                  }}
-                >
+                <div className="font-display text-[13px] font-bold mb-0.5">
                   {p.name || "Unnamed"}
                 </div>
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: "var(--ch-t3)",
-                    textTransform: "uppercase",
-                    letterSpacing: ".06em",
-                    marginBottom: 8,
-                  }}
-                >
+                <div className="text-muted-foreground uppercase tracking-[.06em] mb-2 text-[10px]">
                   {p.mode} · {p.hexes.length} colors
                 </div>
-                <div style={{ display: "flex", gap: 5 }}>
+                <div className="flex gap-[5px]">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -149,7 +118,7 @@ export default function SavedView() {
                     size="sm"
                     onClick={() => handleShare(p)}
                   >
-                    ⤴ Share
+                    {sharedId === p.id ? "✓ Copied!" : "⤴ Share"}
                   </Button>
                   <Button
                     variant="destructive"

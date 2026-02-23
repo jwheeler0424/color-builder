@@ -1,4 +1,6 @@
 import { useState } from "react";
+
+import ColorPickerModal from "@/components/modals/color-picker.modal";
 import {
   contrastRatio,
   wcagLevel,
@@ -8,13 +10,12 @@ import {
   hexToRgb,
   rgbToHex,
   suggestContrastFix,
-} from "@/lib/utils/colorMath";
-import ColorPickerModal from "@/components/modals/color-picker.modal";
-import { nearestName } from "@/lib/utils/paletteUtils";
-import { useChromaStore } from "@/hooks/useChromaStore";
+  nearestName,
+} from "@/lib/utils";
+import { useChromaStore } from "@/hooks/use-chroma-store";
 
 export default function ContrastChecker() {
-  const { slots } = useChromaStore();
+  const slots = useChromaStore((s) => s.slots);
   const [fg, setFg] = useState("#ffffff");
   const [bg, setBg] = useState("#1a1a2e");
   const [useApca, setUseApca] = useState(false);
@@ -50,9 +51,9 @@ export default function ContrastChecker() {
 
   return (
     <>
-      <div className="ch-view-scroll ch-view-pad">
-        <div style={{ maxWidth: 640, margin: "0 auto" }}>
-          <div className="ch-view-hd">
+      <div className="flex-1 overflow-auto p-6">
+        <div className="max-w-[640px] mx-auto">
+          <div className="mb-5">
             <h2>Contrast Checker</h2>
             <p>
               WCAG 2.1 contrast ratio between any two colors. Large text
@@ -62,40 +63,29 @@ export default function ContrastChecker() {
 
           {/* Live preview */}
           <div
-            className="ch-contrast-preview"
+            className="rounded-lg p-8 mb-5 border border-white/10"
             style={{ background: rgbToHex(bgRgb), color: rgbToHex(fgRgb) }}
           >
-            <div className="ch-contrast-preview-lg">Aa Large text sample</div>
-            <div className="ch-contrast-preview-sm">
+            <div className="font-display text-[26px] font-black mb-2">
+              Aa Large text sample
+            </div>
+            <div className="text-sm leading-relaxed mb-1">
               The quick brown fox jumps over the lazy dog
             </div>
-            <div className="ch-contrast-preview-sm" style={{ opacity: 0.7 }}>
+            <div className="text-sm leading-relaxed mb-1 opacity-70">
               Secondary / muted text at 70% opacity
             </div>
           </div>
 
           {/* APCA / WCAG toggle */}
-          <div
-            style={{
-              display: "flex",
-              gap: 4,
-              justifyContent: "flex-end",
-              marginBottom: 8,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 10,
-                color: "var(--ch-t3)",
-                alignSelf: "center",
-              }}
-            >
+          <div className="justify-end flex mb-2 gap-1">
+            <span className="text-[10px] text-muted-foreground self-center">
               Mode:
             </span>
             {([false, true] as const).map((apca) => (
               <button
                 key={String(apca)}
-                className={`ch-btn ch-btn-sm ${useApca === apca ? "ch-btn-primary" : "ch-btn-ghost"}`}
+                className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] border rounded font-mono font-bold tracking-[.04em] whitespace-nowrap cursor-pointer transition-colors ${useApca === apca ? "bg-primary text-primary-foreground border-primary hover:bg-white hover:border-white hover:text-black" : "bg-transparent text-secondary-foreground border-border hover:text-foreground hover:border-input"}`}
                 onClick={() => setUseApca(apca)}
               >
                 {apca ? "APCA" : "WCAG 2.1"}
@@ -104,18 +94,16 @@ export default function ContrastChecker() {
           </div>
 
           {/* Ratio display */}
-          <div className="ch-contrast-ratio-row">
+          <div className="flex items-center gap-4 mb-4">
             {!useApca && (
               <>
-                <div className="ch-contrast-ratio-num">
+                <div className="font-display text-[36px] font-black">
                   {ratio.toFixed(2)}:1
                 </div>
                 <span
+                  className="rounded font-bold text-sm"
                   style={{
                     padding: "4px 12px",
-                    borderRadius: 3,
-                    fontWeight: 700,
-                    fontSize: 14,
                     background: BADGE_BG[level],
                     color: BADGE_COLOR[level],
                   }}
@@ -144,15 +132,13 @@ export default function ContrastChecker() {
                 };
                 return (
                   <>
-                    <div className="ch-contrast-ratio-num">
+                    <div className="font-display text-[36px] font-black">
                       Lc{lc.toFixed(0)}
                     </div>
                     <span
+                      className="rounded font-bold text-sm"
                       style={{
                         padding: "4px 12px",
-                        borderRadius: 3,
-                        fontWeight: 700,
-                        fontSize: 14,
                         background: aBg[al],
                         color: aC[al],
                       }}
@@ -165,14 +151,17 @@ export default function ContrastChecker() {
           </div>
 
           {/* Criteria */}
-          <div className="ch-contrast-criteria">
+          <div className="flex flex-col gap-2 mb-6">
             {[
               { label: "AA Large Text (3:1)", pass: ratio >= 3 },
               { label: "AA Normal Text (4.5:1)", pass: ratio >= 4.5 },
               { label: "AAA Large Text (4.5:1)", pass: ratio >= 4.5 },
               { label: "AAA Normal Text (7:1)", pass: ratio >= 7 },
             ].map(({ label, pass }) => (
-              <div key={label} className="ch-contrast-criterion">
+              <div
+                key={label}
+                className="text-[13px] text-secondary-foreground"
+              >
                 <span
                   style={{
                     color: pass ? "#00e676" : "#ff4455",
@@ -185,6 +174,10 @@ export default function ContrastChecker() {
                 {label}
               </div>
             ))}
+            <p className="text-[10px] text-muted-foreground mt-1">
+              AA Large = headings ≥18pt or bold ≥14pt. AAA Large = same size,
+              stricter palette context.
+            </p>
           </div>
 
           {/* Fix suggestion */}
@@ -193,34 +186,18 @@ export default function ContrastChecker() {
             (() => {
               const fix = suggestContrastFix(fg, bgRgb);
               return fix ? (
-                <div
-                  style={{
-                    fontSize: 10.5,
-                    color: "var(--ch-t3)",
-                    marginBottom: 8,
-                    padding: "6px 10px",
-                    background: "var(--ch-s1)",
-                    borderRadius: 5,
-                    border: "1px solid var(--ch-s2)",
-                    lineHeight: 1.6,
-                  }}
-                >
+                <div className="text-[10.5px] text-muted-foreground mb-2 bg-card rounded border border-muted leading-relaxed px-2.5 py-1.5">
                   💡 To reach AA: {fix.direction} foreground to{" "}
                   <span
-                    style={{
-                      fontFamily: "var(--ch-fm)",
-                      fontWeight: 700,
-                      color: fix.hex,
-                    }}
+                    className="font-mono font-bold"
+                    style={{ color: fix.hex }}
                   >
                     {fix.hex}
                   </span>
                   <span
+                    className="inline-block rounded h-3"
                     style={{
-                      display: "inline-block",
                       width: 12,
-                      height: 12,
-                      borderRadius: 2,
                       background: fix.hex,
                       marginLeft: 5,
                       verticalAlign: "middle",
@@ -232,77 +209,61 @@ export default function ContrastChecker() {
             })()}
 
           {/* Color pickers */}
-          <div className="ch-contrast-pickers">
-            <div className="ch-contrast-picker">
-              <div className="ch-slabel">Foreground</div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+                Foreground
+              </div>
+              <div className="items-center flex gap-2">
                 <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 3,
-                    background: rgbToHex(fgRgb),
-                    border: "2px solid var(--ch-b2)",
-                    flexShrink: 0,
-                    cursor: "pointer",
-                  }}
+                  className="rounded border-2 border-input flex-shrink-0 cursor-pointer"
+                  style={{ width: 40, height: 40, background: rgbToHex(fgRgb) }}
                   title="Click to pick foreground color"
                   onClick={() => setEditingColor("fg")}
                 />
                 <input
-                  className="ch-inp"
+                  className="w-full bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
                   value={fg}
                   onChange={(e) => setFg(e.target.value)}
                   maxLength={7}
                   spellCheck={false}
                   autoComplete="off"
-                  style={{ fontFamily: "var(--ch-fm)", letterSpacing: ".06em" }}
                 />
               </div>
-              <div
-                style={{ fontSize: 10, color: "var(--ch-t3)", marginTop: 4 }}
-              >
+              <div className="text-muted-foreground mt-1 text-[10px]">
                 {nearestName(fgRgb)}
               </div>
             </div>
 
             <button
-              className="ch-contrast-swap"
+              className="bg-secondary border border-border rounded-full w-9 h-9 flex items-center justify-center cursor-pointer text-secondary-foreground text-base flex-shrink-0 mb-5 hover:border-input hover:text-foreground transition-colors"
               onClick={swap}
               title="Swap colors"
             >
               ⇄
             </button>
 
-            <div className="ch-contrast-picker">
-              <div className="ch-slabel">Background</div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div className="flex-1">
+              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+                Background
+              </div>
+              <div className="items-center flex gap-2">
                 <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 3,
-                    background: rgbToHex(bgRgb),
-                    border: "2px solid var(--ch-b2)",
-                    flexShrink: 0,
-                    cursor: "pointer",
-                  }}
+                  className="rounded border-2 border-input flex-shrink-0 cursor-pointer"
+                  style={{ width: 40, height: 40, background: rgbToHex(bgRgb) }}
                   title="Click to pick background color"
                   onClick={() => setEditingColor("bg")}
                 />
                 <input
-                  className="ch-inp"
+                  className="w-full bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
                   value={bg}
                   onChange={(e) => setBg(e.target.value)}
                   maxLength={7}
                   spellCheck={false}
                   autoComplete="off"
-                  style={{ fontFamily: "var(--ch-fm)", letterSpacing: ".06em" }}
                 />
               </div>
-              <div
-                style={{ fontSize: 10, color: "var(--ch-t3)", marginTop: 4 }}
-              >
+              <div className="text-muted-foreground mt-1 text-[10px]">
                 {nearestName(bgRgb)}
               </div>
             </div>
@@ -310,61 +271,39 @@ export default function ContrastChecker() {
 
           {/* Palette quick-pick */}
           {slots.length > 0 && (
-            <div style={{ marginTop: 24 }}>
-              <div className="ch-slabel">Quick-pick from Palette</div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 4,
-                  flexWrap: "wrap",
-                  marginTop: 6,
-                }}
-              >
+            <div className="mt-6">
+              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+                Quick-pick from Palette
+              </div>
+              <div className="flex-wrap flex mt-1.5 gap-1">
                 {slots.map((slot, i) => (
-                  <div
-                    key={i}
-                    style={{ display: "flex", flexDirection: "column", gap: 3 }}
-                  >
+                  <div key={i} className="flex-col flex gap-[3px]">
                     <div
+                      className="rounded cursor-pointer"
                       style={{
                         width: 28,
                         height: 28,
-                        borderRadius: 3,
                         background: slot.color.hex,
                         border: "1px solid rgba(255,255,255,.08)",
-                        cursor: "pointer",
                       }}
                       onClick={() => setFg(slot.color.hex)}
                       title={`Set FG to ${slot.color.hex}`}
                     />
-                    <div
-                      style={{
-                        fontSize: 8,
-                        color: "var(--ch-t3)",
-                        textAlign: "center",
-                      }}
-                    >
+                    <div className="text-muted-foreground text-center text-[8px]">
                       FG
                     </div>
                     <div
+                      className="rounded cursor-pointer"
                       style={{
                         width: 28,
                         height: 28,
-                        borderRadius: 3,
                         background: slot.color.hex,
                         border: "1px solid rgba(255,255,255,.08)",
-                        cursor: "pointer",
                       }}
                       onClick={() => setBg(slot.color.hex)}
                       title={`Set BG to ${slot.color.hex}`}
                     />
-                    <div
-                      style={{
-                        fontSize: 8,
-                        color: "var(--ch-t3)",
-                        textAlign: "center",
-                      }}
-                    >
+                    <div className="text-muted-foreground text-center text-[8px]">
                       BG
                     </div>
                   </div>

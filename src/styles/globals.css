@@ -5,30 +5,42 @@
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
 @import "@fontsource-variable/source-code-pro";
+@import "@fontsource/space-mono";
+@import "@fontsource-variable/syne";
+
 /* ───────────────────────────────────────────────────────────────────────── */
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.97 0.02 225.66);
-  --foreground: oklch(0.15 0.02 269.18);
-  --card: oklch(0.98 0.01 228.79);
-  --card-foreground: oklch(0.15 0.02 269.18);
-  --popover: oklch(0.98 0.01 238.45);
-  --popover-foreground: oklch(0.15 0.02 269.18);
+  --background: oklch(98.8% 0 0);
+  --foreground: oklch(9.4% 0 0);
+
+  --card: oklch(100% 0 0);
+  --card-foreground: oklch(9.4% 0 0);
+
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(9.4% 0 0);
+
   --primary: oklch(0.71 0.15 239.15);
-  --primary-foreground: oklch(0.94 0.03 232.39);
-  --secondary: oklch(0.91 0.03 229.2);
-  --secondary-foreground: oklch(0.15 0.02 269.18);
-  --muted: oklch(0.89 0.02 225.69);
-  --muted-foreground: oklch(0.36 0.03 231.55);
-  --accent: oklch(0.88 0.02 235.72);
-  --accent-foreground: oklch(0.34 0.05 229.2);
-  --destructive: oklch(0.61 0.24 20.96);
+  --primary-foreground: oklch(100% 0 0);
+
+  --secondary: oklch(96.5% 0 0);
+  --secondary-foreground: oklch(36.9% 0 0);
+
+  --muted: oklch(96.5% 0 0);
+  --muted-foreground: oklch(58.4% 0 0);
+
+  --accent: oklch(93.4% 0 0);
+  --accent-foreground: oklch(9.4% 0 0);
   --warning: oklch(0.65 0.25 85);
   --success: oklch(0.54 0.2 136.02);
-  --border: oklch(0.82 0.02 240.77);
-  --input: oklch(0.82 0.02 240.77);
+  --destructive: oklch(0.61 0.24 20.96);
+  --destructive-foreground: oklch(100% 0 0);
+
+  --border: oklch(90.4% 0 0);
+  --border-strong: oklch(72% 0 0); /* active inputs, selected cards */
+  --input: oklch(86.7% 0 0);
   --ring: oklch(0.55 0.1 235.72);
   --chart-1: oklch(0.57 0.11 228.92);
   --chart-2: oklch(0.45 0.1 270.08);
@@ -44,18 +56,20 @@
   --sidebar-border: oklch(0.82 0.02 240.77);
   --sidebar-ring: oklch(0.57 0.11 228.92);
 
+  --font-display:
+    "Syne", "Source Code Pro Variable", "Geist Variable", sans-serif;
   --font-sans:
-    "Source Code Pro Variable", "Geist Variable", ui-sans-serif, system-ui,
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
+    "Syne", "Source Code Pro Variable", "Geist Variable", ui-sans-serif,
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif:
-    "Source Serif 4", "Geist Variable", ui-serif, Georgia, Cambria,
-    "Times New Roman", Times, serif;
+    "Source Serif 4", "Geist Variable", "Syne Variable", ui-serif, Georgia,
+    Cambria, "Times New Roman", Times, serif;
   --font-mono:
-    "Source Code Pro Variable", "Geist Mono Variable", ui-monospace,
-    SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
-    monospace;
+    "Space Mono", "Source Code Pro Variable", "Geist Mono Variable",
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 
   --radius: 0.625rem;
 
@@ -80,23 +94,34 @@
 }
 
 .dark {
-  --background: oklch(0.18 0.02 271.27);
-  --foreground: oklch(0.9 0.01 238.47);
-  --card: oklch(0.22 0.02 271.67);
-  --card-foreground: oklch(0.9 0.01 238.47);
-  --popover: oklch(0.22 0.02 271.67);
-  --popover-foreground: oklch(0.9 0.01 238.47);
+  --background: oklch(10.2% 0 0); /* #0a0a0a */
+  --foreground: oklch(94.9% 0 0); /* #f0f0f0 */
+
+  --card: oklch(13.7% 0 0); /* #111    */
+  --card-foreground: oklch(94.9% 0 0);
+
+  --popover: oklch(13.7% 0 0);
+  --popover-foreground: oklch(94.9% 0 0);
+
   --primary: oklch(0.71 0.15 239.15);
-  --primary-foreground: oklch(0.94 0.03 232.39);
-  --secondary: oklch(0.28 0.03 270.91);
-  --secondary-foreground: oklch(0.9 0.01 238.47);
-  --muted: oklch(0.28 0.03 270.91);
-  --muted-foreground: oklch(0.6 0.03 269.46);
-  --accent: oklch(0.28 0.03 270.91);
-  --accent-foreground: oklch(0.9 0.01 238.47);
-  --destructive: oklch(0.64 0.25 19.69);
+  --primary-foreground: oklch(0% 0 0);
+
+  --secondary: oklch(17.8% 0 0); /* #181818 */
+  --secondary-foreground: oklch(69.8% 0 0); /* #aaa    */
+
+  --muted: oklch(17.8% 0 0); /* #181818 */
+  --muted-foreground: oklch(44.7% 0 0); /* #666    */
+
+  --accent: oklch(20.9% 0 0); /* #202020 */
+  --accent-foreground: oklch(94.9% 0 0);
   --warning: oklch(0.68 0.25 85);
   --success: oklch(0.56 0.2 136.02);
+  --destructive: oklch(0.64 0.25 19.69);
+  --destructive-foreground: oklch(100% 0 0);
+
+  --border: oklch(22.5% 0 0); /* #222 – default border  */
+  --border-strong: oklch(40% 0 0); /* active inputs, selected cards */
+  --input: oklch(33.7% 0 0); /* #333 – hover/focus border */
   --border: oklch(0.9 0.01 238.47 / 15%);
   --input: oklch(0.9 0.01 238.47 / 20%);
   --ring: oklch(0.66 0.13 227.7);
@@ -186,34 +211,254 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-mono antialiased text-sm leading-normal;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 2px;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  /* Range slider — thumb can't be styled with utilities */
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--color-border);
+    border-radius: 9999px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px;
+    height: 13px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 13px;
+    height: 13px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+  }
+
+  /* Keyboard shortcut chips */
+  kbd {
+    display: inline-block;
+    padding: 0 4px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    font-size: 10px;
+    color: var(--color-muted-foreground);
   }
 }
 
-@layer base {
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
+/* ─── Structural component classes ───────────────────────────────────────────── */
+/* Only things that can't be expressed as single Tailwind utilities:             */
+/* flex-grow animations, pointer-events-none canvas, drag handles, keyframes.   */
+
+@layer components {
+  /* Palette slot – expands on hover */
+  .slot-item {
+    flex: 1;
+    min-width: 38px;
+    transition: flex 140ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .slot-item:hover {
+    flex: 1.18;
+  }
+  .slot-item:hover .slot-acts {
+    opacity: 1;
   }
 
-  html,
-  body,
-  #root {
-    margin: 0;
-    padding: 0;
+  /* Color wheel canvas */
+  .wheel-canvas {
+    display: block;
+    border-radius: 50%;
+    cursor: crosshair;
+    touch-action: none;
+  }
+  .wheel-cursor {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.5),
+      0 2px 6px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Gradient stop drag handle */
+  .grad-stop-handle {
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 28px;
+    border-radius: var(--radius);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    cursor: grab;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    transform: translate(-50%, -50%);
+    transition:
+      border-color 100ms,
+      box-shadow 100ms;
+    z-index: 2;
+  }
+  .grad-stop-handle:active {
+    cursor: grabbing;
+  }
+  .grad-stop-handle.selected {
+    border-color: #fff;
+    box-shadow:
+      0 0 0 2px var(--color-primary),
+      0 2px 8px rgba(0, 0, 0, 0.5);
+    z-index: 3;
+  }
+
+  /* Scale / mixer chips – flex-expand on hover */
+  .scale-chip {
+    flex: 1;
+    transition: flex 100ms;
+  }
+  .scale-chip:hover {
+    flex: 1.4;
+  }
+  .mixer-chip {
+    flex: 1;
+    transition: flex 100ms;
+  }
+  .mixer-chip:hover {
+    flex: 1.4;
+  }
+
+  /* Entrance animations */
+  .toast-anim {
+    animation: toast-in 0.12s ease forwards;
+  }
+  .overlay-anim {
+    animation: overlay-in 0.1s ease;
+  }
+  .modal-anim {
+    animation: modal-up 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -44%);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+  }
+  @keyframes overlay-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes modal-up {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .track-wrapper {
+    height: 10px;
+    border-radius: 5px;
+    margin: 2px 0;
+    position: relative;
+  }
+
+  /* Color-picker gradient/hue slider tracks */
+  .color-track input[type="range"] {
     width: 100%;
     height: 100%;
-    overflow: hidden;
+    background: transparent;
+    cursor: pointer;
+    margin: 0;
+    display: block;
+  }
+  .color-track input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+  .color-track input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    cursor: pointer;
   }
 
-  body {
-    background: #0a0a0a;
-    color: #f0f0f0;
-    font-family:
-      system-ui,
-      -apple-system,
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
+  /* Alpha channel checker background */
+  .alpha-track {
+    background: repeating-conic-gradient(#444 0% 25%, #222 0% 50%) 0 0/8px 8px;
+  }
+
+  /* Generic gradient slider track (hue, saturation, lightness, OKLCH channels) */
+  /* alpha-track uses the same size/position but adds a checker pattern underneath */
+  .sat-track {
+    height: 10px;
+    border-radius: 5px;
+    position: relative;
+  }
+  .sat-track input[type="range"] {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    cursor: pointer;
+    margin: 0;
+    display: block;
+  }
+  .sat-track input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+  }
+  .sat-track input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    cursor: pointer;
   }
 }

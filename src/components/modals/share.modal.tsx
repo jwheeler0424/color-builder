@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useChromaStore } from "@/stores/chroma-store/chroma.store";
-import { encodeUrl } from "@/lib/utils/paletteUtils";
+import { encodeUrl } from "@/lib/utils";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -16,12 +16,20 @@ import {
 // ─── Share Modal ──────────────────────────────────────────────────────────────
 
 export function ShareModal() {
-  const { modal, slots, mode, closeModal, openModal } = useChromaStore();
-  const hexes = slots.map((s) => s.color.hex);
-  const url = encodeUrl(hexes, mode);
+  const modal = useChromaStore((s) => s.modal);
+  const slots = useChromaStore((s) => s.slots);
+  const mode = useChromaStore((s) => s.mode);
+  const closeModal = useChromaStore((s) => s.closeModal);
+  const openModal = useChromaStore((s) => s.openModal);
+
   const [copied, setCopied] = useState(false);
 
-  const copy = () => {
+  const url = useMemo(() => {
+    const hexes = slots.map((s) => s.color.hex);
+    return encodeUrl(hexes, mode);
+  }, [slots, mode]);
+
+  const handleCopy = () => {
     navigator.clipboard.writeText(url).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1400);
@@ -55,37 +63,22 @@ export function ShareModal() {
           readOnly
           value={url}
           rows={2}
-          style={{
-            width: "100%",
-            background: "var(--ch-s2)",
-            border: "1px solid var(--ch-b1)",
-            borderRadius: 2,
-            color: "var(--ch-t2)",
-            fontFamily: "var(--ch-fm)",
-            fontSize: 11,
-            padding: 9,
-            resize: "none",
-            outline: "none",
-            lineHeight: 1.6,
-          }}
+          onFocus={(e) => e.target.select()}
+          className="w-full bg-muted border border-border rounded px-2.5 py-2 text-[11px] text-secondary-foreground font-mono leading-relaxed resize-none outline-none focus:border-ring transition-colors"
         />
-        <div
-          style={{
-            display: "flex",
-            height: 24,
-            borderRadius: 2,
-            overflow: "hidden",
-            gap: 2,
-            marginTop: 8,
-          }}
-        >
-          {hexes.map((h, i) => (
-            <div key={i} style={{ flex: 1, background: h }} />
+
+        <div className="flex h-6 rounded overflow-hidden gap-px">
+          {slots.map((s, i) => (
+            <div
+              key={`${s.color.hex}-${i}`}
+              className="flex-1"
+              style={{ background: s.color.hex }}
+            />
           ))}
         </div>
         <DialogFooter>
           <DialogClose render={<Button variant="ghost">Close</Button>} />
-          <Button variant="default" onClick={copy}>
+          <Button variant="default" onClick={handleCopy}>
             {copied ? "✓ Copied" : "Copy"}
           </Button>
         </DialogFooter>

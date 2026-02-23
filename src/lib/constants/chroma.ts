@@ -1,5 +1,5 @@
 import type { HarmonyDef, ThemeDef, CBType, GradientPreset } from "@/types";
-import { hexToRgb } from "@/lib/utils/colorMath";
+import { hexToRgb } from "@/lib/utils";
 import ColorNames from "./named-colors/color-names.json";
 
 // ─── Harmonies ────────────────────────────────────────────────────────────────

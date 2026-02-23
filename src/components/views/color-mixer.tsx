@@ -1,26 +1,26 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import type { MixSpace } from "@/types";
-import { useChromaStore } from "@/hooks/useChromaStore";
+import { useChromaStore } from "@/hooks/use-chroma-store";
 import {
   parseHex,
   hexToRgb,
   rgbToHex,
   rgbToHsl,
+  nearestName,
   mixOklab,
   mixHsl,
   mixRgb,
   textColor,
-} from "@/lib/utils/colorMath";
-import { nearestName } from "@/lib/utils/paletteUtils";
-import { Button } from "../ui/button";
+} from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const STEPS = 7;
 const MIX_SPACES: { id: MixSpace; label: string; desc: string }[] = [
   {
     id: "oklch",
     label: "OKLab",
-    desc: "Perceptually uniform — no muddy midpoints",
+    desc: "Perceptually uniform OKLab interpolation — no muddy midpoints",
   },
   { id: "hsl", label: "HSL", desc: "Shortest hue path — familiar results" },
   { id: "rgb", label: "RGB", desc: "Raw channel interpolation" },
@@ -89,9 +89,9 @@ export default function ColorMixer() {
   };
 
   return (
-    <div className="ch-view-scroll ch-view-pad">
-      <div style={{ maxWidth: 800, margin: "0 auto" }}>
-        <div className="ch-view-hd">
+    <div className="flex-1 overflow-auto p-6">
+      <div className="max-w-[800px] mx-auto">
+        <div className="mb-5">
           <h2>Color Mixer</h2>
           <p>
             Blend two colors across different color spaces. OKLab avoids the
@@ -100,39 +100,30 @@ export default function ColorMixer() {
         </div>
 
         {/* Color inputs */}
-        <div className="ch-mixer-inputs">
+        <div className="flex gap-6 mb-4">
           {[
             { label: "Color A", val: colorA, set: setColorA, rgb: rgbA },
             { label: "Color B", val: colorB, set: setColorB, rgb: rgbB },
           ].map(({ label, val, set, rgb }) => (
-            <div key={label} className="ch-mixer-input-group">
-              <div className="ch-slabel">{label}</div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div key={label} className="flex-1">
+              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+                {label}
+              </div>
+              <div className="items-center flex gap-2">
                 <div
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 4,
-                    background: rgbToHex(rgb),
-                    border: "2px solid var(--ch-b2)",
-                    flexShrink: 0,
-                  }}
+                  className="rounded border-2 border-input flex-shrink-0"
+                  style={{ width: 48, height: 48, background: rgbToHex(rgb) }}
                 />
                 <div>
                   <input
-                    className="ch-inp"
+                    className="w-full bg-muted border border-border font-mono tracking-[.06em] mb-1 rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
                     value={val}
                     onChange={(e) => set(e.target.value)}
                     maxLength={7}
                     spellCheck={false}
                     autoComplete="off"
-                    style={{
-                      fontFamily: "var(--ch-fm)",
-                      letterSpacing: ".06em",
-                      marginBottom: 4,
-                    }}
                   />
-                  <div style={{ fontSize: 10, color: "var(--ch-t3)" }}>
+                  <div className="text-muted-foreground text-[10px]">
                     {nearestName(rgb)}
                   </div>
                 </div>
@@ -143,21 +134,20 @@ export default function ColorMixer() {
 
         {/* Palette quick-pick */}
         {slots.length > 0 && (
-          <div style={{ marginBottom: 16 }}>
-            <div className="ch-slabel" style={{ marginBottom: 6 }}>
+          <div className="mb-4">
+            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-1.5">
               Pick from Palette (A / B)
             </div>
-            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            <div className="flex-wrap flex gap-1">
               {slots.map((slot, i) => (
-                <div key={i} style={{ position: "relative" }}>
+                <div key={i} className="relative">
                   <div
+                    className="rounded cursor-pointer"
                     style={{
                       width: 28,
                       height: 28,
-                      borderRadius: 3,
                       background: slot.color.hex,
                       border: "1px solid rgba(255,255,255,.08)",
-                      cursor: "pointer",
                     }}
                     title={slot.color.hex}
                     onClick={() => setColorA(slot.color.hex)}
@@ -168,14 +158,7 @@ export default function ColorMixer() {
                   />
                 </div>
               ))}
-              <div
-                style={{
-                  fontSize: 10,
-                  color: "var(--ch-t3)",
-                  alignSelf: "center",
-                  marginLeft: 4,
-                }}
-              >
+              <div className="text-[10px] text-muted-foreground self-center ml-1">
                 Left-click → A · Right-click → B
               </div>
             </div>
@@ -183,11 +166,11 @@ export default function ColorMixer() {
         )}
 
         {/* Space selector */}
-        <div style={{ marginBottom: 20 }}>
-          <div className="ch-slabel" style={{ marginBottom: 8 }}>
+        <div className="mb-5">
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
             Blend Space
           </div>
-          <div style={{ display: "flex", gap: 4 }}>
+          <div className="flex gap-1">
             {MIX_SPACES.map((s) => (
               <Button
                 key={s.id}
@@ -198,29 +181,29 @@ export default function ColorMixer() {
               </Button>
             ))}
           </div>
-          <div style={{ fontSize: 11, color: "var(--ch-t3)", marginTop: 6 }}>
+          <div className="text-muted-foreground mt-1.5 text-[11px]">
             {MIX_SPACES.find((s) => s.id === mixSpace)?.desc}
           </div>
         </div>
 
         {/* Active blend strip */}
-        <div className="ch-slabel" style={{ marginBottom: 8 }}>
+        <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
           Result
         </div>
-        <div className="ch-mixer-strip">
+        <div className="flex h-[60px] rounded overflow-hidden mb-2">
           {blendRow.map(({ hex, rgb }, i) => {
             const tc = textColor(rgb);
             return (
               <div
                 key={i}
-                className="ch-mixer-chip"
+                className="mixer-chip flex items-end justify-center pb-1 cursor-pointer"
                 style={{ background: hex }}
                 title={`${hex} — click to copy`}
                 onClick={() =>
                   navigator.clipboard.writeText(hex).catch(() => {})
                 }
               >
-                <span style={{ color: tc, fontSize: 9 }}>
+                <span className="text-[9px]" style={{ color: tc }}>
                   {hex.toUpperCase()}
                 </span>
               </div>
@@ -229,16 +212,18 @@ export default function ColorMixer() {
         </div>
 
         {/* Comparison of all spaces */}
-        <div className="ch-slabel" style={{ margin: "24px 0 10px" }}>
+        <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mt-6 mb-2.5">
           Space Comparison
         </div>
-        <div className="ch-mixer-compare">
+        <div className="flex flex-col gap-1.5">
           {allSpaces.map((space) => (
-            <div key={space.id} className="ch-mixer-compare-row">
-              <div className="ch-mixer-compare-label">{space.label}</div>
-              <div className="ch-mixer-compare-strip">
+            <div key={space.id} className="flex items-center gap-2.5">
+              <div className="w-[52px] text-[10px] text-muted-foreground text-right flex-shrink-0">
+                {space.label}
+              </div>
+              <div className="flex-1 h-7 flex rounded overflow-hidden">
                 {space.steps.map(({ hex }, i) => (
-                  <div key={i} style={{ flex: 1, background: hex }} />
+                  <div key={i} className="flex-1" style={{ background: hex }} />
                 ))}
               </div>
             </div>
@@ -246,7 +231,7 @@ export default function ColorMixer() {
         </div>
 
         {/* Actions */}
-        <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
+        <div className="flex gap-2 mt-5">
           <Button variant="default" onClick={useMixAsSeeds}>
             Use Blend as Seeds →
           </Button>

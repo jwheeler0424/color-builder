@@ -1,8 +1,6 @@
-import { useChromaStore } from "@/hooks/useChromaStore";
+import { useChromaStore } from "@/hooks/use-chroma-store";
 import { useMemo } from "react";
-import { scorePalette, hexToRgb } from "@/lib/utils/colorMath";
-import { nearestName } from "@/lib/utils/paletteUtils";
-
+import { scorePalette, hexToRgb, nearestName } from "@/lib/utils";
 // Pure SVG radar chart
 function RadarChart({ scores }: { scores: Record<string, number> }) {
   const SIZE = 200;
@@ -103,16 +101,21 @@ function RadarChart({ scores }: { scores: Record<string, number> }) {
 }
 
 export default function PaletteScoring() {
-  const { slots } = useChromaStore();
+  const slots = useChromaStore((s) => s.slots);
   const score = useMemo(() => scorePalette(slots), [slots]);
+  // Memoize color names — nearestName is O(160) per call
+  const slotNames = useMemo(
+    () => slots.map((s) => nearestName(hexToRgb(s.color.hex))),
+    [slots],
+  );
 
   if (!slots.length) {
     return (
-      <div className="ch-view-scroll ch-view-pad">
-        <div className="ch-view-hd">
+      <div className="flex-1 overflow-auto p-6">
+        <div className="mb-5">
           <h2>Palette Scoring</h2>
         </div>
-        <p style={{ color: "var(--ch-t3)", fontSize: 12 }}>
+        <p className="text-muted-foreground text-[12px]">
           Generate a palette first.
         </p>
       </div>
@@ -169,9 +172,9 @@ export default function PaletteScoring() {
   ];
 
   return (
-    <div className="ch-view-scroll ch-view-pad">
-      <div style={{ maxWidth: 760, margin: "0 auto" }}>
-        <div className="ch-view-hd">
+    <div className="flex-1 overflow-auto p-6">
+      <div className="mx-auto" style={{ maxWidth: 760 }}>
+        <div className="mb-5">
           <h2>Palette Scoring</h2>
           <p>
             Objective evaluation across four dimensions. Scores are relative,
@@ -179,63 +182,39 @@ export default function PaletteScoring() {
           </p>
         </div>
 
-        <div className="ch-score-layout">
+        <div className="flex gap-8 items-start mt-2">
           {/* Radar */}
-          <div className="ch-score-radar">
+          <div className="flex flex-col items-center gap-3 flex-shrink-0">
             <RadarChart scores={radarData} />
-            <div className="ch-score-overall">
+            <div className="text-center">
               <div
-                style={{
-                  fontSize: 36,
-                  fontWeight: 800,
-                  color: scoreColor(overall),
-                  fontFamily: "var(--ch-fd)",
-                }}
+                className="text-[36px] font-extrabold font-display"
+                style={{ color: scoreColor(overall) }}
               >
                 {overall}
               </div>
-              <div
-                style={{
-                  fontSize: 10,
-                  color: "var(--ch-t3)",
-                  letterSpacing: ".1em",
-                  textTransform: "uppercase",
-                }}
-              >
+              <div className="text-muted-foreground uppercase tracking-[.1em] text-[10px]">
                 Overall
               </div>
             </div>
           </div>
 
           {/* Score bars */}
-          <div className="ch-score-bars">
+          <div className="flex-1 flex flex-col gap-5">
             {feedback.map(({ label, value, note }) => (
-              <div key={label} className="ch-score-bar-item">
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: 4,
-                  }}
-                >
-                  <span style={{ fontSize: 12, fontWeight: 700 }}>{label}</span>
+              <div key={label} className="flex flex-col">
+                <div className="justify-between flex mb-1">
+                  <span className="font-bold text-[12px]">{label}</span>
                   <span
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 800,
-                      color: scoreColor(value),
-                    }}
+                    className="text-[12px] font-extrabold"
+                    style={{ color: scoreColor(value) }}
                   >
                     {value}
                   </span>
                 </div>
                 <div
-                  style={{
-                    height: 4,
-                    background: "var(--ch-b2)",
-                    borderRadius: 2,
-                    marginBottom: 6,
-                  }}
+                  className="rounded mb-1.5 h-1"
+                  style={{ background: "var(--color-input)" }}
                 >
                   <div
                     style={{
@@ -243,17 +222,11 @@ export default function PaletteScoring() {
                       borderRadius: 2,
                       width: `${value}%`,
                       background: scoreColor(value),
-                      transition: "width .4s var(--ch-ease)",
+                      transition: "width .4s cubic-bezier(.16,1,.3,1)",
                     }}
                   />
                 </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: "var(--ch-t3)",
-                    lineHeight: 1.5,
-                  }}
-                >
+                <div className="text-muted-foreground leading-[1.5] text-[11px]">
                   {note}
                 </div>
               </div>
@@ -262,38 +235,26 @@ export default function PaletteScoring() {
         </div>
 
         {/* Palette preview */}
-        <div style={{ marginTop: 24 }}>
-          <div className="ch-slabel" style={{ marginBottom: 8 }}>
+        <div className="mt-6">
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
             Your Palette
           </div>
-          <div
-            style={{
-              display: "flex",
-              height: 52,
-              borderRadius: 4,
-              overflow: "hidden",
-            }}
-          >
+          <div className="flex h-[52px] rounded overflow-hidden">
             {slots.map((slot, i) => (
               <div
                 key={i}
-                style={{
-                  flex: 1,
-                  background: slot.color.hex,
-                  display: "flex",
-                  alignItems: "flex-end",
-                  padding: "0 0 4px 4px",
-                }}
+                className="flex-1 flex items-end"
+                style={{ background: slot.color.hex, padding: "0 0 4px 4px" }}
               >
                 <span
                   style={{
                     fontSize: 8,
                     color:
                       slot.color.hex === "#000000" ? "#fff" : "rgba(0,0,0,.6)",
-                    fontFamily: "var(--ch-fm)",
+                    fontFamily: "var(--font-mono)",
                   }}
                 >
-                  {nearestName(hexToRgb(slot.color.hex)).split(" ")[0]}
+                  {slotNames[i]?.split(" ")[0]}
                 </span>
               </div>
             ))}

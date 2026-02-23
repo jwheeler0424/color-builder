@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from "react";
-import { useChromaStore } from "@/hooks/useChromaStore";
+import { useChromaStore } from "@/hooks/use-chroma-store";
 import {
   deriveThemeTokens,
   textColor,
   rgbToOklch,
   hexToRgb,
-} from "@/lib/utils/colorMath";
+} from "@/lib/utils/color-math.utils";
 import type { PaletteSlot } from "@/types";
 
 type PreviewMode = "light" | "dark" | "split";
@@ -112,27 +112,18 @@ function MiniApp({
           justifyContent: "space-between",
         }}
       >
-        <div style={{ display: "flex", gap: 4 }}>
+        <div className="flex gap-1">
           {accentColors.map((hex, i) => (
             <div
               key={i}
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: "50%",
-                background: hex,
-              }}
+              className="rounded-full"
+              style={{ width: 7, height: 7, background: hex }}
             />
           ))}
         </div>
         <span
-          style={{
-            fontSize: 9,
-            color: fgMuted,
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: ".06em",
-          }}
+          className="text-[9px] font-semibold uppercase tracking-[.06em]"
+          style={{ color: fgMuted }}
         >
           {mode === "light" ? "☀ Light" : "☾ Dark"}
         </span>
@@ -150,23 +141,21 @@ function MiniApp({
         }}
       >
         <div
-          style={{
-            width: 16,
-            height: 16,
-            borderRadius: 4,
-            background: a1,
-            flexShrink: 0,
-          }}
+          className="rounded flex-shrink-0 w-4 h-4"
+          style={{ background: a1 }}
         />
-        <span style={{ fontWeight: 800, fontSize: 12, color: fg, flex: 1 }}>
+        <span
+          className="font-extrabold text-[12px] flex-1"
+          style={{ color: fg }}
+        >
           Brand
         </span>
         {["Docs", "Pricing", "Blog"].map((l) => (
-          <span key={l} style={{ color: fgMuted, fontSize: 10 }}>
+          <span key={l} className="text-[10px]" style={{ color: fgMuted }}>
             {l}
           </span>
         ))}
-        <button style={{ ...btnPrimary, padding: "4px 10px", fontSize: 10 }}>
+        <button className="text-[10px] px-2.5 py-1" style={{ ...btnPrimary }}>
           Sign in
         </button>
       </div>
@@ -180,54 +169,33 @@ function MiniApp({
         }}
       >
         <div
+          className="inline-flex items-center text-[8.5px] font-bold tracking-[.05em] gap-[5px] mb-[7px]"
           style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 5,
             background: primary,
             color: primaryFg,
             borderRadius: 20,
             padding: "2px 8px",
-            fontSize: 8.5,
-            fontWeight: 700,
-            letterSpacing: ".05em",
-            marginBottom: 7,
           }}
         >
           <div
-            style={{
-              width: 5,
-              height: 5,
-              borderRadius: "50%",
-              background: primaryFg,
-              opacity: 0.7,
-            }}
+            className="rounded-full"
+            style={{ width: 5, height: 5, background: primaryFg, opacity: 0.7 }}
           />
           JUST LAUNCHED
         </div>
         <div
-          style={{
-            color: primaryContFg,
-            fontSize: 16,
-            fontWeight: 800,
-            letterSpacing: "-0.025em",
-            marginBottom: 5,
-          }}
+          className="text-base font-extrabold mb-[5px]"
+          style={{ color: primaryContFg, letterSpacing: "-0.025em" }}
         >
           Design at the speed of thought
         </div>
         <div
-          style={{
-            color: primaryContFg,
-            opacity: 0.72,
-            fontSize: 10,
-            marginBottom: 12,
-            lineHeight: 1.6,
-          }}
+          className="text-[10px] mb-3 leading-relaxed"
+          style={{ color: primaryContFg, opacity: 0.72 }}
         >
           Your palette, your tokens, your system — built automatically.
         </div>
-        <div style={{ display: "flex", gap: 7 }}>
+        <div className="flex gap-[7px]">
           <button style={btnPrimary}>Get started →</button>
           <button style={btnOutline}>View demo</button>
         </div>
@@ -266,19 +234,19 @@ function MiniApp({
             }}
           >
             <div
+              className="rounded mb-[7px]"
               style={{
                 width: 24,
                 height: 24,
-                borderRadius: 5,
                 background: accent,
-                marginBottom: 7,
                 opacity: 0.9,
               }}
             />
-            <div style={{ fontWeight: 700, fontSize: 10.5, marginBottom: 3 }}>
-              {title}
-            </div>
-            <div style={{ color: fgMuted, fontSize: 9.5, lineHeight: 1.5 }}>
+            <div className="font-bold text-[10.5px] mb-[3px]">{title}</div>
+            <div
+              className="text-[9.5px] leading-[1.5]"
+              style={{ color: fgMuted }}
+            >
               {desc}
             </div>
           </div>
@@ -331,25 +299,20 @@ function MiniApp({
             }}
           >
             <div
+              className="rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 w-[18px]"
               style={{
-                width: 18,
                 height: 18,
-                borderRadius: "50%",
                 background: borderColor,
                 color: textColor(hexToRgb(borderColor)),
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 10,
-                fontWeight: 700,
-                flexShrink: 0,
               }}
             >
               {icon}
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 10 }}>{label}</div>
-              <div style={{ fontSize: 9, color: fgMuted }}>{sub}</div>
+              <div className="font-bold text-[10px]">{label}</div>
+              <div className="text-[9px]" style={{ color: fgMuted }}>
+                {sub}
+              </div>
             </div>
           </div>
         ))}
@@ -357,13 +320,8 @@ function MiniApp({
 
       {/* Input + focus ring demo */}
       <div
-        style={{
-          padding: "10px 14px",
-          background: surfaceDim,
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-        }}
+        className="flex gap-2 items-center"
+        style={{ padding: "10px 14px", background: surfaceDim }}
       >
         <div
           style={{
@@ -381,15 +339,8 @@ function MiniApp({
         </div>
         <button style={btnPrimary}>Subscribe</button>
         <button
-          style={{
-            background: destructive,
-            color: destructiveFg,
-            border: "none",
-            borderRadius: 5,
-            padding: "6px 10px",
-            fontSize: 10,
-            fontWeight: 600,
-          }}
+          className="border-none rounded text-[10px] font-semibold px-2.5 py-1.5"
+          style={{ background: destructive, color: destructiveFg }}
         >
           Delete
         </button>
@@ -423,22 +374,13 @@ function TokenLegend({
   ];
 
   return (
-    <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+    <div className="flex-wrap flex gap-5">
       {groups.map(({ label, ids }) => (
-        <div key={label} style={{ flex: "1 1 160px" }}>
-          <div
-            style={{
-              fontSize: 9,
-              fontWeight: 700,
-              color: "var(--ch-t3)",
-              textTransform: "uppercase",
-              letterSpacing: ".07em",
-              marginBottom: 6,
-            }}
-          >
+        <div key={label} className="flex-[1_1_160px]">
+          <div className="text-muted-foreground uppercase tracking-[.07em] mb-1.5 font-bold text-[9px]">
             {label}
           </div>
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+          <div className="flex-wrap flex gap-1">
             {ids.map((id) => {
               const tok = tokens.semantic.find((t) => t.name === id);
               const hex = tok?.[mode];
@@ -447,34 +389,18 @@ function TokenLegend({
                 <div
                   key={id}
                   title={id}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 2,
-                  }}
+                  className="flex-col items-center flex gap-0.5"
                 >
                   <div
+                    className="rounded"
                     style={{
                       width: 24,
                       height: 24,
-                      borderRadius: 5,
                       background: hex,
                       border: "1px solid rgba(128,128,128,.2)",
                     }}
                   />
-                  <span
-                    style={{
-                      fontSize: 7.5,
-                      color: "var(--ch-t3)",
-                      fontFamily: "var(--ch-fm)",
-                      maxWidth: 28,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      textAlign: "center",
-                    }}
-                  >
+                  <span className="text-[7.5px] text-muted-foreground font-mono overflow-hidden text-ellipsis whitespace-nowrap text-center max-w-7">
                     {id.replace("--", "")}
                   </span>
                 </div>
@@ -505,22 +431,13 @@ function UtilityPanel({
   const roles = Object.keys(tokens.utility) as (keyof typeof tokens.utility)[];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+    <div className="grid gap-4 grid-cols-2">
       {(["light", "dark"] as const).map((m) => (
         <div key={m}>
-          <div
-            style={{
-              fontSize: 9.5,
-              fontWeight: 700,
-              color: "var(--ch-t3)",
-              textTransform: "uppercase",
-              letterSpacing: ".07em",
-              marginBottom: 7,
-            }}
-          >
+          <div className="text-[9.5px] font-bold text-muted-foreground uppercase tracking-[.07em] mb-[7px]">
             {m === "light" ? "☀ Light" : "☾ Dark"}
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+          <div className="flex-col flex gap-[5px]">
             {roles.map((role) => {
               const color =
                 m === "light"
@@ -544,41 +461,21 @@ function UtilityPanel({
                   }}
                 >
                   <div
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: "50%",
-                      background: color,
-                      flexShrink: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 10,
-                    }}
+                    className="rounded-full flex-shrink-0 flex items-center justify-center text-[10px]"
+                    style={{ width: 20, height: 20, background: color }}
                   >
                     <span style={{ color: textColor(hexToRgb(color)) }}>
                       {ICONS[role]}
                     </span>
                   </div>
-                  <span
-                    style={{
-                      fontWeight: 700,
-                      fontSize: 10,
-                      textTransform: "capitalize",
-                      flex: 1,
-                    }}
-                  >
+                  <span className="capitalize font-bold text-[10px] flex-1">
                     {role}
                   </span>
-                  <div
-                    style={{ display: "flex", gap: 3, alignItems: "center" }}
-                  >
+                  <div className="items-center flex gap-[3px]">
                     <div
                       title="filled"
+                      className="rounded w-[14px] h-[14px]"
                       style={{
-                        width: 14,
-                        height: 14,
-                        borderRadius: 3,
                         background: color,
                         border: "1px solid rgba(128,128,128,.2)",
                       }}
@@ -593,14 +490,7 @@ function UtilityPanel({
                         border: `1px solid ${color}`,
                       }}
                     />
-                    <span
-                      style={{
-                        fontSize: 8.5,
-                        color: "var(--ch-t3)",
-                        fontFamily: "var(--ch-fm)",
-                        marginLeft: 2,
-                      }}
-                    >
+                    <span className="text-[8.5px] text-muted-foreground font-mono ml-0.5">
                       {color}
                     </span>
                   </div>
@@ -627,11 +517,11 @@ export default function CssPreview() {
 
   if (!slots.length) {
     return (
-      <div className="ch-view-scroll ch-view-pad">
-        <div className="ch-view-hd">
+      <div className="flex-1 overflow-auto p-6">
+        <div className="mb-5">
           <h2>Live CSS Preview</h2>
         </div>
-        <p style={{ color: "var(--ch-t3)", fontSize: 12 }}>
+        <p className="text-muted-foreground text-[12px]">
           Generate a palette first to see the preview.
         </p>
       </div>
@@ -642,9 +532,9 @@ export default function CssPreview() {
   const showDark = previewMode === "dark" || previewMode === "split";
 
   return (
-    <div className="ch-view-scroll ch-view-pad">
-      <div style={{ maxWidth: 960, margin: "0 auto" }}>
-        <div className="ch-view-hd">
+    <div className="flex-1 overflow-auto p-6">
+      <div className="max-w-[960px] mx-auto">
+        <div className="mb-5">
           <h2>Live CSS Preview</h2>
           <p>
             Your palette applied to a real UI — nav, hero, cards, alerts (with
@@ -655,7 +545,7 @@ export default function CssPreview() {
         </div>
 
         {/* Mode toggle */}
-        <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+        <div className="mb-5 flex gap-1">
           {(
             [
               { key: "split", label: "⬛ Split" },
@@ -668,8 +558,13 @@ export default function CssPreview() {
               onClick={() => setPreviewMode(key)}
               style={{
                 background:
-                  previewMode === key ? "var(--ch-a)" : "var(--ch-s2)",
-                color: previewMode === key ? "#fff" : "var(--ch-t2)",
+                  previewMode === key
+                    ? "var(--color-primary)"
+                    : "var(--color-secondary)",
+                color:
+                  previewMode === key
+                    ? "#fff"
+                    : "var(--color-secondary-foreground)",
                 border: "none",
                 borderRadius: 5,
                 padding: "5px 12px",
@@ -697,8 +592,8 @@ export default function CssPreview() {
         </div>
 
         {/* Token legend */}
-        <div style={{ marginBottom: 28 }}>
-          <div className="ch-slabel" style={{ marginBottom: 10 }}>
+        <div className="mb-7">
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
             Token roles ({previewMode === "dark" ? "dark" : "light"} mode)
           </div>
           <TokenLegend
@@ -709,7 +604,7 @@ export default function CssPreview() {
 
         {/* Utility panel */}
         <div>
-          <div className="ch-slabel" style={{ marginBottom: 10 }}>
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
             Utility colors — filled + correct subtle backgrounds for both modes
           </div>
           <UtilityPanel tokens={tokens} />

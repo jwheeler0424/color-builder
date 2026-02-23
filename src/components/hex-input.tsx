@@ -1,23 +1,16 @@
 import React, { useState, useCallback } from "react";
-import { parseHex } from "@/lib/utils/colorMath";
+import { parseHex, cn } from "@/lib/utils";
 
 interface HexInputProps {
   value: string;
   onChange: (hex: string) => void;
   label?: string;
-  /** Show a color swatch preview next to the input */
   showSwatch?: boolean;
-  /** Allow 8-char hex (with alpha) */
   allowAlpha?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
 
-/**
- * Shared hex color input with inline validation.
- * Uses parseHex() as the single validator — handles 3, 6, and optionally 8-char hex.
- * Shows red border on invalid input; reverts to last valid value on blur.
- */
 export default function HexInput({
   value,
   onChange,
@@ -30,14 +23,12 @@ export default function HexInput({
   const [raw, setRaw] = useState(value);
   const [invalid, setInvalid] = useState(false);
 
-  // Keep raw in sync when external value changes (e.g. palette click sets it)
   const displayVal = invalid ? raw : value;
 
   const validate = useCallback(
     (s: string): string | null => {
       const h = parseHex(s);
       if (h) return h;
-      // Also allow 8-char hex if allowAlpha is on
       if (allowAlpha) {
         const c = s.trim().replace(/^#/, "");
         if (/^[0-9a-fA-F]{8}$/.test(c)) return "#" + c;
@@ -54,75 +45,47 @@ export default function HexInput({
     if (valid) {
       setInvalid(false);
       onChange(valid);
-    } else {
-      setInvalid(true);
-    }
+    } else setInvalid(true);
   };
 
   const handleBlur = () => {
-    const valid = validate(raw);
-    if (!valid) {
-      // Revert to last known good value
+    if (!validate(raw)) {
       setRaw(value);
       setInvalid(false);
     }
   };
 
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.select();
-  };
-
   const resolvedHex = validate(raw) ?? value;
 
   return (
-    <div
-      style={{ display: "flex", alignItems: "center", gap: 8, ...style }}
-      className={className}
-    >
+    <div className={cn("flex items-center gap-2", className)} style={style}>
       {showSwatch && (
         <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 4,
-            flexShrink: 0,
-            background: resolvedHex,
-            border: "1px solid rgba(128,128,128,.25)",
-            boxShadow: "inset 0 0 0 1px rgba(0,0,0,.06)",
-          }}
+          className="w-7 h-7 rounded shrink-0 border border-white/20 shadow-inner"
+          style={{ background: resolvedHex }}
         />
       )}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="flex-1 min-w-0">
         {label && (
-          <div
-            style={{
-              fontSize: 9,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: ".07em",
-              color: "var(--ch-t3)",
-              marginBottom: 3,
-            }}
-          >
+          <div className="text-[9px] font-bold uppercase tracking-[.07em] text-muted-foreground mb-0.5">
             {label}
           </div>
         )}
         <input
-          className="ch-inp"
           value={displayVal}
           onChange={handleChange}
           onBlur={handleBlur}
-          onFocus={handleFocus}
+          onFocus={(e) => e.target.select()}
           maxLength={allowAlpha ? 9 : 7}
           spellCheck={false}
           autoComplete="off"
-          style={{
-            fontFamily: "var(--ch-fm)",
-            letterSpacing: ".06em",
-            borderColor: invalid ? "rgba(239,68,68,.7)" : undefined,
-            width: "100%",
-            boxSizing: "border-box",
-          }}
+          className={cn(
+            "w-full bg-muted border rounded px-2 py-1.5 text-[12px] text-foreground font-mono",
+            "tracking-[.06em] outline-none transition-colors",
+            "placeholder:text-muted-foreground",
+            "focus:border-ring",
+            invalid ? "border-destructive" : "border-border",
+          )}
         />
       </div>
     </div>

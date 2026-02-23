@@ -1,6 +1,6 @@
 import React, { useRef, useCallback } from "react";
 import type { GradientStop } from "@/types";
-import { clamp } from "@/lib/utils/colorMath";
+import { cn, clamp } from "@/lib/utils";
 
 interface GradientStopBarProps {
   stops: GradientStop[];
@@ -64,42 +64,98 @@ export default function GradientStopBar({
 
   const handleTrackClick = useCallback(
     (e: React.MouseEvent) => {
-      // Don't create stop when clicking on a handle
-      if ((e.target as HTMLElement).classList.contains("ch-grad-stop-handle"))
+      if ((e.target as HTMLElement).classList.contains("grad-stop-handle"))
         return;
-      const pos = posFromEvent(e.clientX);
-      onAddStop(pos);
+      onAddStop(posFromEvent(e.clientX));
     },
     [posFromEvent, onAddStop],
   );
 
+  // ── Keyboard handling on stop handle ──────────────────────────────────────
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, idx: number) => {
+      const stop = stops[idx];
+      if (!stop) return;
+
+      switch (e.key) {
+        case "ArrowLeft":
+        case "ArrowDown": {
+          e.preventDefault();
+          const step = e.shiftKey ? 5 : 1;
+          onMoveStop(idx, clamp(stop.pos - step, 0, 100));
+          break;
+        }
+        case "ArrowRight":
+        case "ArrowUp": {
+          e.preventDefault();
+          const step = e.shiftKey ? 5 : 1;
+          onMoveStop(idx, clamp(stop.pos + step, 0, 100));
+          break;
+        }
+        case "Delete":
+        case "Backspace": {
+          e.preventDefault();
+          if (stops.length > 2) onRemoveStop(idx);
+          break;
+        }
+        case "Tab": {
+          // Let Tab naturally move to next/prev stop
+          e.preventDefault();
+          const next = e.shiftKey
+            ? (idx - 1 + stops.length) % stops.length
+            : (idx + 1) % stops.length;
+          onSelectStop(next);
+          // Focus the next handle
+          const handles =
+            trackRef.current?.querySelectorAll<HTMLElement>(
+              ".grad-stop-handle",
+            );
+          handles?.[next]?.focus();
+          break;
+        }
+      }
+    },
+    [stops, onMoveStop, onRemoveStop, onSelectStop],
+  );
+
   return (
-    <div className="ch-grad-bar-wrap">
+    <div className="mb-4 max-w-240">
       {/* Gradient preview track */}
       <div
         ref={trackRef}
-        className="ch-grad-bar-track"
+        className="relative h-10 rounded border border-border cursor-crosshair overflow-visible"
         style={{ background: gradientCss }}
         onClick={handleTrackClick}
+        role="group"
+        aria-label="Gradient stops"
       >
-        {/* Stop handles */}
         {stops.map((stop, i) => (
           <div
             key={i}
-            className={`ch-grad-stop-handle${i === selectedStop ? " selected" : ""}`}
+            className={cn("grad-stop-handle", i === selectedStop && "selected")}
             style={{ left: `${stop.pos}%`, background: stop.hex }}
             onMouseDown={(e) => startDrag(e, i)}
             onTouchStart={(e) => startDrag(e, i)}
+            onFocus={() => onSelectStop(i)}
+            onKeyDown={(e) => handleKeyDown(e, i)}
+            tabIndex={0}
+            role="slider"
+            aria-label={`Stop ${i + 1}: ${stop.hex}`}
+            aria-valuenow={stop.pos}
+            aria-valuemin={0}
+            aria-valuemax={100}
             title={`Stop ${i + 1}: ${stop.hex} at ${stop.pos}%`}
           >
             {stops.length > 2 && i === selectedStop && (
               <button
-                className="ch-grad-stop-rm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onRemoveStop(i);
                 }}
-                title="Remove stop"
+                title="Remove stop (or press Delete)"
+                className="absolute -top-2.5 -right-2.5 w-4 h-4 bg-destructive rounded-full flex items-center justify-center text-[10px] cursor-pointer border-none text-white p-0 leading-none"
+                tabIndex={-1}
               >
                 ×
               </button>
@@ -107,9 +163,13 @@ export default function GradientStopBar({
           </div>
         ))}
       </div>
-      <div className="ch-grad-bar-hint">
-        Click track to add stop · Drag handles to reposition
-      </div>
+      <p className="text-[10px] text-muted-foreground mt-1.5">
+        Click track to add · Drag or{" "}
+        <kbd className="px-1 border border-border rounded">←</kbd>/
+        <kbd className="px-1 border border-border rounded">→</kbd> to move ·{" "}
+        <kbd className="px-1 border border-border rounded">Del</kbd> to remove ·{" "}
+        <kbd className="px-1 border border-border rounded">Tab</kbd> to cycle
+      </p>
     </div>
   );
 }

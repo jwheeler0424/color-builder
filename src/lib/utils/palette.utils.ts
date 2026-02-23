@@ -15,22 +15,41 @@ import {
   colorDist,
   parseHexAlpha,
   opaqueHex,
-} from "@/lib/utils/colorMath";
+} from "./color-math.utils";
 import { NAMED } from "@/lib/constants/chroma";
 
 // ─── Color Naming ─────────────────────────────────────────────────────────────
+// Pre-flattened float array: [r0,g0,b0, r1,g1,b1, ...] — avoids object property
+// access in the hot loop and keeps the data fully packed for cache efficiency.
+
+let _namedFlat: Float32Array | null = null;
+function getNamedFlat(): Float32Array {
+  if (_namedFlat) return _namedFlat;
+  _namedFlat = new Float32Array(NAMED.length * 3);
+  for (let i = 0; i < NAMED.length; i++) {
+    _namedFlat[i * 3] = NAMED[i].rgb.r;
+    _namedFlat[i * 3 + 1] = NAMED[i].rgb.g;
+    _namedFlat[i * 3 + 2] = NAMED[i].rgb.b;
+  }
+  return _namedFlat;
+}
 
 export function nearestName(rgb: { r: number; g: number; b: number }): string {
-  let best = NAMED[0];
-  let bestD = colorDist(rgb, best.rgb);
-  for (let i = 1; i < NAMED.length; i++) {
-    const d = colorDist(rgb, NAMED[i].rgb);
+  const flat = getNamedFlat();
+  const { r, g, b } = rgb;
+  let bestIdx = 0;
+  let bestD = Infinity;
+  for (let i = 0; i < NAMED.length; i++) {
+    const dr = r - flat[i * 3];
+    const dg = g - flat[i * 3 + 1];
+    const db = b - flat[i * 3 + 2];
+    const d = dr * dr + dg * dg + db * db; // squared — no sqrt needed for comparison
     if (d < bestD) {
       bestD = d;
-      best = NAMED[i];
+      bestIdx = i;
     }
   }
-  return best.name;
+  return NAMED[bestIdx].name;
 }
 
 // ─── OKLCH Palette Generation ─────────────────────────────────────────────────
@@ -380,13 +399,13 @@ export function genPalette(
 // ─── Slot Helpers ────────────────────────────────────────────────────────────
 
 export function cloneSlot(slot: PaletteSlot): PaletteSlot {
-  const color: import("@/types").ColorStop = {
+  const color: ColorStop = {
     hex: slot.color.hex,
     rgb: { ...slot.color.rgb },
     hsl: { ...slot.color.hsl },
   };
   if (slot.color.a !== undefined) color.a = slot.color.a;
-  return { locked: slot.locked, color };
+  return { id: slot.id, locked: slot.locked, color };
 }
 
 export function hexToStop(hex: string, alpha?: number): ColorStop {

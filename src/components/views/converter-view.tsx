@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import ColorPickerModal from "@/components/modals/color-picker.modal";
-import { useChromaStore } from "@/hooks/useChromaStore";
+import { useChromaStore } from "@/hooks/use-chroma-store";
 import {
   parseAny,
   rgbToHex,
@@ -9,8 +9,11 @@ import {
   rgbToCmyk,
   rgbToOklab,
   oklabToLch,
-} from "@/lib/utils/colorMath";
-import { nearestName } from "@/lib/utils/paletteUtils";
+  nearestName,
+} from "@/lib/utils";
+
+// ─── ConvCard ─────────────────────────────────────────────────────────────────
+// Pure display component — no modal, no store access
 
 function ConvCard({
   label,
@@ -21,10 +24,6 @@ function ConvCard({
   value: string;
   sub?: string;
 }) {
-  const [showPicker, setShowPicker] = useState(false);
-  const { convInput, setConvInput } = useChromaStore();
-  const rgb = parseAny(convInput);
-  const hex = rgb ? rgbToHex(rgb) : undefined;
   const [copied, setCopied] = useState(false);
   const copy = () => {
     navigator.clipboard.writeText(value).catch(() => {});
@@ -32,76 +31,72 @@ function ConvCard({
     setTimeout(() => setCopied(false), 1200);
   };
   return (
-    <>
-      <div className="ch-conv-card">
-        <div className="ch-conv-label">{label}</div>
-        <div className="ch-conv-val">{value}</div>
-        {sub && <div className="ch-conv-sub">{sub}</div>}
-        <button className="ch-conv-copy" onClick={copy}>
-          {copied ? "✓" : "copy"}
-        </button>
+    <div className="bg-card border border-border rounded p-3.5 relative">
+      <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-1.5 font-display">
+        {label}
       </div>
-      {showPicker && (
-        <ColorPickerModal
-          initialHex={hex ?? "#3b82f6"}
-          title="Color Converter"
-          onApply={(h) => {
-            setConvInput(h);
-            setShowPicker(false);
-          }}
-          onClose={() => setShowPicker(false)}
-        />
-      )}
-    </>
+      <div className="font-mono text-[12px] break-all mb-0.5">{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground">{sub}</div>}
+      <button
+        className="absolute top-2.5 right-2.5 bg-secondary border border-border rounded text-muted-foreground text-[10px] px-1.5 py-0.5 cursor-pointer font-mono hover:text-foreground transition-colors"
+        onClick={copy}
+      >
+        {copied ? "✓" : "copy"}
+      </button>
+    </div>
   );
 }
 
+// ─── Main view ────────────────────────────────────────────────────────────────
+
 export default function ConverterView() {
   const [showPicker, setShowPicker] = useState(false);
-  const { convInput, setConvInput } = useChromaStore();
-  const rgb = parseAny(convInput) ?? { r: 224, g: 122, b: 95 };
-  const hex = rgbToHex(rgb);
-  const hsl = rgbToHsl(rgb);
-  const hsv = rgbToHsv(rgb);
-  const cmyk = rgbToCmyk(rgb);
-  const oklab = rgbToOklab(rgb);
-  const lch = oklabToLch(oklab);
+  const convInput = useChromaStore((s) => s.convInput);
+  const setConvInput = useChromaStore((s) => s.setConvInput);
+
+  const rgb = useMemo(
+    () => parseAny(convInput) ?? { r: 224, g: 122, b: 95 },
+    [convInput],
+  );
+  const hex = useMemo(() => rgbToHex(rgb), [rgb]);
+  const hsl = useMemo(() => rgbToHsl(rgb), [rgb]);
+  const hsv = useMemo(() => rgbToHsv(rgb), [rgb]);
+  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb]);
+  const oklab = useMemo(() => rgbToOklab(rgb), [rgb]);
+  const lch = useMemo(() => oklabToLch(oklab), [oklab]);
+  const name = useMemo(() => nearestName(rgb), [rgb]);
 
   return (
     <>
-      <div className="ch-view-scroll" style={{ padding: 28 }}>
-        <div style={{ maxWidth: 660, margin: "0 auto" }}>
-          <div className="ch-view-hd">
+      <div className="flex-1 overflow-auto p-7">
+        <div className="mx-auto max-w-[660px]">
+          <div className="mb-5">
             <h2>Color Format Converter</h2>
             <p>
               Paste any hex, rgb(), or hsl() value to see all formats instantly.
             </p>
           </div>
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              marginBottom: 24,
-              alignItems: "center",
-            }}
-          >
+
+          {/* Input row */}
+          <div className="flex gap-2.5 mb-6 items-center">
             <div
-              className="ch-conv-swatch"
-              style={{ background: hex, cursor: "pointer" }}
+              className="w-14 h-14 rounded border-2 border-input flex-shrink-0 transition-colors duration-150 cursor-pointer"
+              style={{ background: hex }}
               title="Click to pick color"
               onClick={() => setShowPicker(true)}
             />
             <input
-              className="ch-inp"
+              className="w-full bg-muted border border-border rounded px-3 py-[11px] text-[13px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
               value={convInput}
               onChange={(e) => setConvInput(e.target.value)}
               placeholder="#F4A261  ·  rgb(244,162,97)  ·  hsl(27,89%,67%)"
               spellCheck={false}
               autoComplete="off"
-              style={{ fontSize: 13, padding: "11px 12px" }}
             />
           </div>
-          <div className="ch-conv-grid">
+
+          {/* Format cards */}
+          <div className="grid grid-cols-2 gap-2">
             <ConvCard label="HEX" value={hex} />
             <ConvCard
               label="CSS RGB"
@@ -132,13 +127,15 @@ export default function ConverterView() {
               value={`oklch(${lch.L.toFixed(1)}% ${(lch.C / 100).toFixed(3)} ${Math.round(lch.H)})`}
               sub={`L:${lch.L.toFixed(1)} C:${(lch.C / 100).toFixed(3)} H:${Math.round(lch.H)}°`}
             />
-            <ConvCard label="Nearest Name" value={nearestName(rgb)} />
+            <ConvCard label="Nearest Name" value={name} />
           </div>
         </div>
       </div>
+
+      {/* Modal rendered at view root — never inside a child component */}
       {showPicker && (
         <ColorPickerModal
-          initialHex={hex ?? "#3b82f6"}
+          initialHex={hex}
           title="Color Converter"
           onApply={(h) => {
             setConvInput(h);

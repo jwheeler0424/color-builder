@@ -25,6 +25,8 @@ const NAV = [
   { to: "/comparison", label: "Compare" },
   { to: "/multiscale", label: "Multi-Scale" },
   { to: "/p3", label: "P3 Gamut" },
+  { to: "/brand", label: "Brand" },
+  { to: "/oklch-scatter", label: "OKLCH Plot" },
 ] as const;
 
 export default function Header() {
@@ -50,11 +52,14 @@ export default function Header() {
   }, [modal, generate, undo, openModal]);
 
   return (
-    <header className="ch-hdr">
-      <div className="ch-brand">
-        Chroma<sup>ELITE</sup>
+    <header className="flex items-center px-4 h-12 border-b border-border bg-card gap-2.5 flex-shrink-0">
+      <div className="font-display text-base font-black tracking-tight flex-shrink-0 text-foreground">
+        Chroma
+        <sup className="text-[9px] text-muted-foreground font-normal">
+          ELITE
+        </sup>
       </div>
-      <nav className="ch-nav">
+      <nav className="flex gap-px flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {NAV.map(({ to, label }) => (
           <Link
             key={to}
@@ -66,7 +71,7 @@ export default function Header() {
         ))}
       </nav>
       <ThemeToggle />
-      <div className="ch-hbtns">
+      <div className="flex gap-1.5 flex-shrink-0">
         <Button variant="ghost" size="sm" onClick={undo} title="Undo (Ctrl+Z)">
           ↩
         </Button>

@@ -1,8 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import React, { useState, useMemo } from "react";
-import { useChromaStore } from "@/hooks/useChromaStore";
-import { generateScale, textColor, parseHex } from "@/lib/utils/colorMath";
-import { hexToStop } from "@/lib/utils/paletteUtils";
+import { useChromaStore } from "@/hooks/use-chroma-store";
+import { generateScale, textColor, parseHex, hexToStop } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import ColorPickerModal from "@/components/modals/color-picker.modal";
 
@@ -92,9 +91,9 @@ export default function TintScaleView() {
 
   return (
     <>
-      <div className="ch-view-scale">
-        <div className="ch-scale-main">
-          <div className="ch-view-hd">
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-auto p-6">
+          <div className="mb-5">
             <h2>Tint / Shade Scale</h2>
             <p>
               50–950 design token scale from any base color. Click a chip to
@@ -102,53 +101,47 @@ export default function TintScaleView() {
             </p>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              alignItems: "center",
-              marginBottom: 24,
-              maxWidth: 600,
-            }}
-          >
+          <div className="flex gap-2 items-center mb-6 max-w-[600px]">
             <div
-              className="ch-scale-swatch"
-              style={{ background: scaleHex, cursor: "pointer" }}
+              className="w-11 h-11 rounded border-2 border-input flex-shrink-0 cursor-pointer"
+              style={{ background: scaleHex }}
               title="Click to pick color"
               onClick={() => setShowPicker(true)}
             />
             <input
-              className="ch-inp"
+              className="w-full bg-muted flex-1 border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
               value={inputVal}
               onChange={(e) => handleInput(e.target.value)}
               placeholder="#3B82F6"
               maxLength={7}
               spellCheck={false}
               autoComplete="off"
-              style={{ flex: 1 }}
             />
             <Button variant="default" size="sm" onClick={handleGenerate}>
               Generate
             </Button>
           </div>
 
-          <div className="ch-scale-row">
+          <div className="flex rounded overflow-hidden h-[52px] max-w-[900px]">
             {scale.map(({ step, hex, rgb }) => {
               const tc = textColor(rgb);
               return (
                 <div
                   key={step}
-                  className="ch-scale-chip"
+                  className="scale-chip flex flex-col items-center justify-center gap-0.5 font-mono text-[10px] cursor-pointer"
                   style={{ background: hex }}
                   title={`${step}: ${hex} — click to copy`}
                   onClick={() => {
                     navigator.clipboard.writeText(hex).catch(() => {});
                   }}
                 >
-                  <div className="ch-scale-step" style={{ color: tc }}>
+                  <div
+                    className="font-bold tracking-[.04em]"
+                    style={{ color: tc }}
+                  >
                     {step}
                   </div>
-                  <div className="ch-scale-hex" style={{ color: tc }}>
+                  <div className="opacity-65 text-[9px]" style={{ color: tc }}>
                     {hex.toUpperCase()}
                   </div>
                 </div>
@@ -157,27 +150,23 @@ export default function TintScaleView() {
           </div>
         </div>
 
-        <div className="ch-scale-panel">
-          <div className="ch-slabel">Token Name</div>
+        <div className="w-[320px] bg-card border-l border-border overflow-y-auto flex-shrink-0 p-4">
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+            Token Name
+          </div>
           <input
-            className="ch-inp"
+            className="w-full bg-muted border border-border rounded mb-3 px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
             value={scaleName}
-            onChange={(e) => setScaleName(e.target.value.trim() || "primary")}
-            placeholder="primary"
+            onChange={(e) => setScaleName(e.target.value.trim() || "default")}
+            placeholder="default"
             maxLength={24}
             autoComplete="off"
-            style={{ marginBottom: 12 }}
           />
 
-          <div className="ch-slabel">Export Format</div>
-          <div
-            style={{
-              display: "flex",
-              gap: 4,
-              marginBottom: 10,
-              flexWrap: "wrap",
-            }}
-          >
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+            Export Format
+          </div>
+          <div className="flex-wrap mb-2.5 flex gap-1">
             {TOKEN_TABS.map((tab) => (
               <Button
                 key={tab}
@@ -190,23 +179,25 @@ export default function TintScaleView() {
             ))}
           </div>
 
-          <pre className="ch-token-pre">{tokens}</pre>
+          <pre className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-[300px] overflow-y-auto">
+            {tokens}
+          </pre>
           <Button
             variant="ghost"
             size="sm"
-            style={{ width: "100%", marginTop: 8 }}
+            className="w-full mt-2"
             onClick={copyTokens}
           >
             {copied ? "✓ Copied" : "Copy"}
           </Button>
 
-          <div className="ch-slabel" style={{ marginTop: 16 }}>
+          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mt-4">
             Use in Palette
           </div>
           <Button
             variant="ghost"
             size="sm"
-            style={{ width: "100%" }}
+            className="w-full"
             onClick={useAsSeeds}
           >
             Use scale as seeds →

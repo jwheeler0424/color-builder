@@ -22,6 +22,7 @@ import { Route as ChromaPreviewRouteImport } from './routes/_chroma/preview'
 import { Route as ChromaPickerRouteImport } from './routes/_chroma/picker'
 import { Route as ChromaPaletteRouteImport } from './routes/_chroma/palette'
 import { Route as ChromaP3RouteImport } from './routes/_chroma/p3'
+import { Route as ChromaOklchScatterRouteImport } from './routes/_chroma/oklch-scatter'
 import { Route as ChromaMultiscaleRouteImport } from './routes/_chroma/multiscale'
 import { Route as ChromaMixerRouteImport } from './routes/_chroma/mixer'
 import { Route as ChromaGradientRouteImport } from './routes/_chroma/gradient'
@@ -31,6 +32,7 @@ import { Route as ChromaConverterRouteImport } from './routes/_chroma/converter'
 import { Route as ChromaContrastRouteImport } from './routes/_chroma/contrast'
 import { Route as ChromaComparisonRouteImport } from './routes/_chroma/comparison'
 import { Route as ChromaColorblindRouteImport } from './routes/_chroma/colorblind'
+import { Route as ChromaBrandRouteImport } from './routes/_chroma/brand'
 import { Route as ChromaAccessibilityRouteImport } from './routes/_chroma/accessibility'
 import { Route as ApiHelloNameRouteImport } from './routes/api/hello.$name'
 
@@ -98,6 +100,11 @@ const ChromaP3Route = ChromaP3RouteImport.update({
   path: '/p3',
   getParentRoute: () => ChromaRoute,
 } as any)
+const ChromaOklchScatterRoute = ChromaOklchScatterRouteImport.update({
+  id: '/oklch-scatter',
+  path: '/oklch-scatter',
+  getParentRoute: () => ChromaRoute,
+} as any)
 const ChromaMultiscaleRoute = ChromaMultiscaleRouteImport.update({
   id: '/multiscale',
   path: '/multiscale',
@@ -143,6 +150,11 @@ const ChromaColorblindRoute = ChromaColorblindRouteImport.update({
   path: '/colorblind',
   getParentRoute: () => ChromaRoute,
 } as any)
+const ChromaBrandRoute = ChromaBrandRouteImport.update({
+  id: '/brand',
+  path: '/brand',
+  getParentRoute: () => ChromaRoute,
+} as any)
 const ChromaAccessibilityRoute = ChromaAccessibilityRouteImport.update({
   id: '/accessibility',
   path: '/accessibility',
@@ -157,6 +169,7 @@ const ApiHelloNameRoute = ApiHelloNameRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/accessibility': typeof ChromaAccessibilityRoute
+  '/brand': typeof ChromaBrandRoute
   '/colorblind': typeof ChromaColorblindRoute
   '/comparison': typeof ChromaComparisonRoute
   '/contrast': typeof ChromaContrastRoute
@@ -166,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/gradient': typeof ChromaGradientRoute
   '/mixer': typeof ChromaMixerRoute
   '/multiscale': typeof ChromaMultiscaleRoute
+  '/oklch-scatter': typeof ChromaOklchScatterRoute
   '/p3': typeof ChromaP3Route
   '/palette': typeof ChromaPaletteRoute
   '/picker': typeof ChromaPickerRoute
@@ -182,6 +196,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/accessibility': typeof ChromaAccessibilityRoute
+  '/brand': typeof ChromaBrandRoute
   '/colorblind': typeof ChromaColorblindRoute
   '/comparison': typeof ChromaComparisonRoute
   '/contrast': typeof ChromaContrastRoute
@@ -191,6 +206,7 @@ export interface FileRoutesByTo {
   '/gradient': typeof ChromaGradientRoute
   '/mixer': typeof ChromaMixerRoute
   '/multiscale': typeof ChromaMultiscaleRoute
+  '/oklch-scatter': typeof ChromaOklchScatterRoute
   '/p3': typeof ChromaP3Route
   '/palette': typeof ChromaPaletteRoute
   '/picker': typeof ChromaPickerRoute
@@ -209,6 +225,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_chroma': typeof ChromaRouteWithChildren
   '/_chroma/accessibility': typeof ChromaAccessibilityRoute
+  '/_chroma/brand': typeof ChromaBrandRoute
   '/_chroma/colorblind': typeof ChromaColorblindRoute
   '/_chroma/comparison': typeof ChromaComparisonRoute
   '/_chroma/contrast': typeof ChromaContrastRoute
@@ -218,6 +235,7 @@ export interface FileRoutesById {
   '/_chroma/gradient': typeof ChromaGradientRoute
   '/_chroma/mixer': typeof ChromaMixerRoute
   '/_chroma/multiscale': typeof ChromaMultiscaleRoute
+  '/_chroma/oklch-scatter': typeof ChromaOklchScatterRoute
   '/_chroma/p3': typeof ChromaP3Route
   '/_chroma/palette': typeof ChromaPaletteRoute
   '/_chroma/picker': typeof ChromaPickerRoute
@@ -236,6 +254,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/accessibility'
+    | '/brand'
     | '/colorblind'
     | '/comparison'
     | '/contrast'
@@ -245,6 +264,7 @@ export interface FileRouteTypes {
     | '/gradient'
     | '/mixer'
     | '/multiscale'
+    | '/oklch-scatter'
     | '/p3'
     | '/palette'
     | '/picker'
@@ -261,6 +281,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/accessibility'
+    | '/brand'
     | '/colorblind'
     | '/comparison'
     | '/contrast'
@@ -270,6 +291,7 @@ export interface FileRouteTypes {
     | '/gradient'
     | '/mixer'
     | '/multiscale'
+    | '/oklch-scatter'
     | '/p3'
     | '/palette'
     | '/picker'
@@ -287,6 +309,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_chroma'
     | '/_chroma/accessibility'
+    | '/_chroma/brand'
     | '/_chroma/colorblind'
     | '/_chroma/comparison'
     | '/_chroma/contrast'
@@ -296,6 +319,7 @@ export interface FileRouteTypes {
     | '/_chroma/gradient'
     | '/_chroma/mixer'
     | '/_chroma/multiscale'
+    | '/_chroma/oklch-scatter'
     | '/_chroma/p3'
     | '/_chroma/palette'
     | '/_chroma/picker'
@@ -410,6 +434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChromaP3RouteImport
       parentRoute: typeof ChromaRoute
     }
+    '/_chroma/oklch-scatter': {
+      id: '/_chroma/oklch-scatter'
+      path: '/oklch-scatter'
+      fullPath: '/oklch-scatter'
+      preLoaderRoute: typeof ChromaOklchScatterRouteImport
+      parentRoute: typeof ChromaRoute
+    }
     '/_chroma/multiscale': {
       id: '/_chroma/multiscale'
       path: '/multiscale'
@@ -473,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChromaColorblindRouteImport
       parentRoute: typeof ChromaRoute
     }
+    '/_chroma/brand': {
+      id: '/_chroma/brand'
+      path: '/brand'
+      fullPath: '/brand'
+      preLoaderRoute: typeof ChromaBrandRouteImport
+      parentRoute: typeof ChromaRoute
+    }
     '/_chroma/accessibility': {
       id: '/_chroma/accessibility'
       path: '/accessibility'
@@ -492,6 +530,7 @@ declare module '@tanstack/react-router' {
 
 interface ChromaRouteChildren {
   ChromaAccessibilityRoute: typeof ChromaAccessibilityRoute
+  ChromaBrandRoute: typeof ChromaBrandRoute
   ChromaColorblindRoute: typeof ChromaColorblindRoute
   ChromaComparisonRoute: typeof ChromaComparisonRoute
   ChromaContrastRoute: typeof ChromaContrastRoute
@@ -501,6 +540,7 @@ interface ChromaRouteChildren {
   ChromaGradientRoute: typeof ChromaGradientRoute
   ChromaMixerRoute: typeof ChromaMixerRoute
   ChromaMultiscaleRoute: typeof ChromaMultiscaleRoute
+  ChromaOklchScatterRoute: typeof ChromaOklchScatterRoute
   ChromaP3Route: typeof ChromaP3Route
   ChromaPaletteRoute: typeof ChromaPaletteRoute
   ChromaPickerRoute: typeof ChromaPickerRoute
@@ -514,6 +554,7 @@ interface ChromaRouteChildren {
 
 const ChromaRouteChildren: ChromaRouteChildren = {
   ChromaAccessibilityRoute: ChromaAccessibilityRoute,
+  ChromaBrandRoute: ChromaBrandRoute,
   ChromaColorblindRoute: ChromaColorblindRoute,
   ChromaComparisonRoute: ChromaComparisonRoute,
   ChromaContrastRoute: ChromaContrastRoute,
@@ -523,6 +564,7 @@ const ChromaRouteChildren: ChromaRouteChildren = {
   ChromaGradientRoute: ChromaGradientRoute,
   ChromaMixerRoute: ChromaMixerRoute,
   ChromaMultiscaleRoute: ChromaMultiscaleRoute,
+  ChromaOklchScatterRoute: ChromaOklchScatterRoute,
   ChromaP3Route: ChromaP3Route,
   ChromaPaletteRoute: ChromaPaletteRoute,
   ChromaPickerRoute: ChromaPickerRoute,

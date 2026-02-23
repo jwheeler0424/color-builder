@@ -9,17 +9,33 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import { useHotkeyList } from "@/providers/hotkey.provider";
 
 // ─── Shortcuts Modal ──────────────────────────────────────────────────────────
 
 export function ShortcutsModal() {
-  const shortcuts = [
-    { keys: "Space", desc: "Generate new palette" },
-    { keys: "Ctrl+Z", desc: "Undo last generation" },
-    { keys: "Escape", desc: "Close modal / cancel" },
-    { keys: "?", desc: "Show this shortcuts panel" },
-  ];
-  const { modal, closeModal, openModal } = useChromaStore();
+  const modal = useChromaStore((s) => s.modal);
+  const closeModal = useChromaStore((s) => s.closeModal);
+  const openModal = useChromaStore((s) => s.openModal);
+
+  const hotkeys = useHotkeyList();
+
+  // Group by .group field
+  const groups: Record<string, typeof hotkeys> = {};
+  for (const hk of hotkeys) {
+    const g = hk.group || "General";
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(hk);
+  }
+
+  function keyLabel(hk: (typeof hotkeys)[0]): string {
+    const parts: string[] = [];
+    if (hk.ctrl) parts.push("Ctrl");
+    if (hk.shift) parts.push("Shift");
+    const k = hk.key === "space" ? "Space" : hk.key.toUpperCase();
+    parts.push(k);
+    return parts.join("+");
+  }
   return (
     <Dialog
       open={modal === "shortcuts"}
@@ -41,35 +57,34 @@ export function ShortcutsModal() {
         <DialogHeader>
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
         </DialogHeader>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {shortcuts.map(({ keys, desc }) => (
-            <div
-              key={keys}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <span style={{ fontSize: 12, color: "var(--ch-t2)" }}>
-                {desc}
-              </span>
-              <kbd
-                style={{
-                  display: "inline-block",
-                  padding: "2px 8px",
-                  border: "1px solid var(--ch-b2)",
-                  borderRadius: 3,
-                  fontSize: 11,
-                  color: "var(--ch-t3)",
-                  fontFamily: "var(--ch-fm)",
-                  background: "var(--ch-s2)",
-                }}
-              >
-                {keys}
-              </kbd>
+        <div className="flex flex-col gap-5 min-w-[340px]">
+          {Object.entries(groups).map(([group, keys]) => (
+            <div key={group}>
+              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2 font-display font-semibold">
+                {group}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {keys.map((hk) => (
+                  <div
+                    key={hk.key + (hk.ctrl ? "c" : "") + (hk.shift ? "s" : "")}
+                    className="flex items-center justify-between gap-4"
+                  >
+                    <span className="text-secondary-foreground text-[12px]">
+                      {hk.label}
+                    </span>
+                    <kbd className="inline-block px-2 py-[2px] border border-input rounded text-[11px] text-muted-foreground font-mono bg-muted whitespace-nowrap flex-shrink-0">
+                      {keyLabel(hk)}
+                    </kbd>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
+          {hotkeys.length === 0 && (
+            <p className="text-[12px] text-muted-foreground">
+              Navigate to a view to see its shortcuts.
+            </p>
+          )}
         </div>
         <DialogFooter>
           <DialogClose render={<Button variant="ghost">Close</Button>} />

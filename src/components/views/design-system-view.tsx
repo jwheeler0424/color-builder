@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { useChromaStore } from "@/hooks/useChromaStore";
+import { useChromaStore } from "@/hooks/use-chroma-store";
 import {
   deriveThemeTokens,
   buildThemeCss,
@@ -14,7 +14,7 @@ import {
   textColor,
   hexToRgb,
   rgbToOklch,
-} from "@/lib/utils/colorMath";
+} from "@/lib/utils";
 import type {
   PaletteSlot,
   SemanticToken,
@@ -213,20 +213,13 @@ function ComponentPreview({
         }}
       >
         <div
-          style={{
-            width: 16,
-            height: 16,
-            borderRadius: 4,
-            background: a1,
-            flexShrink: 0,
-          }}
+          className="rounded flex-shrink-0 w-4 h-4"
+          style={{ background: a1 }}
         />
-        <span
-          style={{ fontWeight: 800, fontSize: 12, letterSpacing: "-0.02em" }}
-        >
+        <span className="font-extrabold text-[12px] tracking-[-0.02em]">
           Brand
         </span>
-        <div style={{ display: "flex", gap: 12, flex: 1, marginLeft: 6 }}>
+        <div className="flex gap-3 flex-1 ml-1.5">
           {["Dashboard", "Projects", "Settings"].map((l, i) => (
             <span
               key={l}
@@ -252,78 +245,46 @@ function ComponentPreview({
         }}
       >
         <div
+          className="inline-block text-[9px] font-bold mb-1.5"
           style={{
-            display: "inline-block",
             background: pri,
             color: priFg,
             borderRadius: 20,
             padding: "2px 8px",
-            fontSize: 9,
-            fontWeight: 700,
             letterSpacing: "0.05em",
-            marginBottom: 6,
           }}
         >
           NEW
         </div>
         <div
-          style={{
-            color: priCFg,
-            fontSize: 15,
-            fontWeight: 800,
-            letterSpacing: "-0.03em",
-            marginBottom: 4,
-          }}
+          className="font-extrabold mb-1"
+          style={{ color: priCFg, fontSize: 15, letterSpacing: "-0.03em" }}
         >
           Your design system, ready to ship
         </div>
         <div
-          style={{
-            color: priCFg,
-            fontSize: 10,
-            opacity: 0.75,
-            marginBottom: 10,
-          }}
+          className="text-[10px] mb-2.5"
+          style={{ color: priCFg, opacity: 0.75 }}
         >
           Built on perceptual color science with full accessibility stats.
         </div>
-        <div style={{ display: "flex", gap: 6 }}>
+        <div className="flex gap-1.5">
           <button style={BtnPri}>Get started →</button>
           <div style={BtnSec}>Learn more</div>
         </div>
       </div>
 
       {/* Main grid */}
-      <div
-        style={{
-          padding: "12px 14px",
-          display: "grid",
-          gridTemplateColumns: "1fr 160px",
-          gap: 10,
-        }}
-      >
+      <div className="grid gap-2.5 px-[14px] py-3 [grid-template-columns:1fr_160px]">
         <div>
           {/* Cards */}
           <div
-            style={{
-              fontSize: 9,
-              fontWeight: 700,
-              color: fgM,
-              textTransform: "uppercase",
-              letterSpacing: ".08em",
-              marginBottom: 6,
-            }}
+            className="text-[9px] font-bold uppercase mb-1.5 tracking-[.08em]"
+            style={{ color: fgM }}
           >
             Projects
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 6,
-              marginBottom: 10,
-            }}
-          >
+          <div className="grid gap-1.5 mb-2.5 grid-cols-2">
             {[
               {
                 title: "Design System",
@@ -367,20 +328,12 @@ function ComponentPreview({
                   overflow: "hidden",
                 }}
               >
-                <div style={{ height: 3, background: accent }} />
-                <div style={{ padding: 8 }}>
+                <div className="h-[3px]" style={{ background: accent }} />
+                <div className="p-2">
+                  <div className="mb-1 font-bold text-[10px]">{title}</div>
                   <div
-                    style={{ fontWeight: 700, fontSize: 10, marginBottom: 4 }}
-                  >
-                    {title}
-                  </div>
-                  <div
-                    style={{
-                      background: muted,
-                      borderRadius: 3,
-                      height: 4,
-                      marginBottom: 5,
-                    }}
+                    className="rounded mb-[5px] h-1"
+                    style={{ background: muted }}
                   >
                     <div
                       style={{
@@ -392,13 +345,11 @@ function ComponentPreview({
                     />
                   </div>
                   <span
+                    className="rounded text-[8.5px] font-semibold"
                     style={{
                       background: badgeBg,
                       color: badgeFg,
-                      borderRadius: 3,
                       padding: "1px 5px",
-                      fontSize: 8.5,
-                      fontWeight: 600,
                     }}
                   >
                     {badge}
@@ -410,34 +361,27 @@ function ComponentPreview({
 
           {/* Alerts */}
           <div
+            className="rounded flex gap-1.5 mb-1.5 px-[9px] py-[7px]"
             style={{
               background: "rgba(59,130,246,.1)",
               border: "1px solid rgba(59,130,246,.4)",
-              borderRadius: 5,
-              padding: "7px 9px",
-              display: "flex",
-              gap: 6,
-              marginBottom: 6,
             }}
           >
-            <span style={{ fontSize: 11 }}>ℹ</span>
-            <span style={{ fontSize: 9.5 }}>
+            <span className="text-[11px]">ℹ</span>
+            <span className="text-[9.5px]">
               <strong>v3.2 available</strong> — Performance improvements and new
               exports.
             </span>
           </div>
           <div
+            className="rounded flex gap-1.5 px-[9px] py-[7px]"
             style={{
               background: "rgba(34,197,94,.1)",
               border: "1px solid rgba(34,197,94,.4)",
-              borderRadius: 5,
-              padding: "7px 9px",
-              display: "flex",
-              gap: 6,
             }}
           >
-            <span style={{ fontSize: 11 }}>✓</span>
-            <span style={{ fontSize: 9.5 }}>
+            <span className="text-[11px]">✓</span>
+            <span className="text-[9.5px]">
               <strong>Deployment successful</strong> — All checks passed.
             </span>
           </div>
@@ -454,9 +398,7 @@ function ComponentPreview({
               marginBottom: 7,
             }}
           >
-            <div style={{ fontWeight: 700, fontSize: 10, marginBottom: 7 }}>
-              Quick Actions
-            </div>
+            <div className="font-bold text-[10px] mb-[7px]">Quick Actions</div>
             {/* Input */}
             <div
               style={{
@@ -472,17 +414,12 @@ function ComponentPreview({
             >
               Search…
             </div>
-            <button
-              style={{
-                ...BtnPri,
-                width: "100%",
-                marginBottom: 4,
-                textAlign: "center",
-              }}
-            >
+            <button className="w-full mb-1 text-center" style={{ ...BtnPri }}>
               New Project
             </button>
-            <div style={{ ...BtnGhost, textAlign: "center" }}>Import</div>
+            <div className="text-center" style={{ ...BtnGhost }}>
+              Import
+            </div>
           </div>
 
           {/* Button showcase */}
@@ -495,16 +432,18 @@ function ComponentPreview({
               marginBottom: 7,
             }}
           >
-            <div style={{ fontWeight: 700, fontSize: 10, marginBottom: 6 }}>
-              Buttons
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <button style={{ ...BtnPri, textAlign: "center" }}>
+            <div className="mb-1.5 font-bold text-[10px]">Buttons</div>
+            <div className="flex-col flex gap-1">
+              <button className="text-center" style={{ ...BtnPri }}>
                 Primary
               </button>
-              <div style={{ ...BtnSec, textAlign: "center" }}>Secondary</div>
-              <div style={{ ...BtnGhost, textAlign: "center" }}>Ghost</div>
-              <button style={{ ...BtnDes, textAlign: "center" }}>
+              <div className="text-center" style={{ ...BtnSec }}>
+                Secondary
+              </div>
+              <div className="text-center" style={{ ...BtnGhost }}>
+                Ghost
+              </div>
+              <button className="text-center" style={{ ...BtnDes }}>
                 Destructive
               </button>
             </div>
@@ -520,25 +459,15 @@ function ComponentPreview({
             }}
           >
             <div
-              style={{
-                fontSize: 9.5,
-                fontWeight: 700,
-                color: des,
-                marginBottom: 3,
-              }}
+              className="text-[9.5px] font-bold mb-[3px]"
+              style={{ color: des }}
             >
               ⚠ API limit reached
             </div>
-            <div style={{ fontSize: 9, marginBottom: 5 }}>
-              Upgrade to continue.
-            </div>
+            <div className="mb-[5px] text-[9px]">Upgrade to continue.</div>
             <button
-              style={{
-                ...BtnDes,
-                width: "100%",
-                fontSize: 9,
-                textAlign: "center",
-              }}
+              className="w-full text-[9px] text-center"
+              style={{ ...BtnDes }}
             >
               Upgrade now
             </button>
@@ -557,12 +486,15 @@ function ComponentPreview({
           justifyContent: "space-between",
         }}
       >
-        <span style={{ fontSize: 9, color: fgM }}>© 2025 Brand Inc.</span>
-        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+        <span className="text-[9px]" style={{ color: fgM }}>
+          © 2025 Brand Inc.
+        </span>
+        <div className="items-center flex gap-1">
           {[a1, a2, a3, a4].map((h, i) => (
             <div
               key={i}
-              style={{ width: 6, height: 6, borderRadius: 3, background: h }}
+              className="rounded h-1.5"
+              style={{ width: 6, background: h }}
             />
           ))}
         </div>
@@ -605,26 +537,15 @@ function TokenRow({
         gap: 6,
         alignItems: "center",
         padding: "5px 0",
-        borderBottom: "1px solid var(--ch-s2)",
+        borderBottom: "1px solid var(--color-secondary)",
         background: isOverridden ? "rgba(99,102,241,.04)" : undefined,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+      <div className="items-center flex gap-1">
         {isOverridden && (
-          <span style={{ fontSize: 8, color: "var(--ch-a)", fontWeight: 700 }}>
-            ✎
-          </span>
+          <span className="text-primary font-bold text-[8px]">✎</span>
         )}
-        <code
-          style={{
-            fontSize: 9,
-            color: "var(--ch-t2)",
-            fontFamily: "var(--ch-fm)",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
+        <code className="font-mono text-secondary-foreground overflow-ellipsis whitespace-nowrap overflow-hidden text-[9px]">
           {token.name}
         </code>
       </div>
@@ -634,7 +555,7 @@ function TokenRow({
         value={val}
         onChange={(hex) => onOverride(token.name, mode, hex)}
         showSwatch
-        style={{ minWidth: 0 }}
+        className="min-w-0"
       />
 
       {/* Other mode editable */}
@@ -642,7 +563,7 @@ function TokenRow({
         value={otherVal}
         onChange={(hex) => onOverride(token.name, otherMode, hex)}
         showSwatch
-        style={{ minWidth: 0 }}
+        className="min-w-0"
       />
 
       {/* Contrast badge */}
@@ -666,14 +587,7 @@ function TokenRow({
         <button
           onClick={() => onRevert(token.name)}
           title="Revert to generated"
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            fontSize: 11,
-            color: "var(--ch-t3)",
-            padding: 0,
-          }}
+          className="bg-transparent border-none cursor-pointer text-[11px] text-muted-foreground p-0"
         >
           ↩
         </button>
@@ -699,44 +613,17 @@ function UtilityTokenRow({
   const tc = textColor(hexToRgb(color));
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        padding: "4px 0",
-        borderBottom: "1px solid var(--ch-s2)",
-      }}
-    >
+    <div className="flex items-center gap-2 py-1 px-0 border-b border-muted">
       <div
-        style={{
-          width: 24,
-          height: 24,
-          borderRadius: 4,
-          background: color,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-          fontSize: 10,
-          color: tc,
-          fontWeight: 700,
-        }}
+        className="rounded flex items-center justify-center flex-shrink-0 text-[10px] font-bold"
+        style={{ width: 24, height: 24, background: color, color: tc }}
       >
         {role[0].toUpperCase()}
       </div>
-      <span
-        style={{
-          fontSize: 10,
-          color: "var(--ch-t2)",
-          flex: 1,
-          textTransform: "capitalize",
-          fontWeight: 600,
-        }}
-      >
+      <span className="capitalize text-secondary-foreground font-semibold text-[10px] flex-1">
         {role}
       </span>
-      <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+      <div className="items-center flex gap-[5px]">
         {[
           { label: mode, hex: color },
           { label: "subtle", hex: subtle },
@@ -745,24 +632,16 @@ function UtilityTokenRow({
           <div
             key={label}
             title={`${label}: ${hex}`}
-            style={{ display: "flex", alignItems: "center", gap: 3 }}
+            className="items-center flex gap-[3px]"
           >
             <div
+              className="rounded w-[14px] h-[14px]"
               style={{
-                width: 14,
-                height: 14,
-                borderRadius: 2,
                 background: hex,
                 border: "1px solid rgba(128,128,128,.2)",
               }}
             />
-            <span
-              style={{
-                fontSize: 8,
-                color: "var(--ch-t3)",
-                fontFamily: "var(--ch-fm)",
-              }}
-            >
+            <span className="font-mono text-muted-foreground text-[8px]">
               {label}
             </span>
           </div>
@@ -831,14 +710,7 @@ function AccessibilityPanel({
   return (
     <div>
       {/* Score badge */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          marginBottom: 12,
-        }}
-      >
+      <div className="items-center mb-3 flex gap-3">
         <div
           style={{
             width: 52,
@@ -869,19 +741,15 @@ function AccessibilityPanel({
           >
             {score}%
           </span>
-          <span
-            style={{ fontSize: 7.5, color: "var(--ch-t3)", lineHeight: 1.2 }}
-          >
+          <span className="text-muted-foreground leading-[1.2] text-[7.5px]">
             pairs AA
           </span>
         </div>
         <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--ch-t1)" }}>
+          <div className="text-foreground font-bold text-[12px]">
             {passing}/{results.length} pairs pass WCAG AA
           </div>
-          <div
-            style={{ fontSize: 10.5, color: "var(--ch-t3)", lineHeight: 1.5 }}
-          >
+          <div className="text-muted-foreground leading-[1.5] text-[10.5px]">
             4.5:1 for body text · 3:1 for large text / UI
           </div>
         </div>
@@ -903,60 +771,36 @@ function AccessibilityPanel({
         return (
           <div
             key={label}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 7,
-              padding: "5px 0",
-              borderBottom: "1px solid var(--ch-s2)",
-            }}
+            className="flex items-center border-b border-muted gap-[7px] py-[5px] px-0"
           >
             {/* Preview swatch */}
             <div
+              className="rounded flex-shrink-0 flex items-center justify-center"
               style={{
                 width: 32,
                 height: 20,
-                borderRadius: 3,
                 background: bgHex,
                 border: "1px solid rgba(128,128,128,.2)",
-                flexShrink: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
               }}
             >
               <div
-                style={{
-                  width: 16,
-                  height: 3,
-                  borderRadius: 1,
-                  background: fgHex,
-                }}
+                className="w-4 h-[3px]"
+                style={{ borderRadius: 1, background: fgHex }}
               />
             </div>
-            <span style={{ fontSize: 9, color: "var(--ch-t2)", flex: 1 }}>
+            <span className="text-secondary-foreground text-[9px] flex-1">
               {label}
             </span>
-            <span
-              style={{
-                fontSize: 9,
-                fontFamily: "var(--ch-fm)",
-                color: "var(--ch-t3)",
-              }}
-            >
+            <span className="font-mono text-muted-foreground text-[9px]">
               {ratio.toFixed(1)}:1
             </span>
-            <span
-              style={{ fontSize: 9, color: "var(--ch-t3)", marginRight: 2 }}
-            >
+            <span className="text-muted-foreground mr-0.5 text-[9px]">
               Lc{lc}
             </span>
             <span
+              className="text-[8px] font-bold rounded"
               style={{
-                fontSize: 8,
-                fontWeight: 700,
                 padding: "1px 5px",
-                borderRadius: 3,
                 background: BG[level],
                 color: COLORS[level],
               }}
@@ -1023,17 +867,8 @@ function ExportPanel({
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 10,
-          flexWrap: "wrap",
-          gap: 6,
-        }}
-      >
-        <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
+      <div className="justify-between items-center flex-wrap mb-2.5 flex gap-1.5">
+        <div className="flex-wrap flex gap-[3px]">
           {TABS.map((t) => (
             <Button
               key={t.id}
@@ -1049,17 +884,10 @@ function ExportPanel({
           {copied ? "✓ Copied" : "Copy"}
         </Button>
       </div>
-      <p
-        style={{
-          fontSize: 10.5,
-          color: "var(--ch-t3)",
-          marginBottom: 8,
-          lineHeight: 1.6,
-        }}
-      >
+      <p className="text-muted-foreground mb-2 leading-relaxed text-[10.5px]">
         {DESCRIPTIONS[fmt]}
       </p>
-      <pre className="ch-token-pre" style={{ maxHeight: 360, fontSize: 9.5 }}>
+      <pre className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-[300px] overflow-y-auto text-[9.5px] max-h-[360px]">
         {content}
       </pre>
     </div>
@@ -1131,11 +959,11 @@ export default function DesignSystemView() {
 
   if (!slots.length) {
     return (
-      <div className="ch-view-scroll ch-view-pad">
-        <div className="ch-view-hd">
+      <div className="flex-1 overflow-auto p-6">
+        <div className="mb-5">
           <h2>Design System Studio</h2>
         </div>
-        <p style={{ color: "var(--ch-t3)", fontSize: 12 }}>
+        <p className="text-muted-foreground text-[12px]">
           Generate a palette first to build your design system.
         </p>
       </div>
@@ -1151,19 +979,11 @@ export default function DesignSystemView() {
   ];
 
   return (
-    <div className="ch-view-scroll ch-view-pad">
-      <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+    <div className="flex-1 overflow-auto p-6">
+      <div className="mx-auto max-w-[1080px]">
         {/* Header */}
-        <div className="ch-view-hd">
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: 10,
-            }}
-          >
+        <div className="mb-5">
+          <div className="justify-between items-start flex-wrap flex gap-2.5">
             <div>
               <h2>Design System Studio</h2>
               <p>
@@ -1173,14 +993,7 @@ export default function DesignSystemView() {
                 brand color.
               </p>
             </div>
-            <div
-              style={{
-                display: "flex",
-                gap: 4,
-                alignItems: "center",
-                flexShrink: 0,
-              }}
-            >
+            <div className="items-center flex flex-shrink-0 gap-1">
               {(["light", "dark"] as const).map((m) => (
                 <Button
                   key={m}
@@ -1206,36 +1019,12 @@ export default function DesignSystemView() {
         </div>
 
         {/* Palette source strip */}
-        <div
-          style={{
-            marginBottom: 16,
-            display: "flex",
-            gap: 6,
-            flexWrap: "wrap",
-            alignItems: "center",
-          }}
-        >
-          <span
-            style={{
-              fontSize: 9.5,
-              color: "var(--ch-t3)",
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: ".07em",
-            }}
-          >
+        <div className="items-center flex-wrap mb-4 flex gap-1.5">
+          <span className="text-muted-foreground uppercase tracking-[.07em] font-bold text-[9.5px]">
             Palette →
           </span>
           {slots.map((slot, i) => (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 2,
-              }}
-            >
+            <div key={i} className="flex-col items-center flex gap-0.5">
               <div
                 style={{
                   width: 28,
@@ -1244,18 +1033,13 @@ export default function DesignSystemView() {
                   background: slot.color.hex,
                   border:
                     i === 0
-                      ? "2px solid var(--ch-t1)"
+                      ? "2px solid var(--color-foreground)"
                       : "1px solid rgba(128,128,128,.2)",
-                  boxShadow: i === 0 ? "0 0 0 3px var(--ch-a)" : "none",
+                  boxShadow:
+                    i === 0 ? "0 0 0 3px var(--color-primary)" : "none",
                 }}
               />
-              <span
-                style={{
-                  fontSize: 7.5,
-                  color: "var(--ch-t3)",
-                  fontFamily: "var(--ch-fm)",
-                }}
-              >
+              <span className="font-mono text-muted-foreground text-[7.5px]">
                 {slotNames[i]}
               </span>
             </div>
@@ -1263,16 +1047,7 @@ export default function DesignSystemView() {
         </div>
 
         {/* Panel nav */}
-        <div
-          style={{
-            display: "flex",
-            gap: 3,
-            marginBottom: 18,
-            flexWrap: "wrap",
-            borderBottom: "1px solid var(--ch-s2)",
-            paddingBottom: 10,
-          }}
-        >
+        <div className="flex flex-wrap border-b border-muted gap-[3px] mb-[18px] pb-2.5">
           {PANELS.map((p) => (
             <Button
               key={p.id}
@@ -1288,25 +1063,10 @@ export default function DesignSystemView() {
         {/* ── Preview panel ── */}
         {activePanel === "preview" && (
           <div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 16,
-              }}
-            >
+            <div className="grid gap-4 grid-cols-2">
               {(["light", "dark"] as const).map((m) => (
                 <div key={m}>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: "var(--ch-t3)",
-                      marginBottom: 8,
-                      textTransform: "uppercase",
-                      letterSpacing: ".07em",
-                    }}
-                  >
+                  <div className="text-muted-foreground uppercase tracking-[.07em] mb-2 font-bold text-[10px]">
                     {m === "light" ? "☀ Light mode" : "☾ Dark mode"}
                   </div>
                   <ComponentPreview
@@ -1324,26 +1084,11 @@ export default function DesignSystemView() {
         {activePanel === "tokens" && (
           <div>
             {/* Header row */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "180px 1fr 1fr 80px 28px",
-                gap: 6,
-                padding: "4px 0",
-                marginBottom: 4,
-                borderBottom: "2px solid var(--ch-s2)",
-              }}
-            >
+            <div className="grid gap-1.5 mb-1 [grid-template-columns:180px_1fr_1fr_80px_28px] py-1 px-0 border-b-2 border-muted">
               {["Token", "Light", "Dark", "Contrast", ""].map((h) => (
                 <span
                   key={h}
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color: "var(--ch-t3)",
-                    textTransform: "uppercase",
-                    letterSpacing: ".06em",
-                  }}
+                  className="text-muted-foreground uppercase tracking-[.06em] font-bold text-[9px]"
                 >
                   {h}
                 </span>
@@ -1358,58 +1103,28 @@ export default function DesignSystemView() {
               const isOpen = expandedGroup === group.label;
 
               return (
-                <div key={group.label} style={{ marginBottom: 8 }}>
+                <div key={group.label} className="mb-2">
                   <button
                     onClick={() =>
                       setExpandedGroup(isOpen ? null : group.label)
                     }
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      background: "var(--ch-s1)",
-                      border: "1px solid var(--ch-s2)",
-                      borderRadius: 5,
-                      padding: "7px 10px",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                    }}
+                    className="w-full bg-card border border-muted rounded cursor-pointer flex items-center gap-2 text-left px-2.5 py-[7px]"
                   >
-                    <span
-                      style={{
-                        fontSize: 9.5,
-                        fontWeight: 700,
-                        color: "var(--ch-t1)",
-                        flex: 1,
-                      }}
-                    >
+                    <span className="text-foreground font-bold text-[9.5px] flex-1">
                       {group.label}
                     </span>
-                    <span style={{ fontSize: 9, color: "var(--ch-t3)" }}>
+                    <span className="text-muted-foreground text-[9px]">
                       {groupTokens.length} tokens
                     </span>
-                    <span style={{ fontSize: 11, color: "var(--ch-t3)" }}>
+                    <span className="text-muted-foreground text-[11px]">
                       {isOpen ? "▾" : "▸"}
                     </span>
                   </button>
 
                   {isOpen && (
-                    <div
-                      style={{
-                        padding: "6px 0",
-                        borderBottom: "1px solid var(--ch-s2)",
-                      }}
-                    >
+                    <div className="border-b border-muted py-1.5 px-0">
                       {group.desc && (
-                        <p
-                          style={{
-                            fontSize: 10.5,
-                            color: "var(--ch-t3)",
-                            margin: "0 0 8px",
-                            lineHeight: 1.5,
-                          }}
-                        >
+                        <p className="text-[10.5px] text-muted-foreground leading-[1.5] mt-0 mx-0 mb-2">
                           {group.desc}
                         </p>
                       )}
@@ -1434,37 +1149,19 @@ export default function DesignSystemView() {
         {/* ── Utility colors panel ── */}
         {activePanel === "utility" && (
           <div>
-            <p
-              style={{
-                fontSize: 11,
-                color: "var(--ch-t3)",
-                marginBottom: 12,
-                lineHeight: 1.6,
-              }}
-            >
+            <p className="text-muted-foreground mb-3 leading-relaxed text-[11px]">
               Utility colors are derived from the palette hues and
               locked/unlocked individually in the Utility tab. Each has a base,
               light mode, dark mode, and subtle (tinted) variant.
             </p>
             <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "180px 1fr 1fr 1fr",
-                gap: 6,
-                padding: "4px 0",
-                marginBottom: 4,
-                borderBottom: "2px solid var(--ch-s2)",
-              }}
+              className="grid gap-1.5 mb-1 py-1 px-0 border-b-2 border-muted"
+              style={{ gridTemplateColumns: "180px 1fr 1fr 1fr" }}
             >
               {["Role", "Color", "Subtle", "Base"].map((h) => (
                 <span
                   key={h}
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color: "var(--ch-t3)",
-                    textTransform: "uppercase",
-                  }}
+                  className="text-muted-foreground uppercase font-bold text-[9px]"
                 >
                   {h}
                 </span>
@@ -1484,25 +1181,10 @@ export default function DesignSystemView() {
         {/* ── Accessibility panel ── */}
         {activePanel === "accessibility" && (
           <div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: 20,
-              }}
-            >
+            <div className="grid gap-5 grid-cols-2">
               {(["light", "dark"] as const).map((m) => (
                 <div key={m}>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: "var(--ch-t3)",
-                      marginBottom: 10,
-                      textTransform: "uppercase",
-                      letterSpacing: ".07em",
-                    }}
-                  >
+                  <div className="text-muted-foreground uppercase tracking-[.07em] mb-2.5 font-bold text-[10px]">
                     {m === "light" ? "☀ Light mode" : "☾ Dark mode"}
                   </div>
                   <AccessibilityPanel tokens={tokens.semantic} mode={m} />

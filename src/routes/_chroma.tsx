@@ -7,7 +7,6 @@ import {
   ShortcutsModal,
 } from "@/components/modals";
 import { useChromaStore } from "@/stores/chroma-store/chroma.store";
-import "@/styles/chroma.css";
 
 // Pathless layout route — wraps all /palette, /picker, etc. routes
 // with the ChromaShell (header nav + modal layer) without adding a URL segment.

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import type { RGB, HSL, HSV, OKLCH } from "@/types";
 import {
   hexToRgb,
@@ -8,15 +8,24 @@ import {
   rgbToHsv,
   rgbToOklch,
   oklchToRgb,
+  nearestName,
   parseHex,
   clamp,
   toCssRgb,
   toCssHsl,
   toCssOklch,
-} from "@/lib/utils/colorMath";
-import { nearestName } from "@/lib/utils/paletteUtils";
+} from "@/lib/utils";
 import ColorWheel from "@/components/color-wheel";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import useChromaStore from "@/hooks/use-chroma-store";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,35 +40,45 @@ function channelGrad(steps: number, sample: (t: number) => string): string {
 
 function SliderRow({
   label,
-  display,
   value,
+  display,
   min,
   max,
+  step = 1,
   trackBg,
   onChange,
+  isAlpha = false,
 }: {
   label: string;
-  display: string;
   value: number;
+  display: string;
   min: number;
   max: number;
+  step?: number;
   trackBg: string;
   onChange: (v: number) => void;
+  isAlpha?: boolean;
 }) {
   return (
-    <div className="ch-sliders-row">
-      <span className="ch-sliders-label">{label}</span>
-      <div className="ch-sliders-track" style={{ background: trackBg }}>
-        <input
-          type="range"
-          min={min}
-          max={max}
-          value={value}
-          onChange={(e) => onChange(+e.target.value)}
-          className="ch-range"
-        />
+    <div className="flex flex-col gap-1.5">
+      <div className="flex justify-between text-[11px] text-muted-foreground">
+        {label} <span>{display}</span>
       </div>
-      <span className="ch-sliders-val">{display}</span>
+      <div className="track-wrapper">
+        {isAlpha && (
+          <div className="absolute inset-0 rounded-full alpha-track z-0" />
+        )}
+        <div className={"sat-track"} style={{ background: trackBg }}>
+          <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={value}
+            onChange={(e) => onChange(+e.target.value)}
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -298,7 +317,10 @@ export default function ColorPickerModal({
   const [mode, setMode] = useState<PickerMode>("hsl");
   const [hexInput, setHexInput] = useState(initialHex);
   const [hexInvalid, setHexInvalid] = useState(false);
-  const overlayRef = useRef<HTMLDivElement>(null);
+  // Include alpha bytes in hex when a slot has transparency (#RRGGBBAA format)
+  const modal = useChromaStore((s) => s.modal);
+  const closeModal = useChromaStore((s) => s.closeModal);
+  const openModal = useChromaStore((s) => s.openModal);
 
   const rgb = useMemo(() => hexToRgb(hex), [hex]);
   const hsl = useMemo(() => rgbToHsl(rgb), [rgb]);
@@ -357,57 +379,51 @@ export default function ColorPickerModal({
   const changed = previewBefore.toLowerCase() !== previewAfter.toLowerCase();
 
   return (
-    <div
-      ref={overlayRef}
-      className="ch-overlay"
-      onClick={(e) => {
-        if (e.target === overlayRef.current) onClose();
-      }}
+    <Dialog
+      open={modal === "export"}
+      onOpenChange={(open) => !open && closeModal()}
     >
-      <div
-        className="ch-modal"
-        style={{ width: 520, maxWidth: "96vw" }}
-        role="dialog"
-        aria-label={title ?? "Color Picker"}
-      >
-        {/* Header */}
-        <div className="ch-modal-hd">
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* Before / after swatches */}
-            <div
-              style={{
-                display: "flex",
-                borderRadius: 6,
-                overflow: "hidden",
-                border: "1px solid var(--ch-b1)",
-                flexShrink: 0,
-              }}
-            >
-              <div
-                title={`Before: ${previewBefore}`}
-                style={{ width: 22, height: 22, background: previewBefore }}
-              />
-              <div
-                title={`After: ${previewAfter}`}
-                style={{
-                  width: 22,
-                  height: 22,
-                  background: previewAfter,
-                  outline: changed ? "2px solid var(--ch-a)" : undefined,
-                  outlineOffset: -2,
-                }}
-              />
-            </div>
-            <h2 style={{ fontSize: 14 }}>{title ?? "Edit Color"}</h2>
-          </div>
-          <button
-            className="ch-modal-close"
-            onClick={onClose}
-            title="Close (Esc)"
+      <DialogTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Export"
+            onClick={() => openModal("export")}
           >
-            ×
-          </button>
-        </div>
+            ↗
+          </Button>
+        }
+      />
+      <DialogContent className="sm:max-w-sm text-primary-foreground bg-background">
+        <DialogHeader>
+          {/* Before / after swatches */}
+          <div
+            style={{
+              display: "flex",
+              borderRadius: 6,
+              overflow: "hidden",
+              border: "1px solid var(--ch-b1)",
+              flexShrink: 0,
+            }}
+          >
+            <div
+              title={`Before: ${previewBefore}`}
+              style={{ width: 22, height: 22, background: previewBefore }}
+            />
+            <div
+              title={`After: ${previewAfter}`}
+              style={{
+                width: 22,
+                height: 22,
+                background: previewAfter,
+                outline: changed ? "2px solid var(--ch-a)" : undefined,
+                outlineOffset: -2,
+              }}
+            />
+          </div>
+          <DialogTitle>{title ?? "Edit Color"}</DialogTitle>
+        </DialogHeader>
 
         {/* Body */}
         <div className="ch-modal-bd" style={{ gap: 14 }}>
@@ -631,9 +647,7 @@ export default function ColorPickerModal({
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="ch-modal-ft">
+        <DialogFooter>
           <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
             {changed && (
               <span style={{ fontSize: 10, color: "var(--ch-t3)" }}>
@@ -652,8 +666,8 @@ export default function ColorPickerModal({
           >
             Apply
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

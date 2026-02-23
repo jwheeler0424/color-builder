@@ -1,13 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState, useRef } from "react";
-import { useChromaStore } from "@/hooks/useChromaStore";
-import { rgbToHex } from "@/lib/utils/colorMath";
-import {
-  nearestName,
-  extractColors,
-  hexToStop,
-} from "@/lib/utils/paletteUtils";
-import { Button } from "../ui/button";
+import { useChromaStore } from "@/hooks/use-chroma-store";
+import { rgbToHex, nearestName, extractColors, hexToStop } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export default function ImageExtractView() {
   const { extractedColors, imgSrc, setExtracted, setSeeds, generate } =
@@ -51,9 +46,9 @@ export default function ImageExtractView() {
   };
 
   return (
-    <div className="ch-view-scroll ch-view-pad">
-      <div style={{ maxWidth: 780, margin: "0 auto" }}>
-        <div className="ch-view-hd">
+    <div className="flex-1 overflow-auto p-6">
+      <div className="mx-auto" style={{ maxWidth: 780 }}>
+        <div className="mb-5">
           <h2>Image Color Extraction</h2>
           <p>
             Upload an image to extract dominant colors and seed your palette.
@@ -62,7 +57,7 @@ export default function ImageExtractView() {
 
         {/* Drop zone */}
         <div
-          className={`ch-drop-zone${dragOver ? " dragover" : ""}`}
+          className={`border-2 border-dashed rounded-md py-12 px-6 text-center cursor-pointer transition-colors ${dragOver ? "border-primary bg-primary/5" : "border-input hover:border-primary hover:bg-primary/5"}`}
           onDragOver={(e) => {
             e.preventDefault();
             setDragOver(true);
@@ -79,36 +74,42 @@ export default function ImageExtractView() {
             ref={fileRef}
             type="file"
             accept="image/*"
-            style={{ display: "none" }}
+            className="hidden"
             onChange={(e) =>
               e.target.files?.[0] && handleFile(e.target.files[0])
             }
           />
-          <div className="ch-drop-title">Drop an image here</div>
-          <div className="ch-drop-sub">
+          <div className="font-display text-[17px] font-bold text-secondary-foreground mb-1.5">
+            Drop an image here
+          </div>
+          <div className="text-[11px] text-muted-foreground">
             or click to browse · JPG, PNG, WebP, GIF
           </div>
         </div>
 
         {/* Preview + extracted colors */}
         {(imgSrc || loading) && (
-          <div className="ch-img-row">
+          <div className="flex mt-5 gap-4">
             {imgSrc && (
-              <div style={{ flex: 1, maxWidth: 380 }}>
-                <img src={imgSrc} alt="Uploaded" className="ch-img-preview" />
+              <div className="flex-1" style={{ maxWidth: 380 }}>
+                <img
+                  src={imgSrc}
+                  alt="Uploaded"
+                  className="w-full rounded border border-input block"
+                />
               </div>
             )}
-            <div style={{ flex: 1 }}>
-              <div className="ch-slabel" style={{ marginBottom: 10 }}>
+            <div className="flex-1">
+              <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
                 Extracted Colors
               </div>
               {loading && (
-                <p style={{ color: "var(--ch-t3)", fontSize: 12 }}>
+                <p className="text-muted-foreground text-[12px]">
                   Extracting colors…
                 </p>
               )}
               {error && (
-                <p style={{ color: "var(--ch-danger)", fontSize: 12 }}>
+                <p className="text-destructive text-[12px]">
                   Extraction failed. Try another image.
                 </p>
               )}
@@ -117,29 +118,21 @@ export default function ImageExtractView() {
                 extractedColors.map((rgb, i) => {
                   const hex = rgbToHex(rgb);
                   return (
-                    <div key={i} className="ch-img-color-row">
+                    <div key={i} className="flex items-center gap-2 mb-1.5">
                       <div
+                        className="rounded flex-shrink-0"
                         style={{
                           width: 32,
                           height: 32,
-                          borderRadius: 3,
                           background: hex,
                           border: "1px solid rgba(255,255,255,.08)",
-                          flexShrink: 0,
                         }}
                       />
-                      <div style={{ flex: 1 }}>
-                        <div
-                          style={{
-                            fontFamily: "var(--ch-fm)",
-                            fontSize: 11,
-                            fontWeight: 700,
-                            textTransform: "uppercase",
-                          }}
-                        >
+                      <div className="flex-1">
+                        <div className="font-mono uppercase font-bold text-[11px]">
                           {hex.toUpperCase()}
                         </div>
-                        <div style={{ fontSize: 10, color: "var(--ch-t3)" }}>
+                        <div className="text-muted-foreground text-[10px]">
                           {nearestName(rgb)}
                         </div>
                       </div>
