@@ -1,41 +1,23 @@
-"use client";
-import { Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun } from "lucide-react";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useTheme } from "@/hooks/use-theme";
 import { Button } from "./ui/button";
+import { useRouteContext, useRouter } from "@tanstack/react-router";
+import { setThemeServerFn } from "@/lib/theme";
 
 export function ThemeToggle() {
-  const { setTheme } = useTheme();
+  const { theme } = useRouteContext({ from: "__root__" });
+  const router = useRouter();
+
+  function toggleTheme() {
+    const themes = ["light", "dark", "auto"] as const;
+    const nextTheme = themes[(themes.indexOf(theme) + 1) % themes.length];
+    setThemeServerFn({ data: nextTheme }).then(() => router.invalidate());
+  }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button variant="outline">
-            <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-        }
-      />
-
-      <DropdownMenuContent className="w-40" align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button variant="outline" size={"icon"} aria-label="Toggle theme">
+      {theme === "dark" ? <Moon /> : theme === "light" ? <Sun /> : <Monitor />}
+      <span className="sr-only">Toggle theme</span>
+    </Button>
   );
 }

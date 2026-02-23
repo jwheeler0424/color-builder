@@ -10,7 +10,7 @@ import {
   toCssRgb,
 } from "@/lib/utils";
 import type { ExportTab } from "../../types";
-import { generateSvgSwatch, downloadSvg } from "@/lib/tools/svg-export";
+import { generateSvgSwatch, downloadSvg } from "@/lib/utils/svg-export";
 import { Button } from "../ui/button";
 import {
   Dialog,

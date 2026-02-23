@@ -7,10 +7,10 @@ export const clamp = (v: number, lo: number, hi: number): number =>
 
 // ─── sRGB linearization (single source of truth) ─────────────────────────────
 
-function toLinear(v: number): number {
+export function toLinear(v: number): number {
   return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
 }
-function fromLinear(v: number): number {
+export function fromLinear(v: number): number {
   return v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
 }
 
@@ -582,7 +582,7 @@ export {
   scorePalette,
   generateUtilityColors,
   mergeUtilityColors,
-} from "../tools/color-math-scale";
+} from "./color-math-scale.utils";
 export {
   deriveThemeTokens,
   buildFigmaTokens,
@@ -592,4 +592,4 @@ export {
   buildColorStoryHtml,
   semanticSlotNames,
   buildThemeCss,
-} from "../tools/color-math-export";
+} from "./color-math-export.utils";

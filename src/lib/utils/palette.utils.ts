@@ -405,7 +405,12 @@ export function cloneSlot(slot: PaletteSlot): PaletteSlot {
     hsl: { ...slot.color.hsl },
   };
   if (slot.color.a !== undefined) color.a = slot.color.a;
-  return { id: slot.id, locked: slot.locked, color };
+  return {
+    id: slot.id,
+    color,
+    locked: slot.locked,
+    name: slot.name,
+  };
 }
 
 export function hexToStop(hex: string, alpha?: number): ColorStop {
@@ -528,12 +533,14 @@ export function savePalette(
   name: string,
   hexes: string[],
   mode: HarmonyMode,
+  slotNames?: (string | undefined)[],
 ): SavedPalette {
   const saved = loadSaved();
   const entry: SavedPalette = {
     id: crypto.randomUUID(),
     name,
     hexes,
+    slotNames,
     mode,
     createdAt: Date.now(),
   };

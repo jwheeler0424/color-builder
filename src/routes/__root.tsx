@@ -18,6 +18,7 @@ import appCss from "@/styles/globals.css?url";
 import { seo } from "@/lib/utils/seo";
 import { ThemeProvider } from "@/providers/theme.provider";
 import { HotkeyProvider } from "@/providers/hotkey.provider";
+import { getThemeServerFn } from "@/lib/theme";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -74,6 +75,7 @@ export const Route = createRootRouteWithContext<{
     );
   },
   notFoundComponent: () => <NotFound />,
+  beforeLoad: async () => ({ theme: await getThemeServerFn() }),
   component: RootComponent,
 });
 
@@ -86,14 +88,20 @@ function RootComponent() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const { theme } = Route.useRouteContext();
   return (
-    <html>
+    <html className={theme}>
       <head>
         <HeadContent />
       </head>
       <body style={{ margin: 0, padding: 0, overflow: "hidden" }}>
         <HotkeyProvider>
-          <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
             {children}
           </ThemeProvider>
         </HotkeyProvider>

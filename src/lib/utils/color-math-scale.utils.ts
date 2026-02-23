@@ -11,14 +11,14 @@ import type {
 } from "@/types";
 import {
   hexToRgb,
-  colorDist,
   rgbToHex,
   rgbToHsl,
   rgbToOklch,
   oklchToRgb,
   contrastRatio,
   clamp,
-} from "@/lib/utils/color-math.utils";
+  colorDist,
+} from "./color-math.utils";
 
 // ─── Scale Generation ─────────────────────────────────────────────────────────
 

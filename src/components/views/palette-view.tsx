@@ -12,34 +12,62 @@ import {
 import { HARMONIES, THEMES } from "@/lib/constants/chroma";
 import { useChromaStore } from "@/hooks/use-chroma-store";
 import { useRegisterHotkey } from "@/providers/hotkey.provider";
+
+// dnd-kit — replace vendor paths with '@dnd-kit/core', '@dnd-kit/sortable',
+// '@dnd-kit/utilities' once the packages are installed.
+import {
+  DndContext,
+  closestCenter,
+  DragOverlay,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  KeyboardSensor,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  horizontalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
 import { Button } from "@/components/ui/button";
 import ColorPickerModal from "@/components/modals/color-picker.modal";
 
-// ─── Slot component ───────────────────────────────────────────────────────────
+// ─── Sortable Slot ─────────────────────────────────────────────────────────────
 
-interface SlotProps {
+interface SortableSlotProps {
   slot: PaletteSlot;
   index: number;
-  isDragging: boolean;
-  isDragOver: boolean;
   onEdit: (i: number) => void;
-  onDragStart: (i: number, e: React.DragEvent) => void;
-  onDragOver: (i: number, e: React.DragEvent) => void;
-  onDrop: (i: number) => void;
-  onDragEnd: () => void;
+  overlay?: boolean; // true when rendered inside DragOverlay
 }
 
-function PaletteSlotComponent({
+function SortableSlot({
   slot,
   index,
-  isDragging,
-  isDragOver,
   onEdit,
-  onDragStart,
-  onDragOver,
-  onDrop,
-  onDragEnd,
-}: SlotProps) {
+  overlay = false,
+}: SortableSlotProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+    isOver,
+    isSorting,
+  } = useSortable({
+    id: slot.id,
+    data: { index },
+    transition: { duration: 200, easing: "cubic-bezier(0.25, 1, 0.5, 1)" },
+  });
+
   const { toggleLock, renameSlot } = useChromaStore();
   const [toastVisible, setToastVisible] = useState(false);
   const [editingName, setEditingName] = useState(false);
@@ -57,13 +85,26 @@ function PaletteSlotComponent({
       ? `rgba(${rgb.r},${rgb.g},${rgb.b},${(slot.color.a / 100).toFixed(2)})`
       : slot.color.hex;
 
-  const handleCopy = () => {
+  const style: React.CSSProperties = {
+    background: bg,
+    transform: CSS.Transform.toString(transform ?? null),
+    transition: isSorting ? transition : undefined,
+    // Ghost out the item in its original position while it's being dragged
+    opacity: isDragging && !overlay ? 0.35 : 1,
+    // While sorting, disable pointer events on non-dragged items so
+    // onPointerEnter collision works correctly
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
     navigator.clipboard.writeText(slot.color.hex).catch(() => {});
     setToastVisible(true);
     setTimeout(() => setToastVisible(false), 1100);
   };
 
-  const startNameEdit = () => {
+  const startNameEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setNameInput(slot.name || "");
     setEditingName(true);
     setTimeout(() => nameInputRef.current?.select(), 0);
@@ -77,46 +118,67 @@ function PaletteSlotComponent({
 
   return (
     <div
+      ref={setNodeRef}
+      style={style}
       className={cn(
-        "slot-item flex flex-col justify-end p-3 relative group cursor-grab select-none",
-        isDragOver && "ring-2 ring-inset ring-white/60",
-        isDragging && "opacity-40",
+        "slot-item flex flex-col justify-end p-3 relative group select-none flex-1",
+        isOver && !isDragging && "ring-2 ring-inset ring-white/60",
+        overlay && "shadow-2xl cursor-grabbing",
+        !overlay && "cursor-grab",
       )}
-      style={{ background: bg }}
-      draggable
-      onDragStart={(e) => onDragStart(index, e)}
-      onDragOver={(e) => onDragOver(index, e)}
-      onDrop={() => onDrop(index)}
-      onDragEnd={onDragEnd}
-      onDoubleClick={() => onEdit(index)}
+      onDoubleClick={() => !editingName && onEdit(index)}
+      {...attributes}
     >
+      {/* Drag handle — separate activator node so buttons inside still work */}
+      <div
+        ref={setActivatorNodeRef}
+        className="absolute inset-0 touch-none"
+        {...listeners}
+      />
+
       {/* Copied toast */}
       {toastVisible && (
-        <div className="toast-anim absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 text-white text-[11px] px-3 py-1 rounded pointer-events-none whitespace-nowrap z-10">
+        <div
+          className="toast-anim absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+            bg-black/90 text-white text-[11px] px-3 py-1 rounded pointer-events-none
+            whitespace-nowrap z-20"
+        >
           Copied!
         </div>
       )}
 
-      {/* Action buttons */}
-      <div className="slot-acts absolute top-2.5 right-2 flex flex-col gap-1 opacity-0 transition-opacity duration-100">
+      {/* Action buttons — z-10 so they sit above the drag handle */}
+      <div className="slot-acts absolute top-2.5 right-2 flex flex-col gap-1 opacity-0 transition-opacity duration-100 z-10">
         <button
-          className="w-[26px] h-[26px] rounded border-none bg-black/45 backdrop-blur flex items-center justify-center text-[12px] cursor-pointer transition-all hover:bg-black/70 hover:scale-105"
+          className="w-[26px] h-[26px] rounded border-none bg-black/45 backdrop-blur
+            flex items-center justify-center text-[12px] cursor-pointer
+            transition-all hover:bg-black/70 hover:scale-105"
           style={{ color: slot.locked ? "var(--color-primary)" : tc }}
-          onClick={() => toggleLock(index)}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleLock(index);
+          }}
           title={slot.locked ? "Unlock" : "Lock"}
         >
           {slot.locked ? "🔒" : "🔓"}
         </button>
         <button
-          className="w-[26px] h-[26px] rounded border-none bg-black/45 backdrop-blur flex items-center justify-center text-[12px] cursor-pointer transition-all hover:bg-black/70 hover:scale-105"
+          className="w-[26px] h-[26px] rounded border-none bg-black/45 backdrop-blur
+            flex items-center justify-center text-[12px] cursor-pointer
+            transition-all hover:bg-black/70 hover:scale-105"
           style={{ color: tc }}
-          onClick={() => onEdit(index)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(index);
+          }}
           title="Edit color"
         >
           ✏️
         </button>
         <button
-          className="w-[26px] h-[26px] rounded border-none bg-black/45 backdrop-blur flex items-center justify-center text-[12px] cursor-pointer transition-all hover:bg-black/70 hover:scale-105"
+          className="w-[26px] h-[26px] rounded border-none bg-black/45 backdrop-blur
+            flex items-center justify-center text-[12px] cursor-pointer
+            transition-all hover:bg-black/70 hover:scale-105"
           style={{ color: tc }}
           onClick={handleCopy}
           title="Copy hex"
@@ -125,13 +187,13 @@ function PaletteSlotComponent({
         </button>
       </div>
 
-      {/* Color info */}
-      <div className="flex flex-col gap-0.5">
-        {/* Token name — click to edit */}
+      {/* Color info — z-10, pointer-events-auto to override the drag handle */}
+      <div className="relative z-10 flex flex-col gap-0.5 pointer-events-none">
         {editingName ? (
           <input
             ref={nameInputRef}
-            className="font-display text-[10px] font-semibold bg-black/30 border border-white/30 rounded px-1 text-white outline-none w-full"
+            className="font-display text-[10px] font-semibold bg-black/30 border
+              border-white/30 rounded px-1 text-white outline-none w-full pointer-events-auto"
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
             onBlur={commitName}
@@ -145,13 +207,11 @@ function PaletteSlotComponent({
           />
         ) : (
           <div
-            className="font-display text-[10px] font-semibold opacity-70 cursor-text hover:opacity-100 transition-opacity"
+            className="font-display text-[10px] font-semibold opacity-70
+              cursor-text hover:opacity-100 transition-opacity pointer-events-auto"
             style={{ color: tc }}
             title="Click to rename token"
-            onClick={(e) => {
-              e.stopPropagation();
-              startNameEdit();
-            }}
+            onClick={startNameEdit}
           >
             {displayName}
             {slot.name && <span className="ml-1 opacity-40">✎</span>}
@@ -159,12 +219,14 @@ function PaletteSlotComponent({
         )}
 
         <div
-          className="font-mono text-[12px] font-bold tracking-[.06em] uppercase cursor-pointer"
+          className="font-mono text-[12px] font-bold tracking-[.06em] uppercase
+            cursor-pointer pointer-events-auto"
           style={{ color: tc }}
           onClick={handleCopy}
         >
           {slot.color.hex.toUpperCase()}
         </div>
+
         <div className="text-[10px] opacity-55" style={{ color: tc }}>
           {Math.round(hsl.h)}° {Math.round(hsl.s)}% {Math.round(hsl.l)}%
           {slot.color.a !== undefined && slot.color.a < 100 && (
@@ -218,8 +280,18 @@ export default function PaletteView() {
   const [seedErr, setSeedErr] = useState(false);
   const [editingSlot, setEditingSlot] = useState<number | null>(null);
   const [editingSeed, setEditingSeed] = useState<number | null>(null);
-  const [dragFrom, setDragFrom] = useState<number | null>(null);
-  const [dragOver, setDragOver] = useState<number | null>(null);
+  const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
+
+  // ── dnd-kit sensors ────────────────────────────────────────────────────────
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      // Require a 5px move before drag activates so clicks still work
+      activationConstraint: { distance: 5 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   // ── Generate debounce ──────────────────────────────────────────────────────
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -244,7 +316,7 @@ export default function PaletteView() {
   });
   useRegisterHotkey({
     key: "?",
-    label: "Show keyboard shortcuts",
+    label: "Keyboard shortcuts",
     group: "App",
     handler: () => openModal("shortcuts"),
   });
@@ -264,33 +336,36 @@ export default function PaletteView() {
     handler: () => openModal("save"),
   });
 
-  // ── Drag-to-reorder ────────────────────────────────────────────────────────
-  const handleDragStart = useCallback((index: number, e: React.DragEvent) => {
-    setDragFrom(index);
-    e.dataTransfer.effectAllowed = "move";
+  // ── Drag handlers ────────────────────────────────────────────────────────
+  const handleDragStart = useCallback(({ active }: DragStartEvent) => {
+    setActiveSlotId(String(active.id));
   }, []);
 
-  const handleDragOver = useCallback((index: number, e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    setDragOver(index);
-  }, []);
-
-  const handleDrop = useCallback(
-    (toIndex: number) => {
-      if (dragFrom !== null && dragFrom !== toIndex) {
-        reorderSlots(dragFrom, toIndex);
+  const handleDragEnd = useCallback(
+    ({ active, over }: DragEndEvent) => {
+      setActiveSlotId(null);
+      if (!over || active.id === over.id) return;
+      const oldIndex = slots.findIndex((s) => s.id === active.id);
+      const newIndex = slots.findIndex((s) => s.id === over.id);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        reorderSlots(oldIndex, newIndex);
       }
-      setDragFrom(null);
-      setDragOver(null);
     },
-    [dragFrom, reorderSlots],
+    [slots, reorderSlots],
   );
 
-  const handleDragEnd = useCallback(() => {
-    setDragFrom(null);
-    setDragOver(null);
+  const handleDragCancel = useCallback(() => {
+    setActiveSlotId(null);
   }, []);
+
+  // ── Slot IDs for SortableContext ────────────────────────────────────────────
+  const slotIds = useMemo(() => slots.map((s) => s.id), [slots]);
+
+  // The slot being dragged (for DragOverlay rendering)
+  const activeSlot = activeSlotId
+    ? slots.find((s) => s.id === activeSlotId)
+    : null;
+  const activeSlotIndex = activeSlot ? slots.indexOf(activeSlot) : -1;
 
   // ── Seed input ─────────────────────────────────────────────────────────────
   const handleAddSeed = useCallback(() => {
@@ -306,29 +381,56 @@ export default function PaletteView() {
 
   return (
     <div className="flex flex-1 overflow-hidden">
-      {/* ── Color strip ── */}
-      <div className="flex flex-1 overflow-hidden">
-        {slots.map((slot, i) => (
-          <PaletteSlotComponent
-            key={slot.id}
-            slot={slot}
-            index={i}
-            isDragging={dragFrom === i}
-            isDragOver={dragOver === i}
-            onEdit={setEditingSlot}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onDragEnd={handleDragEnd}
-          />
-        ))}
-      </div>
+      {/* ── Sortable color strip ── */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+      >
+        <SortableContext
+          items={slotIds}
+          strategy={horizontalListSortingStrategy}
+        >
+          <div className="flex flex-1 overflow-hidden">
+            {slots.map((slot, i) => (
+              <SortableSlot
+                key={slot.id}
+                slot={slot}
+                index={i}
+                onEdit={setEditingSlot}
+              />
+            ))}
+          </div>
+        </SortableContext>
 
-      {/* ── Slot picker modal ── */}
+        {/* DragOverlay renders a floating clone of the dragged slot */}
+        <DragOverlay
+          dropAnimation={{
+            duration: 180,
+            easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+          }}
+        >
+          {activeSlot && (
+            <SortableSlot
+              slot={activeSlot}
+              index={activeSlotIndex}
+              onEdit={() => {}}
+              overlay
+            />
+          )}
+        </DragOverlay>
+      </DndContext>
+
+      {/* ── Slot color picker modal ── */}
       {editingSlot !== null && slots[editingSlot] && (
         <ColorPickerModal
           initialHex={slots[editingSlot].color.hex}
-          title={`Slot ${editingSlot + 1} — ${slots[editingSlot].name || nearestName(hexToRgb(slots[editingSlot].color.hex))}`}
+          title={`Slot ${editingSlot + 1} — ${
+            slots[editingSlot].name ||
+            nearestName(hexToRgb(slots[editingSlot].color.hex))
+          }`}
           onApply={(hex) => {
             editSlotColor(editingSlot, hexToStop(hex));
             setEditingSlot(null);
@@ -337,7 +439,7 @@ export default function PaletteView() {
         />
       )}
 
-      {/* ── Seed picker modal ── */}
+      {/* ── Seed color picker modal ── */}
       {editingSeed !== null && seeds[editingSeed] && (
         <ColorPickerModal
           initialHex={seeds[editingSeed].hex}
@@ -409,7 +511,7 @@ export default function PaletteView() {
             </div>
           </Section>
 
-          {/* Seeds */}
+          {/* Seed Colors */}
           <Section>
             <SectionLabel>Seed Colors</SectionLabel>
             <div className="flex flex-col gap-1 mb-2">
@@ -418,7 +520,6 @@ export default function PaletteView() {
                   <div
                     className="w-[18px] h-[18px] rounded-sm border border-white/10 flex-shrink-0 cursor-pointer"
                     style={{ background: s.hex }}
-                    title="Click to edit"
                     onClick={() => setEditingSeed(i)}
                   />
                   <span
@@ -457,7 +558,7 @@ export default function PaletteView() {
             </div>
           </Section>
 
-          {/* Seed behavior */}
+          {/* Seed Behavior */}
           <Section>
             <SectionLabel>Seed Behavior</SectionLabel>
             <div className="flex gap-1 mb-2">
@@ -550,12 +651,13 @@ export default function PaletteView() {
             </div>
           </Section>
 
-          {/* Slot names tip */}
+          {/* Token Names tip */}
           <Section>
             <SectionLabel>Token Names</SectionLabel>
             <p className="text-[9.5px] text-muted-foreground leading-relaxed">
-              Click any color name in the strip above to rename it as a design
-              token. Drag slots to reorder.
+              Click any color name in the strip to rename it as a design token.
+              Drag slots to reorder — arrow keys work too when a slot is
+              focused.
             </p>
           </Section>
 

@@ -10,7 +10,16 @@
 
 /* ───────────────────────────────────────────────────────────────────────── */
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark {
+  &:is(.dark *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:is((.auto) *) {
+      @slot;
+    }
+  }
+}
 
 :root {
   --background: oklch(98.8% 0 0);
@@ -152,6 +161,12 @@
   --shadow-xl:
     0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 8px 10px -1px oklch(0 0 0 / 0.01);
   --shadow-2xl: 0px 1px 2px 0px oklch(0 0 0 / 0.03);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:is(.auto) {
+    @apply .dark;
+  }
 }
 
 @theme inline {
