@@ -52,8 +52,8 @@ export default function Header() {
   }, [modal, generate, undo, openModal]);
 
   return (
-    <header className="flex items-center px-4 h-12 border-b border-border bg-card gap-2.5 flex-shrink-0">
-      <div className="font-display text-base font-black tracking-tight flex-shrink-0 text-foreground">
+    <header className="flex items-center px-4 h-12 border-b border-border bg-card gap-2.5 shrink-0">
+      <div className="font-display text-base font-black tracking-tight shrink-0 text-foreground">
         Chroma
         <sup className="text-[9px] text-muted-foreground font-normal">
           ELITE
@@ -71,7 +71,7 @@ export default function Header() {
         ))}
       </nav>
       <ThemeToggle />
-      <div className="flex gap-1.5 flex-shrink-0">
+      <div className="flex gap-1.5 shrink-0">
         <Button variant="ghost" size="sm" onClick={undo} title="Undo (Ctrl+Z)">
           ↩
         </Button>

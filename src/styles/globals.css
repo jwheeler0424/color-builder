@@ -10,18 +10,25 @@
 
 /* ───────────────────────────────────────────────────────────────────────── */
 
+/*
+ * Dark variant — activates `dark:` utilities when:
+ *   1. .dark is on the element itself OR any ancestor  (explicit dark mode)
+ *   2. OS prefers dark AND .auto is on :root           (auto mode)
+ */
 @custom-variant dark {
-  &:is(.dark *) {
+  &:is(.dark, .dark *) {
     @slot;
   }
   @media (prefers-color-scheme: dark) {
-    &:is((.auto) *) {
+    &:is(.auto, .auto *) {
       @slot;
     }
   }
 }
 
-:root {
+/* ─── Light theme (default / explicit .light) ───────────────────────────── */
+:root,
+.light {
   --background: oklch(98.8% 0 0);
   --foreground: oklch(9.4% 0 0);
 
@@ -42,20 +49,23 @@
 
   --accent: oklch(93.4% 0 0);
   --accent-foreground: oklch(9.4% 0 0);
+
   --warning: oklch(0.65 0.25 85);
   --success: oklch(0.54 0.2 136.02);
   --destructive: oklch(0.61 0.24 20.96);
   --destructive-foreground: oklch(100% 0 0);
 
   --border: oklch(90.4% 0 0);
-  --border-strong: oklch(72% 0 0); /* active inputs, selected cards */
+  --border-strong: oklch(72% 0 0);
   --input: oklch(86.7% 0 0);
   --ring: oklch(0.55 0.1 235.72);
+
   --chart-1: oklch(0.57 0.11 228.92);
   --chart-2: oklch(0.45 0.1 270.08);
   --chart-3: oklch(0.65 0.15 159.03);
   --chart-4: oklch(0.75 0.1 100.01);
   --chart-5: oklch(0.55 0.15 299.88);
+
   --sidebar: oklch(0.93 0.01 238.46);
   --sidebar-foreground: oklch(0.15 0.02 269.18);
   --sidebar-primary: oklch(0.57 0.11 228.92);
@@ -102,11 +112,12 @@
   --shadow-2xl: 0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.15);
 }
 
+/* ─── Dark theme (explicit .dark) ───────────────────────────────────────── */
 .dark {
-  --background: oklch(10.2% 0 0); /* #0a0a0a */
-  --foreground: oklch(94.9% 0 0); /* #f0f0f0 */
+  --background: oklch(10.2% 0 0);
+  --foreground: oklch(94.9% 0 0);
 
-  --card: oklch(13.7% 0 0); /* #111    */
+  --card: oklch(13.7% 0 0);
   --card-foreground: oklch(94.9% 0 0);
 
   --popover: oklch(13.7% 0 0);
@@ -115,30 +126,31 @@
   --primary: oklch(0.71 0.15 239.15);
   --primary-foreground: oklch(0% 0 0);
 
-  --secondary: oklch(17.8% 0 0); /* #181818 */
-  --secondary-foreground: oklch(69.8% 0 0); /* #aaa    */
+  --secondary: oklch(17.8% 0 0);
+  --secondary-foreground: oklch(69.8% 0 0);
 
-  --muted: oklch(17.8% 0 0); /* #181818 */
-  --muted-foreground: oklch(44.7% 0 0); /* #666    */
+  --muted: oklch(17.8% 0 0);
+  --muted-foreground: oklch(44.7% 0 0);
 
-  --accent: oklch(20.9% 0 0); /* #202020 */
+  --accent: oklch(20.9% 0 0);
   --accent-foreground: oklch(94.9% 0 0);
+
   --warning: oklch(0.68 0.25 85);
   --success: oklch(0.56 0.2 136.02);
   --destructive: oklch(0.64 0.25 19.69);
   --destructive-foreground: oklch(100% 0 0);
 
-  --border: oklch(22.5% 0 0); /* #222 – default border  */
-  --border-strong: oklch(40% 0 0); /* active inputs, selected cards */
-  --input: oklch(33.7% 0 0); /* #333 – hover/focus border */
   --border: oklch(0.9 0.01 238.47 / 15%);
+  --border-strong: oklch(40% 0 0);
   --input: oklch(0.9 0.01 238.47 / 20%);
   --ring: oklch(0.66 0.13 227.7);
+
   --chart-1: oklch(0.66 0.13 227.7);
   --chart-2: oklch(0.6 0.1 269.83);
   --chart-3: oklch(0.7 0.15 159.83);
   --chart-4: oklch(0.8 0.1 100.65);
   --chart-5: oklch(0.6 0.15 300.14);
+
   --sidebar: oklch(0.22 0.02 271.67);
   --sidebar-foreground: oklch(0.9 0.01 238.47);
   --sidebar-primary: oklch(0.66 0.13 227.7);
@@ -163,12 +175,77 @@
   --shadow-2xl: 0px 1px 2px 0px oklch(0 0 0 / 0.03);
 }
 
+/* ─── Auto theme — OS dark preference when .auto is on <html> ───────────── */
 @media (prefers-color-scheme: dark) {
-  :root:is(.auto) {
-    @apply .dark;
+  .auto {
+    --background: oklch(10.2% 0 0);
+    --foreground: oklch(94.9% 0 0);
+
+    --card: oklch(13.7% 0 0);
+    --card-foreground: oklch(94.9% 0 0);
+
+    --popover: oklch(13.7% 0 0);
+    --popover-foreground: oklch(94.9% 0 0);
+
+    --primary: oklch(0.71 0.15 239.15);
+    --primary-foreground: oklch(0% 0 0);
+
+    --secondary: oklch(17.8% 0 0);
+    --secondary-foreground: oklch(69.8% 0 0);
+
+    --muted: oklch(17.8% 0 0);
+    --muted-foreground: oklch(44.7% 0 0);
+
+    --accent: oklch(20.9% 0 0);
+    --accent-foreground: oklch(94.9% 0 0);
+
+    --warning: oklch(0.68 0.25 85);
+    --success: oklch(0.56 0.2 136.02);
+    --destructive: oklch(0.64 0.25 19.69);
+    --destructive-foreground: oklch(100% 0 0);
+
+    --border: oklch(0.9 0.01 238.47 / 15%);
+    --border-strong: oklch(40% 0 0);
+    --input: oklch(0.9 0.01 238.47 / 20%);
+    --ring: oklch(0.66 0.13 227.7);
+
+    --chart-1: oklch(0.66 0.13 227.7);
+    --chart-2: oklch(0.6 0.1 269.83);
+    --chart-3: oklch(0.7 0.15 159.83);
+    --chart-4: oklch(0.8 0.1 100.65);
+    --chart-5: oklch(0.6 0.15 300.14);
+
+    --sidebar: oklch(0.22 0.02 271.67);
+    --sidebar-foreground: oklch(0.9 0.01 238.47);
+    --sidebar-primary: oklch(0.66 0.13 227.7);
+    --sidebar-primary-foreground: oklch(0.18 0.02 271.27);
+    --sidebar-accent: oklch(0.28 0.03 270.91);
+    --sidebar-accent-foreground: oklch(0.9 0.01 238.47);
+    --sidebar-border: oklch(0.9 0.01 238.47 / 15%);
+    --sidebar-ring: oklch(0.66 0.13 227.7);
+
+    --shadow-2xs: 0px 1px 2px 0px oklch(0 0 0 / 0.01);
+    --shadow-xs: 0px 1px 2px 0px oklch(0 0 0 / 0.01);
+    --shadow-sm:
+      0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+    --shadow:
+      0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+    --shadow-md:
+      0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 2px 4px -1px oklch(0 0 0 / 0.01);
+    --shadow-lg:
+      0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 4px 6px -1px oklch(0 0 0 / 0.01);
+    --shadow-xl:
+      0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 8px 10px -1px oklch(0 0 0 / 0.01);
+    --shadow-2xl: 0px 1px 2px 0px oklch(0 0 0 / 0.03);
   }
 }
 
+/* ─── Tailwind theme bridge ──────────────────────────────────────────────── */
+/*
+ * @theme inline maps raw CSS vars → Tailwind --color-* tokens so utilities
+ * like bg-primary, text-foreground, border-border etc. are generated and
+ * automatically pick up the correct value for the active theme at runtime.
+ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -184,8 +261,12 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-warning: var(--warning);
+  --color-success: var(--success);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
@@ -202,6 +283,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  --font-display: var(--font-display);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
@@ -226,7 +308,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-mono antialiased text-sm leading-normal;
+    @apply bg-background text-foreground font-mono antialiased text-sm leading-normal flex flex-col h-screen w-screen overflow-hidden;
   }
 
   /* Scrollbar */
@@ -446,7 +528,6 @@
   }
 
   /* Generic gradient slider track (hue, saturation, lightness, OKLCH channels) */
-  /* alpha-track uses the same size/position but adds a checker pattern underneath */
   .sat-track {
     height: 10px;
     border-radius: 5px;

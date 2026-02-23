@@ -18,7 +18,7 @@ import appCss from "@/styles/globals.css?url";
 import { seo } from "@/lib/utils/seo";
 import { ThemeProvider } from "@/providers/theme.provider";
 import { HotkeyProvider } from "@/providers/hotkey.provider";
-import { getThemeServerFn } from "@/lib/theme";
+import { getThemeServerFn, Theme } from "@/lib/theme";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -57,53 +57,59 @@ export const Route = createRootRouteWithContext<{
         sizes: "16x16",
         href: "/favicon-16x16.png",
       },
-      { rel: "manifest", href: "/site.webmanifest", color: "#fffff" },
+      // { rel: "manifest", href: "/site.webmanifest", color: "#fffff" },
       { rel: "icon", href: "/favicon.ico" },
     ],
-    scripts: [
-      {
-        src: "/customScript.js",
-        type: "text/javascript",
-      },
-    ],
+    // scripts: [
+    //   {
+    //     src: "/customScript.js",
+    //     type: "text/javascript",
+    //   },
+    // ],
   }),
-  errorComponent: (props) => {
-    return (
-      <RootDocument>
-        <DefaultCatchBoundary {...props} />
-      </RootDocument>
-    );
-  },
+  errorComponent: (props) => (
+    <RootDocument theme="auto">
+      <DefaultCatchBoundary {...props} />
+    </RootDocument>
+  ),
   notFoundComponent: () => <NotFound />,
   beforeLoad: async () => ({ theme: await getThemeServerFn() }),
   component: RootComponent,
 });
 
 function RootComponent() {
+  const { theme } = Route.useRouteContext();
   return (
-    <RootDocument>
+    <RootDocument theme={theme}>
       <Outlet />
     </RootDocument>
   );
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
-  const { theme } = Route.useRouteContext();
+function RootDocument({
+  children,
+  theme,
+}: {
+  children: React.ReactNode;
+  theme: Theme;
+}) {
+  /**
+   * Map cookie value → <html> class:
+   *   "dark"  → "dark"   — activates Tailwind dark: utilities + .dark CSS overrides
+   *   "light" → "light"  — activates .light CSS overrides
+   *   "auto"  → ""       — no class; CSS @media prefers-color-scheme takes over
+   *
+   * Single source of truth — no client-side class toggling or localStorage.
+   */
+  const htmlClass = theme === "auto" ? "" : theme;
   return (
-    <html className={theme}>
+    <html className={htmlClass}>
       <head>
         <HeadContent />
       </head>
-      <body style={{ margin: 0, padding: 0, overflow: "hidden" }}>
+      <body>
         <HotkeyProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
+          <ThemeProvider theme={theme}>{children}</ThemeProvider>
         </HotkeyProvider>
         <TanStackDevtools
           config={{

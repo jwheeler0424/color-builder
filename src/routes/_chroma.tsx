@@ -18,17 +18,17 @@ function ChromaShell() {
   const { modal } = useChromaStore();
 
   return (
-    <div className="ch-app">
+    <main className="grid h-full w-full grid-rows-[auto_1fr] grid-cols-1">
       <Header />
 
-      <div className="ch-views">
+      <section className="flex flex-col flex-1 h-full w-full overflow-hidden">
         <Outlet />
-      </div>
+      </section>
 
       {modal === "export" && <ExportModal />}
       {modal === "share" && <ShareModal />}
       {modal === "save" && <SaveModal />}
       {modal === "shortcuts" && <ShortcutsModal />}
-    </div>
+    </main>
   );
 }

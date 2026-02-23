@@ -1,13 +1,24 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie, setCookie } from "@tanstack/react-start/server";
-
 import * as z from "zod";
 
-const storageKey = "chroma-theme";
+export type Theme = "light" | "dark" | "auto";
+
+const STORAGE_KEY = "chroma-theme";
+
 export const getThemeServerFn = createServerFn().handler(
-  () => (getCookie(storageKey) as "light" | "dark" | "auto") ?? "auto",
+  (): Theme => (getCookie(STORAGE_KEY) as Theme | undefined) ?? "auto",
 );
-const setThemeValidator = z.enum(["light", "dark", "auto"]);
+
+const themeValidator = z.enum(["light", "dark", "auto"]);
+
 export const setThemeServerFn = createServerFn()
-  .inputValidator(setThemeValidator)
-  .handler(({ data }) => setCookie(storageKey, data));
+  .inputValidator(themeValidator)
+  .handler(({ data }) =>
+    setCookie(STORAGE_KEY, data, {
+      httpOnly: false, // readable client-side if ever needed
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      path: "/",
+    }),
+  );

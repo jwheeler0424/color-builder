@@ -12,12 +12,9 @@ import {
   oklchToRgb,
   oklabToLch,
   oklabToRgb,
-  nearestName,
   hexToStop,
-  luminance,
   parseHex,
   parseHexAlpha,
-  opaqueHex,
   clamp,
   toCssRgb,
   toCssHsl,
@@ -30,6 +27,7 @@ import { useChromaStore } from "@/hooks/use-chroma-store";
 import { useNavigate } from "@tanstack/react-router";
 import ColorWheel from "../color-wheel";
 import { Button } from "@/components/ui/button";
+import { ColorPickerPanel } from "../elements/color-picker.panel";
 
 // EyeDropper is a browser API not yet in lib.dom.d.ts
 interface EyeDropper {
@@ -263,7 +261,7 @@ function RgbSliders({
   onAlpha: (a: number) => void;
 }) {
   return (
-    <div className="w-full max-w-[400px] flex flex-col gap-3.5">
+    <div className="w-full max-w-100 flex flex-col gap-3.5">
       <SliderRow
         label="Red"
         display={String(rgb.r)}
@@ -310,7 +308,7 @@ function HslSliders({
   onAlpha: (a: number) => void;
 }) {
   return (
-    <div className="w-full max-w-[400px] flex flex-col gap-3.5">
+    <div className="w-full max-w-100 flex flex-col gap-3.5">
       <SliderRow
         label="Hue"
         display={`${Math.round(hsl.h)}°`}
@@ -357,7 +355,7 @@ function HsvSliders({
   onAlpha: (a: number) => void;
 }) {
   return (
-    <div className="w-full max-w-[400px] flex flex-col gap-3.5">
+    <div className="w-full max-w-100 flex flex-col gap-3.5">
       <SliderRow
         label="Hue"
         display={`${Math.round(hsv.h)}°`}
@@ -404,7 +402,7 @@ function OklchSliders({
   onAlpha: (a: number) => void;
 }) {
   return (
-    <div className="w-full max-w-[400px] flex flex-col gap-3.5">
+    <div className="w-full max-w-100 flex flex-col gap-3.5">
       <SliderRow
         label="Lightness"
         display={`${Math.round(oklch.L * 100)}%`}
@@ -434,7 +432,7 @@ function OklchSliders({
       />
       <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} />
       <div
-        className="rounded text-[9.5px] text-muted-foreground leading-[1.5] px-2 py-[5px]"
+        className="rounded text-[9.5px] text-muted-foreground leading-normal px-2 py-1.25"
         style={{
           background: "rgba(99,102,241,.08)",
           border: "1px solid rgba(99,102,241,.18)",
@@ -462,7 +460,7 @@ function OklabSliders({
   onAlpha: (a: number) => void;
 }) {
   return (
-    <div className="w-full max-w-[400px] flex flex-col gap-3.5">
+    <div className="w-full max-w-100 flex flex-col gap-3.5">
       <SliderRow
         label="Lightness"
         display={`${Math.round(oklab.L * 100)}%`}
@@ -492,7 +490,7 @@ function OklabSliders({
       />
       {/* <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} /> */}
       <div
-        className="rounded text-[9.5px] text-muted-foreground leading-[1.5] px-2 py-[5px]"
+        className="rounded text-[9.5px] text-muted-foreground leading-normal px-2 py-1.25"
         style={{
           background: "rgba(99,102,241,.08)",
           border: "1px solid rgba(99,102,241,.18)",
@@ -734,7 +732,7 @@ export default function ColorPickerView() {
         <ColorWheel hsl={hsl} size={240} onChange={handleWheelChange} />
 
         {/* Mode tabs */}
-        <div className="flex gap-[3px] mt-2.5 mb-1.5">
+        <div className="flex gap-1 mt-2.5 mb-1.5">
           {MODES.map((m) => (
             <button
               key={m.id}
@@ -812,199 +810,83 @@ export default function ColorPickerView() {
         )}
 
         {/* Preview + hex input */}
-        <div className="flex items-center gap-3 w-full max-w-[400px] mt-3">
-          {/* Checkerboard shows through for alpha */}
-          <div className="relative w-14 h-14 flex-shrink-0">
-            <div
-              className="absolute rounded inset-0"
-              style={{
-                background:
-                  "repeating-conic-gradient(#444 0% 25%,#222 0% 50%) 0 0/10px 10px",
-              }}
-            />
-            <div
-              className="w-14 h-14 rounded border-2 border-input flex-shrink-0 relative"
-              style={{ ...previewStyle }}
-            />
-          </div>
-          <div className="flex-1 flex flex-col gap-1.5">
-            <div className="flex gap-1.5 items-center">
-              <label>HEX</label>
-              <HexInputField hex={displayHex} onCommit={handleHexInput} />
-            </div>
-            {/* CSS output string for current mode */}
-            <div className="flex items-center gap-1 mt-1 bg-muted rounded px-[6px] py-[3px]">
-              <span className="font-mono text-muted-foreground overflow-ellipsis whitespace-nowrap overflow-hidden text-[9px] flex-1">
-                {cssOut}
-              </span>
-              <button
-                onClick={copyCss}
+        <div className="flex flex-col gap-4 w-full max-w-100 mt-3">
+          <div className="flex gap-4 w-full">
+            {/* Checkerboard shows through for alpha */}
+            <div className="relative size-16 shrink-0">
+              <div
+                className="absolute rounded inset-0"
                 style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: 9,
-                  color: copied ? "#4ade80" : "var(--color-muted-foreground)",
-                  padding: "0 2px",
-                  flexShrink: 0,
+                  background:
+                    "repeating-conic-gradient(#444 0% 25%,#222 0% 50%) 0 0/10px 10px",
                 }}
-              >
-                {copied ? "✓" : "copy"}
-              </button>
+              />
+              <div
+                className="size-full rounded border-2 border-input shrink-0 relative"
+                style={{ ...previewStyle }}
+              />
             </div>
-            <div className="flex gap-[5px] mt-[5px]">
-              <Button variant="default" size="sm" onClick={useSeed}>
-                → Seed Palette
-              </Button>
-              <Button variant="ghost" size="sm" onClick={addToPalette}>
-                + Add
-              </Button>
-              {typeof window !== "undefined" && "EyeDropper" in window && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  title="Sample color from screen (EyeDropper API)"
-                  onClick={async () => {
-                    try {
-                      const dropper = new window.EyeDropper!();
-                      const { sRGBHex } = await dropper.open();
-                      const h = parseHex(sRGBHex);
-                      if (h) {
-                        setPickerHex(h);
-                        addRecent(h);
-                      }
-                    } catch {
-                      /* user cancelled */
-                    }
+            <div className="flex-1 flex flex-col gap-1.5">
+              <div className="flex gap-1.5 items-center">
+                <label>HEX</label>
+                <HexInputField hex={displayHex} onCommit={handleHexInput} />
+              </div>
+              {/* CSS output string for current mode */}
+              <div className="flex items-center gap-1 mt-1 bg-muted rounded px-1.5 py-1">
+                <span className="font-mono text-muted-foreground overflow-ellipsis whitespace-nowrap overflow-hidden text-[9px] flex-1">
+                  {cssOut}
+                </span>
+                <button
+                  onClick={copyCss}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: 9,
+                    color: copied ? "#4ade80" : "var(--color-muted-foreground)",
+                    padding: "0 2px",
+                    flexShrink: 0,
                   }}
                 >
-                  ⊕ Pick
-                </Button>
-              )}
+                  {copied ? "✓" : "copy"}
+                </button>
+              </div>
             </div>
+          </div>
+          <div className="flex gap-1.5 items-center justify-end">
+            <Button variant="default" size="sm" onClick={useSeed}>
+              → Seed Palette
+            </Button>
+            <Button variant="ghost" size="sm" onClick={addToPalette}>
+              + Add
+            </Button>
+            {typeof window !== "undefined" && "EyeDropper" in window && (
+              <Button
+                variant="ghost"
+                size="sm"
+                title="Sample color from screen (EyeDropper API)"
+                onClick={async () => {
+                  try {
+                    const dropper = new window.EyeDropper!();
+                    const { sRGBHex } = await dropper.open();
+                    const h = parseHex(sRGBHex);
+                    if (h) {
+                      setPickerHex(h);
+                      addRecent(h);
+                    }
+                  } catch {
+                    /* user cancelled */
+                  }
+                }}
+              >
+                ⊕ Pick
+              </Button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Right panel */}
-      <div className="w-[320px] bg-card border-l border-border flex flex-col overflow-y-auto flex-shrink-0 p-4 gap-3.5">
-        {/* Recent colors */}
-        {recentColors.length > 0 && (
-          <div>
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-              Recent
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {recentColors.map((rh, i) => (
-                <div
-                  key={i}
-                  className="w-[22px] h-[22px] rounded cursor-pointer border border-white/10 transition-transform hover:scale-110"
-                  style={{ background: rh }}
-                  title={rh}
-                  onClick={() => {
-                    const alpha = parseHexAlpha(rh);
-                    setPickerHex(opaqueHex(rh));
-                    if (alpha !== null) setPickerAlpha(alpha);
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Color info — all formats */}
-        <div>
-          <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-            Color Values
-          </div>
-          <div className="text-[11px] text-muted-foreground leading-[2.1]">
-            <InfoRow label="Name" value={nearestName(rgb)} />
-            <InfoRow label="HEX" value={displayHex.toUpperCase()} mono />
-            <InfoRow label="RGB" value={toCssRgb(rgb, pickerAlpha)} mono />
-            <InfoRow label="HSL" value={toCssHsl(hsl, pickerAlpha)} mono />
-            <InfoRow label="HSV" value={toCssHsv(hsv, pickerAlpha)} mono />
-            <InfoRow
-              label="OKLCH"
-              value={toCssOklch(oklch, pickerAlpha)}
-              mono
-            />
-            <InfoRow
-              label="OKLab"
-              value={toCssOklab(oklab, pickerAlpha)}
-              mono
-            />
-            <InfoRow
-              label="CMYK"
-              value={`${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%`}
-            />
-            <InfoRow
-              label="Lum."
-              value={`${(luminance(rgb) * 100).toFixed(1)}%`}
-            />
-          </div>
-        </div>
-
-        {/* Palette quick-pick */}
-        {slots.length > 0 && (
-          <div>
-            <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-              Palette
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {slots.map((slot, i) => (
-                <div
-                  key={i}
-                  className="w-[22px] h-[22px] rounded cursor-pointer border border-white/10 transition-transform hover:scale-110"
-                  style={{ background: slot.color.hex }}
-                  title={slot.color.hex}
-                  onClick={() => setPickerHex(slot.color.hex)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function InfoRow({
-  label,
-  value,
-  mono,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
-  const [copied, setCopied] = React.useState(false);
-  const copy = () => {
-    navigator.clipboard.writeText(value).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1000);
-  };
-  return (
-    <div className="justify-between items-center flex gap-1.5">
-      <span className="text-muted-foreground flex-shrink-0 min-w-[38px]">
-        {label}
-      </span>
-      <span
-        style={{
-          fontFamily: mono ? "var(--font-mono)" : undefined,
-          fontSize: mono ? 9.5 : undefined,
-          color: "var(--color-foreground)",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          flex: 1,
-          textAlign: "right",
-          cursor: "pointer",
-        }}
-        title={`Click to copy: ${value}`}
-        onClick={copy}
-      >
-        {copied ? "✓ copied" : value}
-      </span>
+      <ColorPickerPanel />
     </div>
   );
 }

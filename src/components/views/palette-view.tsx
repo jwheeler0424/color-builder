@@ -1,20 +1,12 @@
-import React, { useState, useCallback, useRef, useMemo } from "react";
-import type { PaletteSlot } from "@/types";
+import React, { useState, useCallback, useRef, useMemo, useId } from "react";
 import {
-  cn,
-  textColor,
-  hexToRgb,
-  parseHex,
-  rgbToHsl,
-  nearestName,
-  hexToStop,
-} from "@/lib/utils";
-import { HARMONIES, THEMES } from "@/lib/constants/chroma";
-import { useChromaStore } from "@/hooks/use-chroma-store";
-import { useRegisterHotkey } from "@/providers/hotkey.provider";
-
-// dnd-kit — replace vendor paths with '@dnd-kit/core', '@dnd-kit/sortable',
-// '@dnd-kit/utilities' once the packages are installed.
+  GripVertical,
+  Lock,
+  LockOpen,
+  Pencil,
+  Copy,
+  Check,
+} from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -34,8 +26,10 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { Button } from "@/components/ui/button";
-import ColorPickerModal from "@/components/modals/color-picker.modal";
+import { useChromaStore } from "@/hooks/use-chroma-store";
+import { cn, textColor, hexToRgb, rgbToHsl, nearestName } from "@/lib/utils";
+import type { PaletteSlot } from "@/types/chroma";
+import { PalettePanel } from "../elements";
 
 // ─── Sortable Slot ─────────────────────────────────────────────────────────────
 
@@ -43,7 +37,7 @@ interface SortableSlotProps {
   slot: PaletteSlot;
   index: number;
   onEdit: (i: number) => void;
-  overlay?: boolean; // true when rendered inside DragOverlay
+  overlay?: boolean;
 }
 
 function SortableSlot({
@@ -69,7 +63,7 @@ function SortableSlot({
   });
 
   const { toggleLock, renameSlot } = useChromaStore();
-  const [toastVisible, setToastVisible] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -85,22 +79,26 @@ function SortableSlot({
       ? `rgba(${rgb.r},${rgb.g},${rgb.b},${(slot.color.a / 100).toFixed(2)})`
       : slot.color.hex;
 
+  // Approximate contrast ratio for display
+  const relLuminance = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
+  const contrastVsWhite =
+    relLuminance > 0.5
+      ? (relLuminance + 0.05) / 0.05
+      : 1.05 / (relLuminance + 0.05);
+
   const style: React.CSSProperties = {
     background: bg,
     transform: CSS.Transform.toString(transform ?? null),
-    transition: isSorting ? transition : undefined,
-    // Ghost out the item in its original position while it's being dragged
+    transition: isSorting && !overlay ? transition : undefined,
     opacity: isDragging && !overlay ? 0.35 : 1,
-    // While sorting, disable pointer events on non-dragged items so
-    // onPointerEnter collision works correctly
     zIndex: isDragging ? 10 : undefined,
   };
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(slot.color.hex).catch(() => {});
-    setToastVisible(true);
-    setTimeout(() => setToastVisible(false), 1100);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1400);
   };
 
   const startNameEdit = (e: React.MouseEvent) => {
@@ -111,89 +109,70 @@ function SortableSlot({
   };
 
   const commitName = () => {
-    const trimmed = nameInput.trim();
-    renameSlot(index, trimmed || undefined);
+    renameSlot(index, nameInput.trim() || undefined);
     setEditingName(false);
   };
+
+  const iconBtn = cn(
+    "w-7 h-7 rounded flex items-center justify-center transition-all",
+    "bg-black/40 backdrop-blur-sm border border-white/10",
+    "hover:bg-black/65 hover:scale-105",
+  );
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "slot-item flex flex-col justify-end p-3 relative group select-none flex-1",
+        "slot-item relative flex flex-col select-none grow h-full",
         isOver && !isDragging && "ring-2 ring-inset ring-white/60",
-        overlay && "shadow-2xl cursor-grabbing",
-        !overlay && "cursor-grab",
+        overlay && "shadow-2xl",
       )}
       onDoubleClick={() => !editingName && onEdit(index)}
       {...attributes}
     >
-      {/* Drag handle — separate activator node so buttons inside still work */}
-      <div
-        ref={setActivatorNodeRef}
-        className="absolute inset-0 touch-none"
-        {...listeners}
-      />
-
-      {/* Copied toast */}
-      {toastVisible && (
-        <div
-          className="toast-anim absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-            bg-black/90 text-white text-[11px] px-3 py-1 rounded pointer-events-none
-            whitespace-nowrap z-20"
-        >
-          Copied!
-        </div>
-      )}
-
-      {/* Action buttons — z-10 so they sit above the drag handle */}
-      <div className="slot-acts absolute top-2.5 right-2 flex flex-col gap-1 opacity-0 transition-opacity duration-100 z-10">
+      {/* ── Top bar: drag handle + lock ── */}
+      <div className="flex items-start justify-between p-2 gap-1">
+        {/* Explicit drag handle button */}
         <button
-          className="w-[26px] h-[26px] rounded border-none bg-black/45 backdrop-blur
-            flex items-center justify-center text-[12px] cursor-pointer
-            transition-all hover:bg-black/70 hover:scale-105"
-          style={{ color: slot.locked ? "var(--color-primary)" : tc }}
+          ref={setActivatorNodeRef}
+          className={cn(
+            iconBtn,
+            "cursor-grab active:cursor-grabbing touch-none",
+            overlay && "cursor-grabbing",
+          )}
+          style={{ color: tc }}
+          title="Drag to reorder"
+          {...listeners}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical size={14} />
+        </button>
+
+        {/* Lock */}
+        <button
+          className={iconBtn}
+          style={{ color: slot.locked ? "var(--color-primary, #6366f1)" : tc }}
           onClick={(e) => {
             e.stopPropagation();
             toggleLock(index);
           }}
-          title={slot.locked ? "Unlock" : "Lock"}
+          title={slot.locked ? "Unlock slot" : "Lock slot"}
         >
-          {slot.locked ? "🔒" : "🔓"}
-        </button>
-        <button
-          className="w-[26px] h-[26px] rounded border-none bg-black/45 backdrop-blur
-            flex items-center justify-center text-[12px] cursor-pointer
-            transition-all hover:bg-black/70 hover:scale-105"
-          style={{ color: tc }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit(index);
-          }}
-          title="Edit color"
-        >
-          ✏️
-        </button>
-        <button
-          className="w-[26px] h-[26px] rounded border-none bg-black/45 backdrop-blur
-            flex items-center justify-center text-[12px] cursor-pointer
-            transition-all hover:bg-black/70 hover:scale-105"
-          style={{ color: tc }}
-          onClick={handleCopy}
-          title="Copy hex"
-        >
-          📋
+          {slot.locked ? <Lock size={13} /> : <LockOpen size={13} />}
         </button>
       </div>
 
-      {/* Color info — z-10, pointer-events-auto to override the drag handle */}
-      <div className="relative z-10 flex flex-col gap-0.5 pointer-events-none">
+      <div className="grow" />
+
+      {/* ── Bottom info ── */}
+      <div className="flex flex-col shrink-0 gap-1 p-2.5 pt-0">
+        {/* Token name */}
         {editingName ? (
           <input
             ref={nameInputRef}
-            className="font-display text-[10px] font-semibold bg-black/30 border
-              border-white/30 rounded px-1 text-white outline-none w-full pointer-events-auto"
+            className="font-mono text-[10px] font-semibold bg-black/35 border border-white/30
+              rounded px-1.5 py-0.5 text-white outline-none w-full"
             value={nameInput}
             onChange={(e) => setNameInput(e.target.value)}
             onBlur={commitName}
@@ -206,137 +185,109 @@ function SortableSlot({
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <div
-            className="font-display text-[10px] font-semibold opacity-70
-              cursor-text hover:opacity-100 transition-opacity pointer-events-auto"
+          <button
+            className="text-left font-mono text-[10px] font-semibold opacity-60
+              hover:opacity-100 transition-opacity leading-none"
             style={{ color: tc }}
             title="Click to rename token"
             onClick={startNameEdit}
           >
             {displayName}
-            {slot.name && <span className="ml-1 opacity-40">✎</span>}
-          </div>
+            {slot.name && (
+              <Pencil size={9} className="inline ml-1 opacity-50" />
+            )}
+          </button>
         )}
 
-        <div
-          className="font-mono text-[12px] font-bold tracking-[.06em] uppercase
-            cursor-pointer pointer-events-auto"
+        {/* Hex */}
+        <button
+          className="text-left font-mono text-[13px] font-bold tracking-widest uppercase
+            leading-none hover:opacity-80 transition-opacity"
           style={{ color: tc }}
           onClick={handleCopy}
+          title="Copy hex"
         >
           {slot.color.hex.toUpperCase()}
-        </div>
+        </button>
 
-        <div className="text-[10px] opacity-55" style={{ color: tc }}>
+        {/* HSL */}
+        <div
+          className="font-mono text-[10px] opacity-55 leading-none"
+          style={{ color: tc }}
+        >
           {Math.round(hsl.h)}° {Math.round(hsl.s)}% {Math.round(hsl.l)}%
           {slot.color.a !== undefined && slot.color.a < 100 && (
-            <> · {slot.color.a}%</>
+            <span className="ml-1">· {slot.color.a}%</span>
           )}
         </div>
+
+        {/* Bottom row: contrast + edit + copy */}
+        <div className="flex items-center justify-between mt-0.5 gap-1">
+          <span
+            className="font-mono text-[9px] opacity-45 leading-none"
+            style={{ color: tc }}
+          >
+            {contrastVsWhite.toFixed(1)}:1
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              className={cn(iconBtn, "w-6 h-6")}
+              style={{ color: tc }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(index);
+              }}
+              title="Edit color"
+            >
+              <Pencil size={11} />
+            </button>
+            <button
+              className={cn(iconBtn, "w-6 h-6")}
+              style={{ color: tc }}
+              onClick={handleCopy}
+              title="Copy hex"
+            >
+              {copied ? <Check size={11} /> : <Copy size={11} />}
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* Copied toast */}
+      {copied && (
+        <div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          aria-live="polite"
+        >
+          <span className="bg-black/80 text-white text-[11px] font-mono px-3 py-1.5 rounded-full backdrop-blur-sm">
+            Copied!
+          </span>
+        </div>
+      )}
     </div>
   );
-}
-
-// ─── Section helpers ──────────────────────────────────────────────────────────
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="text-[10px] tracking-[.1em] uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-      {children}
-    </div>
-  );
-}
-
-function Section({ children }: { children: React.ReactNode }) {
-  return <div className="px-4 py-3.5 border-b border-border">{children}</div>;
 }
 
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 export default function PaletteView() {
-  const {
-    slots,
-    seeds,
-    count,
-    mode,
-    seedMode,
-    temperature,
-    generate,
-    undo,
-    setMode,
-    setCount,
-    addSeed,
-    removeSeed,
-    setSeeds,
-    editSlotColor,
-    setSeedMode,
-    setTemperature,
-    reorderSlots,
-    openModal,
-  } = useChromaStore();
+  const { slots, reorderSlots } = useChromaStore();
 
-  const [seedInp, setSeedInp] = useState("");
-  const [seedErr, setSeedErr] = useState(false);
   const [editingSlot, setEditingSlot] = useState<number | null>(null);
-  const [editingSeed, setEditingSeed] = useState<number | null>(null);
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
 
-  // ── dnd-kit sensors ────────────────────────────────────────────────────────
+  // Stable ID for DndContext — prevents SSR/client aria-describedby mismatch
+  const dndId = useId();
+
+  // ── Sensors ────────────────────────────────────────────────────────────────
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      // Require a 5px move before drag activates so clicks still work
-      activationConstraint: { distance: 5 },
-    }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
 
-  // ── Generate debounce ──────────────────────────────────────────────────────
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const debouncedGenerate = useCallback(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => generate(), 180);
-  }, [generate]);
-
-  // ── Hotkeys ────────────────────────────────────────────────────────────────
-  useRegisterHotkey({
-    key: "space",
-    label: "Generate palette",
-    group: "Palette",
-    handler: generate,
-  });
-  useRegisterHotkey({
-    key: "z",
-    ctrl: true,
-    label: "Undo last generate",
-    group: "Palette",
-    handler: undo,
-  });
-  useRegisterHotkey({
-    key: "?",
-    label: "Keyboard shortcuts",
-    group: "App",
-    handler: () => openModal("shortcuts"),
-  });
-  useRegisterHotkey({
-    key: "e",
-    ctrl: true,
-    label: "Open export",
-    group: "App",
-    handler: () => openModal("export"),
-  });
-  useRegisterHotkey({
-    key: "s",
-    ctrl: true,
-    shift: true,
-    label: "Save palette",
-    group: "Palette",
-    handler: () => openModal("save"),
-  });
-
-  // ── Drag handlers ────────────────────────────────────────────────────────
+  // ── Drag handlers ──────────────────────────────────────────────────────────
   const handleDragStart = useCallback(({ active }: DragStartEvent) => {
     setActiveSlotId(String(active.id));
   }, []);
@@ -347,42 +298,24 @@ export default function PaletteView() {
       if (!over || active.id === over.id) return;
       const oldIndex = slots.findIndex((s) => s.id === active.id);
       const newIndex = slots.findIndex((s) => s.id === over.id);
-      if (oldIndex !== -1 && newIndex !== -1) {
-        reorderSlots(oldIndex, newIndex);
-      }
+      if (oldIndex !== -1 && newIndex !== -1) reorderSlots(oldIndex, newIndex);
     },
     [slots, reorderSlots],
   );
 
-  const handleDragCancel = useCallback(() => {
-    setActiveSlotId(null);
-  }, []);
+  const handleDragCancel = useCallback(() => setActiveSlotId(null), []);
 
-  // ── Slot IDs for SortableContext ────────────────────────────────────────────
   const slotIds = useMemo(() => slots.map((s) => s.id), [slots]);
-
-  // The slot being dragged (for DragOverlay rendering)
   const activeSlot = activeSlotId
-    ? slots.find((s) => s.id === activeSlotId)
+    ? (slots.find((s) => s.id === activeSlotId) ?? null)
     : null;
   const activeSlotIndex = activeSlot ? slots.indexOf(activeSlot) : -1;
 
-  // ── Seed input ─────────────────────────────────────────────────────────────
-  const handleAddSeed = useCallback(() => {
-    const hex = parseHex(seedInp);
-    if (!hex) {
-      setSeedErr(true);
-      setTimeout(() => setSeedErr(false), 600);
-      return;
-    }
-    addSeed(hexToStop(hex));
-    setSeedInp("");
-  }, [seedInp, addSeed]);
-
   return (
-    <div className="flex flex-1 overflow-hidden">
+    <div className="flex h-full w-full grow">
       {/* ── Sortable color strip ── */}
       <DndContext
+        id={dndId}
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
@@ -393,7 +326,7 @@ export default function PaletteView() {
           items={slotIds}
           strategy={horizontalListSortingStrategy}
         >
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex h-full w-full grow">
             {slots.map((slot, i) => (
               <SortableSlot
                 key={slot.id}
@@ -405,294 +338,24 @@ export default function PaletteView() {
           </div>
         </SortableContext>
 
-        {/* DragOverlay renders a floating clone of the dragged slot */}
         <DragOverlay
           dropAnimation={{
             duration: 180,
             easing: "cubic-bezier(0.25, 1, 0.5, 1)",
           }}
         >
-          {activeSlot && (
+          {activeSlot ? (
             <SortableSlot
               slot={activeSlot}
               index={activeSlotIndex}
               onEdit={() => {}}
               overlay
             />
-          )}
+          ) : null}
         </DragOverlay>
       </DndContext>
 
-      {/* ── Slot color picker modal ── */}
-      {editingSlot !== null && slots[editingSlot] && (
-        <ColorPickerModal
-          initialHex={slots[editingSlot].color.hex}
-          title={`Slot ${editingSlot + 1} — ${
-            slots[editingSlot].name ||
-            nearestName(hexToRgb(slots[editingSlot].color.hex))
-          }`}
-          onApply={(hex) => {
-            editSlotColor(editingSlot, hexToStop(hex));
-            setEditingSlot(null);
-          }}
-          onClose={() => setEditingSlot(null)}
-        />
-      )}
-
-      {/* ── Seed color picker modal ── */}
-      {editingSeed !== null && seeds[editingSeed] && (
-        <ColorPickerModal
-          initialHex={seeds[editingSeed].hex}
-          title={`Seed ${editingSeed + 1} — ${nearestName(hexToRgb(seeds[editingSeed].hex))}`}
-          onApply={(hex) => {
-            setSeeds(
-              seeds.map((s, i) => (i === editingSeed ? hexToStop(hex) : s)),
-            );
-            setEditingSeed(null);
-          }}
-          onClose={() => setEditingSeed(null)}
-        />
-      )}
-
-      {/* ── Sidebar ── */}
-      <aside className="w-[320px] bg-card border-l border-border flex flex-col overflow-hidden flex-shrink-0">
-        <div className="flex-1 overflow-y-auto [scrollbar-width:thin]">
-          {/* Count */}
-          <Section>
-            <SectionLabel>Colors</SectionLabel>
-            <div className="flex items-center gap-2.5">
-              <div className="font-display text-[22px] font-black text-primary min-w-[26px] text-center">
-                {count}
-              </div>
-              <input
-                type="range"
-                min={4}
-                max={12}
-                value={count}
-                onChange={(e) => {
-                  setCount(+e.target.value);
-                  debouncedGenerate();
-                }}
-                className="flex-1"
-              />
-              <span className="text-[10px] text-muted-foreground">12</span>
-            </div>
-          </Section>
-
-          {/* Themes */}
-          <Section>
-            <SectionLabel>Themes</SectionLabel>
-            <div className="grid grid-cols-2 gap-1.5">
-              {THEMES.map((t, i) => (
-                <div
-                  key={i}
-                  className="rounded overflow-hidden cursor-pointer border border-border hover:border-input transition-colors"
-                  title={t.name}
-                  onClick={() => {
-                    setMode(t.mode);
-                    setSeeds(t.seeds.map((h) => hexToStop(h.toLowerCase())));
-                    generate();
-                  }}
-                >
-                  <div className="h-8 flex">
-                    {t.seeds.slice(0, 5).map((h, j) => (
-                      <div
-                        key={j}
-                        className="flex-1"
-                        style={{ background: h }}
-                      />
-                    ))}
-                  </div>
-                  <div className="px-2 py-1.5 bg-secondary font-display text-[11px] font-semibold text-secondary-foreground">
-                    {t.name}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Section>
-
-          {/* Seed Colors */}
-          <Section>
-            <SectionLabel>Seed Colors</SectionLabel>
-            <div className="flex flex-col gap-1 mb-2">
-              {seeds.map((s, i) => (
-                <div key={i} className="flex items-center gap-1.5">
-                  <div
-                    className="w-[18px] h-[18px] rounded-sm border border-white/10 flex-shrink-0 cursor-pointer"
-                    style={{ background: s.hex }}
-                    onClick={() => setEditingSeed(i)}
-                  />
-                  <span
-                    className="flex-1 text-[10px] tracking-[.05em] uppercase text-secondary-foreground cursor-pointer hover:text-foreground transition-colors"
-                    onClick={() => setEditingSeed(i)}
-                  >
-                    {s.hex.toUpperCase()}
-                  </span>
-                  <button
-                    className="bg-transparent border-none text-muted-foreground hover:text-destructive text-sm leading-none cursor-pointer transition-colors"
-                    onClick={() => removeSeed(i)}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-1.5">
-              <input
-                className={cn(
-                  "flex-1 bg-muted border rounded px-2 py-1.5 text-[11px] text-foreground font-mono",
-                  "outline-none focus:border-ring transition-colors placeholder:text-muted-foreground",
-                  seedErr ? "border-destructive" : "border-border",
-                )}
-                value={seedInp}
-                onChange={(e) => setSeedInp(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddSeed()}
-                placeholder="#F4A261"
-                maxLength={7}
-                spellCheck={false}
-                autoComplete="off"
-              />
-              <Button variant="ghost" size="sm" onClick={handleAddSeed}>
-                + Add
-              </Button>
-            </div>
-          </Section>
-
-          {/* Seed Behavior */}
-          <Section>
-            <SectionLabel>Seed Behavior</SectionLabel>
-            <div className="flex gap-1 mb-2">
-              {(
-                [
-                  {
-                    id: "influence",
-                    label: "Influence",
-                    title:
-                      "Seed hue guides generation — exact color not forced",
-                  },
-                  {
-                    id: "pin",
-                    label: "Pin",
-                    title: "Seed color appears verbatim as a locked slot",
-                  },
-                ] as const
-              ).map(({ id, label, title }) => (
-                <Button
-                  key={id}
-                  variant={seedMode === id ? "default" : "ghost"}
-                  size="sm"
-                  title={title}
-                  onClick={() => setSeedMode(id)}
-                >
-                  {label}
-                </Button>
-              ))}
-            </div>
-            <p className="text-[9.5px] text-muted-foreground leading-relaxed">
-              {seedMode === "pin"
-                ? "Seed colors appear exactly in the palette as locked slots."
-                : "Seed hue guides generation but the exact color may shift."}
-            </p>
-          </Section>
-
-          {/* Temperature */}
-          <Section>
-            <SectionLabel>
-              Temperature{" "}
-              <span className="font-normal text-muted-foreground">
-                {temperature < -0.2
-                  ? "❄ Cool"
-                  : temperature > 0.2
-                    ? "🌅 Warm"
-                    : "⚪ Neutral"}
-              </span>
-            </SectionLabel>
-            <div className="flex items-center gap-2">
-              <span className="text-[9px] text-muted-foreground">❄</span>
-              <input
-                type="range"
-                min={-100}
-                max={100}
-                value={Math.round(temperature * 100)}
-                onChange={(e) => {
-                  setTemperature(+e.target.value / 100);
-                  debouncedGenerate();
-                }}
-                className="flex-1"
-              />
-              <span className="text-[9px] text-muted-foreground">🌅</span>
-            </div>
-          </Section>
-
-          {/* Harmony */}
-          <Section>
-            <SectionLabel>Harmony</SectionLabel>
-            <p className="text-[11px] text-muted-foreground mb-2 leading-relaxed min-h-[2.4em]">
-              {HARMONIES.find((h) => h.id === mode)?.desc || ""}
-            </p>
-            <div className="grid grid-cols-2 gap-1">
-              {HARMONIES.map((h) => (
-                <button
-                  key={h.id}
-                  onClick={() => {
-                    setMode(h.id);
-                    generate();
-                  }}
-                  className={cn(
-                    "px-2 py-1.5 rounded border text-[11px] font-mono cursor-pointer text-left transition-all",
-                    mode === h.id
-                      ? "bg-primary border-primary text-primary-foreground font-bold"
-                      : "bg-secondary border-border text-muted-foreground hover:border-input hover:text-foreground",
-                  )}
-                >
-                  {h.label}
-                </button>
-              ))}
-            </div>
-          </Section>
-
-          {/* Token Names tip */}
-          <Section>
-            <SectionLabel>Token Names</SectionLabel>
-            <p className="text-[9.5px] text-muted-foreground leading-relaxed">
-              Click any color name in the strip to rename it as a design token.
-              Drag slots to reorder — arrow keys work too when a slot is
-              focused.
-            </p>
-          </Section>
-
-          {/* Preview strip */}
-          {slots.length > 0 && (
-            <Section>
-              <SectionLabel>Preview</SectionLabel>
-              <div className="flex h-[22px] rounded overflow-hidden gap-0.5 mt-2">
-                {slots.map((s) => (
-                  <div
-                    key={s.id}
-                    className="flex-1"
-                    style={{ background: s.color.hex }}
-                  />
-                ))}
-              </div>
-            </Section>
-          )}
-        </div>
-
-        {/* Generate bar */}
-        <div className="px-4 py-3 border-t border-border bg-card flex-shrink-0">
-          <Button
-            variant="default"
-            className="w-full py-2.5 text-[12px]"
-            onClick={generate}
-          >
-            ⟳ Generate
-          </Button>
-          <p className="text-[10px] text-muted-foreground text-center mt-1.5">
-            <kbd>Space</kbd> generate · <kbd>Ctrl+Z</kbd> undo · <kbd>?</kbd>{" "}
-            shortcuts
-          </p>
-        </div>
-      </aside>
+      <PalettePanel />
     </div>
   );
 }
