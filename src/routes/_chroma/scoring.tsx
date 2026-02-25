@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import PaletteScoring from "@/components/views/palette-scoring";
-
-export const Route = createFileRoute("/_chroma/scoring")({
-  component: PaletteScoring,
-});
+import { createFileRoute, redirect } from '@tanstack/react-router'
+// Legacy redirect: /scoring → /analyze/scoring
+export const Route = createFileRoute('/_chroma/scoring')({
+  beforeLoad: () => { throw redirect({ to: '/analyze/scoring', replace: true }) },
+})

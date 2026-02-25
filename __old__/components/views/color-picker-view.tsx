@@ -727,7 +727,7 @@ export default function ColorPickerView() {
   };
 
   return (
-    <div className="flex flex-1 overflow-hidden">
+    <div className="flex flex-col flex-1 overflow-hidden">
       <div className="flex-1 flex flex-col items-center justify-center gap-5 p-6 overflow-auto">
         {/* Color wheel — always visible, speaks HSL */}
         <ColorWheel hsl={hsl} size={240} onChange={handleWheelChange} />

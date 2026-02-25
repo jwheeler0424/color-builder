@@ -99,13 +99,13 @@ export default function SavedView() {
                 ))}
               </div>
               <div style={{ padding: "10px 12px" }}>
-                <div className="font-display text-[13px] font-bold mb-0.5">
+                <div className="font-display text-sm font-bold mb-0.5">
                   {p.name || "Unnamed"}
                 </div>
                 <div className="text-muted-foreground uppercase tracking-[.06em] mb-2 text-[10px]">
                   {p.mode} · {p.hexes.length} colors
                 </div>
-                <div className="flex gap-[5px]">
+                <div className="flex gap-1.5">
                   <Button
                     variant="ghost"
                     size="sm"

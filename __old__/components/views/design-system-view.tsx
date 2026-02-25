@@ -329,7 +329,7 @@ function ComponentPreview({
                 <div className="p-2">
                   <div className="mb-1 font-bold text-[10px]">{title}</div>
                   <div
-                    className="rounded mb-[5px] h-1"
+                    className="rounded mb-1.5 h-1"
                     style={{ background: muted }}
                   >
                     <div
@@ -461,7 +461,7 @@ function ComponentPreview({
             >
               ⚠ API limit reached
             </div>
-            <div className="mb-[5px] text-[9px]">Upgrade to continue.</div>
+            <div className="mb-1.5 text-[9px]">Upgrade to continue.</div>
             <button
               className="w-full text-[9px] text-center"
               style={{ ...BtnDes }}
@@ -620,7 +620,7 @@ function UtilityTokenRow({
       <span className="capitalize text-secondary-foreground font-semibold text-[10px] flex-1">
         {role}
       </span>
-      <div className="items-center flex gap-[5px]">
+      <div className="items-center flex gap-1.5">
         {[
           { label: mode, hex: color },
           { label: "subtle", hex: subtle },
@@ -629,7 +629,7 @@ function UtilityTokenRow({
           <div
             key={label}
             title={`${label}: ${hex}`}
-            className="items-center flex gap-[3px]"
+            className="items-center flex gap-1"
           >
             <div
               className="rounded w-[14px] h-[14px]"
@@ -865,7 +865,7 @@ function ExportPanel({
   return (
     <div>
       <div className="justify-between items-center flex-wrap mb-2.5 flex gap-1.5">
-        <div className="flex-wrap flex gap-[3px]">
+        <div className="flex-wrap flex gap-1">
           {TABS.map((t) => (
             <Button
               key={t.id}
@@ -1044,7 +1044,7 @@ export default function DesignSystemView() {
         </div>
 
         {/* Panel nav */}
-        <div className="flex flex-wrap border-b border-muted gap-[3px] mb-[18px] pb-2.5">
+        <div className="flex flex-wrap border-b border-muted gap-1 mb-[18px] pb-2.5">
           {PANELS.map((p) => (
             <Button
               key={p.id}

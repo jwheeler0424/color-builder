@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import type { RGB, HSL, HSV, OKLCH } from "@/types";
 import {
   hexToRgb,
@@ -10,25 +10,35 @@ import {
   rgbToOklab,
   rgbToOklch,
   oklchToRgb,
-  oklabToLch,
   oklabToRgb,
-  hexToStop,
+  luminance,
   parseHex,
   parseHexAlpha,
-  clamp,
+  opaqueHex,
   toCssRgb,
   toCssHsl,
   toCssHsv,
   toCssOklch,
   toCssOklab,
   toHexAlpha,
+  nearestName,
+  hexToStop,
+  hsvToRgb,
+  cmykToRgb,
+  cssString,
 } from "@/lib/utils";
 import { useChromaStore } from "@/hooks/use-chroma-store";
 import { useNavigate } from "@tanstack/react-router";
-import ColorWheel from "../color-wheel";
+import ColorWheel from "../common/color-wheel";
 import { Button } from "@/components/ui/button";
-import { ColorPickerPanel } from "../elements/color-picker.panel";
-import { ColorSlider } from "../ui/slider-color";
+import { RgbSliders } from "../common/sliders/rgb-sliders";
+import { HslSliders } from "../common/sliders/hsl-sliders";
+import { HsvSliders } from "../common/sliders/hsv-sliders";
+import { OklchSliders } from "../common/sliders/oklch-sliders";
+import { OklabSliders } from "../common/sliders/oklab-sliders";
+import { CmykSliders } from "../common/sliders/cmyk-sliders";
+import HexInput from "../common/hex-input";
+import { PanelSection, PanelSectionLabel } from "../layout/panel";
 
 // EyeDropper is a browser API not yet in lib.dom.d.ts
 interface EyeDropper {
@@ -64,560 +74,6 @@ const MODES: { id: PickerMode; label: string; desc: string }[] = [
   },
 ];
 
-// ─── Slider track helpers ─────────────────────────────────────────────────────
-
-/** Build a CSS gradient by sampling `steps+1` points along a single channel sweep */
-function channelGrad(steps: number, fn: (t: number) => string): string {
-  const stops = Array.from({ length: steps + 1 }, (_, i) => fn(i / steps));
-  return `linear-gradient(to right, ${stops.join(", ")})`;
-}
-
-function rgbChannelGrad(channel: "r" | "g" | "b", rgb: RGB) {
-  return channelGrad(6, (t) => {
-    const v = Math.round(t * 255);
-    const c =
-      channel === "r"
-        ? { ...rgb, r: v }
-        : channel === "g"
-          ? { ...rgb, g: v }
-          : { ...rgb, b: v };
-    return rgbToHex(c);
-  });
-}
-
-function hslChannelGrad(channel: "h" | "s" | "l", hsl: HSL) {
-  return channelGrad(8, (t) => {
-    const c: HSL =
-      channel === "h"
-        ? { ...hsl, h: t * 360 }
-        : channel === "s"
-          ? { ...hsl, s: t * 100 }
-          : { ...hsl, l: t * 100 };
-    return rgbToHex(hslToRgb(c));
-  });
-}
-
-function hsvChannelGrad(channel: "h" | "s" | "v", hsv: HSV) {
-  return channelGrad(8, (t) => {
-    const ch =
-      channel === "h"
-        ? { ...hsv, h: t * 360 }
-        : channel === "s"
-          ? { ...hsv, s: t * 100 }
-          : { ...hsv, v: t * 100 };
-    // Convert HSV -> RGB inline
-    const { h, s: sv, v: vv } = ch;
-    const sn = sv / 100,
-      vn = vv / 100;
-    const c = vn * sn,
-      x = c * (1 - Math.abs(((h / 60) % 2) - 1)),
-      m = vn - c;
-    let r = 0,
-      g = 0,
-      b = 0;
-    const seg = Math.floor(h / 60) % 6;
-    if (seg === 0) {
-      r = c;
-      g = x;
-    } else if (seg === 1) {
-      r = x;
-      g = c;
-    } else if (seg === 2) {
-      g = c;
-      b = x;
-    } else if (seg === 3) {
-      g = x;
-      b = c;
-    } else if (seg === 4) {
-      r = x;
-      b = c;
-    } else {
-      r = c;
-      b = x;
-    }
-    return rgbToHex({
-      r: Math.round((r + m) * 255),
-      g: Math.round((g + m) * 255),
-      b: Math.round((b + m) * 255),
-    });
-  });
-}
-
-function oklchChannelGrad(channel: "L" | "C" | "H", oklch: OKLCH) {
-  return channelGrad(8, (t) => {
-    const c: OKLCH =
-      channel === "L"
-        ? { ...oklch, L: t }
-        : channel === "C"
-          ? { ...oklch, C: t * 0.4 }
-          : { ...oklch, H: t * 360 };
-    return rgbToHex(oklchToRgb(c));
-  });
-}
-
-function oklabChannelGrad(
-  channel: "L" | "a" | "b",
-  oklab: { L: number; a: number; b: number },
-) {
-  return channelGrad(8, (t) => {
-    const c =
-      channel === "L"
-        ? { ...oklab, L: t }
-        : channel === "a"
-          ? { ...oklab, a: (t - 0.5) * 0.8 }
-          : { ...oklab, b: (t - 0.5) * 0.8 };
-    return rgbToHex(oklabToRgb(c));
-  });
-}
-
-function alphaGrad(hex: string) {
-  return `linear-gradient(to right, transparent, ${hex})`;
-}
-
-// ─── Shared slider row ────────────────────────────────────────────────────────
-export function SliderRow({
-  label,
-  value,
-  display,
-  min,
-  max,
-  step = 1,
-  trackBg,
-  onChange,
-  isAlpha = false,
-}: {
-  label: string;
-  value: number;
-  display: string;
-  min: number;
-  max: number;
-  step?: number;
-  trackBg: string;
-  onChange: (v: number) => void;
-  isAlpha?: boolean;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex justify-between items-center text-[11px] font-medium px-0.5">
-        <span className="text-muted-foreground uppercase tracking-tight">
-          {label}
-        </span>
-        <span className="font-mono text-foreground tabular-nums bg-secondary/30 px-1.5 py-0.5 rounded leading-none">
-          {display}
-        </span>
-      </div>
-      <ColorSlider
-        // Use a key based on label to reset internal state if we switch modes (RGB -> HSL)
-        key={label}
-        value={value}
-        onValueChange={onChange}
-        min={min}
-        max={max}
-        step={step}
-        trackBg={trackBg}
-        isAlpha={isAlpha}
-      />
-    </div>
-  );
-}
-
-// ─── Alpha slider (shared across all modes) ───────────────────────────────────
-
-function AlphaSlider({
-  alpha,
-  hex,
-  onChange,
-}: {
-  alpha: number;
-  hex: string;
-  onChange: (a: number) => void;
-}) {
-  return (
-    <SliderRow
-      label="Alpha"
-      display={`${alpha}%`}
-      value={alpha}
-      min={0}
-      max={100}
-      trackBg={alphaGrad(hex)}
-      onChange={onChange}
-      isAlpha
-    />
-  );
-}
-
-// ─── Mode slider sets ─────────────────────────────────────────────────────────
-
-function RgbSliders({
-  rgb,
-  alpha,
-  hex,
-  onRgb,
-  onAlpha,
-}: {
-  rgb: RGB;
-  alpha: number;
-  hex: string;
-  onRgb: (rgb: RGB) => void;
-  onAlpha: (a: number) => void;
-}) {
-  return (
-    <div className="w-full max-w-100 flex flex-col gap-3.5">
-      <SliderRow
-        label="Red"
-        display={String(rgb.r)}
-        value={rgb.r}
-        min={0}
-        max={255}
-        trackBg={rgbChannelGrad("r", rgb)}
-        onChange={(v) => onRgb({ ...rgb, r: v })}
-      />
-      <SliderRow
-        label="Green"
-        display={String(rgb.g)}
-        value={rgb.g}
-        min={0}
-        max={255}
-        trackBg={rgbChannelGrad("g", rgb)}
-        onChange={(v) => onRgb({ ...rgb, g: v })}
-      />
-      <SliderRow
-        label="Blue"
-        display={String(rgb.b)}
-        value={rgb.b}
-        min={0}
-        max={255}
-        trackBg={rgbChannelGrad("b", rgb)}
-        onChange={(v) => onRgb({ ...rgb, b: v })}
-      />
-      {/* <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} /> */}
-    </div>
-  );
-}
-
-function HslSliders({
-  hsl,
-  alpha,
-  hex,
-  onHsl,
-  onAlpha,
-}: {
-  hsl: HSL;
-  alpha: number;
-  hex: string;
-  onHsl: (hsl: HSL) => void;
-  onAlpha: (a: number) => void;
-}) {
-  return (
-    <div className="w-full max-w-100 flex flex-col gap-3.5">
-      <SliderRow
-        label="Hue"
-        display={`${Math.round(hsl.h)}°`}
-        value={Math.round(hsl.h)}
-        min={0}
-        max={359}
-        trackBg={hslChannelGrad("h", hsl)}
-        onChange={(v) => onHsl({ ...hsl, h: v })}
-      />
-      <SliderRow
-        label="Saturation"
-        display={`${Math.round(hsl.s)}%`}
-        value={Math.round(hsl.s)}
-        min={0}
-        max={100}
-        trackBg={hslChannelGrad("s", hsl)}
-        onChange={(v) => onHsl({ ...hsl, s: v })}
-      />
-      <SliderRow
-        label="Lightness"
-        display={`${Math.round(hsl.l)}%`}
-        value={Math.round(hsl.l)}
-        min={0}
-        max={100}
-        trackBg={hslChannelGrad("l", hsl)}
-        onChange={(v) => onHsl({ ...hsl, l: v })}
-      />
-      <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} />
-    </div>
-  );
-}
-
-function HsvSliders({
-  hsv,
-  alpha,
-  hex,
-  onHsv,
-  onAlpha,
-}: {
-  hsv: HSV;
-  alpha: number;
-  hex: string;
-  onHsv: (hsv: HSV) => void;
-  onAlpha: (a: number) => void;
-}) {
-  return (
-    <div className="w-full max-w-100 flex flex-col gap-3.5">
-      <SliderRow
-        label="Hue"
-        display={`${Math.round(hsv.h)}°`}
-        value={Math.round(hsv.h)}
-        min={0}
-        max={359}
-        trackBg={hsvChannelGrad("h", hsv)}
-        onChange={(v) => onHsv({ ...hsv, h: v })}
-      />
-      <SliderRow
-        label="Saturation"
-        display={`${Math.round(hsv.s)}%`}
-        value={Math.round(hsv.s)}
-        min={0}
-        max={100}
-        trackBg={hsvChannelGrad("s", hsv)}
-        onChange={(v) => onHsv({ ...hsv, s: v })}
-      />
-      <SliderRow
-        label="Value"
-        display={`${Math.round(hsv.v)}%`}
-        value={Math.round(hsv.v)}
-        min={0}
-        max={100}
-        trackBg={hsvChannelGrad("v", hsv)}
-        onChange={(v) => onHsv({ ...hsv, v: v })}
-      />
-      {/* <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} /> */}
-    </div>
-  );
-}
-
-function OklchSliders({
-  oklch,
-  alpha,
-  hex,
-  onOklch,
-  onAlpha,
-}: {
-  oklch: OKLCH;
-  alpha: number;
-  hex: string;
-  onOklch: (o: OKLCH) => void;
-  onAlpha: (a: number) => void;
-}) {
-  return (
-    <div className="w-full max-w-100 flex flex-col gap-3.5">
-      <SliderRow
-        label="Lightness"
-        display={`${Math.round(oklch.L * 100)}%`}
-        value={Math.round(oklch.L * 100)}
-        min={0}
-        max={100}
-        trackBg={oklchChannelGrad("L", oklch)}
-        onChange={(v) => onOklch({ ...oklch, L: v / 100 })}
-      />
-      <SliderRow
-        label="Chroma"
-        display={oklch.C.toFixed(3)}
-        value={Math.round(oklch.C * 1000)}
-        min={0}
-        max={400}
-        trackBg={oklchChannelGrad("C", oklch)}
-        onChange={(v) => onOklch({ ...oklch, C: clamp(v / 1000, 0, 0.4) })}
-      />
-      <SliderRow
-        label="Hue"
-        display={`${Math.round(oklch.H)}°`}
-        value={Math.round(oklch.H)}
-        min={0}
-        max={359}
-        trackBg={oklchChannelGrad("H", oklch)}
-        onChange={(v) => onOklch({ ...oklch, H: v })}
-      />
-      <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} />
-      <div
-        className="rounded text-[9.5px] text-muted-foreground leading-normal px-2 py-1.25"
-        style={{
-          background: "rgba(99,102,241,.08)",
-          border: "1px solid rgba(99,102,241,.18)",
-        }}
-      >
-        <strong className="text-secondary-foreground">OKLCH</strong> —
-        perceptually uniform. Chroma = vividness (0 = gray, 0.4 = max).
-        Lightness shifts won't change perceived hue.
-      </div>
-    </div>
-  );
-}
-
-function OklabSliders({
-  oklab,
-  alpha,
-  hex,
-  onOklab,
-  onAlpha,
-}: {
-  oklab: { L: number; a: number; b: number };
-  alpha: number;
-  hex: string;
-  onOklab: (o: { L: number; a: number; b: number }) => void;
-  onAlpha: (a: number) => void;
-}) {
-  return (
-    <div className="w-full max-w-100 flex flex-col gap-3.5">
-      <SliderRow
-        label="Lightness"
-        display={`${Math.round(oklab.L * 100)}%`}
-        value={Math.round(oklab.L * 1000)}
-        min={0}
-        max={1000}
-        trackBg={oklabChannelGrad("L", oklab)}
-        onChange={(v) => onOklab({ ...oklab, L: v / 1000 })}
-      />
-      <SliderRow
-        label="a (green↔red)"
-        display={oklab.a.toFixed(3)}
-        value={Math.round((oklab.a + 0.4) * 1000)}
-        min={0}
-        max={800}
-        trackBg={oklabChannelGrad("a", oklab)}
-        onChange={(v) => onOklab({ ...oklab, a: v / 1000 - 0.4 })}
-      />
-      <SliderRow
-        label="b (blue↔yellow)"
-        display={oklab.b.toFixed(3)}
-        value={Math.round((oklab.b + 0.4) * 1000)}
-        min={0}
-        max={800}
-        trackBg={oklabChannelGrad("b", oklab)}
-        onChange={(v) => onOklab({ ...oklab, b: v / 1000 - 0.4 })}
-      />
-      {/* <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} /> */}
-      <div
-        className="rounded text-[9.5px] text-muted-foreground leading-normal px-2 py-1.25"
-        style={{
-          background: "rgba(99,102,241,.08)",
-          border: "1px solid rgba(99,102,241,.18)",
-        }}
-      >
-        <strong className="text-secondary-foreground">OKLab</strong> —
-        perceptual Lab space. a = green↔red axis, b = blue↔yellow axis. Same
-        axes as Photoshop Lab.
-      </div>
-    </div>
-  );
-}
-
-// ─── CSS output string for current mode ──────────────────────────────────────
-
-function cssString(
-  mode: PickerMode,
-  rgb: RGB,
-  hsl: HSL,
-  hsv: HSV,
-  oklch: OKLCH,
-  oklab: { L: number; a: number; b: number },
-  alpha: number,
-): string {
-  switch (mode) {
-    case "rgb":
-      return toCssRgb(rgb, alpha);
-    case "hsl":
-      return toCssHsl(hsl, alpha);
-    case "hsv":
-      return toCssHsv(hsv, alpha);
-    case "oklch":
-      return toCssOklch(oklch, alpha);
-    case "oklab":
-      return toCssOklab(oklab, alpha);
-  }
-}
-
-// ─── HSV to RGB (needed for committing HSV slider changes) ───────────────────
-
-function hsvToRgbFn(h: number, s: number, v: number): RGB {
-  const sn = s / 100,
-    vn = v / 100;
-  const c = vn * sn,
-    x = c * (1 - Math.abs(((h / 60) % 2) - 1)),
-    m = vn - c;
-  let r = 0,
-    g = 0,
-    b = 0;
-  const seg = Math.floor(h / 60) % 6;
-  if (seg === 0) {
-    r = c;
-    g = x;
-  } else if (seg === 1) {
-    r = x;
-    g = c;
-  } else if (seg === 2) {
-    g = c;
-    b = x;
-  } else if (seg === 3) {
-    g = x;
-    b = c;
-  } else if (seg === 4) {
-    r = x;
-    b = c;
-  } else {
-    r = c;
-    b = x;
-  }
-  return {
-    r: Math.round((r + m) * 255),
-    g: Math.round((g + m) * 255),
-    b: Math.round((b + m) * 255),
-  };
-}
-
-// ─── Controlled hex input — allows mid-type editing without key reset trick ───
-
-function HexInputField({
-  hex,
-  onCommit,
-}: {
-  hex: string;
-  onCommit: (v: string) => void;
-}) {
-  const [raw, setRaw] = React.useState(hex);
-  const [invalid, setInvalid] = React.useState(false);
-
-  // Sync when the canonical hex changes from outside (e.g. slider move, wheel)
-  React.useEffect(() => {
-    setRaw(hex);
-    setInvalid(false);
-  }, [hex]);
-
-  const handleChange = (v: string) => {
-    setRaw(v);
-    const ok =
-      parseHex(v) ?? (v.length === 9 && /^#[0-9a-fA-F]{8}$/.test(v) ? v : null);
-    if (ok) {
-      setInvalid(false);
-      onCommit(v);
-    } else setInvalid(true);
-  };
-
-  const handleBlur = () => {
-    if (invalid) {
-      setRaw(hex);
-      setInvalid(false);
-    }
-  };
-
-  return (
-    <input
-      className="w-full bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors"
-      value={raw}
-      onChange={(e) => handleChange(e.target.value)}
-      onBlur={handleBlur}
-      onFocus={(e) => e.target.select()}
-      maxLength={9}
-      spellCheck={false}
-      autoComplete="off"
-      style={{ borderColor: invalid ? "rgba(239,68,68,.7)" : undefined }}
-    />
-  );
-}
-
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 export default function ColorPickerView() {
@@ -644,7 +100,7 @@ export default function ColorPickerView() {
   const oklch = useMemo(() => rgbToOklch(rgb), [rgb]);
   const oklab = useMemo(() => rgbToOklab(rgb), [rgb]);
   const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb]);
-  const lch = useMemo(() => oklabToLch(oklab), [oklab]); // for display only
+  const name = useMemo(() => nearestName(rgb), [rgb]);
 
   const displayHex = toHexAlpha(pickerHex, pickerAlpha);
   const cssOut = cssString(
@@ -654,6 +110,7 @@ export default function ColorPickerView() {
     hsv,
     oklch,
     oklab,
+    cmyk,
     pickerAlpha,
   );
   const previewStyle =
@@ -673,7 +130,7 @@ export default function ColorPickerView() {
     [setPickerHex],
   );
   const setHsv = useCallback(
-    (h: HSV) => setPickerHex(rgbToHex(hsvToRgbFn(h.h, h.s, h.v))),
+    (h: HSV) => setPickerHex(rgbToHex(hsvToRgb(h))),
     [setPickerHex],
   );
   const setOklch = useCallback(
@@ -683,6 +140,11 @@ export default function ColorPickerView() {
   const setOklab = useCallback(
     (o: { L: number; a: number; b: number }) =>
       setPickerHex(rgbToHex(oklabToRgb(o))),
+    [setPickerHex],
+  );
+  const setCmyk = useCallback(
+    (c: { c: number; m: number; y: number; k: number }) =>
+      setPickerHex(rgbToHex(cmykToRgb(c))),
     [setPickerHex],
   );
 
@@ -719,26 +181,56 @@ export default function ColorPickerView() {
     addRecent(displayHex);
   }, [pickerHex, addSlot, addRecent]);
 
-  const [copied, setCopied] = React.useState(false);
+  const updateColor = useCallback((newHex: string) => {
+    setPickerHex(newHex);
+    handleHexInput(newHex);
+  }, []);
+
+  const [copied, setCopied] = useState(false);
   const copyCss = () => {
     navigator.clipboard.writeText(cssOut).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1200);
   };
 
+  const handleEyeDropper = async () => {
+    if (typeof window !== "undefined" && "EyeDropper" in window) {
+      try {
+        const dropper = new (window as any).EyeDropper();
+        const { sRGBHex } = await dropper.open();
+        const h = parseHex(sRGBHex);
+        if (h) updateColor(h);
+      } catch (e) {
+        /* cancelled */
+      }
+    }
+  };
+
+  const MODES = [
+    { id: "hsl", label: "HSL" },
+    { id: "rgb", label: "RGB" },
+    { id: "hsv", label: "HSV" },
+    { id: "oklch", label: "OKLCH" },
+    { id: "oklab", label: "OKLab" },
+    { id: "cmyk", label: "CMYK" },
+  ];
+
   return (
-    <div className="flex flex-1 overflow-hidden">
-      <div className="flex-1 flex flex-col items-center justify-center gap-5 p-6 overflow-auto">
+    <div className="flex flex-col flex-1 overflow-hidden">
+      <PanelSection>
+        <PanelSectionLabel>COLOR PICKER</PanelSectionLabel>
         {/* Color wheel — always visible, speaks HSL */}
-        <ColorWheel hsl={hsl} size={240} onChange={handleWheelChange} />
+        <div className="flex flex-col items-center justify-center gap-1 my-6">
+          <ColorWheel hsl={hsl} size={240} onChange={handleWheelChange} />
+        </div>
 
         {/* Mode tabs */}
         <div className="flex gap-1 mt-2.5 mb-1.5">
           {MODES.map((m) => (
             <button
               key={m.id}
-              onClick={() => setPickerMode(m.id)}
-              title={m.desc}
+              onClick={() => setPickerMode(m.id as PickerMode)}
+              title={m.label}
               style={{
                 flex: 1,
                 padding: "4px 0",
@@ -809,9 +301,17 @@ export default function ColorPickerView() {
             onAlpha={setPickerAlpha}
           />
         )}
+        {pickerMode === "cmyk" && (
+          <CmykSliders
+            cmyk={cmyk}
+            alpha={pickerAlpha}
+            hex={pickerHex}
+            onCmyk={setCmyk}
+            onAlpha={setPickerAlpha}
+          />
+        )}
 
-        {/* Preview + hex input */}
-        <div className="flex flex-col gap-4 w-full max-w-100 mt-3">
+        <div className="flex flex-col gap-4 w-full max-w-100 mt-3 pb-2">
           <div className="flex gap-4 w-full">
             {/* Checkerboard shows through for alpha */}
             <div className="relative size-16 shrink-0">
@@ -829,8 +329,12 @@ export default function ColorPickerView() {
             </div>
             <div className="flex-1 flex flex-col gap-1.5">
               <div className="flex gap-1.5 items-center">
-                <label>HEX</label>
-                <HexInputField hex={displayHex} onCommit={handleHexInput} />
+                {/* <label>HEX CODE</label> */}
+                <HexInput
+                  value={displayHex}
+                  onChange={handleHexInput}
+                  label="HEX CODE"
+                />
               </div>
               {/* CSS output string for current mode */}
               <div className="flex items-center gap-1 mt-1 bg-muted rounded px-1.5 py-1">
@@ -866,28 +370,113 @@ export default function ColorPickerView() {
                 variant="ghost"
                 size="sm"
                 title="Sample color from screen (EyeDropper API)"
-                onClick={async () => {
-                  try {
-                    const dropper = new window.EyeDropper!();
-                    const { sRGBHex } = await dropper.open();
-                    const h = parseHex(sRGBHex);
-                    if (h) {
-                      setPickerHex(h);
-                      addRecent(h);
-                    }
-                  } catch {
-                    /* user cancelled */
-                  }
-                }}
+                onClick={handleEyeDropper}
               >
                 ⊕ Pick
               </Button>
             )}
           </div>
         </div>
-      </div>
+      </PanelSection>
 
-      <ColorPickerPanel />
+      {/* Recent colors */}
+      {recentColors.length > 0 && (
+        <PanelSection>
+          <PanelSectionLabel>RECENT COLORS</PanelSectionLabel>
+          <div className="flex flex-wrap gap-1.5 pb-2">
+            {recentColors.map((rh, i) => (
+              <div
+                key={i}
+                className="w-5.5 h-5.5 rounded cursor-pointer border border-white/10 transition-transform hover:scale-110"
+                style={{ background: rh }}
+                title={rh}
+                onClick={() => {
+                  const alpha = parseHexAlpha(rh);
+                  setPickerHex(opaqueHex(rh));
+                  if (alpha !== null) setPickerAlpha(alpha);
+                }}
+              />
+            ))}
+          </div>
+        </PanelSection>
+      )}
+
+      {/* Color info — all formats */}
+      <PanelSection>
+        <PanelSectionLabel>COLOR VALUES</PanelSectionLabel>
+        <div className="text-[11px] text-muted-foreground leading-[2.1] pb-2">
+          <InfoRow label="Name" value={nearestName(rgb)} />
+          <InfoRow label="HEX" value={displayHex.toUpperCase()} mono />
+          <InfoRow label="RGB" value={toCssRgb(rgb, pickerAlpha)} mono />
+          <InfoRow label="HSL" value={toCssHsl(hsl, pickerAlpha)} mono />
+          <InfoRow label="HSV" value={toCssHsv(hsv, pickerAlpha)} mono />
+          <InfoRow label="OKLCH" value={toCssOklch(oklch, pickerAlpha)} mono />
+          <InfoRow label="OKLab" value={toCssOklab(oklab, pickerAlpha)} mono />
+          <InfoRow
+            label="CMYK"
+            value={`${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%`}
+          />
+          <InfoRow
+            label="Lum."
+            value={`${(luminance(rgb) * 100).toFixed(1)}%`}
+          />
+        </div>
+      </PanelSection>
+
+      {/* Palette quick-pick */}
+      <PanelSection>
+        <PanelSectionLabel>PALETTE</PanelSectionLabel>
+        <div className="flex flex-wrap gap-1.5 pb-2">
+          {slots.map((slot, i) => (
+            <div
+              key={i}
+              className="w-5.5 h-5.5 rounded cursor-pointer border border-white/10 transition-transform hover:scale-110"
+              style={{ background: slot.color.hex }}
+              title={slot.color.hex}
+              onClick={() => setPickerHex(slot.color.hex)}
+            />
+          ))}
+        </div>
+      </PanelSection>
+    </div>
+  );
+}
+
+function InfoRow({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  const [copied, setCopied] = React.useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(value).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1000);
+  };
+  return (
+    <div className="justify-between items-center flex gap-1.5">
+      <span className="text-muted-foreground shrink-0 min-w-9.5">{label}</span>
+      <span
+        style={{
+          fontFamily: mono ? "var(--font-mono)" : undefined,
+          fontSize: mono ? 9.5 : undefined,
+          color: "var(--color-foreground)",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          flex: 1,
+          textAlign: "right",
+          cursor: "pointer",
+        }}
+        title={`Click to copy: ${value}`}
+        onClick={copy}
+      >
+        {copied ? "✓ copied" : value}
+      </span>
     </div>
   );
 }

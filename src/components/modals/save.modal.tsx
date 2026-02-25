@@ -44,6 +44,7 @@ export function SaveModal() {
               openModal("save");
             }}
             title="Save palette"
+            className="text-muted-foreground"
           >
             ♡
           </Button>

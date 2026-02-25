@@ -47,6 +47,7 @@ export function ShareModal() {
             size="sm"
             title="Share URL"
             onClick={() => openModal("share")}
+            className="text-muted-foreground text-md"
           >
             ⤴
           </Button>

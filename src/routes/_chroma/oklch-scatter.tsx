@@ -1,19 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Suspense, lazy } from "react";
-const OKLCHScatterView = lazy(
-  () => import("@/components/views/oklch-scatter-view"),
-);
-
-export const Route = createFileRoute("/_chroma/oklch-scatter")({
-  component: () => (
-    <Suspense
-      fallback={
-        <div style={{ padding: 32, color: "var(--ch-t3)", fontSize: 13 }}>
-          Loading…
-        </div>
-      }
-    >
-      <OKLCHScatterView />
-    </Suspense>
-  ),
-});
+import { createFileRoute, redirect } from '@tanstack/react-router'
+// Legacy redirect: /oklch-scatter → /analyze/visualize
+export const Route = createFileRoute('/_chroma/oklch-scatter')({
+  beforeLoad: () => { throw redirect({ to: '/analyze/visualize', replace: true }) },
+})

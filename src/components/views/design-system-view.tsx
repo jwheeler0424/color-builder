@@ -22,7 +22,7 @@ import type {
   UtilityRole,
 } from "@/types";
 import { Button } from "@/components/ui/button";
-import HexInput from "@/components/hex-input";
+import HexInput from "../common/hex-input";
 
 type Mode = "light" | "dark";
 type ExportFormat =
@@ -242,7 +242,7 @@ function ComponentPreview({
         }}
       >
         <div
-          className="inline-block text-[9px] font-bold mb-1.5"
+          className="inline-block text-2.5 font-bold mb-1.5"
           style={{
             background: pri,
             color: priFg,
@@ -272,11 +272,11 @@ function ComponentPreview({
       </div>
 
       {/* Main grid */}
-      <div className="grid gap-2.5 px-[14px] py-3 [grid-template-columns:1fr_160px]">
+      <div className="grid gap-2.5 px-3.5 py-3 grid-cols-[1fr_160px]">
         <div>
           {/* Cards */}
           <div
-            className="text-[9px] font-bold uppercase mb-1.5 tracking-[.08em]"
+            className="text-2.5 font-bold uppercase mb-1.5 tracking-[.08em]"
             style={{ color: fgM }}
           >
             Projects
@@ -325,11 +325,11 @@ function ComponentPreview({
                   overflow: "hidden",
                 }}
               >
-                <div className="h-[3px]" style={{ background: accent }} />
+                <div className="h-1" style={{ background: accent }} />
                 <div className="p-2">
                   <div className="mb-1 font-bold text-[10px]">{title}</div>
                   <div
-                    className="rounded mb-[5px] h-1"
+                    className="rounded mb-1.5 h-1"
                     style={{ background: muted }}
                   >
                     <div
@@ -358,7 +358,7 @@ function ComponentPreview({
 
           {/* Alerts */}
           <div
-            className="rounded flex gap-1.5 mb-1.5 px-[9px] py-[7px]"
+            className="rounded flex gap-1.5 mb-1.5 px-2.5 py-2"
             style={{
               background: "rgba(59,130,246,.1)",
               border: "1px solid rgba(59,130,246,.4)",
@@ -371,7 +371,7 @@ function ComponentPreview({
             </span>
           </div>
           <div
-            className="rounded flex gap-1.5 px-[9px] py-[7px]"
+            className="rounded flex gap-1.5 px-2.5 py-2"
             style={{
               background: "rgba(34,197,94,.1)",
               border: "1px solid rgba(34,197,94,.4)",
@@ -395,7 +395,7 @@ function ComponentPreview({
               marginBottom: 7,
             }}
           >
-            <div className="font-bold text-[10px] mb-[7px]">Quick Actions</div>
+            <div className="font-bold text-[10px] mb-2">Quick Actions</div>
             {/* Input */}
             <div
               style={{
@@ -455,15 +455,12 @@ function ComponentPreview({
               padding: 8,
             }}
           >
-            <div
-              className="text-[9.5px] font-bold mb-[3px]"
-              style={{ color: des }}
-            >
+            <div className="text-[9.5px] font-bold mb-1" style={{ color: des }}>
               ⚠ API limit reached
             </div>
-            <div className="mb-[5px] text-[9px]">Upgrade to continue.</div>
+            <div className="mb-1.5 text-2.5">Upgrade to continue.</div>
             <button
-              className="w-full text-[9px] text-center"
+              className="w-full text-2.5 text-center"
               style={{ ...BtnDes }}
             >
               Upgrade now
@@ -483,7 +480,7 @@ function ComponentPreview({
           justifyContent: "space-between",
         }}
       >
-        <span className="text-[9px]" style={{ color: fgM }}>
+        <span className="text-2.5" style={{ color: fgM }}>
           © 2025 Brand Inc.
         </span>
         <div className="items-center flex gap-1">
@@ -542,7 +539,7 @@ function TokenRow({
         {isOverridden && (
           <span className="text-primary font-bold text-[8px]">✎</span>
         )}
-        <code className="font-mono text-secondary-foreground overflow-ellipsis whitespace-nowrap overflow-hidden text-[9px]">
+        <code className="font-mono text-secondary-foreground overflow-ellipsis whitespace-nowrap overflow-hidden text-2.5">
           {token.name}
         </code>
       </div>
@@ -620,7 +617,7 @@ function UtilityTokenRow({
       <span className="capitalize text-secondary-foreground font-semibold text-[10px] flex-1">
         {role}
       </span>
-      <div className="items-center flex gap-[5px]">
+      <div className="items-center flex gap-1.5">
         {[
           { label: mode, hex: color },
           { label: "subtle", hex: subtle },
@@ -629,10 +626,10 @@ function UtilityTokenRow({
           <div
             key={label}
             title={`${label}: ${hex}`}
-            className="items-center flex gap-[3px]"
+            className="items-center flex gap-1"
           >
             <div
-              className="rounded w-[14px] h-[14px]"
+              className="rounded w-3.5 h-3.5"
               style={{
                 background: hex,
                 border: "1px solid rgba(128,128,128,.2)",
@@ -746,7 +743,7 @@ function AccessibilityPanel({
           <div className="text-foreground font-bold text-[12px]">
             {passing}/{results.length} pairs pass WCAG AA
           </div>
-          <div className="text-muted-foreground leading-[1.5] text-[10.5px]">
+          <div className="text-muted-foreground leading-normal text-[10px]">
             4.5:1 for body text · 3:1 for large text / UI
           </div>
         </div>
@@ -768,7 +765,7 @@ function AccessibilityPanel({
         return (
           <div
             key={label}
-            className="flex items-center border-b border-muted gap-[7px] py-[5px] px-0"
+            className="flex items-center border-b border-muted gap-2 py-1.5 px-0"
           >
             {/* Preview swatch */}
             <div
@@ -781,17 +778,17 @@ function AccessibilityPanel({
               }}
             >
               <div
-                className="w-4 h-[3px]"
+                className="w-4 h-1"
                 style={{ borderRadius: 1, background: fgHex }}
               />
             </div>
-            <span className="text-secondary-foreground text-[9px] flex-1">
+            <span className="text-secondary-foreground text-2.5 flex-1">
               {label}
             </span>
-            <span className="font-mono text-muted-foreground text-[9px]">
+            <span className="font-mono text-muted-foreground text-2.5">
               {ratio.toFixed(1)}:1
             </span>
-            <span className="text-muted-foreground mr-0.5 text-[9px]">
+            <span className="text-muted-foreground mr-0.5 text-2.5">
               Lc{lc}
             </span>
             <span
@@ -865,7 +862,7 @@ function ExportPanel({
   return (
     <div>
       <div className="justify-between items-center flex-wrap mb-2.5 flex gap-1.5">
-        <div className="flex-wrap flex gap-[3px]">
+        <div className="flex-wrap flex gap-1">
           {TABS.map((t) => (
             <Button
               key={t.id}
@@ -884,7 +881,7 @@ function ExportPanel({
       <p className="text-muted-foreground mb-2 leading-relaxed text-[10.5px]">
         {DESCRIPTIONS[fmt]}
       </p>
-      <pre className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-[300px] overflow-y-auto text-[9.5px] max-h-[360px]">
+      <pre className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-75 overflow-y-auto">
         {content}
       </pre>
     </div>
@@ -977,7 +974,7 @@ export default function DesignSystemView() {
 
   return (
     <div className="flex-1 overflow-auto p-6">
-      <div className="mx-auto max-w-[1080px]">
+      <div className="mx-auto max-w-270">
         {/* Header */}
         <div className="mb-5">
           <div className="justify-between items-start flex-wrap flex gap-2.5">
@@ -1044,7 +1041,7 @@ export default function DesignSystemView() {
         </div>
 
         {/* Panel nav */}
-        <div className="flex flex-wrap border-b border-muted gap-[3px] mb-[18px] pb-2.5">
+        <div className="flex flex-wrap border-b border-muted gap-1 mb-4.5 pb-2.5">
           {PANELS.map((p) => (
             <Button
               key={p.id}
@@ -1081,11 +1078,11 @@ export default function DesignSystemView() {
         {activePanel === "tokens" && (
           <div>
             {/* Header row */}
-            <div className="grid gap-1.5 mb-1 [grid-template-columns:180px_1fr_1fr_80px_28px] py-1 px-0 border-b-2 border-muted">
+            <div className="grid gap-1.5 mb-1 grid-cols-[180px_1fr_1fr_80px_28px] py-1 px-0 border-b-2 border-muted">
               {["Token", "Light", "Dark", "Contrast", ""].map((h) => (
                 <span
                   key={h}
-                  className="text-muted-foreground uppercase tracking-[.06em] font-bold text-[9px]"
+                  className="text-muted-foreground uppercase tracking-[.06em] font-bold text-2.5"
                 >
                   {h}
                 </span>
@@ -1105,12 +1102,12 @@ export default function DesignSystemView() {
                     onClick={() =>
                       setExpandedGroup(isOpen ? null : group.label)
                     }
-                    className="w-full bg-card border border-muted rounded cursor-pointer flex items-center gap-2 text-left px-2.5 py-[7px]"
+                    className="w-full bg-card border border-muted rounded cursor-pointer flex items-center gap-2 text-left px-2.5 py-2"
                   >
                     <span className="text-foreground font-bold text-[9.5px] flex-1">
                       {group.label}
                     </span>
-                    <span className="text-muted-foreground text-[9px]">
+                    <span className="text-muted-foreground text-2.5">
                       {groupTokens.length} tokens
                     </span>
                     <span className="text-muted-foreground text-[11px]">
@@ -1121,7 +1118,7 @@ export default function DesignSystemView() {
                   {isOpen && (
                     <div className="border-b border-muted py-1.5 px-0">
                       {group.desc && (
-                        <p className="text-[10.5px] text-muted-foreground leading-[1.5] mt-0 mx-0 mb-2">
+                        <p className="text-[10px] text-muted-foreground leading-normal mt-0 mx-0 mb-2">
                           {group.desc}
                         </p>
                       )}
@@ -1158,7 +1155,7 @@ export default function DesignSystemView() {
               {["Role", "Color", "Subtle", "Base"].map((h) => (
                 <span
                   key={h}
-                  className="text-muted-foreground uppercase font-bold text-[9px]"
+                  className="text-muted-foreground uppercase font-bold text-2.5"
                 >
                   {h}
                 </span>

@@ -9,7 +9,7 @@ import {
   rgbToHex,
 } from "@/lib/utils";
 import { GRAD_PRESETS, CB_TYPES } from "@/lib/constants/chroma";
-import GradientStopBar from "@/components/gradient-stop-bar";
+import GradientStopBar from "../common/gradient-stop-bar";
 import { Button } from "@/components/ui/button";
 
 // Apply easing to redistribute stop positions (redistributes evenly-spaced stops)
@@ -158,7 +158,7 @@ export default function GradientView() {
 
         {/* Full-width preview */}
         <div
-          className="w-full h-[200px] rounded border border-border mb-4 shrink-0 max-w-[960px]"
+          className="w-full h-50 rounded border border-border mb-4 shrink-0 max-w-240"
           style={{ background: css }}
         />
 
@@ -193,7 +193,7 @@ export default function GradientView() {
                       border: "1px solid rgba(128,128,128,.15)",
                     }}
                   />
-                  <span className="text-[9px] text-muted-foreground min-w-[90px] text-right">
+                  <span className="text-[9px] text-muted-foreground min-w-22.5 text-right">
                     {cbType.name}
                   </span>
                 </div>
@@ -217,7 +217,7 @@ export default function GradientView() {
         <div className="text-muted-foreground mb-1.5 text-[11px]">
           CSS Output
         </div>
-        <div className="bg-secondary border border-border rounded p-3 font-mono text-[11px] leading-[1.8] text-muted-foreground whitespace-pre-wrap break-all max-w-[960px]">
+        <div className="bg-secondary border border-border rounded p-3 font-mono text-[11px] leading-[1.8] text-muted-foreground whitespace-pre-wrap break-all max-w-240">
           {`background: ${css};\nbackground-image: ${css};`}
         </div>
         <div className="flex mt-2 gap-1.5">
@@ -371,7 +371,7 @@ export default function GradientView() {
             ))}
           </div>
           {interpSpace !== "srgb" && (
-            <div className="text-[9.5px] text-muted-foreground leading-[1.5] mt-[5px]">
+            <div className="text-[9.5px] text-muted-foreground leading-normal mt-1.5">
               CSS Color 4 syntax — requires Chrome 111+ / Safari 16.4+. Firefox
               support landing soon.
             </div>
@@ -416,7 +416,7 @@ export default function GradientView() {
               </Button>
             ))}
           </div>
-          <div className="text-muted-foreground leading-[1.5] text-[9.5px] mt-1">
+          <div className="text-muted-foreground leading-normal text-[9.5px] mt-1">
             Redistributes middle stop positions. First and last stops stay
             fixed.
           </div>

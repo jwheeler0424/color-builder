@@ -19,6 +19,7 @@ import { seo } from "@/lib/utils/seo";
 import { ThemeProvider } from "@/providers/theme.provider";
 import { HotkeyProvider } from "@/providers/hotkey.provider";
 import { getThemeServerFn, Theme } from "@/lib/theme";
+import { CommandPaletteProvider } from "@/components/views/command-palette";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -93,14 +94,6 @@ function RootDocument({
   children: React.ReactNode;
   theme: Theme;
 }) {
-  /**
-   * Map cookie value → <html> class:
-   *   "dark"  → "dark"   — activates Tailwind dark: utilities + .dark CSS overrides
-   *   "light" → "light"  — activates .light CSS overrides
-   *   "auto"  → ""       — no class; CSS @media prefers-color-scheme takes over
-   *
-   * Single source of truth — no client-side class toggling or localStorage.
-   */
   const htmlClass = theme === "auto" ? "" : theme;
   return (
     <html className={htmlClass}>
@@ -109,7 +102,9 @@ function RootDocument({
       </head>
       <body>
         <HotkeyProvider>
-          <ThemeProvider theme={theme}>{children}</ThemeProvider>
+          <CommandPaletteProvider>
+            <ThemeProvider theme={theme}>{children}</ThemeProvider>
+          </CommandPaletteProvider>
         </HotkeyProvider>
         <TanStackDevtools
           config={{

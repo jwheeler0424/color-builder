@@ -34,11 +34,12 @@ export function ThemeToggle() {
 
   return (
     <Button
-      variant="outline"
+      variant="ghost"
       size="icon"
       onClick={cycleTheme}
       aria-label={NEXT_LABEL[theme]}
       title={`Theme: ${LABELS[theme]} — click to cycle`}
+      className="text-muted-foreground"
     >
       <ThemeIcon theme={theme} />
       <span className="sr-only">{NEXT_LABEL[theme]}</span>

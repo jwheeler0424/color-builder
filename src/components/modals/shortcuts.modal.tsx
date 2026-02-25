@@ -48,6 +48,7 @@ export function ShortcutsModal() {
             size="sm"
             title="Shortcuts"
             onClick={() => openModal("shortcuts")}
+            className="text-muted-foreground"
           >
             ?
           </Button>
@@ -57,7 +58,7 @@ export function ShortcutsModal() {
         <DialogHeader>
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-5 min-w-[340px]">
+        <div className="flex flex-col gap-5 min-w-85">
           {Object.entries(groups).map(([group, keys]) => (
             <div key={group}>
               <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2 font-display font-semibold">
@@ -72,7 +73,7 @@ export function ShortcutsModal() {
                     <span className="text-secondary-foreground text-[12px]">
                       {hk.label}
                     </span>
-                    <kbd className="inline-block px-2 py-[2px] border border-input rounded text-[11px] text-muted-foreground font-mono bg-muted whitespace-nowrap shrink-0">
+                    <kbd className="inline-block px-2 py-0.5 border border-input rounded text-[11px] text-muted-foreground font-mono bg-muted whitespace-nowrap shrink-0">
                       {keyLabel(hk)}
                     </kbd>
                   </div>

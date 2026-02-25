@@ -7,11 +7,11 @@ import {
   hexToRgb,
   rgbToHex,
   rgbToHsl,
-  nearestName,
   mixOklab,
   mixHsl,
   mixRgb,
   textColor,
+  nearestName,
 } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -90,7 +90,7 @@ export default function ColorMixer() {
 
   return (
     <div className="flex-1 overflow-auto p-6">
-      <div className="max-w-[800px] mx-auto">
+      <div className="max-w-200 mx-auto">
         <div className="mb-5">
           <h2>Color Mixer</h2>
           <p>
@@ -116,7 +116,7 @@ export default function ColorMixer() {
                 />
                 <div>
                   <input
-                    className="w-full bg-muted border border-border font-mono tracking-[.06em] mb-1 rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
+                    className="w-full bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
                     value={val}
                     onChange={(e) => set(e.target.value)}
                     maxLength={7}
@@ -135,7 +135,7 @@ export default function ColorMixer() {
         {/* Palette quick-pick */}
         {slots.length > 0 && (
           <div className="mb-4">
-            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-1.5">
+            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
               Pick from Palette (A / B)
             </div>
             <div className="flex-wrap flex gap-1">
@@ -167,7 +167,7 @@ export default function ColorMixer() {
 
         {/* Space selector */}
         <div className="mb-5">
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Blend Space
           </div>
           <div className="flex gap-1">
@@ -187,10 +187,10 @@ export default function ColorMixer() {
         </div>
 
         {/* Active blend strip */}
-        <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
+        <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
           Result
         </div>
-        <div className="flex h-[60px] rounded overflow-hidden mb-2">
+        <div className="flex h-15 rounded overflow-hidden mb-2">
           {blendRow.map(({ hex, rgb }, i) => {
             const tc = textColor(rgb);
             return (
@@ -212,13 +212,13 @@ export default function ColorMixer() {
         </div>
 
         {/* Comparison of all spaces */}
-        <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mt-6 mb-2.5">
+        <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mt-6">
           Space Comparison
         </div>
         <div className="flex flex-col gap-1.5">
           {allSpaces.map((space) => (
             <div key={space.id} className="flex items-center gap-2.5">
-              <div className="w-[52px] text-[10px] text-muted-foreground text-right shrink-0">
+              <div className="w-13 text-[10px] text-muted-foreground text-right shrink-0">
                 {space.label}
               </div>
               <div className="flex-1 h-7 flex rounded overflow-hidden">

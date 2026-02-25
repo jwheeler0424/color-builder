@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import type { PaletteSlot, SavedPalette } from "@/types";
+import type { SavedPalette } from "@/types";
 import { useChromaStore } from "@/hooks/use-chroma-store";
 import {
   hexToStop,
@@ -25,13 +25,12 @@ export default function SavedView() {
 
   // Renamed to avoid collision with the store's loadPalette method
   const handleLoad = (p: SavedPalette) => {
-    const slots = p.hexes.map(
-      (hex) =>
-        ({
-          color: hexToStop(hex),
-          locked: false,
-        }) as PaletteSlot,
-    );
+    const slots = p.hexes.map((hex, i) => ({
+      id: crypto.randomUUID(),
+      color: hexToStop(hex),
+      locked: false,
+      name: p.slotNames?.[i],
+    }));
     loadPalette(slots, p.mode, p.hexes.length);
     navigate({ to: "/palette" });
   };
@@ -87,7 +86,7 @@ export default function SavedView() {
             Clear All
           </Button>
         </div>
-        <div className="grid gap-2.5 [grid-template-columns:repeat(auto-fill,minmax(270px,1fr))]">
+        <div className="grid gap-2.5 grid-cols-[repeat(auto-fill,minmax(270px,1fr))]">
           {palettes.map((p) => (
             <div
               key={p.id}
@@ -99,13 +98,13 @@ export default function SavedView() {
                 ))}
               </div>
               <div style={{ padding: "10px 12px" }}>
-                <div className="font-display text-[13px] font-bold mb-0.5">
+                <div className="font-display text-sm font-bold mb-0.5">
                   {p.name || "Unnamed"}
                 </div>
                 <div className="text-muted-foreground uppercase tracking-[.06em] mb-2 text-[10px]">
                   {p.mode} · {p.hexes.length} colors
                 </div>
-                <div className="flex gap-[5px]">
+                <div className="flex gap-1.5">
                   <Button
                     variant="ghost"
                     size="sm"

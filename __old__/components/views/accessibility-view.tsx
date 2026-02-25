@@ -119,8 +119,8 @@ function SwatchCard({
         className="flex flex-col items-center justify-center gap-0.75"
         style={{ background: hex, height: 72 }}
       >
-        <span className="text-white text-[13px] font-extrabold">Aa</span>
-        <span className="text-black text-[13px] font-extrabold">Aa</span>
+        <span className="text-white text-sm font-extrabold">Aa</span>
+        <span className="text-black text-sm font-extrabold">Aa</span>
       </div>
 
       <div className="px-2.5 py-2">
@@ -203,7 +203,7 @@ function SwatchCard({
           )}
         </div>
         {fixB && !useApca && (
-          <div className="text-muted-foreground pl-[23px] leading-[1.4] text-[8.5px] mt-1">
+          <div className="text-muted-foreground pl-6 leading-[1.4] text-[8.5px] mt-1">
             💡 {fixB.direction === "darken" ? "Darken" : "Lighten"} to{" "}
             <span className="font-mono" style={{ color: fixB.hex }}>
               {fixB.hex}

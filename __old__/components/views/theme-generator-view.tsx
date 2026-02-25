@@ -74,7 +74,7 @@ function PaletteSourceStrip({
           const roleLabel = isPrimary ? "default" : (utilRoles[0] ?? null);
 
           return (
-            <div key={i} className="flex-col items-center flex gap-[3px]">
+            <div key={i} className="flex-col items-center flex gap-1">
               <div
                 style={{
                   width: 36,
@@ -119,10 +119,7 @@ function PaletteSourceStrip({
         })}
 
         {/* Arrow and role legend */}
-        <div
-          className="ml-1 flex flex-col gap-[3px]"
-          style={{ paddingBottom: 14 }}
-        >
+        <div className="ml-1 flex flex-col gap-1" style={{ paddingBottom: 14 }}>
           <span className="text-muted-foreground text-[9px]">→ hues drive</span>
           <span className="text-muted-foreground text-[9px]">
             surface tints,
@@ -259,7 +256,7 @@ function WebsiteMockup({
             style={{ height: 18, background: accent1 }}
           />
           <span
-            className="font-extrabold text-[13px] tracking-[-0.02em]"
+            className="font-extrabold text-sm tracking-[-0.02em]"
             style={{ color: fg }}
           >
             Brand
@@ -320,7 +317,7 @@ function WebsiteMockup({
           science.
         </div>
         {/* Palette swatch dots in hero to show palette presence */}
-        <div className="flex items-center gap-[5px] mb-3.5">
+        <div className="flex items-center gap-1.5 mb-3.5">
           {accentColors.map((hex, i) => (
             <div
               key={i}
@@ -613,7 +610,7 @@ function WebsiteMockup({
           © 2025 Brand Inc.
         </span>
         {/* Footer uses palette colors as color dots */}
-        <div className="items-center flex gap-[5px]">
+        <div className="items-center flex gap-1.5">
           {accentColors.map((hex, i) => (
             <div
               key={i}
@@ -670,7 +667,7 @@ function UtilityStrip({
         return (
           <div key={role} style={{ flex: "1 1 80px" }}>
             <div
-              className="flex items-center text-[10px] font-bold gap-[5px]"
+              className="flex items-center text-[10px] font-bold gap-1.5"
               style={{
                 background: color,
                 color: tc,
@@ -876,7 +873,7 @@ function TokenTable({
         if (!groupTokens.length) return null;
         return (
           <div key={label} className="mb-3.5">
-            <div className="text-[9.5px] font-bold text-muted-foreground uppercase mb-[5px] pb-1 border-b border-muted tracking-[.08em]">
+            <div className="text-[9.5px] font-bold text-muted-foreground uppercase mb-1.5 pb-1 border-b border-muted tracking-[.08em]">
               {label}
             </div>
             {groupTokens.map((t) => (
@@ -888,7 +885,7 @@ function TokenTable({
                   {t.name}
                 </code>
                 {(["light", "dark"] as const).map((m) => (
-                  <div key={m} className="items-center flex gap-[5px]">
+                  <div key={m} className="items-center flex gap-1.5">
                     <div
                       className="rounded shrink-0 w-4 h-4"
                       style={{
@@ -998,7 +995,7 @@ function EditableTokenTable({
         if (!groupTokens.length) return null;
         return (
           <div key={label} className="mb-3.5">
-            <div className="text-[9.5px] font-bold text-muted-foreground uppercase mb-[5px] pb-1 border-b border-muted tracking-[.08em]">
+            <div className="text-[9.5px] font-bold text-muted-foreground uppercase mb-1.5 pb-1 border-b border-muted tracking-[.08em]">
               {label}
             </div>
             {groupTokens.map((t) => {
@@ -1018,7 +1015,7 @@ function EditableTokenTable({
                       : undefined,
                   }}
                 >
-                  <div className="items-center flex gap-[3px]">
+                  <div className="items-center flex gap-1">
                     {isOverridden && (
                       <span className="text-primary text-[8px]">✎</span>
                     )}
@@ -1226,7 +1223,7 @@ function ComponentShowcase({
         >
           Badges
         </div>
-        <div className="flex-wrap flex gap-[5px]">
+        <div className="flex-wrap flex gap-1.5">
           <Badge bg={`${pri}22`} color={pri} label="Default" />
           <Badge bg={successS} color={successL} label="Success" />
           <Badge bg={warnS} color={warnL} label="Warning" />
@@ -1304,7 +1301,7 @@ function ComponentShowcase({
         >
           Alerts
         </div>
-        <div className="flex-col flex gap-[5px]">
+        <div className="flex-col flex gap-1.5">
           <Alert
             color={infoL}
             subtle={infoS}

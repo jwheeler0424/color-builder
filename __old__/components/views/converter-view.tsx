@@ -86,7 +86,7 @@ export default function ConverterView() {
               onClick={() => setShowPicker(true)}
             />
             <input
-              className="w-full bg-muted border border-border rounded px-3 py-2.75 text-[13px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
+              className="w-full bg-muted border border-border rounded px-3 py-2.75 text-sm text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
               value={convInput}
               onChange={(e) => setConvInput(e.target.value)}
               placeholder="#F4A261  ·  rgb(244,162,97)  ·  hsl(27,89%,67%)"

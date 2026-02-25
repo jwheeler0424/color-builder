@@ -201,7 +201,7 @@ export default function BrandComplianceView() {
         {matrix.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <div className="text-4xl mb-4">🎨</div>
-            <p className="text-[13px]">
+            <p className="text-sm">
               Add brand colors above to start checking palette compliance.
             </p>
           </div>
@@ -214,7 +214,7 @@ export default function BrandComplianceView() {
                     className="w-6 h-6 rounded border border-border"
                     style={{ background: brand.hex }}
                   />
-                  <span className="font-display font-bold text-[13px]">
+                  <span className="font-display font-bold text-sm">
                     {brand.label}
                   </span>
                   <span className="text-muted-foreground font-mono text-[11px]">

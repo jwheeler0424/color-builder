@@ -48,10 +48,10 @@ function SwatchStrip({ hexes, label }: { hexes: string[]; label: string }) {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   return (
     <div className="mb-2">
-      <div className="text-muted-foreground uppercase tracking-[.07em] mb-[5px] font-bold text-[10px]">
+      <div className="text-muted-foreground uppercase tracking-[.07em] mb-1.5 font-bold text-[10px]">
         {label}
       </div>
-      <div className="flex-wrap flex gap-[3px]">
+      <div className="flex-wrap flex gap-1">
         {hexes.map((hex, i) => {
           const rgb = hexToRgb(hex);
           const tc =

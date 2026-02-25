@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import ConverterView from "@/components/views/converter-view";
-
-export const Route = createFileRoute("/_chroma/converter")({
-  component: ConverterView,
-});
+import { createFileRoute, redirect } from '@tanstack/react-router'
+// Legacy redirect: /converter → /build/extract
+export const Route = createFileRoute('/_chroma/converter')({
+  beforeLoad: () => { throw redirect({ to: '/build/extract', replace: true }) },
+})

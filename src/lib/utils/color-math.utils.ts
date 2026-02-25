@@ -1,4 +1,4 @@
-import type { CMYK, HSL, HSV, OKLCH, OKLab, RGB } from "@/types";
+import type { CMYK, HSL, HSV, OKLCH, OKLab, PickerMode, RGB } from "@/types";
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
@@ -77,7 +77,7 @@ export function hslToRgb({ h, s, l }: HSL): RGB {
   };
 }
 
-// ─── HSV ──────────────────────────────────────────────────────────────────────
+// ─── RGB ↔ HSV ──────────────────────────────────────────────────────────────────────
 
 export function rgbToHsv({ r, g, b }: RGB): HSV {
   const rn = r / 255,
@@ -95,7 +95,43 @@ export function rgbToHsv({ r, g, b }: RGB): HSV {
   return { h: h * 360, s: mx === 0 ? 0 : (d / mx) * 100, v: mx * 100 };
 }
 
-// ─── CMYK ─────────────────────────────────────────────────────────────────────
+export function hsvToRgb({ h, s, v }: HSV): RGB {
+  const sn = s / 100,
+    vn = v / 100;
+  const c = vn * sn,
+    x = c * (1 - Math.abs(((h / 60) % 2) - 1)),
+    m = vn - c;
+  let r = 0,
+    g = 0,
+    b = 0;
+  const seg = Math.floor(h / 60) % 6;
+  if (seg === 0) {
+    r = c;
+    g = x;
+  } else if (seg === 1) {
+    r = x;
+    g = c;
+  } else if (seg === 2) {
+    g = c;
+    b = x;
+  } else if (seg === 3) {
+    g = x;
+    b = c;
+  } else if (seg === 4) {
+    r = x;
+    b = c;
+  } else {
+    r = c;
+    b = x;
+  }
+  return {
+    r: Math.round((r + m) * 255),
+    g: Math.round((g + m) * 255),
+    b: Math.round((b + m) * 255),
+  };
+}
+
+// ─── RGB ↔ CMYK ─────────────────────────────────────────────────────────────────────
 
 export function rgbToCmyk({ r, g, b }: RGB): CMYK {
   const rn = r / 255,
@@ -109,6 +145,18 @@ export function rgbToCmyk({ r, g, b }: RGB): CMYK {
     m: Math.round(((1 - gn - k) / d) * 100),
     y: Math.round(((1 - bn - k) / d) * 100),
     k: Math.round(k * 100),
+  };
+}
+
+export function cmykToRgb({ c, m, y, k }: CMYK): RGB {
+  const cn = c / 100,
+    mn = m / 100,
+    yn = y / 100,
+    kn = k / 100;
+  return {
+    r: Math.round(255 * (1 - cn) * (1 - kn)),
+    g: Math.round(255 * (1 - mn) * (1 - kn)),
+    b: Math.round(255 * (1 - yn) * (1 - kn)),
   };
 }
 
@@ -139,6 +187,15 @@ export function oklabToLch({ L, a, b }: OKLab): OKLCH {
     L: L * 100,
     C: Math.sqrt(a * a + b * b) * 100,
     H: ((Math.atan2(b, a) * 180) / Math.PI + 360) % 360,
+  };
+}
+
+export function lchToOklab({ L, C, H }: OKLCH): OKLab {
+  const hRad = (H * Math.PI) / 180;
+  return {
+    L: L / 100,
+    a: (C / 100) * Math.cos(hRad),
+    b: (C / 100) * Math.sin(hRad),
   };
 }
 
@@ -547,6 +604,16 @@ export function toCssOklab(lab: OKLab, alpha = 100): string {
     : `oklab(${L} ${a} ${b} / ${fmtA(alpha)})`;
 }
 
+export function toCssCmyk(cmyk: CMYK, alpha = 100): string {
+  const c = Math.round(cmyk.c);
+  const m = Math.round(cmyk.m);
+  const y = Math.round(cmyk.y);
+  const k = Math.round(cmyk.k);
+  return alpha >= 100
+    ? `device-cmyk(${c}% ${m}% ${y}% ${k}%)`
+    : `device-cmyk(${c}% ${m}% ${y}% ${k}% / ${fmtA(alpha)})`;
+}
+
 /** 8-char hex with alpha: #RRGGBBAA */
 export function toHexAlpha(hex: string, alpha: number): string {
   if (alpha >= 100) return hex;
@@ -573,6 +640,34 @@ export function applySimMatrix(rgb: RGB, M: number[]): RGB {
       fromLinear(clamp(M[6] * R + M[7] * G + M[8] * B, 0, 1)) * 255,
     ),
   };
+}
+
+// ─── CSS output string for current mode ──────────────────────────────────────
+
+export function cssString(
+  mode: PickerMode,
+  rgb: RGB,
+  hsl: HSL,
+  hsv: HSV,
+  oklch: OKLCH,
+  oklab: OKLab,
+  cmyk: CMYK,
+  alpha: number,
+): string {
+  switch (mode) {
+    case "rgb":
+      return toCssRgb(rgb, alpha);
+    case "hsl":
+      return toCssHsl(hsl, alpha);
+    case "hsv":
+      return toCssHsv(hsv, alpha);
+    case "oklch":
+      return toCssOklch(oklch, alpha);
+    case "oklab":
+      return toCssOklab(oklab, alpha);
+    case "cmyk":
+      return toCssCmyk(cmyk, alpha);
+  }
 }
 
 // ─── Re-exports from split modules ──────────────────────────────────────────

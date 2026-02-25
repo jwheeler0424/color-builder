@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import ThemeGeneratorView from "@/components/views/theme-generator-view";
-
-export const Route = createFileRoute("/_chroma/theme")({
-  component: ThemeGeneratorView,
-});
+import { createFileRoute, redirect } from '@tanstack/react-router'
+// Legacy redirect: /theme → /export/theme
+export const Route = createFileRoute('/_chroma/theme')({
+  beforeLoad: () => { throw redirect({ to: '/export/theme', replace: true }) },
+})

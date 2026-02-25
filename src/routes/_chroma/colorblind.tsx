@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import ColorBlindView from "@/components/views/color-blind-view";
-
-export const Route = createFileRoute("/_chroma/colorblind")({
-  component: ColorBlindView,
-});
+import { createFileRoute, redirect } from '@tanstack/react-router'
+// Legacy redirect: /colorblind → /analyze/accessibility
+export const Route = createFileRoute('/_chroma/colorblind')({
+  beforeLoad: () => { throw redirect({ to: '/analyze/accessibility', replace: true }) },
+})

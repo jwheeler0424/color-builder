@@ -16,7 +16,7 @@ import {
 } from "@/lib/utils";
 import type { PaletteSlot } from "@/types";
 import { Button } from "@/components/ui/button";
-import HexInput from "@/components/hex-input";
+import HexInput from "../common/hex-input";
 
 type ThemeTab = "css" | "figma" | "tailwind" | "tailwind4" | "styledictionary";
 type PreviewMode = "light" | "dark";
@@ -71,10 +71,10 @@ function PaletteSourceStrip({
           if (hueDist(lch.H, 85) <= 70) utilRoles.push("warn");
           if (hueDist(lch.H, 25) <= 70) utilRoles.push("error");
 
-          const roleLabel = isPrimary ? "default" : (utilRoles[0] ?? null);
+          const roleLabel = isPrimary ? "primary" : (utilRoles[0] ?? null);
 
           return (
-            <div key={i} className="flex-col items-center flex gap-[3px]">
+            <div key={i} className="flex-col items-center flex gap-1">
               <div
                 style={{
                   width: 36,
@@ -119,10 +119,7 @@ function PaletteSourceStrip({
         })}
 
         {/* Arrow and role legend */}
-        <div
-          className="ml-1 flex flex-col gap-[3px]"
-          style={{ paddingBottom: 14 }}
-        >
+        <div className="ml-1 flex flex-col gap-1" style={{ paddingBottom: 14 }}>
           <span className="text-muted-foreground text-[9px]">→ hues drive</span>
           <span className="text-muted-foreground text-[9px]">
             surface tints,
@@ -255,11 +252,11 @@ function WebsiteMockup({
         {/* Logo uses first palette color */}
         <div className="items-center flex gap-1.5">
           <div
-            className="rounded shrink-0 w-[18px]"
+            className="rounded shrink-0 w-4.5"
             style={{ height: 18, background: accent1 }}
           />
           <span
-            className="font-extrabold text-[13px] tracking-[-0.02em]"
+            className="font-extrabold text-sm tracking-[-0.02em]"
             style={{ color: fg }}
           >
             Brand
@@ -320,7 +317,7 @@ function WebsiteMockup({
           science.
         </div>
         {/* Palette swatch dots in hero to show palette presence */}
-        <div className="flex items-center gap-[5px] mb-3.5">
+        <div className="flex items-center gap-1.5 mb-3.5">
           {accentColors.map((hex, i) => (
             <div
               key={i}
@@ -401,11 +398,9 @@ function WebsiteMockup({
                   }}
                 >
                   {/* Color accent bar from the actual palette color */}
-                  <div className="h-[3px]" style={{ background: accentHex }} />
+                  <div className="h-1" style={{ background: accentHex }} />
                   <div style={{ padding: 10 }}>
-                    <div className="font-bold text-[11px] mb-[3px]">
-                      {title}
-                    </div>
+                    <div className="font-bold text-[11px] mb-1">{title}</div>
                     <div className="text-[9px] mb-2" style={{ color: fgMuted }}>
                       {meta}
                     </div>
@@ -470,7 +465,7 @@ function WebsiteMockup({
               }}
             >
               <div
-                className="shrink-0 w-[14px] h-[14px]"
+                className="shrink-0 w-3.5 h-3.5"
                 style={{ borderRadius: 7, background: color, marginTop: 1 }}
               />
               <div className="text-[9.5px]">
@@ -576,7 +571,7 @@ function WebsiteMockup({
             }}
           >
             <div
-              className="text-[9.5px] font-bold mb-[3px]"
+              className="text-[9.5px] font-bold mb-1"
               style={{ color: errorColor || destructive }}
             >
               ⚠ API limit reached
@@ -613,7 +608,7 @@ function WebsiteMockup({
           © 2025 Brand Inc.
         </span>
         {/* Footer uses palette colors as color dots */}
-        <div className="items-center flex gap-[5px]">
+        <div className="items-center flex gap-1.5">
           {accentColors.map((hex, i) => (
             <div
               key={i}
@@ -670,7 +665,7 @@ function UtilityStrip({
         return (
           <div key={role} style={{ flex: "1 1 80px" }}>
             <div
-              className="flex items-center text-[10px] font-bold gap-[5px]"
+              className="flex items-center text-[10px] font-bold gap-1.5"
               style={{
                 background: color,
                 color: tc,
@@ -785,7 +780,7 @@ function ContrastMatrix({
                   }}
                 >
                   <div
-                    className="h-[3px]"
+                    className="h-1"
                     style={{ width: 12, borderRadius: 1, background: fgHex }}
                   />
                 </div>
@@ -876,19 +871,19 @@ function TokenTable({
         if (!groupTokens.length) return null;
         return (
           <div key={label} className="mb-3.5">
-            <div className="text-[9.5px] font-bold text-muted-foreground uppercase mb-[5px] pb-1 border-b border-muted tracking-[.08em]">
+            <div className="text-[9.5px] font-bold text-muted-foreground uppercase mb-1.5 pb-1 border-b border-muted tracking-[.08em]">
               {label}
             </div>
             {groupTokens.map((t) => (
               <div
                 key={t.name}
-                className="grid gap-2 items-center border-b border-muted [grid-template-columns:160px_90px_90px_1fr] py-1 px-0"
+                className="grid gap-2 items-center border-b border-muted grid-cols-[160px_90px_90px_1fr] py-1 px-0"
               >
                 <code className="font-mono text-secondary-foreground text-[9.5px]">
                   {t.name}
                 </code>
                 {(["light", "dark"] as const).map((m) => (
-                  <div key={m} className="items-center flex gap-[5px]">
+                  <div key={m} className="items-center flex gap-1.5">
                     <div
                       className="rounded shrink-0 w-4 h-4"
                       style={{
@@ -998,7 +993,7 @@ function EditableTokenTable({
         if (!groupTokens.length) return null;
         return (
           <div key={label} className="mb-3.5">
-            <div className="text-[9.5px] font-bold text-muted-foreground uppercase mb-[5px] pb-1 border-b border-muted tracking-[.08em]">
+            <div className="text-[9.5px] font-bold text-muted-foreground uppercase mb-1.5 pb-1 border-b border-muted tracking-[.08em]">
               {label}
             </div>
             {groupTokens.map((t) => {
@@ -1018,7 +1013,7 @@ function EditableTokenTable({
                       : undefined,
                   }}
                 >
-                  <div className="items-center flex gap-[3px]">
+                  <div className="items-center flex gap-1">
                     {isOverridden && (
                       <span className="text-primary text-[8px]">✎</span>
                     )}
@@ -1210,7 +1205,7 @@ function ComponentShowcase({
           Buttons
         </div>
         <div className="flex-wrap flex gap-1.5">
-          <Btn bg={pri} color={priFg} label="default" />
+          <Btn bg={pri} color={priFg} label="Primary" />
           <Btn bg={sec} color={secFg} label="Secondary" />
           <Btn bg="transparent" color={fg} label="Ghost" />
           <Btn bg={des} color={desFg} label="Destructive" />
@@ -1226,7 +1221,7 @@ function ComponentShowcase({
         >
           Badges
         </div>
-        <div className="flex-wrap flex gap-[5px]">
+        <div className="flex-wrap flex gap-1.5">
           <Badge bg={`${pri}22`} color={pri} label="Default" />
           <Badge bg={successS} color={successL} label="Success" />
           <Badge bg={warnS} color={warnL} label="Warning" />
@@ -1246,7 +1241,7 @@ function ComponentShowcase({
         <div className="flex-col flex gap-1">
           <div>
             <div
-              className="text-[9.5px] font-semibold mb-[3px]"
+              className="text-[9.5px] font-semibold mb-1"
               style={{ color: fg }}
             >
               Email address
@@ -1271,7 +1266,7 @@ function ComponentShowcase({
           </div>
           <div>
             <div
-              className="text-[9.5px] font-semibold mb-[3px]"
+              className="text-[9.5px] font-semibold mb-1"
               style={{ color: fg }}
             >
               Password
@@ -1304,7 +1299,7 @@ function ComponentShowcase({
         >
           Alerts
         </div>
-        <div className="flex-col flex gap-[5px]">
+        <div className="flex-col flex gap-1.5">
           <Alert
             color={infoL}
             subtle={infoS}
@@ -1555,7 +1550,7 @@ export default function ThemeGeneratorView() {
           <div className="mt-4">
             <button
               onClick={() => setExpandComponents((v) => !v)}
-              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] border rounded font-mono font-bold tracking-[.04em] whitespace-nowrap cursor-pointer transition-colors bg-transparent text-secondary-foreground border-border hover:text-foreground hover:border-input justify-between flex w-full"
+              className="inline-flex items-center gap-1 px-2 py-1 text-[10px] border rounded font-mono font-bold tracking-[.04em] whitespace-nowrap cursor-pointer transition-colors bg-transparent text-secondary-foreground border-border hover:text-foreground hover:border-input justify-between w-full"
             >
               <span>
                 Component Showcase — Buttons · Badges · Inputs · Alerts · Cards
@@ -1572,7 +1567,7 @@ export default function ThemeGeneratorView() {
 
         {/* ─── Utility Colors ───────────────────────────────────────────── */}
         <div className="mb-7">
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Utility Colors — derived from palette hues ({previewMode} mode)
           </div>
           <UtilityStrip tokens={tokens} mode={previewMode} />
@@ -1632,7 +1627,7 @@ export default function ThemeGeneratorView() {
           </div>
           {expandTokens && (
             <>
-              <div className="grid gap-2 mb-1 [grid-template-columns:160px_90px_90px_1fr] py-1 px-0">
+              <div className="grid gap-2 mb-1 grid-cols-[160px_90px_90px_1fr] py-1 px-0">
                 {["Token", "Light", "Dark", "Usage"].map((h) => (
                   <span
                     key={h}
@@ -1727,7 +1722,7 @@ export default function ThemeGeneratorView() {
           )}
 
           <pre
-            className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-[300px] overflow-y-auto"
+            className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-75 overflow-y-auto"
             style={{ maxHeight: 440 }}
           >
             {content}

@@ -9,7 +9,7 @@ import {
   toHexAlpha,
   toCssRgb,
 } from "@/lib/utils";
-import type { ExportTab } from "../../types";
+import type { ExportTab } from "@/types";
 import { generateSvgSwatch, downloadSvg } from "@/lib/utils/svg-export";
 import { Button } from "../ui/button";
 import {
@@ -138,6 +138,7 @@ export function ExportModal() {
             size="sm"
             title="Export"
             onClick={() => openModal("export")}
+            className="text-muted-foreground"
           >
             ↗
           </Button>

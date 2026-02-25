@@ -104,7 +104,7 @@ function UtilityCard({
               {utility.label}
             </span>
             <button
-              className={`bg-transparent border-none cursor-pointer text-[13px] p-0 opacity-50 hover:opacity-100 transition-opacity leading-none${utility.locked ? " locked" : ""}`}
+              className={`bg-transparent border-none cursor-pointer text-sm p-0 opacity-50 hover:opacity-100 transition-opacity leading-none${utility.locked ? " locked" : ""}`}
               onClick={() => onToggleLock(utility.role)}
               title={
                 utility.locked
@@ -140,7 +140,7 @@ function UtilityCard({
             Filled
           </span>
           <span
-            className="text-[11px] font-bold inline-flex items-center gap-[5px]"
+            className="text-[11px] font-bold inline-flex items-center gap-1.5"
             style={{
               background: hex,
               color: tc,
@@ -157,7 +157,7 @@ function UtilityCard({
             Subtle
           </span>
           <span
-            className="text-[11px] font-bold inline-flex items-center gap-[5px]"
+            className="text-[11px] font-bold inline-flex items-center gap-1.5"
             style={{
               background: subtleBg,
               color: subtleText,

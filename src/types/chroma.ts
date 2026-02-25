@@ -188,6 +188,8 @@ export interface ThemeTokenSet {
 
 export type MixSpace = "oklch" | "hsl" | "rgb";
 
+export type PickerMode = "rgb" | "hsl" | "hsv" | "oklch" | "oklab" | "cmyk";
+
 // ─── Export ───────────────────────────────────────────────────────────────────
 
 export type ExportTab =
@@ -222,7 +224,7 @@ export interface ChromaState {
   temperature: number;
   pickerHex: string;
   pickerAlpha: number;
-  pickerMode: "rgb" | "hsl" | "hsv" | "oklch" | "oklab";
+  pickerMode: PickerMode;
   scaleHex: string;
   scaleName: string;
   scaleTokenTab: TokenFormat;

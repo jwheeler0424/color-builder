@@ -158,10 +158,7 @@ export default function ContrastChecker() {
               { label: "AAA Large Text (4.5:1)", pass: ratio >= 4.5 },
               { label: "AAA Normal Text (7:1)", pass: ratio >= 7 },
             ].map(({ label, pass }) => (
-              <div
-                key={label}
-                className="text-[13px] text-secondary-foreground"
-              >
+              <div key={label} className="text-sm text-secondary-foreground">
                 <span
                   style={{
                     color: pass ? "#00e676" : "#ff4455",
@@ -277,7 +274,7 @@ export default function ContrastChecker() {
               </div>
               <div className="flex-wrap flex mt-1.5 gap-1">
                 {slots.map((slot, i) => (
-                  <div key={i} className="flex-col flex gap-[3px]">
+                  <div key={i} className="flex-col flex gap-1">
                     <div
                       className="rounded cursor-pointer"
                       style={{

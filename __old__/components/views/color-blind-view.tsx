@@ -52,7 +52,7 @@ export default function ColorBlindView() {
               className="bg-card border border-border rounded overflow-hidden"
             >
               <div className="px-3.5 py-2.5 border-b border-border flex justify-between items-baseline gap-2">
-                <div className="font-display text-[13px] font-bold">
+                <div className="font-display text-sm font-bold">
                   {cbType.name}
                 </div>
                 <div className="text-[10px] text-muted-foreground text-right">

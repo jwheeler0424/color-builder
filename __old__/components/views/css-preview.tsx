@@ -166,7 +166,7 @@ function MiniApp({
         }}
       >
         <div
-          className="inline-flex items-center text-[8.5px] font-bold tracking-[.05em] gap-[5px] mb-[7px]"
+          className="inline-flex items-center text-[8.5px] font-bold tracking-[.05em] gap-1.5 mb-[7px]"
           style={{
             background: primary,
             color: primaryFg,
@@ -181,7 +181,7 @@ function MiniApp({
           JUST LAUNCHED
         </div>
         <div
-          className="text-base font-extrabold mb-[5px]"
+          className="text-base font-extrabold mb-1.5"
           style={{ color: primaryContFg, letterSpacing: "-0.025em" }}
         >
           Design at the speed of thought
@@ -434,7 +434,7 @@ function UtilityPanel({
           <div className="text-[9.5px] font-bold text-muted-foreground uppercase tracking-[.07em] mb-[7px]">
             {m === "light" ? "☀ Light" : "☾ Dark"}
           </div>
-          <div className="flex-col flex gap-[5px]">
+          <div className="flex-col flex gap-1.5">
             {roles.map((role) => {
               const color =
                 m === "light"
@@ -468,7 +468,7 @@ function UtilityPanel({
                   <span className="capitalize font-bold text-[10px] flex-1">
                     {role}
                   </span>
-                  <div className="items-center flex gap-[3px]">
+                  <div className="items-center flex gap-1">
                     <div
                       title="filled"
                       className="rounded w-[14px] h-[14px]"

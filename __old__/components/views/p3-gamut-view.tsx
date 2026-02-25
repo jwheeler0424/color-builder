@@ -142,11 +142,9 @@ function SwatchCard({
         <div className="text-[9.5px] font-mono text-secondary-foreground mb-[3px]">
           {hex.toUpperCase()}
         </div>
-        <div className="text-muted-foreground mb-[5px] text-[8.5px]">
-          {name}
-        </div>
+        <div className="text-muted-foreground mb-1.5 text-[8.5px]">{name}</div>
 
-        <div className="items-center flex mb-1 gap-[5px]">
+        <div className="items-center flex mb-1 gap-1.5">
           <span className="text-muted-foreground text-[8.5px]">
             C={lch.C.toFixed(3)}
           </span>

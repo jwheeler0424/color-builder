@@ -5,7 +5,7 @@ import {
   textColor,
   rgbToOklch,
   hexToRgb,
-} from "@/lib/utils/color-math.utils";
+} from "@/lib/utils";
 import type { PaletteSlot } from "@/types";
 
 type PreviewMode = "light" | "dark" | "split";
@@ -166,7 +166,7 @@ function MiniApp({
         }}
       >
         <div
-          className="inline-flex items-center text-[8.5px] font-bold tracking-[.05em] gap-[5px] mb-[7px]"
+          className="inline-flex items-center text-[8.5px] font-bold tracking-[.05em] gap-1.5 mb-2"
           style={{
             background: primary,
             color: primaryFg,
@@ -181,7 +181,7 @@ function MiniApp({
           JUST LAUNCHED
         </div>
         <div
-          className="text-base font-extrabold mb-[5px]"
+          className="text-base font-extrabold mb-1.5"
           style={{ color: primaryContFg, letterSpacing: "-0.025em" }}
         >
           Design at the speed of thought
@@ -192,7 +192,7 @@ function MiniApp({
         >
           Your palette, your tokens, your system — built automatically.
         </div>
-        <div className="flex gap-[7px]">
+        <div className="flex gap-2">
           <button style={btnPrimary}>Get started →</button>
           <button style={btnOutline}>View demo</button>
         </div>
@@ -231,7 +231,7 @@ function MiniApp({
             }}
           >
             <div
-              className="rounded mb-[7px]"
+              className="rounded mb-2"
               style={{
                 width: 24,
                 height: 24,
@@ -239,9 +239,9 @@ function MiniApp({
                 opacity: 0.9,
               }}
             />
-            <div className="font-bold text-[10.5px] mb-[3px]">{title}</div>
+            <div className="font-bold text-[10.5px] mb-1.5">{title}</div>
             <div
-              className="text-[9.5px] leading-[1.5]"
+              className="text-[9.5px] leading-normal"
               style={{ color: fgMuted }}
             >
               {desc}
@@ -296,7 +296,7 @@ function MiniApp({
             }}
           >
             <div
-              className="rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 w-[18px]"
+              className="rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 w-4.5"
               style={{
                 height: 18,
                 background: borderColor,
@@ -431,10 +431,10 @@ function UtilityPanel({
     <div className="grid gap-4 grid-cols-2">
       {(["light", "dark"] as const).map((m) => (
         <div key={m}>
-          <div className="text-[9.5px] font-bold text-muted-foreground uppercase tracking-[.07em] mb-[7px]">
+          <div className="text-[9.5px] font-bold text-muted-foreground uppercase tracking-[.07em] mb-2">
             {m === "light" ? "☀ Light" : "☾ Dark"}
           </div>
-          <div className="flex-col flex gap-[5px]">
+          <div className="flex-col flex gap-1.5">
             {roles.map((role) => {
               const color =
                 m === "light"
@@ -468,10 +468,10 @@ function UtilityPanel({
                   <span className="capitalize font-bold text-[10px] flex-1">
                     {role}
                   </span>
-                  <div className="items-center flex gap-[3px]">
+                  <div className="items-center flex gap-1">
                     <div
                       title="filled"
-                      className="rounded w-[14px] h-[14px]"
+                      className="rounded w-3.5 h-3.5"
                       style={{
                         background: color,
                         border: "1px solid rgba(128,128,128,.2)",
@@ -530,7 +530,7 @@ export default function CssPreview() {
 
   return (
     <div className="flex-1 overflow-auto p-6">
-      <div className="max-w-[960px] mx-auto">
+      <div className="max-w-240 mx-auto">
         <div className="mb-5">
           <h2>Live CSS Preview</h2>
           <p>
@@ -590,7 +590,7 @@ export default function CssPreview() {
 
         {/* Token legend */}
         <div className="mb-7">
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Token roles ({previewMode === "dark" ? "dark" : "light"} mode)
           </div>
           <TokenLegend
@@ -601,7 +601,7 @@ export default function CssPreview() {
 
         {/* Utility panel */}
         <div>
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2.5">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Utility colors — filled + correct subtle backgrounds for both modes
           </div>
           <UtilityPanel tokens={tokens} />

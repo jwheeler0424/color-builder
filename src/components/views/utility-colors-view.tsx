@@ -9,8 +9,8 @@ import {
   hslToRgb,
   rgbToHex,
   hexToRgb,
-  hexToStop,
   rgbToOklch,
+  hexToStop,
 } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -104,7 +104,7 @@ function UtilityCard({
               {utility.label}
             </span>
             <button
-              className={`bg-transparent border-none cursor-pointer text-[13px] p-0 opacity-50 hover:opacity-100 transition-opacity leading-none${utility.locked ? " locked" : ""}`}
+              className={`bg-transparent border-none cursor-pointer text-sm p-0 opacity-50 hover:opacity-100 transition-opacity leading-none${utility.locked ? " locked" : ""}`}
               onClick={() => onToggleLock(utility.role)}
               title={
                 utility.locked
@@ -140,7 +140,7 @@ function UtilityCard({
             Filled
           </span>
           <span
-            className="text-[11px] font-bold inline-flex items-center gap-[5px]"
+            className="text-[11px] font-bold inline-flex items-center gap-1.5"
             style={{
               background: hex,
               color: tc,
@@ -157,7 +157,7 @@ function UtilityCard({
             Subtle
           </span>
           <span
-            className="text-[11px] font-bold inline-flex items-center gap-[5px]"
+            className="text-[11px] font-bold inline-flex items-center gap-1.5"
             style={{
               background: subtleBg,
               color: subtleText,
@@ -366,7 +366,7 @@ export default function UtilityColorsView() {
 
   return (
     <div className="flex-1 overflow-auto p-6">
-      <div className="max-w-[960px] mx-auto">
+      <div className="max-w-240 mx-auto">
         <div className="mb-5">
           <h2>Utility Colors</h2>
           <p>
@@ -392,7 +392,7 @@ export default function UtilityColorsView() {
         )}
 
         {/* Color cards grid */}
-        <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(280px,1fr))]">
+        <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
           {roles.map((role) => (
             <UtilityCard
               key={role}
@@ -405,7 +405,7 @@ export default function UtilityColorsView() {
 
         {/* Live component preview */}
         <div style={{ marginTop: 32 }}>
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-3">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             Component Preview
           </div>
           <LivePreview />
@@ -413,10 +413,10 @@ export default function UtilityColorsView() {
 
         {/* Quick CSS vars */}
         <div className="mt-6">
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold mb-2">
+          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
             CSS Variables
           </div>
-          <pre className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-[300px] overflow-y-auto">{`:root {\n${cssVars}\n}`}</pre>
+          <pre className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-75 overflow-y-auto">{`:root {\n${cssVars}\n}`}</pre>
         </div>
       </div>
     </div>

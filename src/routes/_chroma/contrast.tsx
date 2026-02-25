@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import ContrastChecker from "@/components/views/contrast-checker";
-
-export const Route = createFileRoute("/_chroma/contrast")({
-  component: ContrastChecker,
-});
+import { createFileRoute, redirect } from '@tanstack/react-router'
+// Legacy redirect: /contrast → /analyze/accessibility
+export const Route = createFileRoute('/_chroma/contrast')({
+  beforeLoad: () => { throw redirect({ to: '/analyze/accessibility', replace: true }) },
+})
