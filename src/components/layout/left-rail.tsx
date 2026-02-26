@@ -17,6 +17,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { GenerateControls, GenerateFooter } from "./generate-controls";
 import { useChromaStore } from "@/hooks/use-chroma-store";
 import { cn } from "@/lib/utils";
+import { LogoIcon } from "../logo-icon";
 
 const COLLAPSE_KEY = "chroma:rail-collapsed";
 
@@ -59,7 +60,7 @@ export function LeftRail({ onEditSeed, className }: LeftRailProps) {
   return (
     <aside
       className={cn(
-        "flex flex-col bg-card border-r border-border shrink-0",
+        "flex flex-col bg-card border-0 shrink-0",
         "transition-all duration-200 overflow-hidden",
         collapsed ? "w-12" : "w-60",
         className,
@@ -68,16 +69,22 @@ export function LeftRail({ onEditSeed, className }: LeftRailProps) {
       {/* ── Rail header ── */}
       <div
         className={cn(
-          "flex items-center border-b border-border shrink-0 h-10",
+          "flex flex-wrap items-center border-b border-border shrink-0 h-12",
           collapsed ? "justify-center px-0" : "justify-between px-4",
         )}
       >
+        {/* Brand */}
         {!collapsed && (
-          <div className="font-display text-sm font-black tracking-tight text-foreground">
-            Chroma
-            <sup className="text-[9px] text-muted-foreground font-normal">
-              v4
-            </sup>
+          <div className="flex items-center gap-3">
+            <LogoIcon className="size-5" />
+            <div className="flex gap-0.5">
+              <span className="font-display text-lg font-black tracking-tight text-foreground shrink-0">
+                Chroma
+              </span>
+              <span className="text-lg font-display font-normal tracking-tight text-muted-foreground">
+                ELITE
+              </span>
+            </div>
           </div>
         )}
         <button
@@ -121,7 +128,7 @@ export function LeftRail({ onEditSeed, className }: LeftRailProps) {
       {/* ── Expanded controls ── */}
       {!collapsed && (
         <>
-          <div className="flex-1 overflow-y-auto [scrollbar-width:thin]">
+          <div className="flex-1 overflow-y-auto [scrollbar-width:thin] border-r border-border">
             <GenerateControls onEditSeed={onEditSeed} />
 
             {/* Saved palettes link */}

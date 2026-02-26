@@ -42,19 +42,19 @@ export function ChromaShell() {
   return (
     <>
       {/* ── Mobile (<640px) ── */}
-      <div className="flex sm:hidden h-full flex-col">
+      <section className="flex sm:hidden h-full flex-col">
         <MobileShell />
-      </div>
+      </section>
 
       {/* ── Tablet (640–1023px) ── */}
-      <div className="hidden sm:flex lg:hidden h-full flex-col">
+      <section className="hidden sm:flex lg:hidden h-full flex-col">
         <TabletShell />
-      </div>
+      </section>
 
       {/* ── Desktop (≥1024px) ── */}
-      <div className="hidden lg:flex h-full flex-col">
+      <section className="hidden lg:flex h-full flex-col">
         <StudioShell />
-      </div>
+      </section>
     </>
   );
 }

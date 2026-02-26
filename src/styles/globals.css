@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* ─── Layout Imports ────────────────────────────────────────────────────── */
+@import "./layout.css";
+
 /* ─── Font Imports ──────────────────────────────────────────────────────── */
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";

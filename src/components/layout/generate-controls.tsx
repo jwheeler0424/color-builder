@@ -383,7 +383,7 @@ export function GenerateControls({ onEditSeed }: GenerateControlsProps) {
 export function GenerateFooter() {
   const generate = useChromaStore((s) => s.generate);
   return (
-    <div className="px-4 py-3 border-t border-border bg-card shrink-0">
+    <div className="px-4 py-3 border-t border-r border-border bg-card shrink-0">
       <button
         className="w-full py-2.5 text-[12px] font-bold rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer border-0"
         onClick={generate}

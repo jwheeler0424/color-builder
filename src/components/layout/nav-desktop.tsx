@@ -124,12 +124,6 @@ export function NavDesktop({ className, onThemeToggle }: NavDesktopProps) {
         className,
       )}
     >
-      {/* Brand */}
-      <div className="font-display text-[15px] font-black tracking-tight text-foreground shrink-0 pr-5">
-        Chroma
-        <sup className="text-[9px] text-muted-foreground font-normal">v4</sup>
-      </div>
-
       {/* 4 section links */}
       <nav
         className="flex flex-1 items-stretch h-full"

@@ -1,0 +1,24 @@
+/* Desktop (≥1024px) */
+.desktop-main {
+  display: grid;
+  grid-template-areas:
+    "desktop-left desktop-main-nav desktop-main-nav"
+    "desktop-left desktop-main desktop-right";
+  grid-template-columns: auto 1fr auto;
+}
+
+.desktop-left {
+  grid-area: desktop-left;
+}
+
+.desktop-main-nav {
+  grid-area: desktop-main-nav;
+}
+
+.desktop-main {
+  grid-area: desktop-main;
+}
+
+.desktop-right {
+  grid-area: desktop-right;
+}
