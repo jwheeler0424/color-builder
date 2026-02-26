@@ -23,6 +23,24 @@ import { NAMED } from "@/lib/constants/chroma";
 // access in the hot loop and keeps the data fully packed for cache efficiency.
 
 let _namedFlat: Float32Array | null = null;
+let _namedByHex: Map<string, string[]> | null = null;
+let _namedByName: Map<string, string[]> | null = null;
+
+function normalizeNameQuery(value: string): string {
+  return value.trim().toLocaleLowerCase();
+}
+
+function normalizeHexQuery(value: string): string {
+  const hex = value.trim().replace(/^#/, "").toLowerCase();
+  if (/^[0-9a-f]{3}$/.test(hex)) {
+    return `#${hex}`;
+  }
+  if (/^[0-9a-f]{6}$/.test(hex)) {
+    return `#${hex}`;
+  }
+  return "";
+}
+
 function getNamedFlat(): Float32Array {
   if (_namedFlat) return _namedFlat;
   _namedFlat = new Float32Array(NAMED.length * 3);
@@ -34,7 +52,49 @@ function getNamedFlat(): Float32Array {
   return _namedFlat;
 }
 
+function getNamedIndexes(): {
+  byHex: Map<string, string[]>;
+  byName: Map<string, string[]>;
+} {
+  if (_namedByHex && _namedByName) {
+    return { byHex: _namedByHex, byName: _namedByName };
+  }
+
+  const byHex = new Map<string, string[]>();
+  const byName = new Map<string, string[]>();
+
+  for (const color of NAMED) {
+    const hexKey = normalizeHexQuery(color.hex);
+    const nameKey = normalizeNameQuery(color.name);
+
+    if (hexKey) {
+      const names = byHex.get(hexKey);
+      if (names) names.push(color.name);
+      else byHex.set(hexKey, [color.name]);
+    }
+
+    const hexes = byName.get(nameKey);
+    if (hexes) hexes.push(color.hex);
+    else byName.set(nameKey, [color.hex]);
+  }
+
+  _namedByHex = byHex;
+  _namedByName = byName;
+  return { byHex, byName };
+}
+
+function exactNameMatchFromHex(hex: string): string | null {
+  const { byHex } = getNamedIndexes();
+  const key = normalizeHexQuery(hex);
+  if (!key) return null;
+  const names = byHex.get(key);
+  return names?.[0] ?? null;
+}
+
 export function nearestName(rgb: { r: number; g: number; b: number }): string {
+  const exact = exactNameMatchFromHex(rgbToHex(rgb));
+  if (exact) return exact;
+
   const flat = getNamedFlat();
   const { r, g, b } = rgb;
   let bestIdx = 0;
