@@ -86,6 +86,7 @@ export const HARMONIES: HarmonyDef[] = [
 // ─── Themes ───────────────────────────────────────────────────────────────────
 
 export const THEMES: ThemeDef[] = [
+  // ── ANALOGOUS ──────────────────────────────────────────────────────────────
   {
     name: "Forest",
     mode: "analogous",
@@ -100,11 +101,6 @@ export const THEMES: ThemeDef[] = [
     name: "Ocean Wave",
     mode: "analogous",
     seeds: ["#0077B6", "#00B4D8", "#90E0EF", "#CAF0F8", "#48CAE4"],
-  },
-  {
-    name: "Blue Lagoon",
-    mode: "complementary",
-    seeds: ["#006994", "#0099CC", "#66CCDD", "#FFDD99", "#FF9944"],
   },
   {
     name: "Mystic Night",
@@ -132,25 +128,9 @@ export const THEMES: ThemeDef[] = [
     seeds: ["#D62828", "#F77F00", "#FCBF49", "#EAE2B7", "#003049"],
   },
   {
-    name: "Crashing Wave",
-    mode: "split-comp",
-    seeds: ["#023E8A", "#0077B6", "#48CAE4", "#ADE8F4", "#90E0EF"],
-  },
-  {
-    name: "Wildflower",
-    mode: "triadic",
-    seeds: ["#E040FB", "#00E676", "#FFEB3B", "#FF4081", "#40C4FF"],
-  },
-  { name: "Stormy", mode: "monochromatic", seeds: ["#37474F"] },
-  {
     name: "Cherry Blossom",
     mode: "analogous",
     seeds: ["#FF85A1", "#FFB3C6", "#FF4D6D", "#FFC2D4", "#FFCCD5"],
-  },
-  {
-    name: "Cyber",
-    mode: "complementary",
-    seeds: ["#00F5D4", "#F72585", "#7209B7", "#3A0CA3", "#4CC9F0"],
   },
   {
     name: "Earth",
@@ -161,6 +141,424 @@ export const THEMES: ThemeDef[] = [
     name: "Lagoon",
     mode: "analogous",
     seeds: ["#006D5B", "#40826D", "#ACE1AF", "#20B2AA", "#48D1CC"],
+  },
+  {
+    name: "Volcano",
+    mode: "analogous",
+    seeds: ["#7B0000", "#BF2600", "#E85D04", "#F48C06", "#FFBA08"],
+  },
+  {
+    name: "Sage Meadow",
+    mode: "analogous",
+    seeds: ["#606C38", "#8A9A5B", "#DDE5B6", "#ADC178", "#A98467"],
+  },
+  {
+    name: "Twilight",
+    mode: "analogous",
+    seeds: ["#1A1A2E", "#16213E", "#0F3460", "#533483", "#E94560"],
+  },
+  {
+    name: "Coral Reef",
+    mode: "analogous",
+    seeds: ["#FF6B6B", "#FF8E53", "#FFA552", "#FFD166", "#06D6A0"],
+  },
+  {
+    name: "Lavender Mist",
+    mode: "analogous",
+    seeds: ["#C8B8E8", "#B392AC", "#E0AFA0", "#D4C5E2", "#957DAD"],
+  },
+  {
+    name: "Jungle",
+    mode: "analogous",
+    seeds: ["#1B4332", "#2D6A4F", "#52B788", "#95D5B2", "#D8F3DC"],
+  },
+  {
+    name: "Sahara",
+    mode: "analogous",
+    seeds: ["#C9A84C", "#E8C46A", "#F4E285", "#B5835A", "#8C5E3C"],
+  },
+  {
+    name: "Blueberry",
+    mode: "analogous",
+    seeds: ["#2B0A3D", "#4A1070", "#7B2D8B", "#A855B5", "#D4A5E0"],
+  },
+  {
+    name: "Seaglass",
+    mode: "analogous",
+    seeds: ["#70C1B3", "#B2DBBF", "#F3FFBD", "#62929E", "#546A7B"],
+  },
+  {
+    name: "Autumn Leaves",
+    mode: "analogous",
+    seeds: ["#A50104", "#CC3A00", "#E55B00", "#F19100", "#F9C74F"],
+  },
+  {
+    name: "Arctic",
+    mode: "analogous",
+    seeds: ["#CAF0F8", "#ADE8F4", "#90E0EF", "#48CAE4", "#023E8A"],
+  },
+  {
+    name: "Rainforest",
+    mode: "analogous",
+    seeds: ["#004B23", "#006400", "#007200", "#38B000", "#70E000"],
+  },
+  {
+    name: "Dusty Rose",
+    mode: "analogous",
+    seeds: ["#9E2A2B", "#C9474A", "#E07A7C", "#F2B5B6", "#FAE0E0"],
+  },
+
+  // ── COMPLEMENTARY ──────────────────────────────────────────────────────────
+  {
+    name: "Blue Lagoon",
+    mode: "complementary",
+    seeds: ["#006994", "#0099CC", "#66CCDD", "#FFDD99", "#FF9944"],
+  },
+  {
+    name: "Cyber",
+    mode: "complementary",
+    seeds: ["#00F5D4", "#F72585", "#7209B7", "#3A0CA3", "#4CC9F0"],
+  },
+  {
+    name: "Fiesta",
+    mode: "complementary",
+    seeds: ["#E63946", "#457B9D", "#1D3557", "#F1FAEE", "#A8DADC"],
+  },
+  {
+    name: "Koi Pond",
+    mode: "complementary",
+    seeds: ["#FF6B35", "#F7C59F", "#006D77", "#83C5BE", "#EDF6F9"],
+  },
+  {
+    name: "Poppy Field",
+    mode: "complementary",
+    seeds: ["#D62828", "#F77F00", "#2D6A4F", "#52B788"],
+  },
+  {
+    name: "Electric Dreams",
+    mode: "complementary",
+    seeds: ["#7400B8", "#6930C3", "#56CFE1", "#72EFDD", "#80FFDB"],
+  },
+  {
+    name: "Matcha Strawberry",
+    mode: "complementary",
+    seeds: ["#D62828", "#E07A5F", "#3D405B", "#81B29A", "#F2CC8F"],
+  },
+  {
+    name: "Dusk",
+    mode: "complementary",
+    seeds: ["#FF595E", "#FFCA3A", "#6A4C93", "#1982C4", "#8AC926"],
+  },
+
+  // ── SPLIT-COMPLEMENTARY ────────────────────────────────────────────────────
+  {
+    name: "Crashing Wave",
+    mode: "split-comp",
+    seeds: ["#023E8A", "#0077B6", "#48CAE4", "#ADE8F4", "#90E0EF"],
+  },
+  {
+    name: "Carnival",
+    mode: "split-comp",
+    seeds: ["#FF0054", "#FF5400", "#FFBD00", "#390099", "#9E0059"],
+  },
+  {
+    name: "Parrot",
+    mode: "split-comp",
+    seeds: ["#38B000", "#007200", "#FFBE0B", "#FF5400", "#FB5607"],
+  },
+  {
+    name: "Peacock",
+    mode: "split-comp",
+    seeds: ["#0077B6", "#023E8A", "#F72585", "#FF6B6B", "#FFDD00"],
+  },
+  {
+    name: "Mardi Gras",
+    mode: "split-comp",
+    seeds: ["#7B2D8B", "#A855B5", "#FFBE0B", "#38B000", "#1E88E5"],
+  },
+
+  // ── TRIADIC ────────────────────────────────────────────────────────────────
+  {
+    name: "Wildflower",
+    mode: "triadic",
+    seeds: ["#E040FB", "#00E676", "#FFEB3B", "#FF4081", "#40C4FF"],
+  },
+  {
+    name: "Primary Bold",
+    mode: "triadic",
+    seeds: ["#E63946", "#FFD60A", "#023E8A"],
+  },
+  {
+    name: "Tropic",
+    mode: "triadic",
+    seeds: ["#FF006E", "#3A86FF", "#FFBE0B", "#8338EC"],
+  },
+  {
+    name: "Bauhaus",
+    mode: "triadic",
+    seeds: ["#CC0000", "#0033AA", "#FFCC00", "#333333"],
+  },
+  {
+    name: "Arcade",
+    mode: "triadic",
+    seeds: ["#FF0A54", "#F5A623", "#00D4FF", "#7B2FBE"],
+  },
+  {
+    name: "Citrus",
+    mode: "triadic",
+    seeds: ["#FF595E", "#FFCA3A", "#8AC926", "#1982C4", "#6A4C93"],
+  },
+
+  // ── TETRADIC ───────────────────────────────────────────────────────────────
+  {
+    name: "Tapestry",
+    mode: "tetradic",
+    seeds: ["#9B2226", "#AE2012", "#CA6702", "#EE9B00", "#94D2BD", "#0A9396"],
+  },
+  {
+    name: "Prism",
+    mode: "tetradic",
+    seeds: ["#F72585", "#7209B7", "#3A86FF", "#06D6A0"],
+  },
+  {
+    name: "Bazaar",
+    mode: "tetradic",
+    seeds: ["#E63946", "#F4A261", "#2A9D8F", "#264653"],
+  },
+  {
+    name: "Stained Glass",
+    mode: "tetradic",
+    seeds: ["#9B2226", "#005F73", "#EE9B00", "#0A9396", "#AE2012", "#94D2BD"],
+  },
+  {
+    name: "Gemstone",
+    mode: "tetradic",
+    seeds: ["#E40066", "#FF7B00", "#00B4A0", "#8000FF"],
+  },
+
+  // ── SQUARE ─────────────────────────────────────────────────────────────────
+  {
+    name: "Neon Arcade",
+    mode: "square",
+    seeds: ["#FF0090", "#FF8C00", "#00FF90", "#00B0FF"],
+  },
+  {
+    name: "Terracotta Sky",
+    mode: "square",
+    seeds: ["#C1440E", "#FAD02C", "#2C8FD4", "#5FAD56"],
+  },
+  {
+    name: "Jewel Box",
+    mode: "square",
+    seeds: ["#9B111E", "#003153", "#228B22", "#8B008B"],
+  },
+
+  // ── MONOCHROMATIC ──────────────────────────────────────────────────────────
+  {
+    name: "Stormy",
+    mode: "monochromatic",
+    seeds: ["#263238", "#37474F", "#546E7A", "#78909C", "#B0BEC5"],
+  },
+  {
+    name: "Midnight Blue",
+    mode: "monochromatic",
+    seeds: ["#03045E", "#023E8A", "#0077B6", "#0096C7", "#90E0EF"],
+  },
+  {
+    name: "Amethyst",
+    mode: "monochromatic",
+    seeds: ["#3A0068", "#6A0DA0", "#9B30D9", "#C77DFF", "#E9C8FF"],
+  },
+  {
+    name: "Ember",
+    mode: "monochromatic",
+    seeds: ["#7B0000", "#B80000", "#E00000", "#FF4D4D", "#FFAAAA"],
+  },
+  {
+    name: "Parchment",
+    mode: "monochromatic",
+    seeds: ["#5C4033", "#8B6352", "#C8A882", "#E8D5B7", "#FDF6EC"],
+  },
+  {
+    name: "Glacial",
+    mode: "monochromatic",
+    seeds: ["#D8EFF4", "#A8D4E0", "#7BBECE", "#4FA3BA", "#2980A0"],
+  },
+  {
+    name: "Obsidian",
+    mode: "monochromatic",
+    seeds: ["#0D0D0D", "#1A1A1A", "#333333", "#666666", "#999999", "#CCCCCC"],
+  },
+  {
+    name: "Olive Press",
+    mode: "monochromatic",
+    seeds: ["#2C3A1E", "#4A5E32", "#6B8444", "#96B560", "#C0D898"],
+  },
+
+  // ── SHADES ─────────────────────────────────────────────────────────────────
+  {
+    name: "Deep Indigo",
+    mode: "shades",
+    seeds: ["#1A0050", "#3D00A0", "#6600FF", "#9955FF", "#CCB3FF"],
+  },
+  {
+    name: "Crimson Tide",
+    mode: "shades",
+    seeds: ["#5C0000", "#8B0000", "#CC0000", "#FF4444", "#FFAAAA"],
+  },
+  {
+    name: "Pine Forest",
+    mode: "shades",
+    seeds: ["#0A2A0A", "#1B5E20", "#2E7D32", "#4CAF50", "#A5D6A7"],
+  },
+  {
+    name: "Caramel",
+    mode: "shades",
+    seeds: ["#3E1F00", "#7B3F00", "#C06000", "#E8A040", "#F5D095"],
+  },
+
+  // ── DOUBLE SPLIT ───────────────────────────────────────────────────────────
+  {
+    name: "Tropical",
+    mode: "double-split",
+    seeds: ["#00B4D8", "#90E0EF", "#FF9F1C", "#FFBF69", "#CBF3F0"],
+  },
+  {
+    name: "Festival",
+    mode: "double-split",
+    seeds: ["#FF006E", "#8338EC", "#3A86FF", "#FB5607", "#FFBE0B"],
+  },
+  {
+    name: "Hummingbird",
+    mode: "double-split",
+    seeds: ["#06D6A0", "#118AB2", "#FFD166", "#EF476F"],
+  },
+  {
+    name: "Bonfire",
+    mode: "double-split",
+    seeds: ["#FF4800", "#FF8500", "#3D405B", "#0B6E4F"],
+  },
+
+  // ── COMPOUND ───────────────────────────────────────────────────────────────
+  {
+    name: "Sandstorm",
+    mode: "compound",
+    seeds: ["#C67B3B", "#DDA15E", "#BC6C25", "#4A6FA5", "#166088"],
+  },
+  {
+    name: "Fox & Fern",
+    mode: "compound",
+    seeds: ["#D4572A", "#F4A261", "#3A7D44", "#2D5016"],
+  },
+  {
+    name: "Ember & Snow",
+    mode: "compound",
+    seeds: ["#BF2600", "#FF5400", "#006994", "#0099CC", "#66CCDD"],
+  },
+  {
+    name: "Velvet",
+    mode: "compound",
+    seeds: ["#6A0136", "#A10055", "#FF5FAD", "#2B4590", "#4E79D9"],
+  },
+
+  // ── NATURAL ────────────────────────────────────────────────────────────────
+  {
+    name: "Linen",
+    mode: "natural",
+    seeds: ["#F5ECD7", "#DEB887", "#A0826D", "#7D5A50", "#4A3728"],
+  },
+  {
+    name: "Slate & Moss",
+    mode: "natural",
+    seeds: ["#4A4E69", "#9A8C98", "#C9ADA7", "#8A9A5B", "#606C38"],
+  },
+  {
+    name: "Driftwood",
+    mode: "natural",
+    seeds: ["#B5A99A", "#8B7E74", "#6E6259", "#C4B49A", "#E8DCCC"],
+  },
+  {
+    name: "Wetlands",
+    mode: "natural",
+    seeds: ["#2D4739", "#4A7C59", "#6FAF7E", "#A3C9A8", "#D4E8D3"],
+  },
+  {
+    name: "Clay",
+    mode: "natural",
+    seeds: ["#7C3A2D", "#A85648", "#C97A6A", "#E8B09A", "#F5D9CB"],
+  },
+  {
+    name: "Fog",
+    mode: "natural",
+    seeds: ["#B8C0CC", "#9BA8AB", "#7F9396", "#6A828A", "#536B73"],
+  },
+
+  // ── MATSUDA L ──────────────────────────────────────────────────────────────
+  {
+    name: "Ink & Gold",
+    mode: "matsuda_L",
+    seeds: ["#1A1A2E", "#16213E", "#0F3460", "#E94560", "#FFD700"],
+  },
+  {
+    name: "Verdant",
+    mode: "matsuda_L",
+    seeds: ["#1B5E20", "#388E3C", "#66BB6A", "#A5D6A7", "#FF7043"],
+  },
+  {
+    name: "Pewter & Blush",
+    mode: "matsuda_L",
+    seeds: ["#37474F", "#546E7A", "#78909C", "#B0BEC5", "#FF8A80"],
+  },
+
+  // ── MATSUDA Y ──────────────────────────────────────────────────────────────
+  {
+    name: "Horizon",
+    mode: "matsuda_Y",
+    seeds: ["#0D47A1", "#1565C0", "#1976D2", "#42A5F5", "#FF8F00"],
+  },
+  {
+    name: "Vineyard",
+    mode: "matsuda_Y",
+    seeds: ["#4A148C", "#6A1B9A", "#7B1FA2", "#AB47BC", "#CDDC39"],
+  },
+  {
+    name: "Saltwater",
+    mode: "matsuda_Y",
+    seeds: ["#006064", "#00838F", "#00ACC1", "#4DD0E1", "#FF5722"],
+  },
+
+  // ── MATSUDA X ──────────────────────────────────────────────────────────────
+  {
+    name: "Yin & Yang",
+    mode: "matsuda_X",
+    seeds: ["#1A1A1A", "#333333", "#E0E0E0", "#FFFFFF"],
+  },
+  {
+    name: "Fire & Ice",
+    mode: "matsuda_X",
+    seeds: ["#BF2600", "#FF5400", "#023E8A", "#0096C7", "#90E0EF"],
+  },
+  {
+    name: "Orchid & Fern",
+    mode: "matsuda_X",
+    seeds: ["#880E4F", "#C2185B", "#E91E63", "#1B5E20", "#43A047"],
+  },
+
+  // ── MATSUDA T ──────────────────────────────────────────────────────────────
+  {
+    name: "Golden Hour",
+    mode: "matsuda_T",
+    seeds: ["#FFBA08", "#F77F00", "#E55B00", "#BF2600", "#7B0000"],
+  },
+  {
+    name: "Nordic",
+    mode: "matsuda_T",
+    seeds: ["#1A2744", "#2E4272", "#4A6FA5", "#A8C4E0", "#D4E8F5"],
+  },
+  {
+    name: "Blossom",
+    mode: "matsuda_T",
+    seeds: ["#FF006E", "#FF4081", "#FF80AB", "#FFB3C6", "#FFCCD5"],
   },
 ];
 

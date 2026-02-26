@@ -3,17 +3,17 @@
  *
  * The Desktop Studio Layout (≥1024px):
  *
- *   ┌───────────────────────────────────────────────────────────────┐
- *   │  NAV DESKTOP (48px)                                            │
- *   │  [Chroma]  [CREATE][ANALYZE][BUILD][EXPORT]  [tools]  [⌘K…]  │
- *   ├──────────────┬───────────────────────┬────────────────────────┤
- *   │  LEFT RAIL   │   PALETTE STRIP        │  RIGHT PANEL           │
- *   │  (240px)     │   (flex center)        │  (340px, closeable)    │
- *   │  Generate    │                        │                        │
- *   │  controls    │  Slots (draggable)     │  <Outlet />            │
- *   │              │                        │  (active route view)   │
- *   │  [⟳ Generate]│  [⟳ FAB]              │                        │
- *   └──────────────┴───────────────────────┴────────────────────────┘
+ *   ┌──────────────────────────────────────────────────────────────────┐
+ *   │  NAV DESKTOP (48px)                                              │
+ *   │  [Chroma]  [CREATE][ANALYZE][BUILD][EXPORT]  [tools]  [ K ]      │
+ *   ├────────────────┬────────────────────────┬────────────────────────┤
+ *   │  LEFT RAIL     │   PALETTE STRIP        │  RIGHT PANEL           │
+ *   │  (240px)       │   (flex center)        │  (340px, closeable)    │
+ *   │  Generate      │                        │                        │
+ *   │  controls      │  Slots (draggable)     │  <Outlet />            │
+ *   │                │                        │  (active route view)   │
+ *   │  [ Generate ]  │   [ FAB ]              │                        │
+ *   └────────────────┴────────────────────────┴────────────────────────┘
  *
  * Architecture:
  * - LEFT RAIL: Always renders GenerateControls regardless of active route.
