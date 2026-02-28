@@ -16,9 +16,9 @@
 
 import { useEffect } from "react";
 import { useChromaStore } from "@/hooks/use-chroma-store";
-import { StudioShell } from "@/components/layout/studio-shell";
 import { TabletShell } from "@/components/layout/tablet-shell";
 import { MobileShell } from "@/components/layout/mobile-shell";
+import { DesktopStudio } from "./desktop/desktop-shell";
 
 export function ChromaShell() {
   const { modal, closeModal } = useChromaStore();
@@ -52,9 +52,7 @@ export function ChromaShell() {
       </section>
 
       {/* ── Desktop (≥1024px) ── */}
-      <section className="hidden lg:flex h-full flex-col">
-        <StudioShell />
-      </section>
+      <DesktopStudio />
     </>
   );
 }

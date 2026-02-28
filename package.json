@@ -20,6 +20,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@fontsource-variable/syne": "^5.2.7",
+    "@headlessui/react": "^2.2.9",
     "@hookform/resolvers": "^5.2.2",
     "@tanstack/pacer": "^0.19.0",
     "@tanstack/react-devtools": "^0.9.6",
