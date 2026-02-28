@@ -13,11 +13,6 @@ interface MainHeaderProps {
 
 export function MainHeader({ className }: MainHeaderProps) {
   return (
-    <header
-      className={cn(
-        "flex items-center h-16 px-4 border-b border-border bg-card shrink-0 gap-0",
-        className,
-      )}
-    ></header>
+    <header className={cn("h-16 col-start-1 col-span-3", className)}></header>
   );
 }
