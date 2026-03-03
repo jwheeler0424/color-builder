@@ -2,7 +2,7 @@ import { ShellProvider } from "@/providers/shell.provider";
 import { SidebarProvider } from "@/providers/sidebar.provider";
 import { useRef } from "react";
 import { MainHeader } from "./header";
-import { Panel, PanelContent, PanelHeader } from "../panel";
+import { Panel, PanelContent, PanelHeader } from "../layout/panel";
 
 export function DesktopStudio() {
   const rightPanel = useRef<HTMLElement>(null);
