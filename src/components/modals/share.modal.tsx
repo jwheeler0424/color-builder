@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import { useChromaStore } from "@/stores/chroma.store";
 import { encodeUrl } from "@/lib/utils";
 import { Button } from "../ui/button";
 import {

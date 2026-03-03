@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import { useChromaStore } from "@/stores/chroma.store";
 import {
   deriveThemeTokens,
   buildFigmaTokens,

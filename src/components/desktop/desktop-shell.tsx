@@ -2,6 +2,7 @@ import { ShellProvider } from "@/providers/shell.provider";
 import { SidebarProvider } from "@/providers/sidebar.provider";
 import { useRef } from "react";
 import { MainHeader } from "./header";
+import { PanelDrawer } from "./panel-drawer";
 
 export function DesktopStudio() {
   const rightPanel = useRef<HTMLElement>(null);
@@ -9,7 +10,7 @@ export function DesktopStudio() {
     <SidebarProvider>
       <ShellProvider shell="studio">
         <main
-          className="hidden h-full xl:grid xl:grid-cols-[auto_1fr_auto] xl:grid-rows-[auto_1fr]"
+          className="hidden h-full lg:grid lg:grid-cols-[auto_1fr] xl:grid-rows-[auto_1fr]"
           data-studio-shell
         >
           {/* ── Top nav ── */}
@@ -23,14 +24,11 @@ export function DesktopStudio() {
           </aside>
 
           {/* Main content */}
-
-          <main className="flex flex-1 flex-col gap-4 p-4"></main>
-
-          {/* Right panel */}
-          <aside
-            ref={rightPanel}
-            className="relative overflow-hidden h-full col-start-3 row-start-2 bg-green-950"
-          ></aside>
+          <main className="flex flex-1">
+            <section className="flex flex-col grow"></section>
+            {/* Right panel */}
+            <PanelDrawer></PanelDrawer>
+          </main>
         </main>
       </ShellProvider>
     </SidebarProvider>

@@ -1,4 +1,4 @@
-import { useChromaStore } from "@/stores/chroma-store/chroma.store";
+import { useChromaStore } from "@/stores/chroma.store";
 import { Button } from "../ui/button";
 import {
   Dialog,

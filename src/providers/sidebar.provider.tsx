@@ -98,7 +98,7 @@ function SidebarProvider({
       <div
         data-slot="sidebar-wrapper"
         className={cn(
-          "group/sidebar-wrapper relative h-full w-full",
+          "group/sidebar-wrapper relative h-full w-full overflow-hidden",
           className,
         )}
         {...props}
