@@ -7,13 +7,11 @@ export function PanelDrawer() {
     <aside
       className={cn(
         "relative flex flex-col shrink bg-green-950 w-min overflow-hidden transition-transform duration-300",
+        state === "collapsed" && "translate-x-full",
       )}
     >
       <main
-        className={cn(
-          "relative h-full grow overflow-hidden bg-amber-500 w-88",
-          state === "collapsed" && "translate-x-full",
-        )}
+        className={cn("relative h-full grow overflow-hidden bg-amber-500 w-88")}
       >
         Here is some text Here is some text Here is some text Here is some text
         Here is some text
