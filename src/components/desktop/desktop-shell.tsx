@@ -2,7 +2,7 @@ import { ShellProvider } from "@/providers/shell.provider";
 import { SidebarProvider } from "@/providers/sidebar.provider";
 import { useRef } from "react";
 import { MainHeader } from "./header";
-import { Panel } from "./panel";
+import { Panel, PanelContent, PanelHeader } from "./panel";
 
 export function DesktopStudio() {
   const rightPanel = useRef<HTMLElement>(null);
@@ -30,13 +30,13 @@ export function DesktopStudio() {
 
           {/* Right panel */}
           <Panel panelId={"main-right"}>
-            <div className="flex items-center justify-between mb-8">
+            <PanelHeader>
               <h2 className="text-xl font-bold">Project Pro</h2>
-            </div>
-            <main className="relative h-full grow overflow-hidden bg-amber-500">
+            </PanelHeader>
+            <PanelContent>
               Here is some text Here is some text Here is some text Here is some
               text Here is some text
-            </main>
+            </PanelContent>
           </Panel>
         </main>
       </ShellProvider>
