@@ -5,7 +5,7 @@
  */
 
 import { cn } from "@/lib/utils";
-import { usePanel } from "./panel";
+import { usePanel } from "../panel";
 import { Button } from "@/components/ui/button";
 // ─── MainHeader ───────────────────────────────────────────────────────────────
 
