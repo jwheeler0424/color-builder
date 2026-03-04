@@ -10,6 +10,7 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import { useHotkeyList } from "@/providers/hotkey.provider";
+import { SquareAsterisk } from "lucide-react";
 
 // ─── Shortcuts Modal ──────────────────────────────────────────────────────────
 
@@ -45,12 +46,12 @@ export function ShortcutsModal() {
         render={
           <Button
             variant="ghost"
-            size="sm"
+            size="icon-lg"
             title="Shortcuts"
             onClick={() => openModal("shortcuts")}
             className="text-muted-foreground"
           >
-            ?
+            <SquareAsterisk className="size-5" />
           </Button>
         }
       />

@@ -18,9 +18,9 @@ const NEXT_LABEL: Record<Theme, string> = {
 };
 
 function ThemeIcon({ theme }: { theme: Theme }) {
-  if (theme === "dark") return <Moon className="size-4" />;
-  if (theme === "light") return <Sun className="size-4" />;
-  return <Monitor className="size-4" />;
+  if (theme === "dark") return <Moon className="size-5" />;
+  if (theme === "light") return <Sun className="size-5" />;
+  return <Monitor className="size-5" />;
 }
 
 export function ThemeToggle() {
@@ -35,7 +35,7 @@ export function ThemeToggle() {
   return (
     <Button
       variant="ghost"
-      size="icon"
+      size="icon-lg"
       onClick={cycleTheme}
       aria-label={NEXT_LABEL[theme]}
       title={`Theme: ${LABELS[theme]} — click to cycle`}

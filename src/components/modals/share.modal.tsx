@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import { ShareIcon } from "lucide-react";
 
 // ─── Share Modal ──────────────────────────────────────────────────────────────
 
@@ -44,12 +45,12 @@ export function ShareModal() {
         render={
           <Button
             variant="ghost"
-            size="sm"
+            size="icon-lg"
             title="Share URL"
             onClick={() => openModal("share")}
             className="text-muted-foreground text-md"
           >
-            ⤴
+            <ShareIcon className="size-5" />
           </Button>
         }
       />

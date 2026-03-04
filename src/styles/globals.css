@@ -9,6 +9,8 @@
 @import "@fontsource-variable/geist-mono";
 @import "@fontsource-variable/source-code-pro";
 @import "@fontsource/space-mono";
+@import "@fontsource/space-grotesk";
+@import "@fontsource/quicksand";
 @import "@fontsource-variable/syne";
 @import "@fontsource/bricolage-grotesque";
 
@@ -83,10 +85,8 @@
     "Bricolage Grotesque", "Source Code Pro Variable", "Geist Variable",
     sans-serif;
   --font-sans:
-    "Syne", "Source Code Pro Variable", "Geist Variable", ui-sans-serif,
-    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif:
     "Source Serif 4", "Geist Variable", "Syne Variable", ui-serif, Georgia,
     Cambria, "Times New Roman", Times, serif;
@@ -319,7 +319,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-mono antialiased text-sm leading-normal flex flex-col h-screen w-screen overflow-hidden;
+    @apply bg-background text-foreground font-sans font-medium leading-normal flex flex-col h-screen w-screen overflow-hidden;
   }
 
   /* Scrollbar */

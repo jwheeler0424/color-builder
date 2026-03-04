@@ -11,6 +11,8 @@
         "@dnd-kit/utilities": "^3.2.2",
         "@fontsource-variable/syne": "^5.2.7",
         "@fontsource/bricolage-grotesque": "^5.2.10",
+        "@fontsource/quicksand": "^5.2.10",
+        "@fontsource/space-grotesk": "^5.2.10",
         "@headlessui/react": "^2.2.9",
         "@hookform/resolvers": "^5.2.2",
         "@tanstack/pacer": "^0.19.0",
@@ -278,6 +280,10 @@
     "@fontsource-variable/syne": ["@fontsource-variable/syne@5.2.7", "", {}, "sha512-B2z7P0mGdNSAgz6SmtK7HXReZL22WJ8Z8sk5Z1ZuKiCSRM7DwWLjWXLwhbQ+CvmtNS/+p95jGvVEfQT9bm+UKw=="],
 
     "@fontsource/bricolage-grotesque": ["@fontsource/bricolage-grotesque@5.2.10", "", {}, "sha512-V2xS+1P7C8IrSypXLUx/bLtX/LsTlYtV2k2CsU+S/0t8qepZ2hvKSlyJIx7Ub/iY8Bbnj+IjAuUF9nvFz+BbIg=="],
+
+    "@fontsource/quicksand": ["@fontsource/quicksand@5.2.10", "", {}, "sha512-rck0ccT6vJF9RnbSW2ON1grq5qFZvjVOGvYIUixATXF8mNh4KglD+8Sn8QpRgKQBSBJF5yOR3SBYBWPg/Y8YbQ=="],
+
+    "@fontsource/space-grotesk": ["@fontsource/space-grotesk@5.2.10", "", {}, "sha512-XNXEbT74OIITPqw2H6HXwPDp85fy43uxfBwFR5PU+9sLnjuLj12KlhVM9nZVN6q6dlKjkuN8JisW/OBxwxgUew=="],
 
     "@fontsource/space-mono": ["@fontsource/space-mono@5.2.9", "", {}, "sha512-b61faFOHEISQ/pD25G+cfGY9o/WW6lRv6hBQQfpWvEJ4y1V+S4gmth95EVyBE2VL3qDYHeVQ8nBzrplzdXTDDg=="],
 

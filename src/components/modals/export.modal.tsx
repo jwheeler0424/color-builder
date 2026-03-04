@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import { ExternalLinkIcon } from "lucide-react";
 
 // ─── Export Modal ─────────────────────────────────────────────────────────────
 
@@ -135,12 +136,12 @@ export function ExportModal() {
         render={
           <Button
             variant="ghost"
-            size="sm"
+            size="icon-lg"
             title="Export"
             onClick={() => openModal("export")}
             className="text-muted-foreground"
           >
-            ↗
+            <ExternalLinkIcon className="size-5" />
           </Button>
         }
       />

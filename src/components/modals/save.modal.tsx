@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
+import { HeartIcon } from "lucide-react";
 
 // ─── Save Modal ───────────────────────────────────────────────────────────────
 
@@ -38,7 +39,7 @@ export function SaveModal() {
         render={
           <Button
             variant="ghost"
-            size="sm"
+            size="icon-lg"
             onClick={() => {
               setSaveName("");
               openModal("save");
@@ -46,7 +47,7 @@ export function SaveModal() {
             title="Save palette"
             className="text-muted-foreground"
           >
-            ♡
+            <HeartIcon className="size-5" />
           </Button>
         }
       />
