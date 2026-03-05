@@ -20,6 +20,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { useChromaStore } from "@/hooks/use-chroma-store";
 import { textColor, hexToRgb, rgbToHsl, nearestName, cn } from "@/lib/utils";
 import type { PaletteSlot } from "@/types";
+import { Button } from "../ui/button";
+import { ArrowLeftRight, XIcon } from "lucide-react";
 
 // ─── Icon stubs (avoids lucide-react dep in shim environments) ────────────────
 
@@ -122,6 +124,8 @@ function CheckIcon() {
 export interface SlotCardProps {
   slot: PaletteSlot;
   index: number;
+  isEdge?: boolean; // Whether this slot is at the start or end of the list (for styling)
+  edge?: "first" | "last" | "both" | "none"; // Whether to apply "edge" styling (negative margin to bleed to container edges). Should only be false for DragOverlay.
   /** Called when user wants to open the color picker for this slot */
   onEdit: (index: number) => void;
   /** When true, renders as the DragOverlay ghost */
@@ -134,6 +138,8 @@ export function SlotCard({
   slot,
   index,
   onEdit,
+  isEdge = true,
+  edge = "both",
   overlay = false,
 }: SlotCardProps) {
   const {
@@ -152,8 +158,11 @@ export function SlotCard({
     transition: { duration: 200, easing: "cubic-bezier(0.25, 1, 0.5, 1)" },
   });
 
-  const { toggleLock, renameSlot } = useChromaStore();
+  const toggleLock = useChromaStore((state) => state.toggleLock);
+  const removeSlot = useChromaStore((state) => state.removeSlot);
+  const setHoverSlot = useChromaStore((state) => state.setHoverSlot);
   const [copied, setCopied] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -189,169 +198,138 @@ export function SlotCard({
     setTimeout(() => setCopied(false), 1400);
   };
 
-  const startNameEdit = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setNameInput(slot.name || "");
-    setEditingName(true);
-    setTimeout(() => nameInputRef.current?.select(), 0);
-  };
-
-  const commitName = () => {
-    renameSlot(index, nameInput.trim() || undefined);
-    setEditingName(false);
-  };
-
-  const iconBtn = cn(
-    "w-7 h-7 rounded flex items-center justify-center transition-all",
-    "bg-black/40 backdrop-blur-sm border border-white/10",
-    "hover:bg-black/65 hover:scale-105",
-  );
-
   return (
-    <div
+    <section
       ref={setNodeRef}
       style={style}
       className={cn(
-        "slot-item relative flex flex-col select-none flex-1 overflow-hidden",
+        "group slot-item relative flex h-full justify-between select-none flex-1",
         isOver && !isDragging && "ring-2 ring-inset ring-white/60",
         overlay && "shadow-2xl",
+        // isHovering && "bg-black!",
       )}
+      onPointerEnter={() => setIsHovering(true)}
+      onPointerLeave={() => setIsHovering(false)}
       onDoubleClick={() => !editingName && onEdit(index)}
       {...attributes}
     >
-      {/* ── Top bar: drag handle + lock ── */}
-      <div className="flex items-start justify-between p-2 gap-1">
-        <button
-          ref={setActivatorNodeRef}
-          className={cn(
-            iconBtn,
-            "cursor-grab active:cursor-grabbing touch-none",
-            overlay && "cursor-grabbing",
-          )}
-          style={{ color: tc }}
-          title="Drag to reorder"
-          {...listeners}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <GripIcon />
-        </button>
-
-        <button
-          className={iconBtn}
-          style={{ color: slot.locked ? "var(--color-primary, #6366f1)" : tc }}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleLock(index);
-          }}
-          title={slot.locked ? "Unlock slot" : "Lock slot"}
-        >
-          {slot.locked ? <LockIcon /> : <LockOpenIcon />}
-        </button>
-      </div>
-
-      <div className="flex-1" />
-
-      {/* ── Bottom info ── */}
-      <div className="flex flex-col gap-1 p-2.5 pt-0">
-        {/* Token name */}
-        {editingName ? (
-          <input
-            ref={nameInputRef}
-            className="font-mono text-[10px] font-semibold bg-black/35 border border-white/30
-              rounded px-1.5 py-0.5 text-white outline-none w-full"
-            value={nameInput}
-            onChange={(e) => setNameInput(e.target.value)}
-            onBlur={commitName}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commitName();
-              if (e.key === "Escape") setEditingName(false);
-            }}
-            placeholder={autoName}
-            maxLength={32}
-            onClick={(e) => e.stopPropagation()}
-          />
-        ) : (
-          <button
-            className="text-left font-mono text-[10px] font-semibold opacity-60
-              hover:opacity-100 transition-opacity leading-none"
-            style={{ color: tc }}
-            title="Click to rename token"
-            onClick={startNameEdit}
+      <div
+        className="absolute left-0 w-12 top-0 bottom-0 flex-1 h-full"
+        onPointerEnter={() => setHoverSlot(index - 1)}
+        onPointerLeave={() => setHoverSlot(null)}
+      ></div>
+      <main className="flex flex-col w-full h-full items-center flex-1 py-12 gap-12">
+        <div className="flex-1 flex flex-col justify-end items-center gap-4">
+          {/* Remove Button */}
+          <Button
+            variant={"ghost"}
+            size="icon-lg"
+            className={
+              "bg-black/20 hover:bg-black/50 dark:hover:bg-black/50 transition-all duration-200"
+            }
+            title="Remove Color"
+            onClick={() => removeSlot(index)}
           >
-            {displayName}
-            {slot.name && (
-              <span className="ml-1 opacity-50" style={{ fontSize: 9 }}>
-                ✎
-              </span>
+            <XIcon />
+          </Button>
+
+          {/* Drag Button */}
+          <Button
+            variant={"ghost"}
+            size="icon-lg"
+            ref={setActivatorNodeRef}
+            className={cn(
+              "bg-black/20 hover:bg-black/50 dark:hover:bg-black/50 transition-all duration-200",
+              "cursor-grab active:cursor-grabbing touch-none",
+              overlay && "cursor-grabbing",
             )}
-          </button>
-        )}
+            title="Drag to reorder"
+            {...listeners}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ArrowLeftRight />
+          </Button>
 
-        {/* Hex */}
-        <button
-          className="text-left font-mono text-sm font-bold tracking-widest uppercase
-            leading-none hover:opacity-80 transition-opacity"
-          style={{ color: tc }}
-          onClick={handleCopy}
-          title="Copy hex"
-        >
-          {slot.color.hex.toUpperCase()}
-        </button>
+          {/* Copy Button */}
+          <Button
+            variant={"ghost"}
+            size="icon-lg"
+            className={
+              "bg-black/20 hover:bg-black/50 dark:hover:bg-black/50 transition-all duration-200"
+            }
+            title="Copy hex to clipboard"
+            onClick={handleCopy}
+          >
+            {copied ? <CheckIcon /> : <CopyIcon />}
+          </Button>
 
-        {/* HSL */}
-        <div
-          className="font-mono text-[10px] opacity-55 leading-none"
-          style={{ color: tc }}
-        >
-          {Math.round(hsl.h)}° {Math.round(hsl.s)}% {Math.round(hsl.l)}%
-          {slot.color.a !== undefined && slot.color.a < 100 && (
-            <span className="ml-1">· {slot.color.a}%</span>
-          )}
+          {/* Lock Button */}
+          <Button
+            variant={"ghost"}
+            size="icon-lg"
+            className={cn(
+              "bg-black/20 hover:bg-black/50 dark:hover:bg-black/50 transition-all duration-200",
+              slot.locked && "text-primary",
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleLock(index);
+            }}
+            title={slot.locked ? "Unlock slot" : "Lock slot"}
+          >
+            {slot.locked ? <LockIcon /> : <LockOpenIcon />}
+          </Button>
         </div>
 
-        {/* Bottom row: contrast + actions */}
-        <div className="flex items-center justify-between mt-0.5 gap-1">
-          <span
-            className="font-mono text-[9px] opacity-45 leading-none"
-            style={{ color: tc }}
-          >
-            {contrastVsWhite.toFixed(1)}:1
+        {/* ── Bottom info ── */}
+        <div className="flex flex-col gap-1 p-1 px-2.5 bg-black/35 rounded-md w-max max-w-sm -rotate-90 min-w-0 overflow-hidden 2xl:rotate-0">
+          {/* Token name */}
+          <span className="text-left text-white font-mono text-xs font-medium cursor-text leading-none py-1.5 text-ellipsis whitespace-nowrap overflow-hidden w-full">
+            {displayName}
           </span>
-          <div className="flex items-center gap-1">
-            <button
-              className={cn(iconBtn, "w-6 h-6")}
-              style={{ color: tc }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(index);
-              }}
-              title="Edit color"
-            >
-              <PencilIcon />
-            </button>
-            <button
-              className={cn(iconBtn, "w-6 h-6")}
-              style={{ color: tc }}
-              onClick={handleCopy}
-              title="Copy hex"
-            >
-              {copied ? <CheckIcon /> : <CopyIcon />}
-            </button>
+
+          {/* Hex */}
+          <Button
+            variant={"ghost"}
+            className="text-center font-mono-alt text-xl font-black tracking-widest uppercase
+            leading-none bg-transparent hover:bg-transparent dark:hover:bg-transparent hover:opacity-80 transition-opacity cursor-copy"
+            onClick={handleCopy}
+            title="Copy hex"
+          >
+            {slot.color.hex.toUpperCase()}
+          </Button>
+
+          <div className="flex-col items-end gap-1 hidden xl:flex">
+            <span className="font-mono text-[10px] font-medium opacity-95 leading-none text-white">
+              RATIO {contrastVsWhite.toFixed(1)}:1
+            </span>
+            {/* HSL */}
+            <span className="font-mono text-[10px] font-medium opacity-95 leading-none text-white">
+              HSL {Math.round(hsl.h)}° {Math.round(hsl.s)}% {Math.round(hsl.l)}%
+              {slot.color.a !== undefined && slot.color.a < 100 && (
+                <span className="ml-1">· {slot.color.a}%</span>
+              )}
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* Copied toast */}
-      {copied && (
-        <div
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-          aria-live="polite"
-        >
-          <span className="bg-black/80 text-white text-[11px] font-mono px-3 py-1.5 rounded-full backdrop-blur-sm">
-            Copied!
-          </span>
-        </div>
-      )}
-    </div>
+        {/* Copied toast */}
+        {copied && (
+          <div
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            aria-live="polite"
+          >
+            <span className="bg-black/80 text-white text-[11px] font-mono px-3 py-1.5 rounded-full backdrop-blur-sm">
+              Copied!
+            </span>
+          </div>
+        )}
+      </main>
+      <div
+        className="absolute left-0 w-12 top-0 bottom-0 flex-1 h-full"
+        onPointerEnter={() => setHoverSlot(index)}
+        onPointerLeave={() => setHoverSlot(null)}
+      ></div>
+    </section>
   );
 }

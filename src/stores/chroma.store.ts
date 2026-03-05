@@ -8,6 +8,8 @@ import type {
   PaletteSnapshot,
   HarmonyMode,
   BrandColor,
+  HSL,
+  ColorStop,
 } from "@/types";
 import {
   generateUtilityColors,
@@ -20,6 +22,28 @@ import {
   decodeUrl,
   savePrefs,
 } from "@/lib/utils/palette.utils";
+
+function colorDistance(a: HSL, b: HSL) {
+  const dh = Math.min(Math.abs(a.h - b.h), 360 - Math.abs(a.h - b.h)) / 180;
+  const ds = Math.abs(a.s - b.s);
+  const dl = Math.abs(a.l - b.l);
+  return dh * dh + ds * ds + dl * dl;
+}
+
+function findClosestPaletteIndex(hsl: HSL, palette: ColorStop[]) {
+  let bestIndex = 0;
+  let bestDist = Infinity;
+
+  for (let i = 0; i < palette.length; i++) {
+    const d = colorDistance(hsl, palette[i].hsl);
+    if (d < bestDist) {
+      bestDist = d;
+      bestIndex = i;
+    }
+  }
+
+  return bestIndex;
+}
 
 // ─── Slot sanitizer ───────────────────────────────────────────────────────────
 
@@ -112,6 +136,7 @@ function makeInitialState(): ChromaState {
     history: [],
     paletteSnapshots: [],
     recentColors: [],
+    hoverSlot: null,
     gradient: defaultGradient,
     pickerHex: "#3b82f6",
     pickerAlpha: 100,
@@ -152,6 +177,10 @@ export const useChromaStore = create<ChromaStore>()(
         set((s) => {
           s.count = count;
         }),
+      setHoverSlot: (slot: number | null) =>
+        set((s) => {
+          s.hoverSlot = slot;
+        }),
       addSeed: (seed) =>
         set((s) => {
           s.seeds.push(seed);
@@ -164,7 +193,62 @@ export const useChromaStore = create<ChromaStore>()(
         set((s) => {
           s.seeds = seeds;
         }),
+      insertSlot: (atIndex: number) => {
+        set((state) => {
+          const slots = state.slots;
+          if (slots.length >= 10) return;
 
+          const { mode, seedMode, temperature } = state;
+
+          const seedHsls = slots.map((slot) => ({ ...slot.color.hsl }));
+
+          const palette = genPalette(
+            mode,
+            10,
+            seedHsls.length ? seedHsls : null,
+            seedMode,
+            temperature,
+          );
+
+          // Project slots onto palette
+          const paletteIndexes = slots.map((slot) =>
+            findClosestPaletteIndex(slot.color.hsl, palette),
+          );
+
+          const leftIndex = atIndex > 0 ? paletteIndexes[atIndex - 1] : -1;
+
+          const rightIndex =
+            atIndex < paletteIndexes.length
+              ? paletteIndexes[atIndex]
+              : palette.length;
+
+          const candidates = [];
+
+          for (let i = leftIndex + 1; i < rightIndex; i++) {
+            const hex = palette[i].hex;
+
+            if (!slots.some((s) => s.color.hex === hex)) {
+              candidates.push(hex);
+            }
+          }
+
+          if (!candidates.length) return;
+
+          const newHex =
+            candidates[Math.floor(Math.random() * candidates.length)];
+
+          const newSlot: PaletteSlot = {
+            id: crypto.randomUUID(),
+            color: hexToStop(newHex),
+            locked: false,
+          };
+
+          const next = [...slots];
+          next.splice(atIndex, 0, newSlot);
+
+          return { slots: next };
+        });
+      },
       generate: () =>
         set((s) => {
           // Push to in-memory undo history (last 25)
@@ -215,9 +299,20 @@ export const useChromaStore = create<ChromaStore>()(
         set((s) => {
           s.slots[index].color = color;
         }),
-      addSlot: (color) =>
+      addSlot: (color, index) =>
         set((s) => {
-          s.slots.push({ id: crypto.randomUUID(), color, locked: false });
+          if (index === undefined)
+            return s.slots.push({
+              id: crypto.randomUUID(),
+              color,
+              locked: false,
+            });
+
+          s.slots.splice(index, 0, {
+            id: crypto.randomUUID(),
+            color,
+            locked: false,
+          });
         }),
       removeSlot: (index) =>
         set((s) => {

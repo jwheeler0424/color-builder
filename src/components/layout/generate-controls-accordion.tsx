@@ -95,7 +95,7 @@ export function GenerateControlsAccordion({
           <input
             type="range"
             min={4}
-            max={12}
+            max={10}
             value={count}
             onChange={(e) => {
               setCount(+e.target.value);

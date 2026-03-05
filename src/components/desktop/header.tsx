@@ -5,7 +5,7 @@
  */
 
 import { cn } from "@/lib/utils";
-import { usePanel } from "../layout/panel";
+import { usePanel } from "../panel";
 import { Button } from "@/components/ui/button";
 import { LogoIcon } from "../logo-icon";
 import { Link } from "@tanstack/react-router";
@@ -53,7 +53,7 @@ export function MainHeader({ className }: MainHeaderProps) {
   return (
     <header
       className={cn(
-        "h-fit col-start-1 col-span-3 flex flex-col bg-background",
+        "h-fit col-start-1 col-span-2 flex flex-col bg-background",
         className,
       )}
     >

@@ -1,9 +1,10 @@
 import { ShellProvider } from "@/providers/shell.provider";
 import { useCallback, useState } from "react";
 import { MainHeader } from "./header";
-import { Panel, PanelContent, PanelHeader } from "../layout/panel";
+import { Panel, PanelContent, PanelHeader } from "../panel";
 import { PaletteStrip } from "../layout/palette-strip";
 import { useRouterState } from "@tanstack/react-router";
+// import { LeftRail } from "./left-rail";
 
 const STRIP_ONLY_ROUTES = new Set(["/palette"]);
 
@@ -25,25 +26,21 @@ export function DesktopStudio() {
   );
   return (
     <ShellProvider shell="studio">
+      {/* ── Top nav ── */}
+      <MainHeader />
+
       <main
-        className="hidden bg-card h-full lg:grid lg:grid-cols-[auto_1fr_auto] xl:grid-rows-[auto_1fr]"
+        className="bg-card h-full flex grow relative overflow-hidden"
         data-studio-shell
       >
-        {/* ── Top nav ── */}
-        <MainHeader />
-
         {/* ── 3-column body ── */}
 
         {/* Left rail */}
-        <aside className="h-full col-start-1 row-start-2 w-18 p-2">
-          <main className="h-full w-full rounded-md bg-background border border-border/30"></main>
-        </aside>
+        {/* <LeftRail /> */}
 
         {/* Main content */}
-        <main className="flex flex-1 transition-all duration-300 ease-in-out h-full overflow-hidden relative">
-          <section className="flex flex-col grow transition-all duration-300 ease-in-out">
-            <PaletteStrip onEditSlot={handleEditSlot} />
-          </section>
+        <main className="flex flex-1 h-full grow overflow-hidden relative">
+          <PaletteStrip onEditSlot={handleEditSlot} />
         </main>
 
         {/* Right panel */}

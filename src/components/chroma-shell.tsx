@@ -40,7 +40,7 @@ export function ChromaShell() {
   }, [modal, closeModal]);
 
   return (
-    <>
+    <main className="flex flex-col w-full h-full">
       {/* ── Mobile (<640px) ── */}
       <section className="flex sm:hidden h-full flex-col">
         <MobileShell />
@@ -52,7 +52,9 @@ export function ChromaShell() {
       </section>
 
       {/* ── Desktop (≥1024px) ── */}
-      <DesktopStudio />
-    </>
+      <section className="hidden lg:flex h-full flex-col">
+        <DesktopStudio />
+      </section>
+    </main>
   );
 }

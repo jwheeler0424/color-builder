@@ -1,4 +1,3 @@
-import { Transition } from "@headlessui/react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,8 +27,22 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "../ui/sheet";
+} from "./ui/sheet";
 import { create } from "zustand";
+
+// ---------------------------------------------------------------------------
+// Animation constant
+// ---------------------------------------------------------------------------
+
+/**
+ * Single source of truth for all panel slide animations.
+ * Change the duration or easing here to update every transition at once.
+ * The reduced-motion path swaps in "duration-0" at runtime (see Panel).
+ */
+const PANEL_TRANSITION = {
+  duration: "duration-300",
+  easing: "ease-in-out",
+} as const;
 
 // ---------------------------------------------------------------------------
 // Utility hooks
@@ -74,46 +87,17 @@ function getPanelDomId(panelId?: string) {
 }
 
 /**
- * Animation classes for offcanvas mode — slides in/out along the correct axis.
+ * Returns the fixed-size class for the inner content container in offcanvas
+ * mode.  The outer wrapper animates its own width/height (see Panel), so the
+ * inner container always stays at the full panel size and is clipped by the
+ * wrapper's overflow-hidden.
  */
-function getOffcanvasConfig(side: PanelSide, duration: string) {
-  const t = `transition-all ${duration} ease-in-out`;
+function getOffcanvasConfig(side: PanelSide) {
   const isHorizontal = side === "left" || side === "right";
-  const configs = {
-    right: {
-      enter: t,
-      enterFrom: "translate-x-full",
-      enterTo: "translate-x-0",
-      leaveFrom: "translate-x-0",
-      leaveTo: "translate-x-full",
-      sizeClass: "w-(--panel-width) h-full",
-    },
-    left: {
-      enter: t,
-      enterFrom: "-translate-x-full",
-      enterTo: "translate-x-0",
-      leaveFrom: "translate-x-0",
-      leaveTo: "-translate-x-full",
-      sizeClass: "w-(--panel-width) h-full",
-    },
-    top: {
-      enter: t,
-      enterFrom: "-translate-y-full",
-      enterTo: "translate-y-0",
-      leaveFrom: "translate-y-0",
-      leaveTo: "-translate-y-full",
-      sizeClass: "h-(--panel-height) w-full",
-    },
-    bottom: {
-      enter: t,
-      enterFrom: "translate-y-full",
-      enterTo: "translate-y-0",
-      leaveFrom: "translate-y-0",
-      leaveTo: "translate-y-full",
-      sizeClass: "h-(--panel-height) w-full",
-    },
-  } satisfies Record<PanelSide, object>;
-  return { ...configs[side], isHorizontal };
+  const sizeClass = isHorizontal
+    ? "w-(--panel-width) h-full"
+    : "h-(--panel-height) w-full";
+  return { sizeClass, isHorizontal };
 }
 
 /**
@@ -292,7 +276,8 @@ function Panel({
   const openMobilePanel = usePanel((state) => state.openMobilePanel);
   const closeMobilePanel = usePanel((state) => state.closeMobilePanel);
   const reducedMotion = useReducedMotion();
-  const duration = reducedMotion ? "duration-0" : "duration-300";
+  const duration = reducedMotion ? "duration-0" : PANEL_TRANSITION.duration;
+  const easing = PANEL_TRANSITION.easing;
   const domId = getPanelDomId(panelId);
   const isHorizontal = side === "left" || side === "right";
   const { sheetSide, sheetClass } = getSheetConfig(side);
@@ -392,12 +377,12 @@ function Panel({
           "group shrink-0 overflow-hidden p-2",
           isHorizontal
             ? [
-                `transition-[width] ${duration} ease-linear`,
+                `transition-[width] ${duration} ${easing}`,
                 "h-full",
                 open ? "w-(--panel-width)" : "w-(--panel-width-icon)",
               ]
             : [
-                `transition-[height] ${duration} ease-linear`,
+                `transition-[height] ${duration} ${easing}`,
                 "w-full",
                 open ? "h-(--panel-height)" : "h-(--panel-height-icon)",
               ],
@@ -411,30 +396,47 @@ function Panel({
   }
 
   // ── collapsible="offcanvas" (default): slides fully off-screen ────────────
-  const { enter, enterFrom, enterTo, leaveFrom, leaveTo, sizeClass } =
-    getOffcanvasConfig(side, duration);
+  //
+  // Two-layer animation so the surrounding layout adapts gracefully:
+  //
+  //   1. Outer <aside> animates its OWN width/height between 0 and the full
+  //      panel size (with overflow-hidden).  Sibling elements respond to this
+  //      dimension change, so they slide rather than jump.
+  //
+  //   2. Inner container simultaneously translates along the same axis, giving
+  //      the panel content its directional "slide-in / slide-out" feel.
+  //
+  // The Headless-UI <Transition> that was here previously only applied a CSS
+  // translate to the content — the outer element always occupied its full
+  // width, which is why the rest of the layout snapped instead of sliding.
+  const { sizeClass } = getOffcanvasConfig(side);
 
   return (
-    <Transition
-      show={open}
-      as="aside"
+    <aside
       id={domId}
       aria-label={ariaLabel}
       // Hidden from assistive technology while fully off-screen so focus
       // cannot land inside a visually hidden panel.
       aria-hidden={!open}
-      enter={enter}
-      enterFrom={enterFrom}
-      enterTo={enterTo}
-      leave={enter}
-      leaveFrom={leaveFrom}
-      leaveTo={leaveTo}
-      className="group shrink-0"
       data-side={side}
       data-collapsible="offcanvas"
       data-state={open ? "expanded" : "collapsed"}
       data-slot="panel"
       style={cssVars}
+      className={cn(
+        "group shrink-0 overflow-hidden",
+        isHorizontal
+          ? [
+              `transition-[width] ${duration} ${easing}`,
+              "h-full",
+              open ? "w-(--panel-width)" : "w-0",
+            ]
+          : [
+              `transition-[height] ${duration} ${easing}`,
+              "w-full",
+              open ? "h-(--panel-height)" : "h-0",
+            ],
+      )}
     >
       <div className={cn(sizeClass)} data-slot="panel-container">
         <section
@@ -444,7 +446,7 @@ function Panel({
           {children}
         </section>
       </div>
-    </Transition>
+    </aside>
   );
 }
 

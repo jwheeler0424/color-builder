@@ -94,6 +94,10 @@
     "Space Mono", "Source Code Pro Variable", "Geist Mono Variable",
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
+  --font-mono-alt:
+    "Space Grotesk", "Source Code Pro Variable", "Geist Mono Variable",
+    "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
 
   --radius: 0.625rem;
 
@@ -297,6 +301,7 @@
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+  --font-mono-alt: var(--font-mono-alt);
   --font-serif: var(--font-serif);
 
   --radius-sm: calc(var(--radius) - 4px);

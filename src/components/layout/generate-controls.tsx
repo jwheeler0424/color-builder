@@ -160,7 +160,7 @@ export function GenerateControls({ onEditSeed }: GenerateControlsProps) {
           <input
             type="range"
             min={4}
-            max={12}
+            max={10}
             value={count}
             onChange={(e) => {
               setCount(+e.target.value);
@@ -168,7 +168,7 @@ export function GenerateControls({ onEditSeed }: GenerateControlsProps) {
             }}
             className="flex-1"
           />
-          <span className="text-[10px] text-muted-foreground">12</span>
+          <span className="text-[10px] text-muted-foreground">10</span>
         </div>
       </Section>
 

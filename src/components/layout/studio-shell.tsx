@@ -30,7 +30,7 @@ import { NavDesktop, SECTIONS } from "./nav-desktop";
 import { LeftRail } from "./left-rail";
 import { PaletteStrip } from "./palette-strip";
 import { GenerateFab } from "./generate-fab";
-import { Panel } from "./panel";
+import { Panel } from "../panel";
 import { useChromaStore } from "@/hooks/use-chroma-store";
 import { cn, hexToStop } from "@/lib/utils";
 import { InlineColorPicker } from "../common/inline-color-picker";

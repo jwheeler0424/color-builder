@@ -31,7 +31,7 @@ import {
 } from "@dnd-kit/sortable";
 import { useChromaStore } from "@/hooks/use-chroma-store";
 import { SlotCard } from "./slot-card";
-import { cn } from "@/lib/utils";
+import { SlotButton } from "./slot-button";
 
 interface PaletteStripProps {
   /** Called when a slot's edit button is pressed or double-clicked */
@@ -43,7 +43,6 @@ interface PaletteStripProps {
 export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
   const { slots, reorderSlots } = useChromaStore();
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
-
   // Stable ID so SSR/client aria-describedby always matches
   const dndId = useId();
 
@@ -87,16 +86,36 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={slotIds} strategy={horizontalListSortingStrategy}>
-        <div
-          className={cn(
-            "flex flex-1 overflow-hidden transition-all duration-300 ease-in-out",
-            className,
-          )}
-        >
-          {slots.map((slot, i) => (
-            <SlotCard key={slot.id} slot={slot} index={i} onEdit={onEditSlot} />
-          ))}
-        </div>
+        {slots.map((slot, i) => (
+          <>
+            {slots.length < 10 && i === 0 && (
+              <SlotButton key={`button-${slot.id}`} index={-1} adjust={true} />
+            )}
+            <SlotCard
+              key={slot.id}
+              slot={slot}
+              index={i}
+              isEdge={i === 0 || i === slots.length - 1}
+              edge={
+                i === 0
+                  ? "first"
+                  : i === slots.length - 1
+                    ? "last"
+                    : i === 0 && i === slots.length - 1
+                      ? "both"
+                      : "none"
+              }
+              onEdit={onEditSlot}
+            />
+            {slots.length < 10 && (
+              <SlotButton
+                key={`button-after-${slot.id}`}
+                index={i}
+                adjust={i === slots.length - 1}
+              />
+            )}
+          </>
+        ))}
       </SortableContext>
 
       <DragOverlay
@@ -109,6 +128,9 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
           <SlotCard
             slot={activeSlot}
             index={activeSlotIndex}
+            isEdge={
+              activeSlotIndex === 0 || activeSlotIndex === slots.length - 1
+            }
             onEdit={() => {}}
             overlay
           />

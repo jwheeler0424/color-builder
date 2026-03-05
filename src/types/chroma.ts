@@ -217,6 +217,7 @@ export interface ChromaState {
   seeds: ColorStop[];
   slots: PaletteSlot[];
   history: PaletteSlot[][];
+  hoverSlot: number | null;
   paletteSnapshots: PaletteSnapshot[];
   recentColors: string[];
   gradient: GradientState;
@@ -243,6 +244,7 @@ export interface ChromaState {
 export interface ChromaActions {
   setMode: (mode: HarmonyMode) => void;
   setCount: (count: number) => void;
+  setHoverSlot: (index: number | null) => void;
   addSeed: (seed: ColorStop) => void;
   removeSeed: (index: number) => void;
   setSeeds: (seeds: ColorStop[]) => void;
@@ -250,7 +252,8 @@ export interface ChromaActions {
   undo: () => void;
   toggleLock: (index: number) => void;
   editSlotColor: (index: number, color: ColorStop) => void;
-  addSlot: (color: ColorStop) => void;
+  insertSlot: (atIndex: number) => void;
+  addSlot: (color: ColorStop, index?: number) => void;
   removeSlot: (index: number) => void;
   reorderSlots: (fromIndex: number, toIndex: number) => void;
   renameSlot: (index: number, name: string | undefined) => void;

@@ -38,7 +38,7 @@ import { OklchSliders } from "../common/sliders/oklch-sliders";
 import { OklabSliders } from "../common/sliders/oklab-sliders";
 import { CmykSliders } from "../common/sliders/cmyk-sliders";
 import HexInput from "../common/hex-input";
-import { PanelSection, PanelSectionLabel } from "../layout/panel";
+import { PanelSection, PanelSectionLabel } from "../panel";
 
 // EyeDropper is a browser API not yet in lib.dom.d.ts
 interface EyeDropper {
