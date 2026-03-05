@@ -52,10 +52,13 @@ export function MainHeader({ className }: MainHeaderProps) {
   const togglePanel = usePanel((state) => state.togglePanel);
   return (
     <header
-      className={cn("h-fit col-start-1 col-span-3 flex flex-col", className)}
+      className={cn(
+        "h-fit col-start-1 col-span-3 flex flex-col bg-background",
+        className,
+      )}
     >
       <Popover className="relative">
-        <main className="h-16 flex gap-8 items-center justify-between px-4 border-b border-border/40 bg-card">
+        <main className="h-16 flex gap-8 items-center justify-between px-4 border-b border-border/40">
           <Link to="/" className="flex items-center gap-2">
             <LogoIcon className="size-8" />
 
@@ -90,7 +93,7 @@ export function MainHeader({ className }: MainHeaderProps) {
           </nav>
         </main>
       </Popover>
-      <section className="flex gap-8 items-center justify-between px-4 py-2 bg-card border-b border-border/30">
+      <section className="flex gap-8 items-center justify-between px-4 py-2 border-b border-border/30">
         <main className="text-muted-foreground">Instructions...</main>
         <nav className="flex items-center grow justify-end gap-4">
           <main className="flex items-center gap-4 h-full">

@@ -87,7 +87,12 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={slotIds} strategy={horizontalListSortingStrategy}>
-        <div className={cn("flex flex-1 overflow-hidden", className)}>
+        <div
+          className={cn(
+            "flex flex-1 overflow-hidden transition-all duration-300 ease-in-out",
+            className,
+          )}
+        >
           {slots.map((slot, i) => (
             <SlotCard key={slot.id} slot={slot} index={i} onEdit={onEditSlot} />
           ))}

@@ -324,7 +324,7 @@ function Panel({
           data-slot="panel"
           data-mobile="true"
           className={cn(
-            "bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden",
+            "bg-sidebar p-2 text-sidebar-foreground [&>button]:hidden",
             sheetClass,
           )}
           side={sheetSide}
@@ -354,7 +354,7 @@ function Panel({
         data-slot="panel"
         style={cssVars}
         className={cn(
-          "group shrink-0",
+          "group shrink-0 p-2",
           isHorizontal
             ? "w-(--panel-width) h-full"
             : "h-(--panel-height) w-full",
@@ -389,7 +389,7 @@ function Panel({
         data-slot="panel"
         style={cssVars}
         className={cn(
-          "group shrink-0 overflow-hidden",
+          "group shrink-0 overflow-hidden p-2",
           isHorizontal
             ? [
                 `transition-[width] ${duration} ease-linear`,
@@ -436,8 +436,11 @@ function Panel({
       data-slot="panel"
       style={cssVars}
     >
-      <div className={cn(sizeClass, className)} data-slot="panel-container">
-        <section className="w-full h-full" data-slot="panel-inner">
+      <div className={cn(sizeClass)} data-slot="panel-container">
+        <section
+          className={cn("w-full h-full p-2", className)}
+          data-slot="panel-inner"
+        >
           {children}
         </section>
       </div>
@@ -574,7 +577,7 @@ function PanelHeader({ className, ...props }: React.ComponentProps<"header">) {
     <header
       data-slot="panel-header"
       data-panel="header"
-      className={cn("gap-2 p-2 flex flex-col", className)}
+      className={cn("gap-2 flex flex-col", className)}
       {...props}
     />
   );

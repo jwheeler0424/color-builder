@@ -1,4 +1,9 @@
+/* eslint-disable react-refresh/only-export-components */
+import { cn } from "@/lib/utils";
 import { createContext, useCallback, useContext, useState } from "react";
+import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
+import { MenuIcon } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -120,73 +125,33 @@ export function Sidebar({
       {variant === "overlay" && (
         <div
           aria-hidden="true"
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "rgba(0,0,0,0.45)",
-            backdropFilter: "blur(2px)",
-            zIndex: 40,
-            opacity: isOpen ? 1 : 0,
-            pointerEvents: isOpen ? "auto" : "none",
-            transition: "opacity 280ms ease",
-          }}
+          className={cn(
+            "absolute inset-0 bg-black/45 backdrop-blur-xs z-40 transition-opacity duration-300 pointer-events-none opacity-0",
+            isOpen && "opacity-100 pointer-events-auto",
+          )}
         />
       )}
 
       <aside
-        className={className}
-        style={{
-          position: variant === "overlay" ? "absolute" : "relative",
-          top: 0,
-          bottom: 0,
-          [side]: 0,
-          zIndex: variant === "overlay" ? 50 : "auto",
-          width: `${width}px`,
-          minWidth: `${width}px`,
-          flexShrink: 0,
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          transform: `translateX(${translateX})`,
-          transition:
-            "transform 300ms cubic-bezier(0.4,0,0.2,1), min-width 300ms cubic-bezier(0.4,0,0.2,1)",
-          // Layout adjustment for push mode
-          ...(variant === "push" && !isOpen ? { minWidth: 0, width: 0 } : {}),
-          background: "var(--sidebar-bg, #111318)",
-          borderRight:
-            side === "left"
-              ? "1px solid var(--sidebar-border, #23262f)"
-              : "none",
-          borderLeft:
-            side === "right"
-              ? "1px solid var(--sidebar-border, #23262f)"
-              : "none",
-        }}
+        className={cn(
+          `top-0 bottom-0 [${side}]-0 relative z-auto shrink-0 flex flex-col overflow-hidden bg-background border-x border-x-border/40 transition-all duration-300 ease-in-out`,
+          `translate-x-[${translateX}] w-[${width}px] min-w-[${width}px]`,
+          side === "left" && "border-l-0",
+          side === "right" && "border-r-0",
+          variant === "overlay" && "absolute z-50",
+          className,
+        )}
       >
         {header && (
-          <div
-            style={{
-              padding: "16px 20px",
-              borderBottom: "1px solid var(--sidebar-border, #23262f)",
-              flexShrink: 0,
-            }}
-          >
+          <div className="px-4 py-5 border-b border-b-border/40 shrink-0">
             {header}
           </div>
         )}
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "12px 0" }}>
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto py-3 px-0">{children}</div>
 
         {footer && (
-          <div
-            style={{
-              padding: "12px 20px",
-              borderTop: "1px solid var(--sidebar-border, #23262f)",
-              flexShrink: 0,
-            }}
-          >
+          <div className="px-5 py-3 border-t border-t-border/40 shrink-0">
             {footer}
           </div>
         )}
@@ -208,14 +173,11 @@ export function SidebarContent({
 }) {
   return (
     <main
-      className={className}
-      style={{
-        flex: 1,
-        minWidth: 0,
-        overflowY: "auto",
-        transition: "flex 300ms cubic-bezier(0.4,0,0.2,1)",
-        ...style,
-      }}
+      className={cn(
+        "flex-1 min-w-0 overflow-y-auto transition-[flex] duration-300 ease-in-out",
+        className,
+      )}
+      style={style}
     >
       {children}
     </main>
@@ -231,38 +193,15 @@ export function SidebarTrigger({
   const { toggle, isOpen, side } = useSidebar();
 
   return (
-    <button
+    <Button
       onClick={toggle}
       aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
-      className={className}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 36,
-        height: 36,
-        borderRadius: 6,
-        border: "1px solid var(--trigger-border, #23262f)",
-        background: "var(--trigger-bg, transparent)",
-        color: "var(--trigger-color, #9ca3af)",
-        cursor: "pointer",
-        transition: "background 150ms, color 150ms, border-color 150ms",
-        flexShrink: 0,
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.background =
-          "var(--trigger-hover-bg, #1e2028)";
-        (e.currentTarget as HTMLButtonElement).style.color = "#fff";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLButtonElement).style.background =
-          "var(--trigger-bg, transparent)";
-        (e.currentTarget as HTMLButtonElement).style.color =
-          "var(--trigger-color, #9ca3af)";
-      }}
+      size={"icon"}
+      variant={"ghost"}
+      className={cn("text-muted-foreground", className)}
     >
-      {children ?? <HamburgerIcon isOpen={isOpen} side={side} />}
-    </button>
+      {children ?? <MenuIcon />}
+    </Button>
   );
 }
 
@@ -271,23 +210,20 @@ export function SidebarTrigger({
 export function SidebarGroup({
   label,
   children,
+  className,
 }: {
   label?: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
     <div style={{ marginBottom: 8 }}>
       {label && (
         <div
-          style={{
-            padding: "6px 20px 4px",
-            fontSize: 10,
-            fontWeight: 600,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "var(--sidebar-muted, #4b5563)",
-            fontFamily: "monospace",
-          }}
+          className={cn(
+            `px-5 pt-1.5 pb-1 text-[10px] tracking-widest uppercase text-muted-foreground font-mono`,
+            className,
+          )}
         >
           {label}
         </div>
@@ -302,56 +238,26 @@ export function SidebarItem({
   label,
   active = false,
   badge,
+  className,
   onClick,
 }: {
   icon?: React.ReactNode;
   label: string;
   active?: boolean;
   badge?: string | number;
+  className?: string;
   onClick?: () => void;
 }) {
   return (
-    <button
+    <Button
       onClick={onClick}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        width: "100%",
-        padding: "8px 20px",
-        background: active
-          ? "var(--sidebar-active-bg, #1e2028)"
-          : "transparent",
-        border: "none",
-        borderLeft: active
-          ? "2px solid var(--sidebar-accent, #6366f1)"
-          : "2px solid transparent",
-        color: active
-          ? "var(--sidebar-active-color, #fff)"
-          : "var(--sidebar-item-color, #9ca3af)",
-        cursor: "pointer",
-        fontSize: 14,
-        fontWeight: active ? 500 : 400,
-        textAlign: "left",
-        transition: "background 120ms, color 120ms, border-color 120ms",
-        borderRadius: "0 4px 4px 0",
-        marginRight: 4,
-      }}
-      onMouseEnter={(e) => {
-        if (!active) {
-          (e.currentTarget as HTMLButtonElement).style.background =
-            "var(--sidebar-hover-bg, #16181f)";
-          (e.currentTarget as HTMLButtonElement).style.color = "#d1d5db";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!active) {
-          (e.currentTarget as HTMLButtonElement).style.background =
-            "transparent";
-          (e.currentTarget as HTMLButtonElement).style.color =
-            "var(--sidebar-item-color, #9ca3af)";
-        }
-      }}
+      variant={"ghost"}
+      size={"sm"}
+      className={cn(
+        "w-full flex items-center gap-2.5 cursor-pointer mr-1",
+        active && `bg-secondary border-l-2 border-l-accent font-semibold`,
+        className,
+      )}
     >
       {icon && (
         <span
@@ -385,75 +291,24 @@ export function SidebarItem({
           {badge}
         </span>
       )}
-    </button>
+    </Button>
   );
 }
 
 // ─── Hamburger icon ───────────────────────────────────────────────────────────
 
-function HamburgerIcon({
-  isOpen,
-  side,
-}: {
-  isOpen: boolean;
-  side: SidebarSide;
-}) {
-  const angle = isOpen
-    ? side === "left"
-      ? -180
-      : 0
-    : side === "left"
-      ? 0
-      : -180;
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      style={{
-        transform: `rotate(${angle}deg)`,
-        transition: "transform 300ms",
-      }}
-    >
-      <rect
-        x="2"
-        y="3.5"
-        width="12"
-        height="1.5"
-        rx="0.75"
-        fill="currentColor"
-      />
-      <rect
-        x="2"
-        y="7.25"
-        width="8"
-        height="1.5"
-        rx="0.75"
-        fill="currentColor"
-      />
-      <rect
-        x="2"
-        y="11"
-        width="12"
-        height="1.5"
-        rx="0.75"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
 // ─── Separator ────────────────────────────────────────────────────────────────
 
-export function SidebarSeparator() {
+export function SidebarSeparator({
+  className,
+  ...props
+}: React.ComponentProps<typeof Separator>) {
   return (
-    <hr
-      style={{
-        border: "none",
-        borderTop: "1px solid var(--sidebar-border, #23262f)",
-        margin: "8px 0",
-      }}
+    <Separator
+      data-slot="sidebar-separator"
+      data-sidebar="separator"
+      className={cn("bg-sidebar-border mx-2 w-auto", className)}
+      {...props}
     />
   );
 }
