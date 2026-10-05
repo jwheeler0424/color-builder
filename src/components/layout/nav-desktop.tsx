@@ -14,12 +14,13 @@
  *   EXPORT  → /scale, /designsystem, /theme, /utility, /brand
  */
 
-import { Link, useRouterState } from "@tanstack/react-router";
-import { useCommandPalette } from "../views/command-palette";
-import { useChromaStore } from "@/hooks/use-chroma-store";
-import { cn } from "@/lib/utils";
-import { ThemeToggle } from "../common/theme-toggle";
-import { ExportModal, SaveModal, ShareModal, ShortcutsModal } from "../modals";
+import { Link, useRouterState } from '@tanstack/react-router';
+
+import { cn } from '@/lib/utils';
+
+import { ThemeToggle } from '../common/theme-toggle';
+import { ExportModal, SaveModal, ShareModal, ShortcutsModal } from '../modals';
+import { useCommandPalette } from '../views/command-palette';
 
 // ─── Section definitions ──────────────────────────────────────────────────────
 
@@ -33,69 +34,66 @@ interface SectionDef {
 
 export const SECTIONS: SectionDef[] = [
   {
-    id: "create",
-    label: "Create",
-    icon: "✦",
-    primary: "/palette",
-    routes: ["/palette", "/picker", "/saved"],
+    id: 'create',
+    label: 'Create',
+    icon: '✦',
+    primary: '/palette',
+    routes: ['/palette', '/picker', '/saved'],
   },
   {
-    id: "analyze",
-    label: "Analyze",
-    icon: "◎",
-    primary: "/analyze/accessibility",
-    routes: [
-      "/analyze/accessibility",
-      "/analyze/scoring",
-      "/analyze/visualize",
-      "/analyze/brand",
-    ],
+    id: 'analyze',
+    label: 'Analyze',
+    icon: '◎',
+    primary: '/analyze/accessibility',
+    routes: ['/analyze/accessibility', '/analyze/scoring', '/analyze/visualize', '/analyze/brand'],
   },
   {
-    id: "build",
-    label: "Build",
-    icon: "⬡",
-    primary: "/build/mixer",
-    routes: ["/build/mixer", "/build/gradient", "/build/extract"],
+    id: 'build',
+    label: 'Build',
+    icon: '⬡',
+    primary: '/build/mixer',
+    routes: ['/build/mixer', '/build/gradient', '/build/extract'],
   },
   {
-    id: "export",
-    label: "Export",
-    icon: "↗",
-    primary: "/export/scale",
-    routes: [
-      "/export/scale",
-      "/export/designsystem",
-      "/export/theme",
-      "/export/utility",
-    ],
+    id: 'export',
+    label: 'Export',
+    icon: '↗',
+    primary: '/export/scale',
+    routes: ['/export/scale', '/export/designsystem', '/export/theme', '/export/utility'],
   },
 ];
+
+// Routes where the palette owns the main area instead of the route view
+export const PALETTE_ROUTES = new Set(['/', '/palette', '/picker']);
+
+export function isPaletteRoute(pathname: string) {
+  return PALETTE_ROUTES.has(pathname);
+}
 
 // ─── Section tools (for the dropdown sub-nav inside each section) ─────────────
 
 export const SECTION_TOOLS: Record<string, { to: string; label: string }[]> = {
   create: [
-    { to: "/palette", label: "Palette" },
-    { to: "/picker", label: "Color Picker" },
-    { to: "/saved", label: "Saved" },
+    { to: '/palette', label: 'Palette' },
+    { to: '/picker', label: 'Color Picker' },
+    { to: '/saved', label: 'Saved' },
   ],
   analyze: [
-    { to: "/analyze/accessibility", label: "Accessibility" },
-    { to: "/analyze/scoring", label: "Score & Compare" },
-    { to: "/analyze/visualize", label: "Visualize" },
-    { to: "/analyze/brand", label: "Brand" },
+    { to: '/analyze/accessibility', label: 'Accessibility' },
+    { to: '/analyze/scoring', label: 'Score & Compare' },
+    { to: '/analyze/visualize', label: 'Visualize' },
+    { to: '/analyze/brand', label: 'Brand' },
   ],
   build: [
-    { to: "/build/mixer", label: "Mixer" },
-    { to: "/build/gradient", label: "Gradients" },
-    { to: "/build/extract", label: "Extract & Convert" },
+    { to: '/build/mixer', label: 'Mixer' },
+    { to: '/build/gradient', label: 'Gradients' },
+    { to: '/build/extract', label: 'Extract & Convert' },
   ],
   export: [
-    { to: "/export/scale", label: "Scales" },
-    { to: "/export/designsystem", label: "Tokens & Preview" },
-    { to: "/export/theme", label: "Theme" },
-    { to: "/export/utility", label: "Utility Colors" },
+    { to: '/export/scale', label: 'Scales' },
+    { to: '/export/designsystem', label: 'Tokens & Preview' },
+    { to: '/export/theme', label: 'Theme' },
+    { to: '/export/utility', label: 'Utility Colors' },
   ],
 };
 
@@ -109,87 +107,20 @@ interface NavDesktopProps {
 }
 
 export function NavDesktop({ className, onThemeToggle }: NavDesktopProps) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { setOpen: openPalette } = useCommandPalette();
-  const { openModal, setSaveName } = useChromaStore();
-
-  const activeSection = SECTIONS.find((s) =>
-    s.routes.some((r) => pathname.startsWith(r)),
-  );
 
   return (
     <header
       className={cn(
-        "flex items-center h-12 px-4 border-b border-border bg-card shrink-0 gap-0",
+        'flex h-12 shrink-0 items-center gap-0 border-b border-border bg-card px-4',
         className,
-      )}
-    >
-      {/* 4 section links */}
-      <nav
-        className="flex flex-1 items-stretch h-full"
-        aria-label="Main navigation"
-      >
-        {SECTIONS.map((section) => {
-          const isActive = section.routes.some((r) => pathname.startsWith(r));
-          return (
-            <Link
-              key={section.id}
-              to={section.primary as Parameters<typeof Link>[0]["to"]}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-4 text-[11px] font-bold tracking-[.07em]",
-                "uppercase border-b-2 transition-colors no-underline",
-                isActive
-                  ? "text-foreground border-b-primary"
-                  : "text-muted-foreground border-b-transparent hover:text-foreground hover:border-b-border",
-              )}
-            >
-              <span className="text-sm leading-none">{section.icon}</span>
-              {section.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Sub-tool pills (for active section) */}
-      {activeSection && SECTION_TOOLS[activeSection.id] && (
-        <div className="flex items-center gap-0.5 mx-3 border-l border-r border-border px-3 h-full">
-          {SECTION_TOOLS[activeSection.id].map((tool) => {
-            const isToolActive = pathname === tool.to;
-            return (
-              <Link
-                key={tool.to}
-                to={tool.to as Parameters<typeof Link>[0]["to"]}
-                className={cn(
-                  "inline-flex items-center px-2 py-1 rounded text-[10px] font-mono",
-                  "tracking-[.04em] whitespace-nowrap no-underline transition-colors",
-                  isToolActive
-                    ? "bg-accent text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {tool.label}
-              </Link>
-            );
-          })}
-        </div>
-      )}
+      )}>
+      <SectionTabs className='flex-1' />
+      <SectionToolTabs className='mx-3 border-r border-l border-border px-3' />
 
       {/* Right: ⌘K + actions */}
-      <div className="flex items-center gap-1.5 shrink-0">
-        {/* Search pill */}
-        <button
-          onClick={() => openPalette(true)}
-          className={cn(
-            "inline-flex items-center gap-1.5 px-2 py-1 rounded border text-[10px] font-mono",
-            "tracking-[.04em] whitespace-nowrap transition-colors cursor-pointer",
-            "text-muted-foreground border-border bg-muted hover:text-foreground hover:border-input",
-          )}
-          title="Search tools (⌘K)"
-        >
-          <span className="opacity-70">🔍</span>
-          <span className="hidden lg:inline">Search</span>
-          <kbd className="text-[8px] opacity-50 ml-0.5">⌘K</kbd>
-        </button>
+      <div className='flex shrink-0 items-center gap-1.5'>
+        <SearchButton onClick={() => openPalette(true)} />
 
         {/* Action buttons */}
         <ThemeToggle />
@@ -199,5 +130,97 @@ export function NavDesktop({ className, onThemeToggle }: NavDesktopProps) {
         <ShortcutsModal />
       </div>
     </header>
+  );
+}
+
+// ─── Shared nav pieces ────────────────────────────────────────────────────────────
+
+function useActiveSection() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const section = SECTIONS.find((s) =>
+    s.routes.some((r) => pathname.startsWith(r) || (r === '/palette' && pathname === '/')),
+  );
+  return { pathname, section };
+}
+
+/** Create · Analyze · Build · Export section links */
+export function SectionTabs({ className }: { className?: string }) {
+  const { section: activeSection } = useActiveSection();
+
+  return (
+    <nav className={cn('flex h-full items-stretch', className)} aria-label='Sections'>
+      {SECTIONS.map((section) => {
+        const isActive = section.id === activeSection?.id;
+        return (
+          <Link
+            key={section.id}
+            to={section.primary as Parameters<typeof Link>[0]['to']}
+            aria-current={isActive ? 'page' : undefined}
+            className={cn(
+              'inline-flex items-center gap-1.5 px-4 text-[11px] font-bold tracking-[.07em]',
+              'border-b-2 uppercase no-underline transition-colors',
+              isActive
+                ? 'border-b-primary text-foreground'
+                : 'border-b-transparent text-muted-foreground hover:border-b-border hover:text-foreground',
+            )}>
+            <span className='text-sm leading-none'>{section.icon}</span>
+            {section.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+/** Tool links for the active section; scrolls sideways when space is tight */
+export function SectionToolTabs({ className }: { className?: string }) {
+  const { pathname, section: activeSection } = useActiveSection();
+  const tools = activeSection ? SECTION_TOOLS[activeSection.id] : undefined;
+  if (!tools) return null;
+
+  return (
+    <nav
+      className={cn(
+        'flex h-full min-w-0 [scrollbar-width:none] items-center gap-0.5 overflow-x-auto',
+        className,
+      )}
+      aria-label={`${activeSection?.label} tools`}>
+      {tools.map((tool) => {
+        const isToolActive = pathname === tool.to || (tool.to === '/palette' && pathname === '/');
+        return (
+          <Link
+            key={tool.to}
+            to={tool.to as Parameters<typeof Link>[0]['to']}
+            aria-current={isToolActive ? 'page' : undefined}
+            className={cn(
+              'inline-flex shrink-0 items-center rounded px-2 py-1 font-mono text-[10px]',
+              'tracking-[.04em] whitespace-nowrap no-underline transition-colors',
+              isToolActive
+                ? 'bg-accent text-foreground'
+                : 'text-muted-foreground hover:text-foreground',
+            )}>
+            {tool.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+/** ⌘K command palette pill */
+export function SearchButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-[10px]',
+        'cursor-pointer tracking-[.04em] whitespace-nowrap transition-colors',
+        'border-border bg-muted text-muted-foreground hover:border-input hover:text-foreground',
+      )}
+      title='Search tools (⌘K)'>
+      <span className='opacity-70'>🔍</span>
+      <span className='hidden lg:inline'>Search</span>
+      <kbd className='ml-0.5 text-[8px] opacity-50'>⌘K</kbd>
+    </button>
   );
 }

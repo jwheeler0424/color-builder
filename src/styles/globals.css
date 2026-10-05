@@ -1,21 +1,26 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 /* ─── Layout Imports ────────────────────────────────────────────────────── */
-@import "./layout.css";
+@import './layout.css';
 
 /* ─── Font Imports ──────────────────────────────────────────────────────── */
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
-@import "@fontsource-variable/source-code-pro";
-@import "@fontsource/space-mono";
-@import "@fontsource/space-grotesk";
-@import "@fontsource/quicksand";
-@import "@fontsource-variable/syne";
-@import "@fontsource/bricolage-grotesque";
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+@import '@fontsource-variable/source-code-pro';
+@import '@fontsource/space-mono';
+@import '@fontsource/space-grotesk';
+@import '@fontsource/quicksand';
+@import '@fontsource-variable/syne';
+@import '@fontsource/bricolage-grotesque';
 
 #root {
   isolation: isolate;
+  /* Bounds the app to the viewport so inner panes can scroll */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
 }
 
 body {
@@ -89,19 +94,19 @@ body {
   --sidebar-border: oklch(0.82 0.02 240.77);
   --sidebar-ring: oklch(0.57 0.11 228.92);
 
-  --font-display: "Bricolage Grotesque", "Source Code Pro Variable", "Geist Variable", sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Source Code Pro Variable', 'Geist Variable', sans-serif;
   --font-sans:
-    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
+    Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
   --font-serif:
-    "Source Serif 4", "Geist Variable", "Syne Variable", ui-serif, Georgia, Cambria,
-    "Times New Roman", Times, serif;
+    'Source Serif 4', 'Geist Variable', 'Syne Variable', ui-serif, Georgia, Cambria,
+    'Times New Roman', Times, serif;
   --font-mono:
-    "Space Mono", "Source Code Pro Variable", "Geist Mono Variable", ui-monospace, SFMono-Regular,
-    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    'Space Mono', 'Source Code Pro Variable', 'Geist Mono Variable', ui-monospace, SFMono-Regular,
+    Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --font-mono-alt:
-    "Space Grotesk", "Source Code Pro Variable", "Geist Mono Variable", "Space Mono", ui-monospace,
-    SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    'Space Grotesk', 'Source Code Pro Variable', 'Geist Mono Variable', 'Space Mono', ui-monospace,
+    SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
   --radius: 0.625rem;
 
@@ -313,7 +318,7 @@ body {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans font-medium leading-normal flex flex-col h-screen w-screen overflow-hidden;
+    @apply flex h-screen w-screen flex-col overflow-hidden bg-background font-sans leading-normal font-medium text-foreground;
   }
 
   /* Scrollbar */
@@ -334,7 +339,7 @@ body {
   }
 
   /* Range slider — thumb can't be styled with utilities */
-  input[type="range"] {
+  input[type='range'] {
     -webkit-appearance: none;
     width: 100%;
     height: 2px;
@@ -343,7 +348,7 @@ body {
     outline: none;
     cursor: pointer;
   }
-  input[type="range"]::-webkit-slider-thumb {
+  input[type='range']::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 13px;
     height: 13px;
@@ -351,7 +356,7 @@ body {
     border-radius: 50%;
     cursor: pointer;
   }
-  input[type="range"]::-moz-range-thumb {
+  input[type='range']::-moz-range-thumb {
     width: 13px;
     height: 13px;
     background: var(--color-primary);
@@ -502,7 +507,7 @@ body {
   }
 
   /* Color-picker gradient/hue slider tracks */
-  .color-track input[type="range"] {
+  .color-track input[type='range'] {
     width: 100%;
     height: 100%;
     background: transparent;
@@ -510,7 +515,7 @@ body {
     margin: 0;
     display: block;
   }
-  .color-track input[type="range"]::-webkit-slider-thumb {
+  .color-track input[type='range']::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 16px;
     height: 16px;
@@ -519,7 +524,7 @@ body {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
     cursor: pointer;
   }
-  .color-track input[type="range"]::-moz-range-thumb {
+  .color-track input[type='range']::-moz-range-thumb {
     width: 16px;
     height: 16px;
     border-radius: 50%;
@@ -538,7 +543,7 @@ body {
     border-radius: 5px;
     position: relative;
   }
-  .sat-track input[type="range"] {
+  .sat-track input[type='range'] {
     width: 100%;
     height: 100%;
     background: transparent;
@@ -546,7 +551,7 @@ body {
     margin: 0;
     display: block;
   }
-  .sat-track input[type="range"]::-webkit-slider-thumb {
+  .sat-track input[type='range']::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 16px;
     height: 16px;
@@ -555,7 +560,7 @@ body {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
     cursor: pointer;
   }
-  .sat-track input[type="range"]::-moz-range-thumb {
+  .sat-track input[type='range']::-moz-range-thumb {
     width: 16px;
     height: 16px;
     border-radius: 50%;

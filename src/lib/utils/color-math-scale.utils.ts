@@ -2,13 +2,8 @@
 // Scale generation, palette scoring, and utility color generation.
 // Extracted from color-math.ts for maintainability.
 
-import type {
-  RGB,
-  HSL,
-  UtilityRole,
-  UtilityColor,
-  UtilityColorSet,
-} from "@/types";
+import type { RGB, HSL, UtilityRole, UtilityColor, UtilityColorSet } from '@/types';
+
 import {
   hexToRgb,
   rgbToHex,
@@ -18,7 +13,7 @@ import {
   contrastRatio,
   clamp,
   colorDist,
-} from "./color-math.utils";
+} from './color-math.utils';
 
 // ─── Scale Generation ─────────────────────────────────────────────────────────
 
@@ -73,9 +68,7 @@ export interface PaletteScore {
   overall: number;
 }
 
-export function scorePalette(
-  slots: { color: { hex: string } }[],
-): PaletteScore {
+export function scorePalette(slots: { color: { hex: string } }[]): PaletteScore {
   if (slots.length < 2)
     return {
       balance: 0,
@@ -91,13 +84,9 @@ export function scorePalette(
 
   // ── Hue balance: std-dev of circular hue gaps ────────────────────────────
   const hues = oklchs.map((c) => c.H).sort((a, b) => a - b);
-  const gaps = hues.map(
-    (h, i) => (hues[(i + 1) % hues.length] - h + 360) % 360,
-  );
+  const gaps = hues.map((h, i) => (hues[(i + 1) % hues.length] - h + 360) % 360);
   const idealGap = 360 / hues.length;
-  const gapDev = Math.sqrt(
-    gaps.reduce((acc, g) => acc + (g - idealGap) ** 2, 0) / gaps.length,
-  );
+  const gapDev = Math.sqrt(gaps.reduce((acc, g) => acc + (g - idealGap) ** 2, 0) / gaps.length);
   const balance = Math.round(Math.max(0, 100 - (gapDev / idealGap) * 100));
 
   // ── Accessibility: how many colors can display readable text ────────────
@@ -108,8 +97,7 @@ export function scorePalette(
   const WHITE = { r: 255, g: 255, b: 255 } as RGB;
   const BLACK = { r: 0, g: 0, b: 0 } as RGB;
   const aaCount = rgbs.filter(
-    (rgb) =>
-      Math.max(contrastRatio(rgb, WHITE), contrastRatio(rgb, BLACK)) >= 4.5,
+    (rgb) => Math.max(contrastRatio(rgb, WHITE), contrastRatio(rgb, BLACK)) >= 4.5,
   ).length;
   const accessibility = Math.round((aaCount / rgbs.length) * 100);
 
@@ -134,49 +122,45 @@ export function scorePalette(
   const avgDist = totalDist / totalPairs;
   const uniqueness = Math.round(Math.min(100, avgDist * 500));
 
-  const overall = Math.round(
-    (balance + accessibility + harmony + uniqueness) / 4,
-  );
+  const overall = Math.round((balance + accessibility + harmony + uniqueness) / 4);
   return { balance, accessibility, harmony, uniqueness, overall };
 }
 
 // ─── Utility Color Generation ─────────────────────────────────────────────────
 
-const UTILITY_DEFS: Record<
-  UtilityRole,
-  { label: string; description: string; anchorHue: number }
-> = {
-  info: {
-    label: "Info",
-    description: "Informational messages, tooltips, hints",
-    anchorHue: 231,
-  },
-  success: {
-    label: "Success",
-    description: "Confirmations, completed states, positive actions",
-    anchorHue: 142,
-  },
-  warning: {
-    label: "Warning",
-    description: "Cautions, pending states, non-critical alerts",
-    anchorHue: 85,
-  },
-  error: {
-    label: "Error",
-    description: "Destructive actions, validation failures, danger",
-    anchorHue: 25,
-  },
-  neutral: {
-    label: "Neutral",
-    description: "Disabled states, placeholders, secondary content",
-    anchorHue: 0,
-  },
-  focus: {
-    label: "Focus",
-    description: "Keyboard focus rings — matches primary palette color",
-    anchorHue: 0,
-  },
-};
+const UTILITY_DEFS: Record<UtilityRole, { label: string; description: string; anchorHue: number }> =
+  {
+    info: {
+      label: 'Info',
+      description: 'Informational messages, tooltips, hints',
+      anchorHue: 231,
+    },
+    success: {
+      label: 'Success',
+      description: 'Confirmations, completed states, positive actions',
+      anchorHue: 142,
+    },
+    warning: {
+      label: 'Warning',
+      description: 'Cautions, pending states, non-critical alerts',
+      anchorHue: 85,
+    },
+    error: {
+      label: 'Error',
+      description: 'Destructive actions, validation failures, danger',
+      anchorHue: 25,
+    },
+    neutral: {
+      label: 'Neutral',
+      description: 'Disabled states, placeholders, secondary content',
+      anchorHue: 0,
+    },
+    focus: {
+      label: 'Focus',
+      description: 'Keyboard focus rings — matches primary palette color',
+      anchorHue: 0,
+    },
+  };
 
 /**
  * Derive utility colors from the palette using OKLCH space.
@@ -211,26 +195,17 @@ export function generateUtilityColors(
   );
 
   // Palette L range — used to keep utility colors visually consistent with palette
-  const minL = oklchSlots.length
-    ? Math.min(...oklchSlots.map((c) => c.L))
-    : 0.35;
-  const maxL = oklchSlots.length
-    ? Math.max(...oklchSlots.map((c) => c.L))
-    : 0.72;
+  const minL = oklchSlots.length ? Math.min(...oklchSlots.map((c) => c.L)) : 0.35;
+  const maxL = oklchSlots.length ? Math.max(...oklchSlots.map((c) => c.L)) : 0.72;
 
   // Target L for utility icons/text — mid of palette range, clamped to readable band
   // If palette is very light, pull utility darker; very dark → pull lighter
-  const targetL = clamp(
-    avgL > 0.68 ? avgL - 0.14 : avgL < 0.38 ? avgL + 0.14 : avgL,
-    0.44,
-    0.64,
-  );
+  const targetL = clamp(avgL > 0.68 ? avgL - 0.14 : avgL < 0.38 ? avgL + 0.14 : avgL, 0.44, 0.64);
   // Target C — match palette saturation character, minimum 0.10 for semantic clarity
   const targetC = clamp(avgC * 0.9 + 0.04, 0.1, 0.22);
 
   // ── 2. Circular hue distance helper ────────────────────────────────────────
-  const hueDist = (a: number, b: number) =>
-    Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
+  const hueDist = (a: number, b: number) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
 
   // ── 3. Semantic role definitions with hue ranges ────────────────────────────
   // Each role has a canonical hue centre and a tolerance arc.
@@ -307,20 +282,11 @@ export function generateUtilityColors(
   }
 
   // ── 6. Build utility color objects ────────────────────────────────────────
-  function makeOklchStop(
-    L: number,
-    C: number,
-    H: number,
-  ): UtilityColor["color"] {
+  function makeOklchStop(L: number, C: number, H: number): UtilityColor['color'] {
     const rgb = oklchToRgb({ L, C, H });
     return { hex: rgbToHex(rgb), rgb, hsl: rgbToHsl(rgb) };
   }
-  function makeUtility(
-    role: UtilityRole,
-    L: number,
-    C: number,
-    H: number,
-  ): UtilityColor {
+  function makeUtility(role: UtilityRole, L: number, C: number, H: number): UtilityColor {
     return {
       ...UTILITY_DEFS[role],
       role,
@@ -329,57 +295,71 @@ export function generateUtilityColors(
     };
   }
 
-  const infoH = resolveRoleHue("info");
-  const successH = resolveRoleHue("success");
-  const warningH = resolveRoleHue("warning");
-  const errorH = resolveRoleHue("error");
+  const infoH = resolveRoleHue('info');
+  const successH = resolveRoleHue('success');
+  const warningH = resolveRoleHue('warning');
+  const errorH = resolveRoleHue('error');
 
   return {
-    info: makeUtility("info", targetL, targetC, infoH),
-    success: makeUtility("success", targetL, targetC, successH),
-    warning: makeUtility(
-      "warning",
-      warningL(warningH),
-      clamp(targetC * 1.05, 0.09, 0.2),
-      warningH,
-    ),
-    error: makeUtility(
-      "error",
-      targetL,
-      clamp(targetC * 1.1, 0.12, 0.24),
-      errorH,
-    ),
+    info: makeUtility('info', targetL, targetC, infoH),
+    success: makeUtility('success', targetL, targetC, successH),
+    warning: makeUtility('warning', warningL(warningH), clamp(targetC * 1.05, 0.09, 0.2), warningH),
+    error: makeUtility('error', targetL, clamp(targetC * 1.1, 0.12, 0.24), errorH),
     // Neutral: primary hue at near-zero chroma — palette-tinted gray, not generic
     neutral: makeUtility(
-      "neutral",
+      'neutral',
       clamp(targetL + 0.05, 0.5, 0.68),
       clamp(primary.C * 0.08, 0.006, 0.035),
       primary.H,
     ),
     // Focus ring: primary color, lightness normalised to be visible as a ring
-    focus: makeUtility(
-      "focus",
-      clamp(primary.L, 0.5, 0.7),
-      clamp(primary.C, 0.12, 0.3),
-      primary.H,
-    ),
+    focus: makeUtility('focus', clamp(primary.L, 0.5, 0.7), clamp(primary.C, 0.12, 0.3), primary.H),
   };
+}
+
+export function regenerateUtilityColors(
+  slots: Parameters<typeof generateUtilityColors>[0],
+  existing: UtilityColorSet,
+  random: () => number = Math.random,
+): UtilityColorSet {
+  const roles = Object.keys(existing) as UtilityRole[];
+  if (roles.every((role) => existing[role].locked)) return existing;
+  const generated = generateUtilityColors(slots);
+  const result = { ...existing };
+  for (const role of roles) {
+    if (existing[role].locked) continue;
+    const base = rgbToOklch(hexToRgb(generated[role].color.hex));
+    const direction = random() < 0.5 ? -1 : 1;
+    const lightness = clamp(base.L + direction * (0.025 + random() * 0.04), 0.42, 0.72);
+    const chroma = clamp(
+      base.C * (0.88 + random() * 0.24),
+      role === 'neutral' ? 0.006 : 0.08,
+      role === 'neutral' ? 0.035 : role === 'focus' ? 0.3 : 0.26,
+    );
+    const hue =
+      (base.H + (role === 'neutral' || role === 'focus' ? 0 : (random() - 0.5) * 12) + 360) % 360;
+    let rgb = oklchToRgb({ L: lightness, C: chroma, H: hue });
+    let hex = rgbToHex(rgb);
+    if (hex.toLowerCase() === existing[role].color.hex.toLowerCase()) {
+      const previous = rgbToOklch(hexToRgb(existing[role].color.hex));
+      rgb = oklchToRgb({
+        L: clamp(previous.L + (previous.L >= 0.58 ? -0.08 : 0.08), 0.42, 0.72),
+        C: base.C,
+        H: base.H,
+      });
+      hex = rgbToHex(rgb);
+    }
+    result[role] = { ...generated[role], color: { hex, rgb, hsl: rgbToHsl(rgb) } };
+  }
+  return result;
 }
 
 export function mergeUtilityColors(
   existing: UtilityColorSet,
   generated: UtilityColorSet,
 ): UtilityColorSet {
-  const roles: UtilityRole[] = [
-    "info",
-    "success",
-    "warning",
-    "error",
-    "neutral",
-    "focus",
-  ];
+  const roles: UtilityRole[] = ['info', 'success', 'warning', 'error', 'neutral', 'focus'];
   const result = {} as UtilityColorSet;
-  for (const role of roles)
-    result[role] = existing[role].locked ? existing[role] : generated[role];
+  for (const role of roles) result[role] = existing[role].locked ? existing[role] : generated[role];
   return result;
 }

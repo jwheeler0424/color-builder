@@ -1,77 +1,244 @@
-import { useState, useMemo, useCallback } from "react";
-import type { GradientStop, GradientState, GradientType } from "@/types";
-import { useChromaStore } from "@/hooks/use-chroma-store";
+import '../../../node_modules/@tanstack/charts/dist/mark.js';
+import { lineY } from '@tanstack/charts/line';
+import { scaleLinear } from '@tanstack/charts/scales/linear';
+import { defineChart } from '@tanstack/charts/scene';
 import {
-  parseHex,
-  clamp,
-  applySimMatrix,
-  hexToRgb,
-  rgbToHex,
-} from "@/lib/utils";
-import { GRAD_PRESETS, CB_TYPES } from "@/lib/constants/chroma";
-import GradientStopBar from "../common/gradient-stop-bar";
-import { Button } from "@/components/ui/button";
+  ArrowDown,
+  ArrowDownLeft,
+  ArrowDownRight,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  ArrowUpLeft,
+  ArrowUpRight,
+  Check,
+  Copy,
+  Plus,
+  Trash2,
+} from 'lucide-react';
+import { useState, useMemo, useCallback } from 'react';
 
-// Apply easing to redistribute stop positions (redistributes evenly-spaced stops)
-function applyEasing(t: number, mode: string): number {
-  switch (mode) {
-    case "ease-in":
-      return t * t;
-    case "ease-out":
-      return 1 - (1 - t) * (1 - t);
-    case "ease-in-out":
-      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-    case "front-loaded":
-      return Math.pow(t, 0.5); // square root — fast at start
-    case "back-loaded":
-      return Math.pow(t, 2.5); // cubic — slow then fast
-    default:
-      return t; // linear
-  }
+import type { GradientStop, GradientState, GradientType } from '@/types';
+
+import { Chart } from '@/components/ui/chart';
+import { useChromaStore } from '@/hooks/use-chroma-store';
+import { GRAD_PRESETS, CB_TYPES } from '@/lib/constants/chroma';
+import { parseHex, clamp, applySimMatrix, hexToRgb, rgbToHex } from '@/lib/utils';
+
+import GradientStopBar from '../common/gradient-stop-bar';
+import { ToolButton as Button, ToolSegments, ToolTabs, TYPE, ViewHeader } from './view-ui';
+
+export const EASING_OPTIONS = [
+  { id: 'linear', label: 'Even spacing', group: 'Uniform' },
+  { id: 'ease-in', label: 'Quadratic in', group: 'Quadratic' },
+  { id: 'ease-out', label: 'Quadratic out', group: 'Quadratic' },
+  { id: 'ease-in-out', label: 'Quadratic in-out', group: 'Quadratic' },
+  { id: 'cubic-in', label: 'Cubic in', group: 'Cubic' },
+  { id: 'cubic-out', label: 'Cubic out', group: 'Cubic' },
+  { id: 'cubic-in-out', label: 'Cubic in-out', group: 'Cubic' },
+  { id: 'quartic-in', label: 'Quartic in', group: 'Quartic' },
+  { id: 'quartic-out', label: 'Quartic out', group: 'Quartic' },
+  { id: 'quartic-in-out', label: 'Quartic in-out', group: 'Quartic' },
+  { id: 'quintic-in', label: 'Quintic in', group: 'Quintic' },
+  { id: 'quintic-out', label: 'Quintic out', group: 'Quintic' },
+  { id: 'quintic-in-out', label: 'Quintic in-out', group: 'Quintic' },
+  { id: 'sine-in', label: 'Sine in', group: 'Sine' },
+  { id: 'sine-out', label: 'Sine out', group: 'Sine' },
+  { id: 'sine-in-out', label: 'Sine in-out', group: 'Sine' },
+  { id: 'exponential-in', label: 'Exponential in', group: 'Exponential' },
+  { id: 'exponential-out', label: 'Exponential out', group: 'Exponential' },
+  { id: 'exponential-in-out', label: 'Exponential in-out', group: 'Exponential' },
+  { id: 'circular-in', label: 'Circular in', group: 'Circular' },
+  { id: 'circular-out', label: 'Circular out', group: 'Circular' },
+  { id: 'circular-in-out', label: 'Circular in-out', group: 'Circular' },
+  { id: 'front-loaded', label: 'Front loaded', group: 'Weighted' },
+  { id: 'back-loaded', label: 'Back loaded', group: 'Weighted' },
+] as const;
+
+type EasingMode = (typeof EASING_OPTIONS)[number]['id'];
+
+export function applyEasing(value: number, mode: string): number {
+  const position = clamp(value, 0, 1);
+  if (position === 0 || position === 1) return position;
+  if (mode === 'front-loaded') return Math.sqrt(position);
+  if (mode === 'back-loaded') return Math.pow(position, 2.5);
+  const aliases: Record<string, string> = {
+    'ease-in': 'quadratic-in',
+    'ease-out': 'quadratic-out',
+    'ease-in-out': 'quadratic-in-out',
+  };
+  const match =
+    /^(quadratic|cubic|quartic|quintic|sine|exponential|circular)-(in|out|in-out)$/.exec(
+      aliases[mode] ?? mode,
+    );
+  if (!match) return position;
+  const curve = (input: number) => {
+    if (input === 0 || input === 1) return input;
+    switch (match[1]) {
+      case 'quadratic':
+        return input ** 2;
+      case 'cubic':
+        return input ** 3;
+      case 'quartic':
+        return input ** 4;
+      case 'quintic':
+        return input ** 5;
+      case 'sine':
+        return 1 - Math.cos((input * Math.PI) / 2);
+      case 'exponential':
+        return 2 ** (10 * input - 10);
+      default:
+        return 1 - Math.sqrt(1 - input * input);
+    }
+  };
+  if (match[2] === 'in') return curve(position);
+  if (match[2] === 'out') return 1 - curve(1 - position);
+  return position < 0.5 ? curve(position * 2) / 2 : 1 - curve((1 - position) * 2) / 2;
+}
+
+export function redistributeGradientStops(gradient: GradientState, mode: string) {
+  const sorted = gradient.stops
+    .map((stop, index) => ({ stop, index }))
+    .sort((first, second) => first.stop.pos - second.stop.pos);
+  const start = sorted[0]?.stop.pos ?? 0;
+  const end = sorted.at(-1)?.stop.pos ?? 100;
+  return {
+    stops: sorted.map(({ stop }, index) => ({
+      ...stop,
+      pos:
+        index === 0 || index === sorted.length - 1
+          ? stop.pos
+          : Math.round(
+              (start + (end - start) * applyEasing(index / (sorted.length - 1), mode)) * 10,
+            ) / 10,
+    })),
+    selectedStop: Math.max(
+      0,
+      sorted.findIndex(({ index }) => index === gradient.selectedStop),
+    ),
+  };
 }
 
 const DIRECTIONS = [
-  { label: "→", val: "to right" },
-  { label: "←", val: "to left" },
-  { label: "↓", val: "to bottom" },
-  { label: "↑", val: "to top" },
-  { label: "↘", val: "to bottom right" },
-  { label: "↙", val: "to bottom left" },
-  { label: "135°", val: "135deg" },
-  { label: "45°", val: "45deg" },
+  { label: 'Right', val: 'to right', icon: ArrowRight },
+  { label: 'Left', val: 'to left', icon: ArrowLeft },
+  { label: 'Down', val: 'to bottom', icon: ArrowDown },
+  { label: 'Up', val: 'to top', icon: ArrowUp },
+  { label: 'Bottom right', val: 'to bottom right', icon: ArrowDownRight },
+  { label: 'Bottom left', val: 'to bottom left', icon: ArrowDownLeft },
+  { label: 'Top left', val: 'to top left', icon: ArrowUpLeft },
+  { label: 'Top right', val: 'to top right', icon: ArrowUpRight },
 ];
 
-function buildCss(
-  grad: GradientState,
-  interp: "srgb" | "oklab" | "oklch" = "srgb",
-): string {
+export function buildCss(grad: GradientState, interp: 'srgb' | 'oklab' | 'oklch' = 'srgb'): string {
   const sorted = grad.stops.slice().sort((a, b) => a.pos - b.pos);
-  const str = sorted.map((x) => `${x.hex} ${x.pos}%`).join(", ");
-  // CSS Color 4 interpolation hint: "in <space>" goes at the START of the gradient args,
-  // before the direction/shape. e.g. linear-gradient(in oklab, to right, ...)
-  const inSpace = interp !== "srgb" ? `in ${interp}, ` : "";
-  if (grad.type === "radial")
-    return `radial-gradient(${inSpace}circle at center, ${str})`;
-  if (grad.type === "conic")
-    return `conic-gradient(${inSpace}${grad.dir || "from 0deg"}, ${str})`;
-  return `linear-gradient(${inSpace}${grad.dir}, ${str})`;
+  const str = sorted.map((x) => `${x.hex} ${x.pos}%`).join(', ');
+  const inSpace = interp !== 'srgb' ? ` in ${interp}` : '';
+  if (grad.type === 'radial') return `radial-gradient(circle at center${inSpace}, ${str})`;
+  if (grad.type === 'conic')
+    return `conic-gradient(${grad.dir.startsWith('from ') ? grad.dir : 'from 0deg'}${inSpace}, ${str})`;
+  return `linear-gradient(${grad.dir.startsWith('from ') ? 'to right' : grad.dir}${inSpace}, ${str})`;
+}
+
+export function buildPreviewCss(
+  gradient: GradientState,
+  interpolation: 'srgb' | 'oklab' | 'oklch',
+  vision = 'normal',
+): string {
+  const simulation = CB_TYPES.find((type) => type.id === vision);
+  if (!simulation || simulation.id === 'normal') return buildCss(gradient, interpolation);
+  return buildCss(
+    {
+      ...gradient,
+      stops: gradient.stops.map((stop) => ({
+        ...stop,
+        hex: rgbToHex(applySimMatrix(hexToRgb(stop.hex), simulation.matrix)),
+      })),
+    },
+    interpolation,
+  );
+}
+
+export function createEasingChart(mode: EasingMode) {
+  const points = Array.from({ length: 65 }, (_, index) => ({
+    position: index / 64,
+    value: applyEasing(index / 64, mode),
+  }));
+  return defineChart({
+    margin: 3,
+    theme: { background: 'transparent', foreground: 'currentColor', palette: ['currentColor'] },
+    marks: [
+      lineY(points, {
+        id: 'easing-curve',
+        x: 'position',
+        y: 'value',
+        key: 'position',
+        stroke: 'currentColor',
+        strokeWidth: 1.75,
+        lineCap: 'round',
+        lineJoin: 'round',
+        points: false,
+      }),
+    ],
+    scales: {
+      x: { scale: scaleLinear().domain([0, 1]), axis: false, grid: false },
+      y: { scale: scaleLinear().domain([0, 1]), axis: false, grid: false },
+    },
+  });
+}
+
+function EasingCurve({ mode }: { mode: EasingMode }) {
+  return (
+    <span aria-hidden='true' inert className='pointer-events-none block h-6 w-full max-w-16'>
+      <Chart
+        definition={createEasingChart(mode)}
+        initialWidth={48}
+        height={24}
+        ariaLabel={`${mode} easing curve`}
+        className='text-current [&_svg]:h-6! [&_svg]:w-full!'
+      />
+    </span>
+  );
+}
+
+function EasingChoice({
+  option,
+  caption,
+  selected,
+  disabled,
+  onSelect,
+}: {
+  option: (typeof EASING_OPTIONS)[number];
+  caption?: string;
+  selected: boolean;
+  disabled: boolean;
+  onSelect: (mode: EasingMode) => void;
+}) {
+  return (
+    <Button
+      type='button'
+      variant='ghost'
+      size='xs'
+      aria-label={option.label}
+      aria-pressed={selected}
+      disabled={disabled}
+      title={disabled ? 'Distribution requires at least three stops' : option.label}
+      onClick={() => onSelect(option.id)}
+      className={`relative min-w-0 flex-col rounded-md border p-1.5 ${caption ? 'h-14 gap-1' : 'h-10'} ${selected ? 'border-primary bg-accent/30 text-primary' : 'border-border text-muted-foreground hover:text-foreground'}`}>
+      <EasingCurve mode={option.id} />
+      {caption && <span className='text-[9px] leading-none'>{caption}</span>}
+      {selected && <Check className='absolute top-1 right-1 size-2.5' />}
+    </Button>
+  );
 }
 
 export default function GradientView() {
   const { gradient, slots, setGradient } = useChromaStore();
   const [copied, setCopied] = useState(false);
-  const [interpSpace, setInterpSpace] = useState<"srgb" | "oklab" | "oklch">(
-    "srgb",
-  );
-  const [showCvd, setShowCvd] = useState(false);
-  const [easing, setEasing] = useState<
-    | "linear"
-    | "ease-in"
-    | "ease-out"
-    | "ease-in-out"
-    | "front-loaded"
-    | "back-loaded"
-  >("linear");
+  const [interpSpace, setInterpSpace] = useState<'srgb' | 'oklab' | 'oklch'>('srgb');
+  const [showCvd, setShowCvd] = useState(true);
+  const [panel, setPanel] = useState<'gradient' | 'stops' | 'presets'>('gradient');
+  const [easing, setEasing] = useState<EasingMode | 'custom'>('custom');
   const g = gradient;
   const css = useMemo(() => buildCss(g, interpSpace), [g, interpSpace]);
   const selectedStop = g.stops[g.selectedStop] ?? g.stops[0];
@@ -83,6 +250,7 @@ export default function GradientView() {
 
   const handleMoveStop = useCallback(
     (index: number, pos: number) => {
+      setEasing('custom');
       const stops = g.stops.map((s, i) => (i === index ? { ...s, pos } : s));
       setGrad({ stops });
     },
@@ -91,9 +259,10 @@ export default function GradientView() {
 
   const handleAddStop = useCallback(
     (pos: number) => {
+      setEasing('custom');
       // Find the colour at that position by interpolating nearest stops
       const sorted = g.stops.slice().sort((a, b) => a.pos - b.pos);
-      let hex = "#ffffff";
+      let hex = '#ffffff';
       for (let i = 0; i < sorted.length - 1; i++) {
         if (pos >= sorted[i].pos && pos <= sorted[i + 1].pos) {
           hex = sorted[i].hex; // use left neighbour's colour as default
@@ -102,6 +271,7 @@ export default function GradientView() {
       }
       const stops = [...g.stops, { hex, pos }];
       setGrad({ stops, selectedStop: stops.length - 1 });
+      setPanel('stops');
     },
     [g.stops, setGrad],
   );
@@ -109,10 +279,12 @@ export default function GradientView() {
   const handleRemoveStop = useCallback(
     (index: number) => {
       if (g.stops.length <= 2) return;
+      setEasing('custom');
       const stops = g.stops.filter((_, i) => i !== index);
       setGrad({
         stops,
-        selectedStop: clamp(g.selectedStop, 0, stops.length - 1),
+        selectedStop:
+          g.selectedStop > index ? g.selectedStop - 1 : clamp(g.selectedStop, 0, stops.length - 1),
       });
     },
     [g.stops, g.selectedStop, setGrad],
@@ -121,18 +293,18 @@ export default function GradientView() {
   const handleStopColor = (v: string) => {
     const h = parseHex(v);
     if (!h) return;
-    const stops = g.stops.map((s, i) =>
-      i === g.selectedStop ? { ...s, hex: h } : s,
-    );
+    const stops = g.stops.map((s, i) => (i === g.selectedStop ? { ...s, hex: h } : s));
     setGrad({ stops });
   };
 
-  const copyCss = () => {
-    navigator.clipboard
-      .writeText(`background: ${css};\nbackground-image: ${css};`)
-      .catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1400);
+  const copyCss = async () => {
+    try {
+      await navigator.clipboard.writeText(`background: ${css};`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1400);
+    } catch {
+      setCopied(false);
+    }
   };
 
   const loadFromPalette = () => {
@@ -143,318 +315,401 @@ export default function GradientView() {
       pos: Math.round((i / (n - 1 || 1)) * 100),
     }));
     setGrad({ stops, selectedStop: 0 });
+    setEasing('linear');
+    setPanel('stops');
   };
 
   return (
-    <div className="flex flex-1 overflow-hidden">
-      <div className="flex-1 flex flex-col overflow-auto p-6">
-        <div className="mb-5">
-          <h2>Gradient Generator</h2>
-          <p>
-            Build CSS gradients from your palette or custom color stops. Drag
-            handles to reposition.
-          </p>
-        </div>
-
-        {/* Full-width preview */}
-        <div
-          className="w-full h-50 rounded border border-border mb-4 shrink-0 max-w-240"
-          style={{ background: css }}
-        />
-
-        {/* CVD simulation preview */}
-        <div
-          className="flex items-center gap-1.5"
-          style={{ margin: "8px 0 4px" }}
-        >
-          <button
-            className="inline-flex items-center gap-1 px-2 py-1 text-[10px] border rounded font-mono font-bold tracking-[.04em] whitespace-nowrap cursor-pointer transition-colors bg-transparent text-secondary-foreground border-border hover:text-foreground hover:border-input"
-            onClick={() => setShowCvd((v) => !v)}
-          >
-            {showCvd ? "▾ Hide CVD Preview" : "▸ Color Blindness Preview"}
-          </button>
-        </div>
-        {showCvd && (
-          <div className="mb-2.5">
-            {CB_TYPES.filter((t) => t.id !== "normal").map((cbType) => {
-              const simStops = g.stops.map((stop) => {
-                const rgb = applySimMatrix(hexToRgb(stop.hex), cbType.matrix);
-                return { ...stop, hex: rgbToHex(rgb) };
-              });
-              const simState = { ...g, stops: simStops };
-              const simCss = buildCss(simState, interpSpace);
-              return (
-                <div key={cbType.id} className="items-center flex mb-1 gap-2">
-                  <div
-                    className="flex-1 rounded"
-                    style={{
-                      height: 18,
-                      background: simCss,
-                      border: "1px solid rgba(128,128,128,.15)",
-                    }}
-                  />
-                  <span className="text-[9px] text-muted-foreground min-w-22.5 text-right">
-                    {cbType.name}
-                  </span>
-                </div>
-              );
-            })}
+    <div className='@container flex min-h-0 flex-1 flex-col overflow-hidden'>
+      <ViewHeader
+        title='Gradient Generator'
+        description='Color stops, interpolation and CSS gradients.'
+      />
+      <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto border-t border-border @4xl:auto-rows-auto @4xl:grid-cols-[minmax(0,1fr)_17rem] @4xl:grid-rows-[minmax(0,1fr)] @4xl:overflow-hidden'>
+        <div className='flex min-h-0 min-w-0 flex-col gap-4 p-4 @4xl:overflow-auto'>
+          <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
+            <span className={TYPE.label}>Preview</span>
+            <label className='flex cursor-pointer items-center gap-2 text-[11px] text-muted-foreground'>
+              <input
+                type='checkbox'
+                checked={showCvd}
+                onChange={(event) => setShowCvd(event.target.checked)}
+                className='size-3.5 accent-primary'
+              />
+              Color vision
+            </label>
           </div>
-        )}
 
-        {/* Draggable stop bar — Phase 1.1 */}
-        <GradientStopBar
-          stops={g.stops}
-          selectedStop={g.selectedStop}
-          gradientCss={css}
-          onSelectStop={(i) => setGrad({ selectedStop: i })}
-          onMoveStop={handleMoveStop}
-          onAddStop={handleAddStop}
-          onRemoveStop={handleRemoveStop}
-        />
-
-        {/* CSS output */}
-        <div className="text-muted-foreground mb-1.5 text-[11px]">
-          CSS Output
-        </div>
-        <div className="bg-secondary border border-border rounded p-3 font-mono text-[11px] leading-[1.8] text-muted-foreground whitespace-pre-wrap break-all max-w-240">
-          {`background: ${css};\nbackground-image: ${css};`}
-        </div>
-        <div className="flex mt-2 gap-1.5">
-          <Button variant="ghost" size="sm" onClick={copyCss}>
-            {copied ? "✓ Copied" : "Copy CSS"}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={loadFromPalette}>
-            ← Load from Palette
-          </Button>
-        </div>
-      </div>
-
-      {/* Side panel */}
-      <div className="w-[320px] bg-card border-l border-border overflow-y-auto shrink-0 p-4 flex flex-col gap-3.5">
-        {/* Type */}
-        <div>
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-            Type
-          </div>
-          <div className="flex gap-1">
-            {(["linear", "radial", "conic"] as GradientType[]).map((t) => (
-              <Button
-                key={t}
-                variant={g.type === t ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setGrad({ type: t })}
-              >
-                {t.charAt(0).toUpperCase() + t.slice(1)}
-              </Button>
+          <div
+            className={`grid shrink-0 auto-rows-[minmax(6rem,1fr)] gap-x-6 gap-y-6 ${showCvd ? 'grid-cols-1 @sm:grid-cols-2 @3xl:grid-cols-3 @4xl:flex-1' : 'min-h-40 flex-1 grid-cols-1'}`}>
+            {CB_TYPES.filter((type) => showCvd || type.id === 'normal').map((type) => (
+              <div key={type.id} className='flex min-h-20 min-w-0 flex-col gap-2'>
+                {showCvd && (
+                  <span className={TYPE.meta}>{type.id === 'normal' ? 'Original' : type.name}</span>
+                )}
+                <div
+                  role='img'
+                  aria-label={
+                    type.id === 'normal' ? 'Gradient preview' : `${type.name} gradient preview`
+                  }
+                  className='min-h-12 flex-1 overflow-hidden rounded-md'
+                  style={{ background: buildPreviewCss(g, interpSpace, type.id) }}
+                />
+              </div>
             ))}
           </div>
-        </div>
 
-        {/* Direction (linear only) */}
-        {g.type === "linear" && (
-          <div>
-            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-              Direction
-            </div>
-            <div className="flex-wrap flex gap-1">
-              {DIRECTIONS.map(({ label, val }) => (
-                <Button
-                  key={val}
-                  variant={g.dir === val ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setGrad({ dir: val })}
-                >
-                  {label}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Conic from angle */}
-        {g.type === "conic" && (
-          <div>
-            <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-              Starting Angle
-            </div>
-            <div className="flex-wrap flex gap-1">
-              {["from 0deg", "from 45deg", "from 90deg", "from 180deg"].map(
-                (d) => (
-                  <Button
-                    key={d}
-                    variant={g.dir === d ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setGrad({ dir: d })}
-                  >
-                    {d.replace("from ", "")}
-                  </Button>
-                ),
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Selected stop editor */}
-        <div>
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-            Selected Stop ({g.selectedStop + 1} of {g.stops.length})
-          </div>
-          <div className="items-center mb-2.5 flex gap-2">
-            <div
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 3,
-                background: selectedStop?.hex,
-                border: "2px solid var(--color-input)",
-                flexShrink: 0,
+          {/* Draggable stop bar — Phase 1.1 */}
+          <div className='shrink-0 pt-4'>
+            <GradientStopBar
+              stops={g.stops}
+              selectedStop={g.selectedStop}
+              gradientCss={css}
+              onSelectStop={(index) => {
+                setGrad({ selectedStop: index });
+                setPanel('stops');
               }}
-            />
-            <input
-              className="w-full bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
-              value={selectedStop?.hex ?? ""}
-              onChange={(e) => handleStopColor(e.target.value)}
-              maxLength={7}
-              spellCheck={false}
-              autoComplete="off"
+              onMoveStop={handleMoveStop}
+              onAddStop={handleAddStop}
+              onRemoveStop={handleRemoveStop}
             />
           </div>
-          <div className="flex justify-between text-[11px] text-muted-foreground">
-            Position: <span>{selectedStop?.pos ?? 0}%</span>
+
+          {/* CSS output */}
+          <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
+            <span className={TYPE.label}>CSS output</span>
+            <Button
+              variant='outline'
+              size='xs'
+              onClick={() => {
+                void copyCss();
+              }}>
+              {copied ? <Check className='size-3' /> : <Copy className='size-3' />}
+              {copied ? 'Copied' : 'Copy CSS'}
+            </Button>
           </div>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={selectedStop?.pos ?? 0}
-            onChange={(e) => handleMoveStop(g.selectedStop, +e.target.value)}
-          />
+          <pre
+            className={`shrink-0 rounded-md border border-border bg-secondary p-3 wrap-break-word whitespace-pre-wrap ${TYPE.mono}`}>{`background: ${css};`}</pre>
         </div>
 
-        {/* Interpolation space */}
-        <div>
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-            Interpolation Space
-          </div>
-          <div className="flex-wrap flex gap-1">
-            {(
-              [
-                {
-                  id: "srgb",
-                  label: "sRGB",
-                  title:
-                    "Standard CSS — can produce muddy midpoints on complementary pairs",
-                },
-                {
-                  id: "oklab",
-                  label: "OKLab",
-                  title: "CSS Color 4 — perceptually uniform, vivid midpoints",
-                },
-                {
-                  id: "oklch",
-                  label: "OKLCH",
-                  title:
-                    "CSS Color 4 — hue-aware, great for analogous gradients",
-                },
-              ] as const
-            ).map(({ id, label, title }) => (
-              <Button
-                key={id}
-                variant={interpSpace === id ? "default" : "ghost"}
-                size="sm"
-                title={title}
-                onClick={() => setInterpSpace(id)}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-          {interpSpace !== "srgb" && (
-            <div className="text-[9.5px] text-muted-foreground leading-normal mt-1.5">
-              CSS Color 4 syntax — requires Chrome 111+ / Safari 16.4+. Firefox
-              support landing soon.
+        {/* Side panel */}
+        <div className='flex min-h-0 min-w-0 flex-col gap-4 border-t border-border p-4 @4xl:overflow-auto @4xl:border-t-0 @4xl:border-l'>
+          <ToolTabs
+            value={panel}
+            onValueChange={setPanel}
+            label='Gradient controls'
+            stretch
+            items={[
+              { id: 'gradient', label: 'Gradient' },
+              { id: 'stops', label: 'Stops' },
+              { id: 'presets', label: 'Presets' },
+            ]}
+          />
+          {panel === 'stops' && (
+            <Button variant='outline' size='sm' disabled={!slots.length} onClick={loadFromPalette}>
+              <Plus className='size-3.5' />
+              Use palette stops
+            </Button>
+          )}
+          {panel === 'gradient' && (
+            <>
+              {/* Type */}
+              <div>
+                <div className='mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                  Type
+                </div>
+                <ToolSegments
+                  value={g.type}
+                  label='Gradient type'
+                  items={[
+                    { id: 'linear', label: 'Linear' },
+                    { id: 'radial', label: 'Radial' },
+                    { id: 'conic', label: 'Conic' },
+                  ]}
+                  onValueChange={(type: GradientType) =>
+                    setGrad({
+                      type,
+                      dir: type === 'conic' ? 'from 0deg' : type === 'linear' ? 'to right' : g.dir,
+                    })
+                  }
+                />
+              </div>
+
+              {/* Direction (linear only) */}
+              {g.type === 'linear' && (
+                <div>
+                  <div className='mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                    Direction
+                  </div>
+                  <div className='flex flex-wrap gap-1'>
+                    {DIRECTIONS.map(({ label, val, icon: Icon }) => (
+                      <Button
+                        key={val}
+                        variant={g.dir === val ? 'default' : 'ghost'}
+                        size='icon-sm'
+                        title={label}
+                        aria-label={label}
+                        aria-pressed={g.dir === val}
+                        onClick={() => setGrad({ dir: val })}>
+                        <Icon className='size-4' />
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Conic from angle */}
+              {g.type === 'conic' && (
+                <div>
+                  <div className='mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                    Starting Angle
+                  </div>
+                  <input
+                    type='number'
+                    aria-label='Starting angle'
+                    min={0}
+                    max={360}
+                    value={parseFloat(g.dir.replace('from ', '')) || 0}
+                    onChange={(event) =>
+                      setGrad({ dir: `from ${clamp(Number(event.target.value), 0, 360)}deg` })
+                    }
+                    className='h-8 w-full rounded border border-border bg-muted px-2 font-mono text-xs outline-none focus:border-ring'
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Selected stop editor */}
+          {panel === 'stops' && (
+            <div className='flex flex-col gap-3'>
+              <div className='flex flex-wrap gap-2' aria-label='Select gradient stop'>
+                {g.stops.map((stop, index) => (
+                  <button
+                    key={index}
+                    type='button'
+                    aria-label={`Select stop ${index + 1}`}
+                    aria-pressed={g.selectedStop === index}
+                    title={`Stop ${index + 1}: ${stop.hex} at ${stop.pos}%`}
+                    onClick={() => setGrad({ selectedStop: index })}
+                    className={`size-8 shrink-0 cursor-pointer rounded-sm border border-border outline-none focus-visible:ring-2 focus-visible:ring-ring ${g.selectedStop === index ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
+                    style={{ background: stop.hex }}
+                  />
+                ))}
+              </div>
+              <div className='mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                Selected Stop ({g.selectedStop + 1} of {g.stops.length})
+              </div>
+              <div className='mb-2.5 flex items-center gap-2'>
+                <input
+                  type='color'
+                  aria-label='Selected stop color picker'
+                  value={selectedStop?.hex ?? '#ffffff'}
+                  onChange={(event) => handleStopColor(event.target.value)}
+                  className='size-9 shrink-0 cursor-pointer rounded-sm border border-border bg-transparent p-0 [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch-wrapper]:p-0'
+                />
+                <input
+                  key={`${g.selectedStop}-${selectedStop?.hex}`}
+                  aria-label='Selected stop hex'
+                  className='w-full rounded border border-border bg-muted px-2 py-1.5 font-mono text-[12px] tracking-[.06em] text-foreground transition-colors outline-none placeholder:text-muted-foreground focus:border-ring'
+                  defaultValue={selectedStop?.hex ?? ''}
+                  onBlur={(event) => {
+                    handleStopColor(event.target.value);
+                    event.target.value = parseHex(event.target.value) ?? selectedStop?.hex ?? '';
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') event.currentTarget.blur();
+                  }}
+                  maxLength={7}
+                  spellCheck={false}
+                  autoComplete='off'
+                />
+              </div>
+              <div className='flex items-center justify-between gap-3 text-[11px] text-muted-foreground'>
+                <label htmlFor='gradient-stop-position'>Position (%)</label>
+                <input
+                  id='gradient-stop-position'
+                  type='number'
+                  min={0}
+                  max={100}
+                  step={0.1}
+                  value={selectedStop?.pos ?? 0}
+                  onChange={(event) => {
+                    if (event.target.value !== '')
+                      handleMoveStop(g.selectedStop, clamp(Number(event.target.value), 0, 100));
+                  }}
+                  className='h-8 w-20 rounded border border-border bg-muted px-2 font-mono text-xs text-foreground outline-none focus:border-ring'
+                />
+              </div>
+              <input
+                type='range'
+                aria-label='Selected stop position'
+                className='w-full'
+                min={0}
+                max={100}
+                step={0.1}
+                value={selectedStop?.pos ?? 0}
+                onChange={(e) => handleMoveStop(g.selectedStop, +e.target.value)}
+              />
+              <div className='mt-2 flex items-center justify-between gap-2'>
+                <Button
+                  variant='ghost'
+                  size='xs'
+                  onClick={() => handleAddStop(clamp((selectedStop?.pos ?? 40) + 10, 0, 100))}>
+                  <Plus className='size-3' />
+                  Add stop
+                </Button>
+                <Button
+                  variant='ghost'
+                  size='icon-xs'
+                  disabled={g.stops.length <= 2}
+                  title='Remove selected stop'
+                  aria-label='Remove selected stop'
+                  onClick={() => handleRemoveStop(g.selectedStop)}>
+                  <Trash2 className='size-3' />
+                </Button>
+              </div>
             </div>
           )}
-        </div>
 
-        {/* Easing */}
-        <div>
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-            Stop Distribution Easing
-          </div>
-          <div className="flex-wrap flex gap-1">
-            {(
-              [
-                { id: "linear", label: "Linear" },
-                { id: "ease-in", label: "Ease In" },
-                { id: "ease-out", label: "Ease Out" },
-                { id: "ease-in-out", label: "S-Curve" },
-                { id: "front-loaded", label: "Front" },
-                { id: "back-loaded", label: "Back" },
-              ] as const
-            ).map(({ id, label }) => (
-              <Button
-                key={id}
-                variant={easing === id ? "default" : "ghost"}
-                size="sm"
-                onClick={() => {
-                  setEasing(id);
-                  if (g.stops.length < 2) return;
-                  // Re-distribute stops according to easing function
-                  const sorted = [...g.stops].sort((a, b) => a.pos - b.pos);
-                  const n = sorted.length - 1;
-                  const newStops = sorted.map((s, i) => {
-                    if (i === 0 || i === n) return s;
-                    const t = i / n;
-                    return { ...s, pos: Math.round(applyEasing(t, id) * 100) };
-                  });
-                  setGrad({ stops: newStops });
-                }}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-          <div className="text-muted-foreground leading-normal text-[9.5px] mt-1">
-            Redistributes middle stop positions. First and last stops stay
-            fixed.
-          </div>
-        </div>
+          {/* Interpolation space */}
+          {panel === 'gradient' && (
+            <div>
+              <div className='mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                Interpolation Space
+              </div>
+              <ToolSegments
+                value={interpSpace}
+                onValueChange={setInterpSpace}
+                label='Interpolation space'
+                items={[
+                  { id: 'srgb', label: 'sRGB', title: 'Standard RGB interpolation' },
+                  { id: 'oklab', label: 'OKLab', title: 'Perceptually uniform interpolation' },
+                  { id: 'oklch', label: 'OKLCH', title: 'Hue-aware interpolation' },
+                ]}
+              />
+            </div>
+          )}
 
-        {/* Presets */}
-        <div>
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-            Presets
-          </div>
-          <div className="flex-col flex gap-1">
-            {GRAD_PRESETS.map((p, i) => (
-              <button
-                key={i}
-                className="inline-flex items-center gap-2 px-2 py-1 text-[10px] border rounded font-mono font-bold tracking-[.04em] whitespace-nowrap cursor-pointer transition-colors bg-transparent text-secondary-foreground border-border hover:text-foreground hover:border-input justify-start text-left"
-                onClick={() =>
-                  setGrad({
-                    ...p,
-                    stops: p.stops.map((s) => ({ ...s })),
-                    selectedStop: 0,
-                  })
-                }
-              >
-                <span
-                  className="inline-block rounded shrink-0 h-2.5"
-                  style={{
-                    width: 32,
-                    background: buildCss({
-                      ...p,
-                      stops: p.stops,
-                      selectedStop: 0,
-                    }),
-                  }}
-                />
-                {p.name}
-              </button>
-            ))}
-          </div>
+          {/* Easing */}
+          {panel === 'stops' && (
+            <div className='flex flex-col gap-3 border-t border-border pt-4'>
+              <div className='flex flex-col gap-1.5'>
+                <div className={TYPE.label}>Stop distribution</div>
+                <span className={TYPE.meta}>
+                  {EASING_OPTIONS.find((option) => option.id === easing)?.label ??
+                    'Custom positions'}
+                </span>
+              </div>
+              <div
+                role='group'
+                aria-label='Stop distribution easing'
+                className='flex flex-col gap-4'>
+                <div className='grid grid-cols-3 gap-2'>
+                  {EASING_OPTIONS.filter(
+                    (option) => option.group === 'Uniform' || option.group === 'Weighted',
+                  ).map((option) => (
+                    <EasingChoice
+                      key={option.id}
+                      option={option}
+                      caption={
+                        option.id === 'linear'
+                          ? 'Even'
+                          : option.id === 'front-loaded'
+                            ? 'Front'
+                            : 'Back'
+                      }
+                      selected={easing === option.id}
+                      disabled={g.stops.length < 3}
+                      onSelect={(mode) => {
+                        setEasing(mode);
+                        setGrad(redistributeGradientStops(g, mode));
+                      }}
+                    />
+                  ))}
+                </div>
+                <div className='flex flex-col gap-2'>
+                  <div className='grid grid-cols-[4rem_minmax(0,1fr)] gap-2'>
+                    <span />
+                    <div className='grid grid-cols-3 gap-1.5 text-center text-[9px] font-semibold text-muted-foreground'>
+                      <span>In</span>
+                      <span>Out</span>
+                      <span>In-Out</span>
+                    </div>
+                  </div>
+                  {[
+                    ...new Set(
+                      EASING_OPTIONS.filter(
+                        (option) => option.group !== 'Uniform' && option.group !== 'Weighted',
+                      ).map((option) => option.group),
+                    ),
+                  ].map((group) => {
+                    const options = EASING_OPTIONS.filter((option) => option.group === group);
+                    return (
+                      <div
+                        key={group}
+                        className='grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-2'>
+                        <span className='text-[10px] text-muted-foreground'>{group}</span>
+                        <div
+                          role='group'
+                          aria-label={`${group} easing`}
+                          className='grid grid-cols-3 gap-1.5'>
+                          {options.map((option) => (
+                            <EasingChoice
+                              key={option.id}
+                              option={option}
+                              selected={easing === option.id}
+                              disabled={g.stops.length < 3}
+                              onSelect={(mode) => {
+                                setEasing(mode);
+                                setGrad(redistributeGradientStops(g, mode));
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Presets */}
+          {panel === 'presets' && (
+            <div>
+              <div className='mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                Presets
+              </div>
+              <div className='grid grid-cols-2 gap-2'>
+                {GRAD_PRESETS.map((p, i) => (
+                  <button
+                    key={i}
+                    className='flex min-w-0 cursor-pointer flex-col gap-1.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                    onClick={() => {
+                      setEasing('custom');
+                      setGrad({
+                        ...p,
+                        stops: p.stops.map((s) => ({ ...s })),
+                        selectedStop: 0,
+                      });
+                    }}>
+                    <span
+                      className='h-8 w-full shrink-0 rounded-md border border-border'
+                      style={{
+                        background: buildCss({
+                          ...p,
+                          stops: p.stops,
+                          selectedStop: 0,
+                        }),
+                      }}
+                    />
+                    <span className={`truncate ${TYPE.meta}`}>{p.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

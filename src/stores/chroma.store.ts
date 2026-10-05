@@ -1,6 +1,7 @@
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import { immer } from "zustand/middleware/immer";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { immer } from 'zustand/middleware/immer';
+
 import type {
   ChromaStore,
   ChromaState,
@@ -10,18 +11,15 @@ import type {
   BrandColor,
   HSL,
   ColorStop,
-} from "@/types";
+} from '@/types';
+
+import { MAX_SLOTS } from '@/lib/constants/chroma';
 import {
   generateUtilityColors,
   mergeUtilityColors,
-} from "@/lib/utils/color-math.utils";
-import {
-  genPalette,
-  cloneSlot,
-  hexToStop,
-  decodeUrl,
-  savePrefs,
-} from "@/lib/utils/palette.utils";
+  regenerateUtilityColors,
+} from '@/lib/utils/color-math.utils';
+import { genPalette, cloneSlot, hexToStop, decodeUrl, savePrefs } from '@/lib/utils/palette.utils';
 
 function colorDistance(a: HSL, b: HSL) {
   const dh = Math.min(Math.abs(a.h - b.h), 360 - Math.abs(a.h - b.h)) / 180;
@@ -50,33 +48,28 @@ function findClosestPaletteIndex(hsl: HSL, palette: ColorStop[]) {
 function sanitizeSlots(slots: unknown[]): PaletteSlot[] {
   if (!Array.isArray(slots)) return [];
   return slots.flatMap((slot) => {
-    if (!slot || typeof slot !== "object") return [];
+    if (!slot || typeof slot !== 'object') return [];
     const s = slot as Record<string, unknown>;
     const rawHex = (s.color as Record<string, unknown>)?.hex;
-    if (typeof rawHex !== "string" || !/^#[0-9a-fA-F]{6,8}$/.test(rawHex))
-      return [];
-    const rgb = (s.color as Record<string, unknown>)?.rgb as
-      | Record<string, unknown>
-      | undefined;
+    if (typeof rawHex !== 'string' || !/^#[0-9a-fA-F]{6,8}$/.test(rawHex)) return [];
+    const rgb = (s.color as Record<string, unknown>)?.rgb as Record<string, unknown> | undefined;
     const needsRegen =
       !rgb ||
-      typeof rgb.r !== "number" ||
+      typeof rgb.r !== 'number' ||
       isNaN(rgb.r as number) ||
       ((rgb.r as number) < 2 && (rgb.g as number) < 2 && (rgb.b as number) < 2);
     const storedA = (s.color as Record<string, unknown>)?.a;
-    const alpha = typeof storedA === "number" ? storedA : undefined;
-    const color = needsRegen
-      ? hexToStop(rawHex, alpha)
-      : (s.color as ReturnType<typeof hexToStop>);
+    const alpha = typeof storedA === 'number' ? storedA : undefined;
+    const color = needsRegen ? hexToStop(rawHex, alpha) : (s.color as ReturnType<typeof hexToStop>);
     if (alpha !== undefined && color.a === undefined) color.a = alpha;
     // Ensure stable id — old persisted slots may not have one
-    const id = typeof s.id === "string" ? s.id : crypto.randomUUID();
+    const id = typeof s.id === 'string' ? s.id : crypto.randomUUID();
     return [
       {
         id,
         color,
         locked: !!s.locked,
-        name: typeof s.name === "string" ? s.name : undefined,
+        name: typeof s.name === 'string' ? s.name : undefined,
       },
     ];
   });
@@ -84,11 +77,7 @@ function sanitizeSlots(slots: unknown[]): PaletteSlot[] {
 
 // ─── Snapshot helper ──────────────────────────────────────────────────────────
 
-function makeSnapshot(
-  slots: PaletteSlot[],
-  mode: HarmonyMode,
-  label: string,
-): PaletteSnapshot {
+function makeSnapshot(slots: PaletteSlot[], mode: HarmonyMode, label: string): PaletteSnapshot {
   return {
     id: crypto.randomUUID(),
     label,
@@ -107,23 +96,16 @@ function makeSnapshot(
 
 function makeInitialState(): ChromaState {
   const defaultGradient = {
-    type: "linear" as const,
-    dir: "to right",
+    type: 'linear' as const,
+    dir: 'to right',
     stops: [
-      { hex: "#6366f1", pos: 0 },
-      { hex: "#ec4899", pos: 100 },
+      { hex: '#6366f1', pos: 0 },
+      { hex: '#ec4899', pos: 100 },
     ],
     selectedStop: 0,
   };
-  const SSR_SEEDS = [
-    "#6366f1",
-    "#ec4899",
-    "#f59e0b",
-    "#10b981",
-    "#3b82f6",
-    "#8b5cf6",
-  ];
-  const mode: HarmonyMode = "analogous";
+  const SSR_SEEDS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'];
+  const mode: HarmonyMode = 'analogous';
   const count = 6;
   const slots: PaletteSlot[] = SSR_SEEDS.map((hex) => ({
     id: crypto.randomUUID(),
@@ -138,22 +120,22 @@ function makeInitialState(): ChromaState {
     recentColors: [],
     hoverSlot: null,
     gradient: defaultGradient,
-    pickerHex: "#3b82f6",
+    pickerHex: '#3b82f6',
     pickerAlpha: 100,
-    pickerMode: "hsl" as const,
-    scaleHex: "#6366f1",
-    scaleName: "primary",
-    scaleTokenTab: "css",
-    convInput: "#e07a5f",
-    exportTab: "hex",
+    pickerMode: 'hsl' as const,
+    scaleHex: '#6366f1',
+    scaleName: 'primary',
+    scaleTokenTab: 'css',
+    convInput: '#e07a5f',
+    exportTab: 'hex',
     modal: null,
-    saveName: "",
+    saveName: '',
     extractedColors: [],
     imgSrc: null,
     mode,
     count,
     slots,
-    seedMode: "influence" as const,
+    seedMode: 'influence' as const,
     temperature: 0,
     utilityColors: generateUtilityColors(slots),
     brandColors: [],
@@ -196,7 +178,7 @@ export const useChromaStore = create<ChromaStore>()(
       insertSlot: (atIndex: number) => {
         set((state) => {
           const slots = state.slots;
-          if (slots.length >= 10) return;
+          if (slots.length >= MAX_SLOTS) return;
 
           const { mode, seedMode, temperature } = state;
 
@@ -204,7 +186,7 @@ export const useChromaStore = create<ChromaStore>()(
 
           const palette = genPalette(
             mode,
-            10,
+            MAX_SLOTS,
             seedHsls.length ? seedHsls : null,
             seedMode,
             temperature,
@@ -218,9 +200,7 @@ export const useChromaStore = create<ChromaStore>()(
           const leftIndex = atIndex > 0 ? paletteIndexes[atIndex - 1] : -1;
 
           const rightIndex =
-            atIndex < paletteIndexes.length
-              ? paletteIndexes[atIndex]
-              : palette.length;
+            atIndex < paletteIndexes.length ? paletteIndexes[atIndex] : palette.length;
 
           const candidates = [];
 
@@ -234,8 +214,7 @@ export const useChromaStore = create<ChromaStore>()(
 
           if (!candidates.length) return;
 
-          const newHex =
-            candidates[Math.floor(Math.random() * candidates.length)];
+          const newHex = candidates[Math.floor(Math.random() * candidates.length)];
 
           const newSlot: PaletteSlot = {
             id: crypto.randomUUID(),
@@ -255,7 +234,7 @@ export const useChromaStore = create<ChromaStore>()(
           s.history = [...s.history, s.slots.map(cloneSlot)].slice(-25);
           // Push persistent snapshot (last 50)
           s.paletteSnapshots = [
-            makeSnapshot(s.slots as PaletteSlot[], s.mode, "Before generate"),
+            makeSnapshot(s.slots as PaletteSlot[], s.mode, 'Before generate'),
             ...s.paletteSnapshots,
           ].slice(0, 50);
           const seedHsls = s.seeds.map((seed) => ({ ...seed.hsl }));
@@ -266,7 +245,7 @@ export const useChromaStore = create<ChromaStore>()(
             s.seedMode,
             s.temperature,
           );
-          const seedCount = s.seedMode === "pin" ? s.seeds.length : 0;
+          const seedCount = s.seedMode === 'pin' ? s.seeds.length : 0;
           s.slots = newColors.map((color, i) =>
             s.slots[i]?.locked
               ? cloneSlot(s.slots[i])
@@ -277,10 +256,7 @@ export const useChromaStore = create<ChromaStore>()(
                   name: undefined,
                 },
           );
-          s.utilityColors = mergeUtilityColors(
-            s.utilityColors,
-            generateUtilityColors(s.slots),
-          );
+          s.utilityColors = mergeUtilityColors(s.utilityColors, generateUtilityColors(s.slots));
           savePrefs(s.mode, s.count);
         }),
 
@@ -340,10 +316,7 @@ export const useChromaStore = create<ChromaStore>()(
           s.slots = slots;
           s.mode = mode;
           s.count = count;
-          s.utilityColors = mergeUtilityColors(
-            s.utilityColors,
-            generateUtilityColors(slots),
-          );
+          s.utilityColors = mergeUtilityColors(s.utilityColors, generateUtilityColors(slots));
         }),
 
       restoreSnapshot: (snap) =>
@@ -382,10 +355,7 @@ export const useChromaStore = create<ChromaStore>()(
         }),
       addRecent: (hex) =>
         set((s) => {
-          s.recentColors = [
-            hex,
-            ...s.recentColors.filter((x) => x !== hex),
-          ].slice(0, 20);
+          s.recentColors = [hex, ...s.recentColors.filter((x) => x !== hex)].slice(0, 20);
         }),
 
       // ── Gradient ────────────────────────────────────────────────────────────
@@ -459,10 +429,7 @@ export const useChromaStore = create<ChromaStore>()(
         }),
       regenUtilityColors: () =>
         set((s) => {
-          s.utilityColors = mergeUtilityColors(
-            s.utilityColors,
-            generateUtilityColors(s.slots),
-          );
+          s.utilityColors = regenerateUtilityColors(s.slots, s.utilityColors);
         }),
 
       // ── Brand colors ─────────────────────────────────────────────────────────
@@ -482,7 +449,7 @@ export const useChromaStore = create<ChromaStore>()(
         }),
     })),
     {
-      name: "chroma-v4",
+      name: 'chroma-v4',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         mode: state.mode,
@@ -508,15 +475,10 @@ export const useChromaStore = create<ChromaStore>()(
       merge: (persisted, current) => {
         if (decodeUrl()) return current;
         const p = persisted as Partial<ChromaStore>;
-        const slots = p.slots
-          ? sanitizeSlots(p.slots as unknown[])
-          : current.slots;
+        const slots = p.slots ? sanitizeSlots(p.slots as unknown[]) : current.slots;
         const utilityColors =
           slots !== current.slots
-            ? mergeUtilityColors(
-                current.utilityColors,
-                generateUtilityColors(slots),
-              )
+            ? mergeUtilityColors(current.utilityColors, generateUtilityColors(slots))
             : current.utilityColors;
         return { ...current, ...p, slots, utilityColors };
       },

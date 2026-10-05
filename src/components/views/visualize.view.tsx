@@ -5,54 +5,113 @@
  * Sub-tabs:  [OKLCH Space] [P3 Gamut]
  */
 
-import { Lock } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Check, Copy, Lock, RotateCcw } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Chart } from "@/components/ui/chart";
-import { useChromaStore } from "@/hooks/use-chroma-store";
-import { createChromaChart, createHueChart } from "@/lib/tools/palette-charts";
+import { Chart } from '@/components/ui/chart';
+import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
-  hexToRgb,
-  rgbToOklch,
-  textColor,
-  clamp,
-  oklchToRgb,
-  rgbToHex,
-  nearestName,
-} from "@/lib/utils";
-import { useRegisterHotkey } from "@/providers/hotkey.provider";
+  createChromaChart,
+  createHueChart,
+  MAX_CHROMA,
+  type PaletteChartPoint,
+} from '@/lib/tools/palette-charts';
+import { hexToRgb, rgbToOklch, textColor, clamp, nearestName } from '@/lib/utils';
+import { useRegisterHotkey } from '@/providers/hotkey.provider';
+
+import { ToolButton as Button, ToolSegments, ToolTabs, TYPE, ViewHeader } from './view-ui';
 
 // ─── Tab bar ──────────────────────────────────────────────────────────────────
 
-type Tab = "oklch" | "p3";
+type Tab = 'oklch' | 'p3';
 
 function TabBar({ active, setActive }: { active: Tab; setActive: (t: Tab) => void }) {
   return (
-    <div className="flex shrink-0 border-b border-border">
-      {(
-        [
-          ["oklch", "OKLCH Space"],
-          ["p3", "P3 Gamut"],
-        ] as const
-      ).map(([id, label]) => (
-        <button
-          key={id}
-          onClick={() => setActive(id)}
-          className={`cursor-pointer border-r border-border px-4 py-2.5 text-[10px] font-bold tracking-[.08em] uppercase transition-colors ${active === id ? "-mb-px border-b-2 border-b-primary bg-accent/30 text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
+    <ToolTabs
+      value={active}
+      onValueChange={setActive}
+      label='Visualize'
+      items={[
+        { id: 'oklch', label: 'OKLCH Space' },
+        { id: 'p3', label: 'P3 Gamut' },
+      ]}
+    />
   );
 }
 
 function EmptyState({ title }: { title: string }) {
   return (
-    <div className="flex-1 p-6">
-      <p className="text-[12px] text-muted-foreground">Generate a palette first to use {title}.</p>
+    <div className='flex-1 p-6'>
+      <p className='text-[12px] text-muted-foreground'>Generate a palette first to use {title}.</p>
     </div>
+  );
+}
+
+function FittedChart(props: ComponentProps<typeof Chart<PaletteChartPoint, number, number>>) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(240);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(([entry]) => {
+      const nextHeight = Math.floor(entry.contentRect.height);
+      if (nextHeight > 0) setHeight(nextHeight);
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className='h-60 min-h-0 w-full max-w-88 self-center lg:h-auto lg:max-h-60 lg:flex-1'>
+      <Chart {...props} height={height} />
+    </div>
+  );
+}
+
+function ColorProfile({
+  points,
+  dimension,
+  activeId,
+}: {
+  points: readonly PaletteChartPoint[];
+  dimension: 'lightness' | 'chroma';
+  activeId: string | null;
+}) {
+  return (
+    <section className='flex min-h-0 flex-col gap-3 border-t border-border pt-3'>
+      <div className={TYPE.label}>
+        {dimension === 'lightness' ? 'Lightness profile' : 'Chroma profile'}
+      </div>
+      <div className='grid min-h-0 flex-1 auto-rows-fr gap-1'>
+        {points.map((point) => (
+          <div
+            key={point.id}
+            title={`${point.name} ${point.hex.toUpperCase()}`}
+            className={`grid min-h-0 grid-cols-[0.75rem_minmax(0,1fr)_3rem] items-center gap-2 ${activeId === point.id ? 'text-foreground' : 'text-muted-foreground'}`}>
+            <span
+              className='size-3 rounded-sm border border-foreground/10'
+              style={{ background: point.hex }}
+            />
+            <div className='h-1.5 overflow-hidden rounded-sm bg-muted' aria-hidden='true'>
+              <div
+                className='h-full rounded-sm transition-opacity'
+                style={{
+                  width: `${clamp(point[dimension] / (dimension === 'lightness' ? 1 : MAX_CHROMA), 0, 1) * 100}%`,
+                  background: point.hex,
+                  opacity: activeId && activeId !== point.id ? 0.4 : 1,
+                }}
+              />
+            </div>
+            <span className='text-right font-mono text-[10px] leading-none tabular-nums'>
+              {point[dimension].toFixed(dimension === 'lightness' ? 2 : 3)}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -63,11 +122,14 @@ function EmptyState({ title }: { title: string }) {
 function OklchTab() {
   const slots = useChromaStore((s) => s.slots);
   const [revision, setRevision] = useState(0);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [focusedId, setFocusedId] = useState<string | null>(null);
+  const activeId = hoveredId ?? focusedId;
 
   useEffect(() => {
     const refresh = () => setRevision((value) => value + 1);
-    window.addEventListener("chroma:refresh-plots", refresh);
-    return () => window.removeEventListener("chroma:refresh-plots", refresh);
+    window.addEventListener('chroma:refresh-plots', refresh);
+    return () => window.removeEventListener('chroma:refresh-plots', refresh);
   }, []);
 
   const points = useMemo(
@@ -92,10 +154,10 @@ function OklchTab() {
   );
 
   useRegisterHotkey({
-    key: "r",
-    label: "Refresh OKLCH plot",
-    group: "OKLCH",
-    handler: () => window.dispatchEvent(new Event("chroma:refresh-plots")),
+    key: 'r',
+    label: 'Refresh OKLCH plot',
+    group: 'OKLCH',
+    handler: () => window.dispatchEvent(new Event('chroma:refresh-plots')),
   });
 
   const stats = useMemo(() => {
@@ -114,78 +176,151 @@ function OklchTab() {
     };
   }, [points]);
 
-  if (!slots.length) return <EmptyState title="OKLCH visualizer" />;
+  if (!slots.length) return <EmptyState title='OKLCH visualizer' />;
 
+  const statItems = stats
+    ? [
+        ['Avg lightness', stats.avgL],
+        ['Lightness spread', stats.spreadL],
+        ['Avg chroma', stats.avgC],
+        ['Chroma spread', stats.spreadC],
+        ['Hue range', `${stats.hueRange}°`],
+      ]
+    : [];
   return (
-    <div className="flex-1 overflow-auto p-7">
-      <div className="mx-auto max-w-225">
-        <p className="mb-6 text-[11px] text-muted-foreground">
-          Visualises your palette in perceptual OKLCH space. Equal L = equal perceived brightness.
-          Points far apart on the chroma axis are more saturated. The hue wheel shows angular
-          spread.
-        </p>
-        <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,17.5rem),1fr))] gap-6">
-          <div className="w-full max-w-md min-w-0">
-            <div className="mb-2 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
-              Chroma vs Lightness
-            </div>
-            <Chart
+    <div className='@container flex min-h-0 flex-1 flex-col overflow-auto lg:overflow-hidden'>
+      <div className='grid shrink-0 grid-cols-2 gap-x-4 gap-y-3 border-b border-border px-4 py-3 sm:grid-cols-3 lg:grid-cols-5'>
+        {statItems.map(([label, value]) => (
+          <div key={label} className='flex flex-col gap-1.5'>
+            <span className={TYPE.label}>{label}</span>
+            <span className={TYPE.metric}>{value}</span>
+          </div>
+        ))}
+      </div>
+      <div className='grid grid-cols-1 lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:grid-rows-[minmax(0,1fr)_auto] @4xl:grid-cols-3 @4xl:grid-rows-[minmax(0,1fr)]'>
+        <section className='grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] gap-3 p-4 lg:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)] @4xl:border-r @4xl:border-border'>
+          <div className='flex h-6 items-center justify-between gap-2'>
+            <div className={TYPE.label}>Lightness vs chroma</div>
+            <div className={TYPE.mono}>L / C</div>
+          </div>
+          <div className='flex min-h-0 flex-col justify-center'>
+            <FittedChart
               key={`scatter-${revision}`}
-              definition={createChromaChart(points)}
-              ariaLabel="Palette chroma versus lightness"
-              height={320}
-              className="rounded-md border border-border/70 bg-muted/35 p-2"
+              definition={createChromaChart(points, activeId)}
+              ariaLabel='Palette chroma versus lightness'
+              className='w-full'
             />
           </div>
-          <div className="w-full max-w-80 min-w-0">
-            <div className="mb-2 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
-              Hue Distribution
-            </div>
-            <Chart
+          <ColorProfile points={points} dimension='lightness' activeId={activeId} />
+        </section>
+
+        <section className='grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] gap-3 p-4 lg:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)]'>
+          <div className='flex h-6 items-center justify-between gap-2'>
+            <div className={TYPE.label}>Hue distribution</div>
+            <div className={TYPE.mono}>H / C</div>
+          </div>
+          <div className='flex min-h-0 flex-col justify-center'>
+            <FittedChart
               key={`hue-${revision}`}
-              definition={createHueChart(points)}
-              ariaLabel="Palette hue and chroma distribution"
-              height={280}
-              className="rounded-md border border-border/70 bg-muted/35 p-2"
+              definition={createHueChart(points, activeId)}
+              ariaLabel='Palette hue and chroma distribution'
+              className='w-full'
             />
-            <p className="mt-1.5 text-[9px] text-muted-foreground">Radius = chroma · Angle = hue</p>
           </div>
-        </div>
-        {stats && (
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            {[
-              ["Avg L", stats.avgL],
-              ["L Spread", stats.spreadL],
-              ["Avg C", stats.avgC],
-              ["C Spread", stats.spreadC],
-              ["H Range°", stats.hueRange],
-            ].map(([label, value]) => (
-              <div key={label} className="rounded-lg border border-border bg-card p-3 text-center">
-                <div className="mb-1 font-display text-[9px] tracking-widest text-muted-foreground uppercase">
-                  {label}
-                </div>
-                <div className="font-mono text-[15px] font-bold text-primary">{value}</div>
-              </div>
+          <ColorProfile points={points} dimension='chroma' activeId={activeId} />
+        </section>
+        <section className='flex min-h-0 min-w-0 flex-col gap-3 border-t border-border p-4 lg:col-span-2 @4xl:col-span-1 @4xl:border-t-0 @4xl:border-l'>
+          <div className='flex h-6 shrink-0 items-center justify-between gap-2'>
+            <div className={TYPE.label}>Color values</div>
+            <Button
+              variant='ghost'
+              size='icon-xs'
+              onClick={() => setRevision((value) => value + 1)}
+              aria-label='Refresh plots'
+              title='Refresh plots'>
+              <RotateCcw className='size-3.5' />
+            </Button>
+          </div>
+
+          <div
+            className={`grid min-h-0 auto-rows-fr gap-x-4 gap-y-2 @4xl:flex-1 ${points.length > 9 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {points.map((pt) => (
+              <article
+                key={pt.slot.id}
+                data-color-id={pt.id}
+                aria-label={`${pt.name}, ${pt.hex}, lightness ${pt.lch.L.toFixed(2)}, chroma ${pt.lch.C.toFixed(3)}, hue ${Math.round(pt.lch.H)} degrees${pt.locked ? ', locked' : ''}`}
+                onPointerEnter={() => setHoveredId(pt.id)}
+                onPointerLeave={() => setHoveredId(null)}
+                onFocus={() => setFocusedId(pt.id)}
+                onBlur={() => setFocusedId(null)}
+                className={`@container/reading grid min-h-0 min-w-0 grid-cols-[2.5rem_minmax(0,1fr)] content-center gap-x-3 gap-y-2 border-b border-border pb-1 transition-colors focus-within:ring-2 focus-within:ring-ring ${activeId === pt.id ? 'bg-accent/30' : ''}`}>
+                <span
+                  className='aspect-square size-10 self-center rounded-sm border border-foreground/10 @min-[17rem]/reading:row-span-2'
+                  style={{ background: pt.hex }}
+                />
+                <button
+                  type='button'
+                  aria-label={`Highlight ${pt.name} in charts`}
+                  aria-pressed={activeId === pt.id}
+                  onClick={() => setFocusedId(pt.id)}
+                  className='flex min-w-0 cursor-pointer items-center gap-2 text-left outline-none'>
+                  <div className='flex min-w-0 flex-1 flex-col gap-1 @min-[17rem]/reading:flex-row @min-[17rem]/reading:items-baseline @min-[17rem]/reading:justify-between @min-[17rem]/reading:gap-3'>
+                    <span
+                      className='truncate text-[12px] leading-none font-semibold text-foreground'
+                      title={pt.name}>
+                      {pt.name}
+                    </span>
+                    <span className='shrink-0 font-mono text-[10px] leading-none text-muted-foreground'>
+                      {pt.hex.toUpperCase()}
+                    </span>
+                  </div>
+                  {pt.locked && (
+                    <Lock className='size-3 shrink-0 text-muted-foreground' aria-label='Locked' />
+                  )}
+                </button>
+                <dl className='col-span-2 grid grid-cols-3 gap-3 @min-[17rem]/reading:col-span-1'>
+                  {[
+                    {
+                      label: 'L',
+                      title: 'Lightness',
+                      value: pt.lch.L.toFixed(2),
+                      amount: pt.lch.L,
+                    },
+                    {
+                      label: 'C',
+                      title: 'Chroma',
+                      value: pt.lch.C.toFixed(3),
+                      amount: pt.lch.C / MAX_CHROMA,
+                    },
+                    { label: 'H', title: 'Hue', value: `${Math.round(pt.lch.H)}°`, amount: null },
+                  ].map(({ label, title, value, amount }) => (
+                    <div key={title} className='flex min-w-0 flex-col gap-1'>
+                      <div className='flex items-baseline justify-between gap-0.5'>
+                        <dt
+                          className='text-[9px] leading-none font-semibold text-muted-foreground'
+                          title={title}>
+                          {label}
+                          <span className='sr-only'> {title}</span>
+                        </dt>
+                        <dd className='font-mono text-[10px] leading-none text-foreground/80 tabular-nums'>
+                          {value}
+                        </dd>
+                      </div>
+                      {amount !== null && (
+                        <div className='h-1 overflow-hidden rounded-sm bg-muted' aria-hidden='true'>
+                          <div
+                            className='h-full rounded-sm'
+                            style={{ width: `${clamp(amount, 0, 1) * 100}%`, background: pt.hex }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </dl>
+              </article>
             ))}
           </div>
-        )}
-        <div className="mt-5 flex flex-wrap gap-4 text-[10px] text-muted-foreground">
-          {points.map((pt) => (
-            <div key={pt.slot.id} className="flex items-center gap-1.5">
-              <div
-                className="h-3 w-3 rounded-full border border-white/20"
-                style={{ background: pt.hex }}
-              />
-              <span>{pt.name}</span>
-              <span className="font-mono">{pt.hex.toUpperCase()}</span>
-              {pt.locked && <Lock className="size-3" aria-label="Locked color" />}
-              <span className="font-mono opacity-60">
-                L{parseFloat(pt.lch.L.toFixed(2))} C{parseFloat(pt.lch.C.toFixed(3))} H
-                {Math.round(pt.lch.H)}°
-              </span>
-            </div>
-          ))}
-        </div>
+        </section>
       </div>
     </div>
   );
@@ -218,106 +353,53 @@ function srgbToP3(r: number, g: number, b: number): [number, number, number] {
 function isWideGamut(hex: string): boolean {
   return rgbToOklch(hexToRgb(hex)).C > 0.25;
 }
-function expandToP3(hex: string): string {
-  const lch = rgbToOklch(hexToRgb(hex));
-  return rgbToHex(oklchToRgb({ L: lch.L, C: clamp(lch.C * 1.25, lch.C, 0.38), H: lch.H }));
-}
 function p3CssColor(hex: string): string {
   const { r, g, b } = hexToRgb(hex);
   const [rP3, gP3, bP3] = srgbToP3(r, g, b);
   return `color(display-p3 ${rP3.toFixed(4)} ${gP3.toFixed(4)} ${bP3.toFixed(4)})`;
 }
 
-function P3SwatchCard({ hex, index, showP3 }: { hex: string; index: number; showP3: boolean }) {
+function P3SwatchCard({ hex, showP3 }: { hex: string; showP3: boolean }) {
   const rgb = hexToRgb(hex);
   const lch = rgbToOklch(rgb);
   const wide = isWideGamut(hex);
-  const expanded = wide ? expandToP3(hex) : hex;
   const p3Css = p3CssColor(hex);
   const name = nearestName(rgb);
   const tc = textColor(rgb);
 
   return (
-    <div
-      style={{
-        borderRadius: 8,
-        overflow: "hidden",
-        border: `1px solid ${wide ? "rgba(99,102,241,.4)" : "var(--color-secondary)"}`,
-        background: "var(--color-card)",
-      }}
-    >
-      <div className="flex flex-col">
+    <div className='flex min-h-0 min-w-0 flex-col gap-2'>
+      <div className='relative flex h-24 shrink-0 gap-1 lg:h-auto lg:min-h-8 lg:flex-1'>
         <div
-          style={{
-            background: hex,
-            height: showP3 ? 44 : 72,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            position: "relative",
-          }}
-        >
-          <span className="text-[8.5px] font-bold" style={{ color: tc, opacity: 0.8 }}>
+          className='flex min-w-0 flex-1 items-end rounded-md border border-border p-3'
+          style={{ background: hex }}>
+          <span className={TYPE.label} style={{ color: tc, opacity: 0.8 }}>
             sRGB
           </span>
-          {wide && (
-            <span
-              className="absolute top-1 right-1 rounded px-1 py-px font-extrabold tracking-[.04em] text-white"
-              style={{ background: "rgba(99,102,241,.9)", fontSize: 7 }}
-            >
-              P3+
-            </span>
-          )}
         </div>
         {showP3 && (
           <div
-            className="flex items-center justify-center"
-            style={{ background: p3Css, height: 44 }}
-          >
-            <span className="text-[8.5px] font-bold" style={{ color: tc, opacity: 0.8 }}>
+            className='flex min-w-0 flex-1 items-end rounded-md border border-border p-3'
+            style={{ background: p3Css }}>
+            <span className={TYPE.label} style={{ color: tc, opacity: 0.8 }}>
               P3
             </span>
           </div>
         )}
       </div>
-      <div className="px-2.5 py-2">
-        <div className="mb-1 font-mono text-[9.5px] text-secondary-foreground">
-          {hex.toUpperCase()}
+      <div className='flex shrink-0 flex-wrap items-baseline justify-between gap-x-2 gap-y-1'>
+        <div className={`truncate ${TYPE.title}`}>{name}</div>
+        <div className={TYPE.mono}>{hex.toUpperCase()}</div>
+        <div className={`${TYPE.mono} hidden @4xl:block`}>
+          C {lch.C.toFixed(3)} · H {Math.round(lch.H)}°
         </div>
-        <div className="mb-1.5 text-[8.5px] text-muted-foreground">{name}</div>
-        <div className="mb-1 flex items-center gap-1.5">
-          <span className="text-[8.5px] text-muted-foreground">C={lch.C.toFixed(3)}</span>
-          <span className="text-[8.5px] text-muted-foreground">H={Math.round(lch.H)}°</span>
+        <div className={`hidden ${TYPE.meta} @5xl:block`}>
+          {wide ? (
+            <span className='font-semibold text-primary'>High chroma</span>
+          ) : (
+            'Standard chroma'
+          )}
         </div>
-        {wide ? (
-          <div
-            className="inline-block rounded px-1.5 py-0.5 text-[8px] font-bold text-primary"
-            style={{ background: "rgba(99,102,241,.15)" }}
-          >
-            P3-capable → higher chroma possible
-          </div>
-        ) : (
-          <div className="inline-block rounded bg-muted px-1.5 py-0.5 text-[8px] text-muted-foreground">
-            sRGB gamut
-          </div>
-        )}
-        {wide && showP3 && (
-          <div className="mt-1.5">
-            <div className="text-[8px] text-muted-foreground">P3 expanded:</div>
-            <div className="mt-0.5 flex items-center gap-1">
-              <div
-                className="h-3.5 w-3.5 rounded"
-                style={{
-                  background: expanded,
-                  border: "1px solid rgba(128,128,128,.2)",
-                }}
-              />
-              <span className="font-mono text-[8.5px] text-muted-foreground">
-                {expanded.toUpperCase()}
-              </span>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -327,109 +409,103 @@ function P3Tab() {
   const slots = useChromaStore((s) => s.slots);
   const [showP3, setShowP3] = useState(true);
   const [copiedCss, setCopiedCss] = useState(false);
+  const [cssFormat, setCssFormat] = useState<'srgb' | 'p3'>('p3');
   const wideCount = useMemo(() => slots.filter((s) => isWideGamut(s.color.hex)).length, [slots]);
   const p3Css = useMemo(() => {
-    if (!slots.length) return "";
-    return `:root {\n${slots.map((s, i) => `  --palette-${i + 1}-srgb: ${s.color.hex};\n  --palette-${i + 1}-p3: ${p3CssColor(s.color.hex)};`).join("\n")}\n}\n\n/* P3 variant for supporting displays */\n@supports (color: color(display-p3 0 0 0)) {\n  :root {\n${slots.map((s, i) => `    --palette-${i + 1}: ${p3CssColor(s.color.hex)};`).join("\n")}\n  }\n}`;
+    if (!slots.length) return '';
+    return `:root {\n${slots.map((s, i) => `  --palette-${i + 1}: ${s.color.hex};\n  --palette-${i + 1}-srgb: ${s.color.hex};\n  --palette-${i + 1}-p3: ${p3CssColor(s.color.hex)};`).join('\n')}\n}\n\n/* P3 variant for supporting displays */\n@supports (color: color(display-p3 0 0 0)) {\n  :root {\n${slots.map((s, i) => `    --palette-${i + 1}: ${p3CssColor(s.color.hex)};`).join('\n')}\n  }\n}`;
   }, [slots]);
+  const cssPreview =
+    cssFormat === 'srgb'
+      ? `:root {\n${slots.map((slot, index) => `  --palette-${index + 1}: ${slot.color.hex};`).join('\n')}\n}`
+      : `@supports (color: color(display-p3 0 0 0)) {\n  :root {\n${slots.map((slot, index) => `    --palette-${index + 1}: ${p3CssColor(slot.color.hex)};`).join('\n')}\n  }\n}`;
 
-  if (!slots.length) return <EmptyState title="P3 Gamut viewer" />;
+  if (!slots.length) return <EmptyState title='P3 Gamut viewer' />;
 
   return (
-    <div className="flex-1 overflow-auto p-6">
-      <div className="mx-auto max-w-225">
-        <div className="mb-5 flex flex-wrap items-start justify-between gap-2.5">
-          <p className="max-w-150 text-[11px] text-muted-foreground">
-            Display P3 covers ~50% more color volume than sRGB. Colors marked <strong>P3+</strong>{" "}
-            have higher chroma available on capable displays. The P3 row shows{" "}
-            <code>color(display-p3 …)</code> CSS — only visible on P3-capable hardware.
-          </p>
-          <Button
-            variant={showP3 ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setShowP3((v) => !v)}
-          >
-            {showP3 ? "P3 Preview: On" : "P3 Preview: Off"}
-          </Button>
-        </div>
-        <div className="mb-5 flex flex-wrap gap-2.5">
-          {[
-            {
-              label: "P3-capable colors",
-              val: `${wideCount}/${slots.length}`,
-              accent: wideCount > 0,
-            },
-            {
-              label: "sRGB-only colors",
-              val: `${slots.length - wideCount}/${slots.length}`,
-              accent: false,
-            },
-            { label: "Gamut expansion", val: "C × 1.25", accent: false },
-          ].map(({ label, val, accent }) => (
-            <div
-              key={label}
-              style={{
-                flex: "1 1 120px",
-                background: "var(--color-card)",
-                borderRadius: 6,
-                border: `1px solid ${accent ? "rgba(99,102,241,.3)" : "var(--color-secondary)"}`,
-                padding: "8px 12px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 17,
-                  fontWeight: 800,
-                  color: accent ? "var(--color-primary)" : "var(--color-foreground)",
-                }}
-              >
-                {val}
-              </div>
-              <div className="mt-0.5 text-[9px] tracking-[.05em] text-muted-foreground uppercase">
-                {label}
-              </div>
+    <div className='@container flex min-h-0 flex-1 flex-col overflow-auto lg:overflow-hidden'>
+      <div className='grid grid-cols-1 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[auto_minmax(0,1fr)]'>
+        <section className='grid grid-cols-1 items-center gap-4 border-b border-border p-4 lg:col-span-2 @3xl:grid-cols-[auto_minmax(0,1fr)]'>
+          <div className='flex gap-10'>
+            <div className='flex flex-col gap-1.5'>
+              <span
+                className={TYPE.metric}
+                style={{ color: wideCount ? 'var(--primary)' : undefined }}>
+                {wideCount}
+                <span className={`ml-1 ${TYPE.meta}`}>/ {slots.length}</span>
+              </span>
+              <span className={TYPE.label}>High chroma</span>
             </div>
-          ))}
-        </div>
-        <div className="mb-5 rounded-md border border-muted bg-card px-3.5 py-2.5 text-[10.5px] leading-relaxed text-muted-foreground">
-          <strong className="text-secondary-foreground">How P3 works:</strong> sRGB swatches (top)
-          render on all displays. P3 swatches (bottom) use{" "}
-          <code className="rounded bg-muted px-1 py-0">color(display-p3 …)</code> CSS — they only
-          show wider colors on P3-capable hardware. Use the{" "}
-          <code className="rounded bg-muted px-1 py-0">@supports</code> block to progressively
-          enhance.
-        </div>
-        <div
-          className="mb-7 grid gap-2.5"
-          style={{
-            gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-          }}
-        >
-          {slots.map((slot, i) => (
-            <P3SwatchCard key={i} hex={slot.color.hex} index={i} showP3={showP3} />
-          ))}
-        </div>
-        <div>
-          <div className="mb-2.5 flex items-center justify-between">
-            <div className="font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
-              CSS with P3 @supports fallback
+            <div className='flex flex-col gap-1.5'>
+              <span className={TYPE.metric}>
+                {slots.length - wideCount}
+                <span className={`ml-1 ${TYPE.meta}`}>/ {slots.length}</span>
+              </span>
+              <span className={TYPE.label}>Standard chroma</span>
             </div>
+          </div>
+          <div className='flex flex-col gap-2'>
+            <div className={TYPE.title}>sRGB palette · Display P3 equivalents</div>
+            <p className={TYPE.meta}>
+              All palette colors are within sRGB. Display P3 values preserve their appearance; high
+              chroma indicates C &gt; 0.25, not an out-of-gamut color.
+            </p>
+          </div>
+        </section>
+
+        <section className='flex min-h-0 min-w-0 flex-col gap-3 border-b border-border p-4 lg:border-r lg:border-b-0'>
+          <div className='flex flex-wrap items-center justify-between gap-2'>
+            <div className={TYPE.label}>Colors</div>
+            <ToolSegments
+              value={showP3 ? 'both' : 'srgb'}
+              onValueChange={(mode) => setShowP3(mode === 'both')}
+              label='Gamut comparison'
+              items={[
+                { id: 'srgb', label: 'sRGB only' },
+                { id: 'both', label: 'sRGB + P3' },
+              ]}
+            />
+          </div>
+          <div className='grid grid-cols-2 gap-8 lg:min-h-0 lg:flex-1 lg:auto-rows-fr'>
+            {slots.map((slot) => (
+              <P3SwatchCard key={slot.id} hex={slot.color.hex} showP3={showP3} />
+            ))}
+          </div>
+        </section>
+
+        <section className='flex min-h-0 min-w-0 flex-col gap-3 p-4'>
+          <div className='flex flex-wrap items-center justify-between gap-2'>
+            <div className={TYPE.label}>CSS with P3 fallback</div>
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                navigator.clipboard.writeText(p3Css).catch(() => {});
-                setCopiedCss(true);
-                setTimeout(() => setCopiedCss(false), 1400);
-              }}
-            >
-              {copiedCss ? "✓ Copied" : "Copy"}
+              variant='outline'
+              size='xs'
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(p3Css);
+                  setCopiedCss(true);
+                  setTimeout(() => setCopiedCss(false), 1400);
+                } catch {
+                  setCopiedCss(false);
+                }
+              }}>
+              {copiedCss ? <Check className='size-3' /> : <Copy className='size-3' />}
+              {copiedCss ? 'Copied' : 'Copy CSS'}
             </Button>
           </div>
-          <pre className="max-h-70 overflow-x-auto overflow-y-auto rounded border border-border bg-secondary p-2.5 text-[9.5px] leading-[1.7] whitespace-pre text-muted-foreground">
-            {p3Css}
+          <ToolSegments
+            value={cssFormat}
+            onValueChange={setCssFormat}
+            label='CSS preview format'
+            items={[
+              { id: 'srgb', label: 'sRGB fallback' },
+              { id: 'p3', label: 'Display P3' },
+            ]}
+          />
+          <pre
+            className={`min-h-0 rounded-md border border-border bg-secondary p-3 break-all whitespace-pre-wrap lg:flex-1 ${TYPE.mono}`}>
+            {cssPreview}
           </pre>
-        </div>
+        </section>
       </div>
     </div>
   );
@@ -438,15 +514,16 @@ function P3Tab() {
 // ─── Root export ──────────────────────────────────────────────────────────────
 
 export default function VisualizeView() {
-  const [activeTab, setActiveTab] = useState<Tab>("oklch");
+  const [activeTab, setActiveTab] = useState<Tab>('oklch');
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      <div className="shrink-0 px-6 pt-5 pb-0">
-        <h2 className="mb-1">Visualize</h2>
-      </div>
+    <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
+      <ViewHeader
+        title='Visualize'
+        description='Palette distribution in OKLCH and color-preserving Display P3 values.'
+      />
       <TabBar active={activeTab} setActive={setActiveTab} />
-      {activeTab === "oklch" && <OklchTab />}
-      {activeTab === "p3" && <P3Tab />}
+      {activeTab === 'oklch' && <OklchTab />}
+      {activeTab === 'p3' && <P3Tab />}
     </div>
   );
 }

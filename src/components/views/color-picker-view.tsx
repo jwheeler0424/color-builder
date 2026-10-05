@@ -1,5 +1,10 @@
-import React, { useCallback, useMemo, useState } from "react";
-import type { RGB, HSL, HSV, OKLCH } from "@/types";
+import { useNavigate } from '@tanstack/react-router';
+import React, { useCallback, useMemo, useState } from 'react';
+
+import type { RGB, HSL, HSV, OKLCH } from '@/types';
+
+import { Button } from '@/components/ui/button';
+import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
   hexToRgb,
   rgbToHex,
@@ -26,19 +31,17 @@ import {
   hsvToRgb,
   cmykToRgb,
   cssString,
-} from "@/lib/utils";
-import { useChromaStore } from "@/hooks/use-chroma-store";
-import { useNavigate } from "@tanstack/react-router";
-import ColorWheel from "../common/color-wheel";
-import { Button } from "@/components/ui/button";
-import { RgbSliders } from "../common/sliders/rgb-sliders";
-import { HslSliders } from "../common/sliders/hsl-sliders";
-import { HsvSliders } from "../common/sliders/hsv-sliders";
-import { OklchSliders } from "../common/sliders/oklch-sliders";
-import { OklabSliders } from "../common/sliders/oklab-sliders";
-import { CmykSliders } from "../common/sliders/cmyk-sliders";
-import HexInput from "../common/hex-input";
-import { PanelGroup as PanelSection, PanelGroupLabel as PanelSectionLabel } from "../panel";
+} from '@/lib/utils';
+
+import ColorWheel from '../common/color-wheel';
+import HexInput from '../common/hex-input';
+import { CmykSliders } from '../common/sliders/cmyk-sliders';
+import { HslSliders } from '../common/sliders/hsl-sliders';
+import { HsvSliders } from '../common/sliders/hsv-sliders';
+import { OklabSliders } from '../common/sliders/oklab-sliders';
+import { OklchSliders } from '../common/sliders/oklch-sliders';
+import { RgbSliders } from '../common/sliders/rgb-sliders';
+import { PanelGroup as PanelSection, PanelGroupLabel as PanelSectionLabel } from '../panel';
 
 // EyeDropper is a browser API not yet in lib.dom.d.ts
 interface EyeDropper {
@@ -52,31 +55,31 @@ declare global {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type PickerMode = "rgb" | "hsl" | "hsv" | "oklch" | "oklab";
+type PickerMode = 'rgb' | 'hsl' | 'hsv' | 'oklch' | 'oklab';
 
 const MODES: { id: PickerMode; label: string; desc: string }[] = [
-  { id: "rgb", label: "RGB", desc: "Red, Green, Blue — 0 to 255 per channel" },
-  { id: "hsl", label: "HSL", desc: "Hue, Saturation, Lightness — CSS native" },
+  { id: 'rgb', label: 'RGB', desc: 'Red, Green, Blue — 0 to 255 per channel' },
+  { id: 'hsl', label: 'HSL', desc: 'Hue, Saturation, Lightness — CSS native' },
   {
-    id: "hsv",
-    label: "HSV",
-    desc: "Hue, Saturation, Value — common in design tools",
+    id: 'hsv',
+    label: 'HSV',
+    desc: 'Hue, Saturation, Value — common in design tools',
   },
   {
-    id: "oklch",
-    label: "OKLCH",
-    desc: "Perceptually uniform — same space as palette generation",
+    id: 'oklch',
+    label: 'OKLCH',
+    desc: 'Perceptually uniform — same space as palette generation',
   },
   {
-    id: "oklab",
-    label: "OKLab",
-    desc: "Perceptual Lab — a/b axes match Photoshop Lab mode",
+    id: 'oklab',
+    label: 'OKLab',
+    desc: 'Perceptual Lab — a/b axes match Photoshop Lab mode',
   },
 ];
 
 // ─── Main View ────────────────────────────────────────────────────────────────
 
-export default function ColorPickerView() {
+export default function ColorPickerView({ showPalette = true }: { showPalette?: boolean }) {
   const {
     pickerHex,
     pickerAlpha,
@@ -148,7 +151,7 @@ export default function ColorPickerView() {
     setSeeds([hexToStop(pickerHex, pickerAlpha < 100 ? pickerAlpha : undefined)]);
     addRecent(displayHex);
     generate();
-    navigate({ to: "/palette" });
+    navigate({ to: '/palette' });
   }, [pickerHex, setSeeds, addRecent, generate, navigate]);
 
   const addToPalette = useCallback(() => {
@@ -169,7 +172,7 @@ export default function ColorPickerView() {
   };
 
   const handleEyeDropper = async () => {
-    if (typeof window !== "undefined" && "EyeDropper" in window) {
+    if (typeof window !== 'undefined' && 'EyeDropper' in window) {
       try {
         const dropper = new (window as any).EyeDropper();
         const { sRGBHex } = await dropper.open();
@@ -182,25 +185,25 @@ export default function ColorPickerView() {
   };
 
   const MODES = [
-    { id: "hsl", label: "HSL" },
-    { id: "rgb", label: "RGB" },
-    { id: "hsv", label: "HSV" },
-    { id: "oklch", label: "OKLCH" },
-    { id: "oklab", label: "OKLab" },
-    { id: "cmyk", label: "CMYK" },
+    { id: 'hsl', label: 'HSL' },
+    { id: 'rgb', label: 'RGB' },
+    { id: 'hsv', label: 'HSV' },
+    { id: 'oklch', label: 'OKLCH' },
+    { id: 'oklab', label: 'OKLab' },
+    { id: 'cmyk', label: 'CMYK' },
   ];
 
   return (
-    <div className="flex flex-col flex-1 overflow-hidden">
+    <div className='flex min-h-0 flex-1 flex-col overflow-y-auto'>
       <PanelSection>
         <PanelSectionLabel>COLOR PICKER</PanelSectionLabel>
         {/* Color wheel — always visible, speaks HSL */}
-        <div className="flex flex-col items-center justify-center gap-1 my-6">
+        <div className='my-6 flex flex-col items-center justify-center gap-1'>
           <ColorWheel hsl={hsl} size={240} onChange={handleWheelChange} />
         </div>
 
         {/* Mode tabs */}
-        <div className="flex gap-1 mt-2.5 mb-1.5">
+        <div className='mt-2.5 mb-1.5 flex gap-1'>
           {MODES.map((m) => (
             <button
               key={m.id}
@@ -208,24 +211,23 @@ export default function ColorPickerView() {
               title={m.label}
               style={{
                 flex: 1,
-                padding: "4px 0",
+                padding: '4px 0',
                 borderRadius: 4,
                 fontSize: 10.5,
                 fontWeight: 700,
-                border: "none",
-                cursor: "pointer",
-                background: pickerMode === m.id ? "var(--color-primary)" : "var(--color-secondary)",
-                color: pickerMode === m.id ? "#fff" : "var(--color-secondary-foreground)",
-                transition: "background .12s",
-              }}
-            >
+                border: 'none',
+                cursor: 'pointer',
+                background: pickerMode === m.id ? 'var(--color-primary)' : 'var(--color-secondary)',
+                color: pickerMode === m.id ? '#fff' : 'var(--color-secondary-foreground)',
+                transition: 'background .12s',
+              }}>
               {m.label}
             </button>
           ))}
         </div>
 
         {/* Sliders for active mode */}
-        {pickerMode === "rgb" && (
+        {pickerMode === 'rgb' && (
           <RgbSliders
             rgb={rgb}
             alpha={pickerAlpha}
@@ -234,7 +236,7 @@ export default function ColorPickerView() {
             onAlpha={setPickerAlpha}
           />
         )}
-        {pickerMode === "hsl" && (
+        {pickerMode === 'hsl' && (
           <HslSliders
             hsl={hsl}
             alpha={pickerAlpha}
@@ -243,7 +245,7 @@ export default function ColorPickerView() {
             onAlpha={setPickerAlpha}
           />
         )}
-        {pickerMode === "hsv" && (
+        {pickerMode === 'hsv' && (
           <HsvSliders
             hsv={hsv}
             alpha={pickerAlpha}
@@ -252,7 +254,7 @@ export default function ColorPickerView() {
             onAlpha={setPickerAlpha}
           />
         )}
-        {pickerMode === "oklch" && (
+        {pickerMode === 'oklch' && (
           <OklchSliders
             oklch={oklch}
             alpha={pickerAlpha}
@@ -261,7 +263,7 @@ export default function ColorPickerView() {
             onAlpha={setPickerAlpha}
           />
         )}
-        {pickerMode === "oklab" && (
+        {pickerMode === 'oklab' && (
           <OklabSliders
             oklab={oklab}
             alpha={pickerAlpha}
@@ -270,7 +272,7 @@ export default function ColorPickerView() {
             onAlpha={setPickerAlpha}
           />
         )}
-        {pickerMode === "cmyk" && (
+        {pickerMode === 'cmyk' && (
           <CmykSliders
             cmyk={cmyk}
             alpha={pickerAlpha}
@@ -280,62 +282,60 @@ export default function ColorPickerView() {
           />
         )}
 
-        <div className="flex flex-col gap-4 w-full max-w-100 mt-3 pb-2">
-          <div className="flex gap-4 w-full">
+        <div className='mt-3 flex w-full max-w-100 flex-col gap-4 pb-2'>
+          <div className='flex w-full gap-4'>
             {/* Checkerboard shows through for alpha */}
-            <div className="relative size-16 shrink-0">
+            <div className='relative size-16 shrink-0'>
               <div
-                className="absolute rounded inset-0"
+                className='absolute inset-0 rounded'
                 style={{
-                  background: "repeating-conic-gradient(#444 0% 25%,#222 0% 50%) 0 0/10px 10px",
+                  background: 'repeating-conic-gradient(#444 0% 25%,#222 0% 50%) 0 0/10px 10px',
                 }}
               />
               <div
-                className="size-full rounded border-2 border-input shrink-0 relative"
+                className='relative size-full shrink-0 rounded border-2 border-input'
                 style={{ ...previewStyle }}
               />
             </div>
-            <div className="flex-1 flex flex-col gap-1.5">
-              <div className="flex gap-1.5 items-center">
+            <div className='flex flex-1 flex-col gap-1.5'>
+              <div className='flex items-center gap-1.5'>
                 {/* <label>HEX CODE</label> */}
-                <HexInput value={displayHex} onChange={handleHexInput} label="HEX CODE" />
+                <HexInput value={displayHex} onChange={handleHexInput} label='HEX CODE' />
               </div>
               {/* CSS output string for current mode */}
-              <div className="flex items-center gap-1 mt-1 bg-muted rounded px-1.5 py-1">
-                <span className="font-mono text-muted-foreground overflow-ellipsis whitespace-nowrap overflow-hidden text-[9px] flex-1">
+              <div className='mt-1 flex items-center gap-1 rounded bg-muted px-1.5 py-1'>
+                <span className='flex-1 overflow-hidden font-mono text-[9px] overflow-ellipsis whitespace-nowrap text-muted-foreground'>
                   {cssOut}
                 </span>
                 <button
                   onClick={copyCss}
                   style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
                     fontSize: 9,
-                    color: copied ? "#4ade80" : "var(--color-muted-foreground)",
-                    padding: "0 2px",
+                    color: copied ? '#4ade80' : 'var(--color-muted-foreground)',
+                    padding: '0 2px',
                     flexShrink: 0,
-                  }}
-                >
-                  {copied ? "✓" : "copy"}
+                  }}>
+                  {copied ? '✓' : 'copy'}
                 </button>
               </div>
             </div>
           </div>
-          <div className="flex gap-1.5 items-center justify-end">
-            <Button variant="default" size="sm" onClick={useSeed}>
+          <div className='flex items-center justify-end gap-1.5'>
+            <Button variant='default' size='sm' onClick={useSeed}>
               → Seed Palette
             </Button>
-            <Button variant="ghost" size="sm" onClick={addToPalette}>
+            <Button variant='ghost' size='sm' onClick={addToPalette}>
               + Add
             </Button>
-            {typeof window !== "undefined" && "EyeDropper" in window && (
+            {typeof window !== 'undefined' && 'EyeDropper' in window && (
               <Button
-                variant="ghost"
-                size="sm"
-                title="Sample color from screen (EyeDropper API)"
-                onClick={handleEyeDropper}
-              >
+                variant='ghost'
+                size='sm'
+                title='Sample color from screen (EyeDropper API)'
+                onClick={handleEyeDropper}>
                 ⊕ Pick
               </Button>
             )}
@@ -347,11 +347,11 @@ export default function ColorPickerView() {
       {recentColors.length > 0 && (
         <PanelSection>
           <PanelSectionLabel>RECENT COLORS</PanelSectionLabel>
-          <div className="flex flex-wrap gap-1.5 pb-2">
+          <div className='flex flex-wrap gap-1.5 pb-2'>
             {recentColors.map((rh, i) => (
               <div
                 key={i}
-                className="w-5.5 h-5.5 rounded cursor-pointer border border-white/10 transition-transform hover:scale-110"
+                className='h-5.5 w-5.5 cursor-pointer rounded border border-white/10 transition-transform hover:scale-110'
                 style={{ background: rh }}
                 title={rh}
                 onClick={() => {
@@ -368,34 +368,36 @@ export default function ColorPickerView() {
       {/* Color info — all formats */}
       <PanelSection>
         <PanelSectionLabel>COLOR VALUES</PanelSectionLabel>
-        <div className="text-[11px] text-muted-foreground leading-[2.1] pb-2">
-          <InfoRow label="Name" value={nearestName(rgb)} />
-          <InfoRow label="HEX" value={displayHex.toUpperCase()} mono />
-          <InfoRow label="RGB" value={toCssRgb(rgb, pickerAlpha)} mono />
-          <InfoRow label="HSL" value={toCssHsl(hsl, pickerAlpha)} mono />
-          <InfoRow label="HSV" value={toCssHsv(hsv, pickerAlpha)} mono />
-          <InfoRow label="OKLCH" value={toCssOklch(oklch, pickerAlpha)} mono />
-          <InfoRow label="OKLab" value={toCssOklab(oklab, pickerAlpha)} mono />
-          <InfoRow label="CMYK" value={`${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%`} />
-          <InfoRow label="Lum." value={`${(luminance(rgb) * 100).toFixed(1)}%`} />
+        <div className='pb-2 text-[11px] leading-[2.1] text-muted-foreground'>
+          <InfoRow label='Name' value={nearestName(rgb)} />
+          <InfoRow label='HEX' value={displayHex.toUpperCase()} mono />
+          <InfoRow label='RGB' value={toCssRgb(rgb, pickerAlpha)} mono />
+          <InfoRow label='HSL' value={toCssHsl(hsl, pickerAlpha)} mono />
+          <InfoRow label='HSV' value={toCssHsv(hsv, pickerAlpha)} mono />
+          <InfoRow label='OKLCH' value={toCssOklch(oklch, pickerAlpha)} mono />
+          <InfoRow label='OKLab' value={toCssOklab(oklab, pickerAlpha)} mono />
+          <InfoRow label='CMYK' value={`${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%`} />
+          <InfoRow label='Lum.' value={`${(luminance(rgb) * 100).toFixed(1)}%`} />
         </div>
       </PanelSection>
 
       {/* Palette quick-pick */}
-      <PanelSection>
-        <PanelSectionLabel>PALETTE</PanelSectionLabel>
-        <div className="flex flex-wrap gap-1.5 pb-2">
-          {slots.map((slot, i) => (
-            <div
-              key={i}
-              className="w-5.5 h-5.5 rounded cursor-pointer border border-white/10 transition-transform hover:scale-110"
-              style={{ background: slot.color.hex }}
-              title={slot.color.hex}
-              onClick={() => setPickerHex(slot.color.hex)}
-            />
-          ))}
-        </div>
-      </PanelSection>
+      {showPalette && (
+        <PanelSection>
+          <PanelSectionLabel>PALETTE</PanelSectionLabel>
+          <div className='flex flex-wrap gap-1.5 pb-2'>
+            {slots.map((slot, i) => (
+              <div
+                key={i}
+                className='h-5.5 w-5.5 cursor-pointer rounded border border-white/10 transition-transform hover:scale-110'
+                style={{ background: slot.color.hex }}
+                title={slot.color.hex}
+                onClick={() => setPickerHex(slot.color.hex)}
+              />
+            ))}
+          </div>
+        </PanelSection>
+      )}
     </div>
   );
 }
@@ -408,24 +410,23 @@ function InfoRow({ label, value, mono }: { label: string; value: string; mono?: 
     setTimeout(() => setCopied(false), 1000);
   };
   return (
-    <div className="justify-between items-center flex gap-1.5">
-      <span className="text-muted-foreground shrink-0 min-w-9.5">{label}</span>
+    <div className='flex items-center justify-between gap-1.5'>
+      <span className='min-w-9.5 shrink-0 text-muted-foreground'>{label}</span>
       <span
         style={{
-          fontFamily: mono ? "var(--font-mono)" : undefined,
+          fontFamily: mono ? 'var(--font-mono)' : undefined,
           fontSize: mono ? 9.5 : undefined,
-          color: "var(--color-foreground)",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
+          color: 'var(--color-foreground)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
           flex: 1,
-          textAlign: "right",
-          cursor: "pointer",
+          textAlign: 'right',
+          cursor: 'pointer',
         }}
         title={`Click to copy: ${value}`}
-        onClick={copy}
-      >
-        {copied ? "✓ copied" : value}
+        onClick={copy}>
+        {copied ? '✓ copied' : value}
       </span>
     </div>
   );

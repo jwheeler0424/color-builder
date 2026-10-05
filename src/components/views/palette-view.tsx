@@ -14,11 +14,13 @@
  *     - Renders full layout: PaletteStrip + sidebar controls
  */
 
-import { useState } from "react";
-import { PaletteStrip } from "../layout/palette-strip";
-import { GenerateControls, GenerateFooter } from "../layout/generate-controls";
-import { useChromaStore } from "@/hooks/use-chroma-store";
-import { useShell } from "@/providers/shell.provider";
+import { useState } from 'react';
+
+import { useChromaStore } from '@/hooks/use-chroma-store';
+import { useShell } from '@/providers/shell.provider';
+
+import { GenerateControls, GenerateFooter } from '../layout/generate-controls';
+import { PaletteStrip } from '../layout/palette-strip';
 
 // ─── Standalone full layout ───────────────────────────────────────────────────
 
@@ -26,10 +28,10 @@ function StandalonePaletteView() {
   const [editingSlot, setEditingSlot] = useState<number | null>(null);
 
   return (
-    <div className="flex flex-1 overflow-hidden">
+    <div className='flex flex-1 overflow-hidden'>
       <PaletteStrip onEditSlot={setEditingSlot} />
-      <aside className="w-[320px] bg-card border-l border-border flex flex-col overflow-hidden shrink-0">
-        <div className="flex-1 overflow-y-auto [scrollbar-width:thin]">
+      <aside className='flex w-[320px] shrink-0 flex-col overflow-hidden border-l border-border bg-card'>
+        <div className='flex-1 [scrollbar-width:thin] overflow-y-auto'>
           <GenerateControls onEditSeed={setEditingSlot} />
         </div>
         <GenerateFooter />
@@ -38,83 +40,85 @@ function StandalonePaletteView() {
   );
 }
 
-// ─── Studio panel hint ────────────────────────────────────────────────────────
-// Shown in the right panel when /palette is active in StudioShell.
-// Strip and controls are already visible in their columns.
+// ─── Studio panel ────────────────────────────────────────────────────────────────────
+// Palette summary + quick actions, shown beside (or in a sheet over) tool pages.
 
-function PaletteStudioPanel() {
+export function PaletteStudioPanel({ onEditSlot }: { onEditSlot?: (index: number) => void }) {
   const { generate, undo, openModal, setSaveName, slots } = useChromaStore();
 
   return (
-    <div className="flex flex-col h-full overflow-auto p-5 gap-4">
+    <div className='flex flex-col gap-4 p-5'>
       <div>
-        <p className="text-[10px] tracking-widest uppercase text-muted-foreground font-semibold mb-1">
+        <p className='mb-1 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
           Palette
         </p>
-        <p className="text-[11px] text-muted-foreground leading-relaxed">
-          {slots.length} colors · drag slots to reorder, lock to protect,
-          double-click to edit color.
+        <p className='text-[11px] leading-relaxed text-muted-foreground'>
+          {slots.length} colors · drag slots to reorder, lock to protect, double-click to edit
+          color.
         </p>
       </div>
 
       {slots.length > 0 && (
-        <div className="flex h-8 rounded-md overflow-hidden gap-0.5">
-          {slots.map((s) => (
-            <div
-              key={s.id}
-              className="flex-1"
-              style={{ background: s.color.hex }}
-            />
-          ))}
+        <div className='flex h-8 gap-0.5 overflow-hidden rounded-md'>
+          {slots.map((s, i) =>
+            onEditSlot ? (
+              <button
+                key={s.id}
+                type='button'
+                onClick={() => onEditSlot(i)}
+                className='flex-1 cursor-pointer border-0 p-0'
+                style={{ background: s.color.hex }}
+                title={`Edit ${s.color.hex.toUpperCase()}`}
+                aria-label={`Edit color ${i + 1}, ${s.color.hex.toUpperCase()}${s.locked ? ', locked' : ''}`}
+              />
+            ) : (
+              <div key={s.id} className='flex-1' style={{ background: s.color.hex }} />
+            ),
+          )}
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
+      <div className='flex flex-col gap-2'>
         <button
           onClick={generate}
-          className="w-full h-10 text-[12px] font-bold rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity cursor-pointer border-0"
-        >
+          className='h-10 w-full cursor-pointer rounded-md border-0 bg-primary text-[12px] font-bold text-primary-foreground transition-opacity hover:opacity-90'>
           ⟳ Generate New Palette
         </button>
         <button
           onClick={undo}
-          className="w-full h-9 text-[11px] font-mono rounded-md border border-border bg-secondary text-secondary-foreground hover:border-input transition-colors cursor-pointer"
-        >
+          className='h-9 w-full cursor-pointer rounded-md border border-border bg-secondary font-mono text-[11px] text-secondary-foreground transition-colors hover:border-input'>
           ↩ Undo Last Generate
         </button>
       </div>
 
-      <div className="border-t border-border pt-3 flex flex-col gap-2">
-        <p className="text-[10px] tracking-widest uppercase text-muted-foreground font-semibold">
+      <div className='flex flex-col gap-2 border-t border-border pt-3'>
+        <p className='text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
           Export
         </p>
         <button
-          onClick={() => openModal("export")}
-          className="w-full h-9 text-[11px] font-mono rounded-md border border-border bg-secondary text-secondary-foreground hover:border-input transition-colors cursor-pointer"
-        >
+          onClick={() => openModal('export')}
+          className='h-9 w-full cursor-pointer rounded-md border border-border bg-secondary font-mono text-[11px] text-secondary-foreground transition-colors hover:border-input'>
           ↗ Export Palette
         </button>
         <button
           onClick={() => {
-            setSaveName("");
-            openModal("save");
+            setSaveName('');
+            openModal('save');
           }}
-          className="w-full h-9 text-[11px] font-mono rounded-md border border-border bg-secondary text-secondary-foreground hover:border-input transition-colors cursor-pointer"
-        >
+          className='h-9 w-full cursor-pointer rounded-md border border-border bg-secondary font-mono text-[11px] text-secondary-foreground transition-colors hover:border-input'>
           ♡ Save Palette
         </button>
         <button
-          onClick={() => openModal("share")}
-          className="w-full h-9 text-[11px] font-mono rounded-md border border-border bg-secondary text-secondary-foreground hover:border-input transition-colors cursor-pointer"
-        >
+          onClick={() => openModal('share')}
+          className='h-9 w-full cursor-pointer rounded-md border border-border bg-secondary font-mono text-[11px] text-secondary-foreground transition-colors hover:border-input'>
           ⤴ Share URL
         </button>
       </div>
 
-      <div className="border-t border-border pt-3">
-        <p className="text-[10px] text-muted-foreground leading-relaxed">
-          <kbd>Space</kbd> generate · <kbd>Ctrl+Z</kbd> undo · <kbd>Ctrl+E</kbd>{" "}
-          export · <kbd>?</kbd> all shortcuts
+      <div className='border-t border-border pt-3'>
+        <p className='text-[10px] leading-relaxed text-muted-foreground'>
+          <kbd>Space</kbd> generate · <kbd>Ctrl+Z</kbd> undo · <kbd>Ctrl+E</kbd> export ·{' '}
+          <kbd>?</kbd> all shortcuts
         </p>
       </div>
     </div>
@@ -128,11 +132,11 @@ export function PaletteView() {
 
   // Inside any shell, the palette strip and controls are already mounted
   // by the shell layout — render the quick-action panel variant instead
-  if (shell === "studio") return <PaletteStudioPanel />;
+  if (shell === 'studio') return <PaletteStudioPanel />;
 
   // Tablet/mobile: CREATE section bypasses <Outlet>, so this component
   // is only rendered for non-CREATE routes — render nothing meaningful
-  if (shell === "tablet" || shell === "mobile") return null;
+  if (shell === 'tablet' || shell === 'mobile') return null;
 
   // No shell — standalone/legacy embed: full layout
   return <StandalonePaletteView />;

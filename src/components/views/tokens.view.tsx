@@ -11,45 +11,34 @@
  * via their old routes during the migration window.
  */
 
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy, useState } from 'react';
+
+import { ToolTabs, ViewHeader } from './view-ui';
 
 // Lazily import the two sub-views so they don't affect each other's bundle
-const DesignSystemView = lazy(() => import("./design-system-view"));
-const CssPreview = lazy(() => import("./css-preview"));
+const DesignSystemView = lazy(() => import('./design-system-view'));
+const CssPreview = lazy(() => import('./css-preview'));
 
 // ─── Tab bar ──────────────────────────────────────────────────────────────────
 
-type Tab = "tokens" | "preview";
+type Tab = 'tokens' | 'preview';
 
-function TabBar({
-  active,
-  setActive,
-}: {
-  active: Tab;
-  setActive: (t: Tab) => void;
-}) {
+function TabBar({ active, setActive }: { active: Tab; setActive: (t: Tab) => void }) {
   return (
-    <div className="flex border-b border-border shrink-0">
-      {(
-        [
-          ["tokens", "Design Tokens"],
-          ["preview", "CSS Preview"],
-        ] as const
-      ).map(([id, label]) => (
-        <button
-          key={id}
-          onClick={() => setActive(id)}
-          className={`px-4 py-2.5 text-[10px] font-bold tracking-[.08em] uppercase border-r border-border cursor-pointer transition-colors ${active === id ? "text-foreground border-b-2 border-b-primary bg-accent/30 -mb-px" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
+    <ToolTabs
+      value={active}
+      onValueChange={setActive}
+      label='Tokens and preview'
+      items={[
+        { id: 'tokens', label: 'Design Tokens' },
+        { id: 'preview', label: 'CSS Preview' },
+      ]}
+    />
   );
 }
 
 const fallback = (
-  <div className="flex-1 flex items-center justify-center text-muted-foreground text-[12px]">
+  <div className='flex flex-1 items-center justify-center text-[12px] text-muted-foreground'>
     Loading…
   </div>
 );
@@ -57,16 +46,17 @@ const fallback = (
 // ─── Root export ──────────────────────────────────────────────────────────────
 
 export default function TokensView() {
-  const [activeTab, setActiveTab] = useState<Tab>("tokens");
+  const [activeTab, setActiveTab] = useState<Tab>('tokens');
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="px-6 pt-5 pb-0 shrink-0">
-        <h2 className="mb-1">Tokens & Preview</h2>
-      </div>
+    <div className='@container/tokens flex min-h-0 flex-1 flex-col overflow-hidden'>
+      <ViewHeader
+        title='Tokens & Preview'
+        description='Semantic color values for light and dark themes.'
+      />
       <TabBar active={activeTab} setActive={setActiveTab} />
       <Suspense fallback={fallback}>
-        {activeTab === "tokens" && <DesignSystemView />}
-        {activeTab === "preview" && <CssPreview />}
+        {activeTab === 'tokens' && <DesignSystemView />}
+        {activeTab === 'preview' && <CssPreview />}
       </Suspense>
     </div>
   );

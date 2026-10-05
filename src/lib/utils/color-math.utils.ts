@@ -1,9 +1,8 @@
-import type { CMYK, HSL, HSV, OKLCH, OKLab, PickerMode, RGB } from "@/types";
+import type { CMYK, HSL, HSV, OKLCH, OKLab, PickerMode, RGB } from '@/types';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
-export const clamp = (v: number, lo: number, hi: number): number =>
-  Math.max(lo, Math.min(hi, v));
+export const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
 // ─── sRGB linearization (single source of truth) ─────────────────────────────
 
@@ -17,21 +16,21 @@ export function fromLinear(v: number): number {
 // ─── Hex ↔ RGB ────────────────────────────────────────────────────────────────
 
 export function hexToRgb(hex: string): RGB {
-  const c = hex.replace("#", "");
+  const c = hex.replace('#', '');
   // Normalise: expand 3-char, strip any alpha bytes from 8-char (#RRGGBBAA)
   const f6 =
     c.length === 3
       ? c
-          .split("")
+          .split('')
           .map((x) => x + x)
-          .join("")
+          .join('')
       : c.slice(0, 6); // safe for both 6-char and 8-char input
   const n = parseInt(f6, 16);
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
 }
 
 export function rgbToHex({ r, g, b }: RGB): string {
-  return "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
+  return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
 }
 
 // ─── RGB ↔ HSL ────────────────────────────────────────────────────────────────
@@ -166,15 +165,9 @@ export function rgbToOklab({ r, g, b }: RGB): OKLab {
   const rl = toLinear(r / 255),
     gl = toLinear(g / 255),
     bl = toLinear(b / 255);
-  const l = Math.cbrt(
-    0.4122214708 * rl + 0.5363325363 * gl + 0.0514459929 * bl,
-  );
-  const m = Math.cbrt(
-    0.2119034982 * rl + 0.6806995451 * gl + 0.1073969566 * bl,
-  );
-  const s = Math.cbrt(
-    0.0883024619 * rl + 0.2817188376 * gl + 0.6299787005 * bl,
-  );
+  const l = Math.cbrt(0.4122214708 * rl + 0.5363325363 * gl + 0.0514459929 * bl);
+  const m = Math.cbrt(0.2119034982 * rl + 0.6806995451 * gl + 0.1073969566 * bl);
+  const s = Math.cbrt(0.0883024619 * rl + 0.2817188376 * gl + 0.6299787005 * bl);
   return {
     L: 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
     a: 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
@@ -208,21 +201,9 @@ export function oklabToRgb({ L, a, b }: OKLab): RGB {
   const l3 = l_ * l_ * l_,
     m3 = m_ * m_ * m_,
     s3 = s_ * s_ * s_;
-  const rl = clamp(
-    +4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3,
-    0,
-    1,
-  );
-  const gl = clamp(
-    -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3,
-    0,
-    1,
-  );
-  const bl = clamp(
-    -0.0041960863 * l3 - 0.7034186147 * m3 + 1.707614701 * s3,
-    0,
-    1,
-  );
+  const rl = clamp(+4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3, 0, 1);
+  const gl = clamp(-1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3, 0, 1);
+  const bl = clamp(-0.0041960863 * l3 - 0.7034186147 * m3 + 1.707614701 * s3, 0, 1);
   return {
     r: Math.round(fromLinear(rl) * 255),
     g: Math.round(fromLinear(gl) * 255),
@@ -259,14 +240,7 @@ export function oklchToRgb(lch: OKLCH): RGB {
   const rgb = oklabToRgb(lab);
 
   // In gamut — return directly
-  if (
-    rgb.r >= 0 &&
-    rgb.r <= 255 &&
-    rgb.g >= 0 &&
-    rgb.g <= 255 &&
-    rgb.b >= 0 &&
-    rgb.b <= 255
-  ) {
+  if (rgb.r >= 0 && rgb.r <= 255 && rgb.g >= 0 && rgb.g <= 255 && rgb.b >= 0 && rgb.b <= 255) {
     return rgb;
   }
 
@@ -283,13 +257,7 @@ export function oklchToRgb(lch: OKLCH): RGB {
       b: mid * Math.sin(hRad),
     };
     const t = oklabToRgb(midLab);
-    const inGamut =
-      t.r >= 0 &&
-      t.r <= 255 &&
-      t.g >= 0 &&
-      t.g <= 255 &&
-      t.b >= 0 &&
-      t.b <= 255;
+    const inGamut = t.r >= 0 && t.r <= 255 && t.g >= 0 && t.g <= 255 && t.b >= 0 && t.b <= 255;
     if (inGamut) lo = mid;
     else hi = mid;
   }
@@ -338,11 +306,7 @@ export function mixRgb(a: RGB, b: RGB, t: number): RGB {
 // ─── Accessibility ────────────────────────────────────────────────────────────
 
 export function luminance({ r, g, b }: RGB): number {
-  return (
-    0.2126 * toLinear(r / 255) +
-    0.7152 * toLinear(g / 255) +
-    0.0722 * toLinear(b / 255)
-  );
+  return 0.2126 * toLinear(r / 255) + 0.7152 * toLinear(g / 255) + 0.0722 * toLinear(b / 255);
 }
 
 export function contrastRatio(a: RGB, b: RGB): number {
@@ -351,19 +315,17 @@ export function contrastRatio(a: RGB, b: RGB): number {
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
 
-export type WcagLevel = "AAA" | "AA" | "AA Large" | "Fail";
+export type WcagLevel = 'AAA' | 'AA' | 'AA Large' | 'Fail';
 
 export function wcagLevel(r: number): WcagLevel {
-  if (r >= 7) return "AAA";
-  if (r >= 4.5) return "AA";
-  if (r >= 3) return "AA Large";
-  return "Fail";
+  if (r >= 7) return 'AAA';
+  if (r >= 4.5) return 'AA';
+  if (r >= 3) return 'AA Large';
+  return 'Fail';
 }
 
 export function textColor(bg: RGB): string {
-  return contrastRatio(bg, { r: 255, g: 255, b: 255 }) >= 4.5
-    ? "#ffffff"
-    : "#000000";
+  return contrastRatio(bg, { r: 255, g: 255, b: 255 }) >= 4.5 ? '#ffffff' : '#000000';
 }
 
 // ─── APCA Contrast (WCAG 3 / Accessible Perceptual Contrast Algorithm) ────────
@@ -378,9 +340,7 @@ function apcaSRGB(c: number): number {
 /** APCA perceptual luminance (Ys) — uses APCA-specific exponent 2.4 */
 function apcaLuminance({ r, g, b }: RGB): number {
   return (
-    0.2126729 * apcaSRGB(r / 255) +
-    0.7151522 * apcaSRGB(g / 255) +
-    0.072175 * apcaSRGB(b / 255)
+    0.2126729 * apcaSRGB(r / 255) + 0.7151522 * apcaSRGB(g / 255) + 0.072175 * apcaSRGB(b / 255)
   );
 }
 
@@ -419,15 +379,15 @@ export function apcaContrast(fg: RGB, bg: RGB): number {
   return Math.round(Sapc * 100);
 }
 
-export type ApcaLevel = "Preferred" | "Body" | "Large" | "UI" | "Fail";
+export type ApcaLevel = 'Preferred' | 'Body' | 'Large' | 'UI' | 'Fail';
 
 export function apcaLevel(lc: number): ApcaLevel {
   const mag = Math.abs(lc);
-  if (mag >= 75) return "Preferred";
-  if (mag >= 60) return "Body";
-  if (mag >= 45) return "Large";
-  if (mag >= 30) return "UI";
-  return "Fail";
+  if (mag >= 75) return 'Preferred';
+  if (mag >= 60) return 'Body';
+  if (mag >= 45) return 'Large';
+  if (mag >= 30) return 'UI';
+  return 'Fail';
 }
 
 // ─── Contrast Fix Suggestions ─────────────────────────────────────────────────
@@ -441,17 +401,17 @@ export function suggestContrastFix(
   hex: string,
   bg: RGB,
   targetRatio = 4.5,
-): { hex: string; direction: "lighten" | "darken" } | null {
+): { hex: string; direction: 'lighten' | 'darken' } | null {
   const rgb = hexToRgb(hex);
   if (contrastRatio(rgb, bg) >= targetRatio) return null;
 
   const lch = rgbToOklch(rgb);
   const bgLum = luminance(bg);
-  const direction: "lighten" | "darken" = bgLum > 0.5 ? "darken" : "lighten";
+  const direction: 'lighten' | 'darken' = bgLum > 0.5 ? 'darken' : 'lighten';
 
   // Binary search: find L that achieves target ratio
-  let lo = direction === "lighten" ? lch.L : 0;
-  let hi = direction === "lighten" ? 1 : lch.L;
+  let lo = direction === 'lighten' ? lch.L : 0;
+  let hi = direction === 'lighten' ? 1 : lch.L;
   let best = hex;
 
   for (let i = 0; i < 32; i++) {
@@ -464,10 +424,10 @@ export function suggestContrastFix(
     const ratio = contrastRatio(candidate, bg);
     if (ratio >= targetRatio) {
       best = rgbToHex(candidate);
-      if (direction === "lighten") hi = mid;
+      if (direction === 'lighten') hi = mid;
       else lo = mid;
     } else {
-      if (direction === "lighten") lo = mid;
+      if (direction === 'lighten') lo = mid;
       else hi = mid;
     }
     if (hi - lo < 0.001) break;
@@ -481,49 +441,47 @@ export function suggestContrastFix(
 export function colorDist(a: RGB, b: RGB): number {
   const la = rgbToOklab(a),
     lb = rgbToOklab(b);
-  return Math.sqrt(
-    (la.L - lb.L) ** 2 + (la.a - lb.a) ** 2 + (la.b - lb.b) ** 2,
-  );
+  return Math.sqrt((la.L - lb.L) ** 2 + (la.a - lb.a) ** 2 + (la.b - lb.b) ** 2);
 }
 
 // ─── Parsers ─────────────────────────────────────────────────────────────────
 
 export function parseHex(s: string): string | null {
-  const c = s.trim().replace(/^#/, "");
+  const c = s.trim().replace(/^#/, '');
   if (/^[0-9a-fA-F]{3}$/.test(c))
     return (
-      "#" +
+      '#' +
       c
-        .split("")
+        .split('')
         .map((x) => x + x)
-        .join("")
+        .join('')
     );
-  if (/^[0-9a-fA-F]{6}$/.test(c)) return "#" + c;
+  if (/^[0-9a-fA-F]{6}$/.test(c)) return '#' + c;
   // 8-char hex (#RRGGBBAA) — strip alpha bytes, return 6-char opaque hex
-  if (/^[0-9a-fA-F]{8}$/.test(c)) return "#" + c.slice(0, 6);
+  if (/^[0-9a-fA-F]{8}$/.test(c)) return '#' + c.slice(0, 6);
   return null;
 }
 
 /** Parse 8-char hex and return alpha 0–100, or null if not an 8-char hex */
 export function parseHexAlpha(s: string): number | null {
-  const c = s.trim().replace(/^#/, "");
+  const c = s.trim().replace(/^#/, '');
   if (!/^[0-9a-fA-F]{8}$/.test(c)) return null;
   return Math.round((parseInt(c.slice(6), 16) / 255) * 100);
 }
 
 /** Strip any alpha bytes from a hex string, returning a safe 6-char hex */
 export function opaqueHex(hex: string): string {
-  const c = hex.replace(/^#/, "");
-  if (c.length === 8) return "#" + c.slice(0, 6);
+  const c = hex.replace(/^#/, '');
+  if (c.length === 8) return '#' + c.slice(0, 6);
   if (c.length === 3)
     return (
-      "#" +
+      '#' +
       c
-        .split("")
+        .split('')
         .map((x) => x + x)
-        .join("")
+        .join('')
     );
-  return "#" + c.slice(0, 6);
+  return '#' + c.slice(0, 6);
 }
 
 function parseRgbStr(s: string): RGB | null {
@@ -556,7 +514,7 @@ export function parseAny(s: string): RGB | null {
 /** Format an 0-255 integer alpha to 0-1 string, dropping decimals when whole */
 function fmtA(alpha: number): string {
   const a = clamp(alpha, 0, 100) / 100;
-  return a === 1 ? "1" : a === 0 ? "0" : a.toFixed(2).replace(/0+$/, "");
+  return a === 1 ? '1' : a === 0 ? '0' : a.toFixed(2).replace(/0+$/, '');
 }
 
 export function toCssRgb(rgb: RGB, alpha = 100): string {
@@ -570,9 +528,7 @@ export function toCssHsl(hsl: HSL, alpha = 100): string {
   const h = Math.round(hsl.h);
   const s = Math.round(hsl.s);
   const l = Math.round(hsl.l);
-  return alpha >= 100
-    ? `hsl(${h} ${s}% ${l}%)`
-    : `hsl(${h} ${s}% ${l}% / ${fmtA(alpha)})`;
+  return alpha >= 100 ? `hsl(${h} ${s}% ${l}%)` : `hsl(${h} ${s}% ${l}% / ${fmtA(alpha)})`;
 }
 
 export function toCssHsv(hsv: HSV, alpha = 100): string {
@@ -580,9 +536,7 @@ export function toCssHsv(hsv: HSV, alpha = 100): string {
   const h = Math.round(hsv.h);
   const s = Math.round(hsv.s);
   const v = Math.round(hsv.v);
-  return alpha >= 100
-    ? `hsv(${h} ${s}% ${v}%)`
-    : `hsv(${h} ${s}% ${v}% / ${fmtA(alpha)})`;
+  return alpha >= 100 ? `hsv(${h} ${s}% ${v}%)` : `hsv(${h} ${s}% ${v}% / ${fmtA(alpha)})`;
 }
 
 export function toCssOklch(lch: OKLCH, alpha = 100): string {
@@ -590,18 +544,14 @@ export function toCssOklch(lch: OKLCH, alpha = 100): string {
   const L = lch.L.toFixed(4);
   const C = lch.C.toFixed(4);
   const H = Math.round(lch.H);
-  return alpha >= 100
-    ? `oklch(${L} ${C} ${H})`
-    : `oklch(${L} ${C} ${H} / ${fmtA(alpha)})`;
+  return alpha >= 100 ? `oklch(${L} ${C} ${H})` : `oklch(${L} ${C} ${H} / ${fmtA(alpha)})`;
 }
 
 export function toCssOklab(lab: OKLab, alpha = 100): string {
   const L = lab.L.toFixed(4);
   const a = lab.a.toFixed(4);
   const b = lab.b.toFixed(4);
-  return alpha >= 100
-    ? `oklab(${L} ${a} ${b})`
-    : `oklab(${L} ${a} ${b} / ${fmtA(alpha)})`;
+  return alpha >= 100 ? `oklab(${L} ${a} ${b})` : `oklab(${L} ${a} ${b} / ${fmtA(alpha)})`;
 }
 
 export function toCssCmyk(cmyk: CMYK, alpha = 100): string {
@@ -619,7 +569,7 @@ export function toHexAlpha(hex: string, alpha: number): string {
   if (alpha >= 100) return hex;
   const aa = Math.round((clamp(alpha, 0, 100) / 100) * 255)
     .toString(16)
-    .padStart(2, "0");
+    .padStart(2, '0');
   return `${hex}${aa}`;
 }
 
@@ -630,15 +580,9 @@ export function applySimMatrix(rgb: RGB, M: number[]): RGB {
     G = toLinear(rgb.g / 255),
     B = toLinear(rgb.b / 255);
   return {
-    r: Math.round(
-      fromLinear(clamp(M[0] * R + M[1] * G + M[2] * B, 0, 1)) * 255,
-    ),
-    g: Math.round(
-      fromLinear(clamp(M[3] * R + M[4] * G + M[5] * B, 0, 1)) * 255,
-    ),
-    b: Math.round(
-      fromLinear(clamp(M[6] * R + M[7] * G + M[8] * B, 0, 1)) * 255,
-    ),
+    r: Math.round(fromLinear(clamp(M[0] * R + M[1] * G + M[2] * B, 0, 1)) * 255),
+    g: Math.round(fromLinear(clamp(M[3] * R + M[4] * G + M[5] * B, 0, 1)) * 255),
+    b: Math.round(fromLinear(clamp(M[6] * R + M[7] * G + M[8] * B, 0, 1)) * 255),
   };
 }
 
@@ -655,17 +599,17 @@ export function cssString(
   alpha: number,
 ): string {
   switch (mode) {
-    case "rgb":
+    case 'rgb':
       return toCssRgb(rgb, alpha);
-    case "hsl":
+    case 'hsl':
       return toCssHsl(hsl, alpha);
-    case "hsv":
+    case 'hsv':
       return toCssHsv(hsv, alpha);
-    case "oklch":
+    case 'oklch':
       return toCssOklch(oklch, alpha);
-    case "oklab":
+    case 'oklab':
       return toCssOklab(oklab, alpha);
-    case "cmyk":
+    case 'cmyk':
       return toCssCmyk(cmyk, alpha);
   }
 }
@@ -676,8 +620,9 @@ export {
   generateScale,
   scorePalette,
   generateUtilityColors,
+  regenerateUtilityColors,
   mergeUtilityColors,
-} from "./color-math-scale.utils";
+} from './color-math-scale.utils';
 export {
   deriveThemeTokens,
   buildFigmaTokens,
@@ -687,4 +632,4 @@ export {
   buildColorStoryHtml,
   semanticSlotNames,
   buildThemeCss,
-} from "./color-math-export.utils";
+} from './color-math-export.utils';

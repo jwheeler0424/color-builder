@@ -12,7 +12,6 @@
  * Calls onEditSlot(index) when a slot is double-clicked or edit button pressed.
  */
 
-import { Fragment, useState, useCallback, useMemo, useId } from "react";
 import {
   DndContext,
   closestCenter,
@@ -23,15 +22,19 @@ import {
   KeyboardSensor,
   type DragEndEvent,
   type DragStartEvent,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 import {
   SortableContext,
   horizontalListSortingStrategy,
   sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
-import { useChromaStore } from "@/hooks/use-chroma-store";
-import { SlotCard } from "./slot-card";
-import { SlotButton } from "./slot-button";
+} from '@dnd-kit/sortable';
+import { Fragment, useState, useCallback, useMemo, useId } from 'react';
+
+import { useChromaStore } from '@/hooks/use-chroma-store';
+import { MAX_SLOTS } from '@/lib/constants/chroma';
+
+import { SlotButton } from './slot-button';
+import { SlotCard } from './slot-card';
 
 interface PaletteStripProps {
   /** Called when a slot's edit button is pressed or double-clicked */
@@ -81,12 +84,11 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
+      onDragCancel={handleDragCancel}>
       <SortableContext items={slotIds} strategy={horizontalListSortingStrategy}>
         {slots.map((slot, i) => (
           <Fragment key={slot.id}>
-            {slots.length < 10 && i === 0 && (
+            {slots.length < MAX_SLOTS && i === 0 && (
               <SlotButton key={`button-${slot.id}`} index={-1} adjust={true} />
             )}
             <SlotCard
@@ -96,16 +98,16 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
               isEdge={i === 0 || i === slots.length - 1}
               edge={
                 i === 0
-                  ? "first"
+                  ? 'first'
                   : i === slots.length - 1
-                    ? "last"
+                    ? 'last'
                     : i === 0 && i === slots.length - 1
-                      ? "both"
-                      : "none"
+                      ? 'both'
+                      : 'none'
               }
               onEdit={onEditSlot}
             />
-            {slots.length < 10 && (
+            {slots.length < MAX_SLOTS && (
               <SlotButton
                 key={`button-after-${slot.id}`}
                 index={i}
@@ -119,9 +121,8 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
       <DragOverlay
         dropAnimation={{
           duration: 180,
-          easing: "cubic-bezier(0.25, 1, 0.5, 1)",
-        }}
-      >
+          easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+        }}>
         {activeSlot ? (
           <SlotCard
             slot={activeSlot}

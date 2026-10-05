@@ -1,423 +1,441 @@
-import React, { useState, useEffect } from "react";
-import type { UtilityRole, UtilityColor } from "@/types";
-import { useChromaStore } from "@/hooks/use-chroma-store";
+import {
+  Check,
+  CheckCircle2,
+  Circle,
+  CircleAlert,
+  Copy,
+  Focus,
+  Info,
+  Lock,
+  Moon,
+  RefreshCw,
+  Sun,
+  TriangleAlert,
+  Unlock,
+} from 'lucide-react';
+import { useState, useMemo } from 'react';
+
+import type { UtilityRole, UtilityColorSet } from '@/types';
+
+import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
   parseHex,
   textColor,
   contrastRatio,
   wcagLevel,
-  hslToRgb,
-  rgbToHex,
   hexToRgb,
-  rgbToOklch,
   hexToStop,
-} from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+  deriveThemeTokens,
+} from '@/lib/utils';
 
-const ROLE_ICONS: Record<UtilityRole, string> = {
-  info: "ℹ",
-  success: "✓",
-  warning: "⚠",
-  error: "✕",
-  neutral: "○",
-  focus: "◎",
+import { ToolButton as Button, ToolSegments, TYPE, ViewHeader } from './view-ui';
+
+const ROLES: UtilityRole[] = ['info', 'success', 'warning', 'error', 'neutral', 'focus'];
+const ROLE_SYMBOLS = {
+  info: Info,
+  success: CheckCircle2,
+  warning: TriangleAlert,
+  error: CircleAlert,
+  neutral: Circle,
+  focus: Focus,
 };
 
-function UtilityCard({
-  utility,
-  onColorChange,
-  onToggleLock,
-  onEdit,
-}: {
-  utility: UtilityColor;
-  onColorChange: (role: UtilityRole, hex: string) => void;
-  onToggleLock: (role: UtilityRole) => void;
-  onEdit?: () => void;
-}) {
-  const [editVal, setEditVal] = useState(utility.color.hex);
-  const [editErr, setEditErr] = useState(false);
-  // Sync input when the color is updated externally (regen, load palette, etc.)
-  useEffect(() => {
-    setEditVal(utility.color.hex);
-  }, [utility.color.hex]);
-  const { hex, rgb } = utility.color;
-  const tc = textColor(rgb);
-
-  const onWhite = contrastRatio(rgb, { r: 255, g: 255, b: 255 });
-  const onBlack = contrastRatio(rgb, { r: 0, g: 0, b: 0 });
-  const bestContrast = Math.max(onWhite, onBlack);
-  const level = wcagLevel(bestContrast);
-
-  const handleInput = (v: string) => {
-    setEditVal(v);
-    const h = parseHex(v);
-    if (h) {
-      setEditErr(false);
-      onColorChange(utility.role, h);
-    } else setEditErr(true);
-  };
-
-  // Subtle background: same hue, low sat, very light
-  const subtleBg = rgbToHex(
-    hslToRgb({
-      h: utility.color.hsl.h,
-      s: Math.max(utility.color.hsl.s * 0.2, 6),
-      l: 93,
-    }),
-  );
-  const subtleText = rgbToHex(
-    hslToRgb({
-      h: utility.color.hsl.h,
-      s: Math.min(utility.color.hsl.s * 0.9, 75),
-      l: 28,
-    }),
-  );
-
-  const BADGE_COLOR: Record<string, string> = {
-    AAA: "#00e676",
-    AA: "#69f0ae",
-    "AA Large": "#fff176",
-    Fail: "#ff4455",
-  };
-  const BADGE_BG: Record<string, string> = {
-    AAA: "rgba(0,230,118,.18)",
-    AA: "rgba(105,240,174,.15)",
-    "AA Large": "rgba(255,241,118,.12)",
-    Fail: "rgba(255,68,85,.15)",
-  };
-
-  return (
-    <div className="bg-secondary border border-border rounded-md p-4 hover:border-input transition-colors">
-      {/* Swatch + lock */}
-      <div className="flex items-start gap-3">
-        <div
-          className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0 border-2 border-white/10"
-          style={{ background: hex }}
-        >
-          <span className="text-lg" style={{ color: tc }}>
-            {ROLE_ICONS[utility.role]}
-          </span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="items-center flex mb-1 gap-2">
-            <span className="font-display text-sm font-bold text-foreground">
-              {utility.label}
-            </span>
-            <button
-              className={`bg-transparent border-none cursor-pointer text-sm p-0 opacity-50 hover:opacity-100 transition-opacity leading-none${utility.locked ? " locked" : ""}`}
-              onClick={() => onToggleLock(utility.role)}
-              title={
-                utility.locked
-                  ? "Unlock — will update on next generate"
-                  : "Lock — protect from re-generation"
-              }
-            >
-              {utility.locked ? "🔒" : "🔓"}
-            </button>
-          </div>
-          <div className="text-[10px] text-muted-foreground leading-relaxed mt-0.5">
-            {utility.description}
-          </div>
-        </div>
-      </div>
-
-      {/* Hex edit */}
-      <input
-        className={`w-full bg-muted border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground ${editErr ? "border-destructive" : "border-border"}`}
-        value={editVal}
-        onChange={(e) => handleInput(e.target.value)}
-        maxLength={7}
-        spellCheck={false}
-        autoComplete="off"
-        style={{ marginTop: 10 }}
-      />
-
-      {/* Usage previews */}
-      <div className="flex gap-2.5 mt-3 flex-wrap">
-        {/* Filled badge */}
-        <div className="flex flex-col">
-          <span className="text-muted-foreground block mb-1 text-[10px]">
-            Filled
-          </span>
-          <span
-            className="text-[11px] font-bold inline-flex items-center gap-1.5"
-            style={{
-              background: hex,
-              color: tc,
-              padding: "3px 10px",
-              borderRadius: 12,
-            }}
-          >
-            {ROLE_ICONS[utility.role]} {utility.label}
-          </span>
-        </div>
-        {/* Subtle badge */}
-        <div className="flex flex-col">
-          <span className="text-muted-foreground block mb-1 text-[10px]">
-            Subtle
-          </span>
-          <span
-            className="text-[11px] font-bold inline-flex items-center gap-1.5"
-            style={{
-              background: subtleBg,
-              color: subtleText,
-              padding: "3px 10px",
-              borderRadius: 12,
-            }}
-          >
-            {ROLE_ICONS[utility.role]} {utility.label}
-          </span>
-        </div>
-        {/* Outline badge */}
-        <div className="flex flex-col">
-          <span className="text-muted-foreground block mb-1 text-[10px]">
-            Outline
-          </span>
-          <span
-            style={{
-              border: `1.5px solid ${hex}`,
-              color: hex,
-              padding: "2px 9px",
-              borderRadius: 12,
-              fontSize: 11,
-              fontWeight: 700,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              background: "transparent",
-            }}
-          >
-            {ROLE_ICONS[utility.role]} {utility.label}
-          </span>
-        </div>
-      </div>
-
-      {/* WCAG badge */}
-      <div className="items-center flex mt-2 gap-1.5">
-        <span
-          className="rounded text-[10px] font-bold"
-          style={{
-            padding: "2px 7px",
-            background: BADGE_BG[level],
-            color: BADGE_COLOR[level],
-          }}
-        >
-          {level}
-        </span>
-        <span className="text-muted-foreground text-[10px]">
-          {bestContrast.toFixed(1)}:1 on {onWhite > onBlack ? "white" : "black"}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/** Live alert/toast/banner preview using all 6 utility colors */
-function LivePreview() {
-  const { utilityColors, slots } = useChromaStore();
-  // Sort by perceptual lightness (OKLCH L) derived from hex — immune to stale hsl
-  const byL = [...slots].sort(
-    (a, b) =>
-      rgbToOklch(hexToRgb(a.color.hex)).L - rgbToOklch(hexToRgb(b.color.hex)).L,
-  );
-  const bgHex = byL.length > 0 ? byL[0].color.hex : "#0f0f0f";
-  const surfaceHex = byL.length > 1 ? byL[1].color.hex : "#1a1a1a";
-
-  const roles: UtilityRole[] = ["info", "success", "warning", "error"];
-
-  return (
-    <div
-      className="rounded-lg p-5 border border-border"
-      style={{ background: bgHex }}
-    >
-      <div className="text-muted-foreground uppercase tracking-widest mb-3 text-[10px]">
-        Live Component Preview
-      </div>
-      {/* Alert banners */}
-      {roles.map((role) => {
-        const u = utilityColors[role];
-        const subtle = rgbToHex(
-          hslToRgb({
-            h: u.color.hsl.h,
-            s: Math.max(u.color.hsl.s * 0.2, 6),
-            l: 14,
-          }),
-        );
-        const subtleBorder = rgbToHex(
-          hslToRgb({
-            h: u.color.hsl.h,
-            s: Math.min(u.color.hsl.s * 0.6, 60),
-            l: 28,
-          }),
-        );
-        const subtleText = rgbToHex(
-          hslToRgb({ h: u.color.hsl.h, s: Math.min(u.color.hsl.s, 75), l: 78 }),
-        );
-        return (
-          <div
-            key={role}
-            style={{
-              background: subtle,
-              border: `1px solid ${subtleBorder}`,
-              borderRadius: 6,
-              padding: "10px 14px",
-              marginBottom: 8,
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 10,
-            }}
-          >
-            <span
-              className="text-sm shrink-0"
-              style={{ color: u.color.hex, marginTop: 1 }}
-            >
-              {ROLE_ICONS[role]}
-            </span>
-            <div>
-              <div
-                className="font-bold text-[12px] mb-0.5"
-                style={{ color: subtleText }}
-              >
-                {u.label} alert
-              </div>
-              <div
-                className="text-[11px]"
-                style={{ color: subtleText, opacity: 0.8 }}
-              >
-                This is an example {u.label.toLowerCase()} message component.
-              </div>
-            </div>
-          </div>
-        );
-      })}
-
-      {/* Focus ring demo */}
-      <div className="flex-wrap flex mt-3 gap-2">
-        {(["neutral", "focus"] as UtilityRole[]).map((role) => {
-          const u = utilityColors[role];
-          return (
-            <button
-              key={role}
-              style={{
-                background: surfaceHex,
-                border: `2px solid ${role === "focus" ? u.color.hex : "transparent"}`,
-                outline: role === "focus" ? `2px solid ${u.color.hex}` : "none",
-                outlineOffset: 2,
-                borderRadius: 4,
-                padding: "6px 14px",
-                cursor: "pointer",
-                fontSize: 12,
-                color: textColor(hexToStop(surfaceHex).rgb),
-                opacity: role === "neutral" ? 0.5 : 1,
-              }}
-            >
-              {role === "focus" ? "⌨ Focused button" : "◯ Disabled button"}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
+export function buildUtilityCss(
+  colors: UtilityColorSet,
+  theme: ReturnType<typeof deriveThemeTokens>['utility'],
+  format: 'base' | 'themed',
+) {
+  if (format === 'base')
+    return `:root {\n${ROLES.map((role) => `  --${role}: ${colors[role].color.hex};`).join('\n')}\n}`;
+  const values = (mode: 'light' | 'dark') =>
+    ROLES.map(
+      (role) =>
+        `  --${role}: ${theme[role][mode]};\n  --${role}-subtle: ${mode === 'light' ? theme[role].subtle : theme[role].subtleDark};`,
+    ).join('\n');
+  return `:root {\n${values('light')}\n}\n\n.dark {\n${values('dark')}\n}`;
 }
 
 export default function UtilityColorsView() {
-  const [editingRole, setEditingRole] = React.useState<UtilityRole | null>(
-    null,
-  );
-  const {
-    utilityColors,
-    slots,
-    setUtilityColor,
-    toggleUtilityLock,
-    regenUtilityColors,
-  } = useChromaStore();
-  const roles: UtilityRole[] = [
-    "info",
-    "success",
-    "warning",
-    "error",
-    "neutral",
-    "focus",
-  ];
-  const handleColorChange = (role: UtilityRole, hex: string) => {
-    setUtilityColor(role, hexToStop(hex));
+  const { utilityColors, slots, setUtilityColor, toggleUtilityLock, regenUtilityColors } =
+    useChromaStore();
+  const [selectedRole, setSelectedRole] = useState<UtilityRole>('info');
+  const [draft, setDraft] = useState<string | null>(null);
+  const [format, setFormat] = useState<'base' | 'themed'>('base');
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [focusedMode, setFocusedMode] = useState<'light' | 'dark' | null>(null);
+  const theme = useMemo(() => deriveThemeTokens(slots, utilityColors), [slots, utilityColors]);
+  const utility = utilityColors[selectedRole];
+  const Icon = ROLE_SYMBOLS[selectedRole];
+  const inputHex = draft ?? utility.color.hex;
+  const validHex = parseHex(inputHex);
+  const lockedCount = ROLES.filter((role) => utilityColors[role].locked).length;
+  const onWhite = contrastRatio(hexToRgb(utility.color.hex), { r: 255, g: 255, b: 255 });
+  const onBlack = contrastRatio(hexToRgb(utility.color.hex), { r: 0, g: 0, b: 0 });
+  const css = buildUtilityCss(utilityColors, theme.utility, format);
+  const copyValue = async (key: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 1400);
+    } catch {
+      setCopiedKey(null);
+    }
   };
-
-  const handleToggleLock = (role: UtilityRole) => {
-    toggleUtilityLock(role);
+  const editColor = (value: string) => {
+    setCopiedKey(null);
+    const hex = parseHex(value);
+    setDraft(value);
+    if (hex) {
+      setUtilityColor(selectedRole, hexToStop(hex));
+      setDraft(null);
+    }
   };
-
-  const regenAll = () => regenUtilityColors();
-
-  // Build CSS vars preview
-  const cssVars = roles
-    .map((r) => {
-      const u = utilityColors[r];
-      return `  --${r}: ${u.color.hex};`;
-    })
-    .join("\n");
-
-  const [cssCopied, setCssCopied] = useState(false);
-  const copyCss = () => {
-    navigator.clipboard.writeText(`:root {\n${cssVars}\n}`).catch(() => {});
-    setCssCopied(true);
-    setTimeout(() => setCssCopied(false), 1400);
-  };
+  const get = (name: string, mode: 'light' | 'dark') =>
+    theme.semantic.find((token) => token.name === name)?.[mode] ?? '#888';
 
   return (
-    <div className="flex-1 overflow-auto p-6">
-      <div className="max-w-240 mx-auto">
-        <div className="mb-5">
-          <h2>Utility Colors</h2>
-          <p>
-            Semantic UI colors derived from your palette. They share the
-            palette's character while remaining perceptually distinct. Lock any
-            color to protect it during re-generation.
-          </p>
+    <div className='@container/utilities flex min-h-0 flex-1 flex-col overflow-hidden'>
+      <ViewHeader
+        title='Utility Colors'
+        description='Semantic role colors and theme-aware state surfaces.'
+      />
+      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border p-4'>
+        <div className='flex flex-col gap-1'>
+          <span className={TYPE.label}>Palette-derived roles</span>
+          <span className={TYPE.meta}>
+            {ROLES.length} roles / {lockedCount} locked / {slots.length} source colors
+          </span>
         </div>
-
-        <div className="flex gap-2.5 mb-6 flex-wrap">
-          <Button variant="default" onClick={regenAll}>
-            ↻ Regenerate All
-          </Button>
-          <Button variant="ghost" onClick={copyCss}>
-            {cssCopied ? "✓ Copied CSS" : "Copy CSS Vars"}
-          </Button>
-        </div>
-
-        {!slots.length && (
-          <p className="text-muted-foreground text-[12px] mb-6">
-            Generate a palette first to derive contextual utility colors.
-          </p>
-        )}
-
-        {/* Color cards grid */}
-        <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
-          {roles.map((role) => (
-            <UtilityCard
-              key={role}
-              utility={utilityColors[role]}
-              onColorChange={handleColorChange}
-              onToggleLock={handleToggleLock}
-            />
-          ))}
-        </div>
-
-        {/* Live component preview */}
-        <div style={{ marginTop: 32 }}>
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-            Component Preview
+        <Button
+          size='sm'
+          disabled={lockedCount === ROLES.length}
+          title={
+            lockedCount === ROLES.length
+              ? 'Unlock a color to regenerate'
+              : 'Regenerate unlocked colors'
+          }
+          onClick={() => {
+            setDraft(null);
+            setCopiedKey(null);
+            regenUtilityColors();
+          }}>
+          <RefreshCw className='size-3.5' />
+          Regenerate all
+        </Button>
+      </div>
+      <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto @4xl/utilities:grid-cols-[10rem_minmax(0,1fr)_17rem] @4xl/utilities:grid-rows-[minmax(0,1fr)] @4xl/utilities:overflow-hidden @7xl/utilities:grid-cols-[11rem_minmax(0,1fr)_22rem]'>
+        <aside className='flex min-h-0 min-w-0 flex-col gap-3 border-b border-border p-3 @4xl/utilities:border-r @4xl/utilities:border-b-0'>
+          <span className={`hidden ${TYPE.label} @4xl/utilities:block`}>Roles</span>
+          <div
+            role='group'
+            aria-label='Utility role selection'
+            className='flex min-w-0 gap-2 overflow-x-auto @4xl/utilities:min-h-0 @4xl/utilities:flex-col @4xl/utilities:overflow-auto'>
+            {ROLES.map((role) => {
+              const current = utilityColors[role];
+              const RoleIcon = ROLE_SYMBOLS[role];
+              return (
+                <button
+                  key={role}
+                  type='button'
+                  aria-label={`Select ${current.label}`}
+                  aria-pressed={selectedRole === role}
+                  onClick={() => {
+                    setSelectedRole(role);
+                    setCopiedKey(null);
+                    setDraft(null);
+                    setFocusedMode(null);
+                  }}
+                  className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-md border px-2 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring @4xl/utilities:w-full ${selectedRole === role ? 'border-primary/50 bg-accent/30' : 'border-transparent hover:bg-muted'}`}>
+                  <span
+                    className='grid size-7 shrink-0 place-items-center rounded-sm border border-foreground/10'
+                    style={{
+                      background: current.color.hex,
+                      color: textColor(hexToRgb(current.color.hex)),
+                    }}>
+                    <RoleIcon className='size-3.5' />
+                  </span>
+                  <span className='flex min-w-0 flex-1 flex-col gap-1'>
+                    <span className='text-[11px] font-semibold'>{current.label}</span>
+                    <span className='hidden font-mono text-[9px] text-muted-foreground @4xl/utilities:block'>
+                      {current.color.hex.toUpperCase()}
+                    </span>
+                  </span>
+                  {current.locked && (
+                    <Lock className='size-3 shrink-0 text-muted-foreground' aria-label='Locked' />
+                  )}
+                </button>
+              );
+            })}
           </div>
-          <LivePreview />
-        </div>
-
-        {/* Quick CSS vars */}
-        <div className="mt-6">
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-            CSS Variables
+          {!slots.length && <p className={TYPE.meta}>Default utility colors</p>}
+        </aside>
+        <section className='@container/editor flex min-h-0 min-w-0 flex-col gap-4 p-4 @4xl/utilities:overflow-auto @4xl/utilities:border-r @4xl/utilities:border-border'>
+          <div className='flex shrink-0 items-start justify-between gap-3'>
+            <div className='flex min-w-0 items-center gap-3'>
+              <span
+                className='grid size-12 shrink-0 place-items-center rounded-md border border-foreground/10'
+                style={{
+                  background: utility.color.hex,
+                  color: textColor(hexToRgb(utility.color.hex)),
+                }}>
+                <Icon className='size-5' />
+              </span>
+              <div className='flex min-w-0 flex-col gap-1'>
+                <h3 className='font-display text-lg font-bold'>{utility.label}</h3>
+                <p className={TYPE.meta}>{utility.description}</p>
+              </div>
+            </div>
+            <Button
+              variant='ghost'
+              size='icon-sm'
+              aria-label={`${utility.locked ? 'Unlock' : 'Lock'} ${utility.label}`}
+              aria-pressed={utility.locked}
+              title={utility.locked ? 'Unlock color' : 'Protect color during regeneration'}
+              onClick={() => toggleUtilityLock(selectedRole)}>
+              {utility.locked ? <Lock className='size-4' /> : <Unlock className='size-4' />}
+            </Button>
           </div>
-          <pre className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-75 overflow-y-auto">{`:root {\n${cssVars}\n}`}</pre>
-        </div>
+          <div className='grid shrink-0 grid-cols-1 gap-3 border-b border-border pb-4 @sm/editor:grid-cols-[minmax(0,1fr)_auto]'>
+            <div className='flex flex-col gap-2'>
+              <label htmlFor='utility-base-hex' className={TYPE.label}>
+                Base color
+              </label>
+              <div className='flex items-center gap-2'>
+                <input
+                  type='color'
+                  aria-label={`Pick ${utility.label} color`}
+                  value={utility.color.hex}
+                  onChange={(event) => editColor(event.target.value)}
+                  className='size-8 shrink-0 cursor-pointer overflow-hidden rounded-sm border border-border bg-transparent p-0 [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch-wrapper]:p-0'
+                />
+                <input
+                  id='utility-base-hex'
+                  aria-label={`${utility.label} base hex`}
+                  aria-invalid={!validHex}
+                  value={inputHex}
+                  onChange={(event) => editColor(event.target.value)}
+                  onBlur={() => setDraft(null)}
+                  maxLength={7}
+                  spellCheck={false}
+                  autoComplete='off'
+                  className='h-8 min-w-0 flex-1 rounded border border-border bg-muted px-2 font-mono text-xs outline-none focus:border-ring aria-invalid:border-destructive'
+                />
+                <Button
+                  variant='outline'
+                  size='icon-sm'
+                  aria-label={`Copy ${utility.label} base color`}
+                  title='Copy base color'
+                  onClick={() => {
+                    void copyValue('base', utility.color.hex);
+                  }}>
+                  {copiedKey === 'base' ? (
+                    <Check className='size-3.5' />
+                  ) : (
+                    <Copy className='size-3.5' />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <div className='flex items-end gap-4'>
+              {[
+                { label: 'On white', ratio: onWhite },
+                { label: 'On black', ratio: onBlack },
+              ].map(({ label, ratio }) => (
+                <div key={label} className='flex flex-col gap-1'>
+                  <span className={TYPE.label}>{label}</span>
+                  <span className={TYPE.mono}>{ratio.toFixed(2)}:1</span>
+                  <span
+                    className='text-[9px] font-semibold'
+                    style={{
+                      color:
+                        ratio >= 4.5
+                          ? 'var(--success)'
+                          : ratio >= 3
+                            ? 'var(--warning)'
+                            : 'var(--destructive)',
+                    }}>
+                    {wcagLevel(ratio)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className='flex shrink-0 items-center justify-between gap-2'>
+            <span className={TYPE.label}>Theme usage</span>
+            <span className={TYPE.mono}>{utility.locked ? 'Locked base' : 'Editable base'}</span>
+          </div>
+          <div className='grid auto-rows-[minmax(19rem,1fr)] grid-cols-1 gap-4 @sm/editor:grid-cols-2 @4xl/utilities:min-h-0 @4xl/utilities:flex-1'>
+            {(['light', 'dark'] as const).map((mode) => {
+              const role = theme.utility[selectedRole];
+              const accent = role[mode];
+              const subtle = mode === 'light' ? role.subtle : role.subtleDark;
+              return (
+                <article
+                  key={mode}
+                  data-utility-theme={mode}
+                  className='flex min-w-0 flex-col overflow-hidden rounded-md border'
+                  style={{
+                    background: get('--background', mode),
+                    color: get('--foreground', mode),
+                    borderColor: get('--border', mode),
+                  }}>
+                  <div
+                    className='flex shrink-0 items-center gap-2 border-b px-3 py-3'
+                    style={{
+                      background: get('--surface-dim', mode),
+                      borderColor: get('--border', mode),
+                    }}>
+                    {mode === 'light' ? (
+                      <Sun className='size-3.5' />
+                    ) : (
+                      <Moon className='size-3.5' />
+                    )}
+                    <h4 className='text-[11px] font-semibold'>
+                      {mode === 'light' ? 'Light theme' : 'Dark theme'}
+                    </h4>
+                  </div>
+                  <div className='flex flex-1 flex-col gap-4 p-3'>
+                    <div
+                      className='flex items-center gap-2 rounded-md border p-3'
+                      style={{
+                        background: subtle,
+                        color: accent,
+                        borderColor: `color-mix(in oklch, ${accent} 25%, transparent)`,
+                      }}>
+                      <Icon className='size-4 shrink-0' />
+                      <div className='flex min-w-0 flex-col gap-1'>
+                        <span className='text-[11px] font-semibold'>
+                          {selectedRole === 'success'
+                            ? 'Changes saved'
+                            : selectedRole === 'warning'
+                              ? 'Review required'
+                              : selectedRole === 'error'
+                                ? 'Unable to save'
+                                : selectedRole === 'focus'
+                                  ? 'Keyboard focus'
+                                  : selectedRole === 'neutral'
+                                    ? 'Pending update'
+                                    : 'Project update'}
+                        </span>
+                        <span className='text-[10px]'>
+                          {selectedRole === 'error' ? 'Please try again.' : 'Workspace status'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className='flex flex-wrap items-center gap-2'>
+                      <span
+                        className='inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-[10px] font-semibold'
+                        style={{ background: accent, color: textColor(hexToRgb(accent)) }}>
+                        <Icon className='size-3' />
+                        {utility.label}
+                      </span>
+                      <span
+                        className='rounded-sm border px-2 py-1 text-[10px] font-semibold'
+                        style={{ color: accent, borderColor: accent }}>
+                        Aa
+                      </span>
+                    </div>
+                    <label className='flex flex-col gap-1.5 text-[10px]'>
+                      Project name
+                      <input
+                        aria-label={`${mode} utility focus sample`}
+                        value='Website refresh'
+                        readOnly
+                        onFocus={() => setFocusedMode(mode)}
+                        onBlur={() => setFocusedMode(null)}
+                        className='h-8 w-full min-w-0 rounded-md border px-2 text-[11px] outline-none'
+                        style={{
+                          background: get('--input', mode),
+                          color: get('--foreground', mode),
+                          borderColor: get('--border', mode),
+                          boxShadow:
+                            selectedRole === 'focus' || focusedMode === mode
+                              ? `0 0 0 2px ${theme.utility.focus[mode]}`
+                              : undefined,
+                        }}
+                      />
+                    </label>
+                    <div
+                      className='mt-auto flex flex-col gap-2 border-t pt-3'
+                      style={{ borderColor: get('--border', mode) }}>
+                      {[
+                        { label: 'Accent', hex: accent },
+                        { label: 'Subtle', hex: subtle },
+                      ].map((value) => (
+                        <button
+                          key={value.label}
+                          type='button'
+                          aria-label={`Copy ${mode} ${utility.label} ${value.label.toLowerCase()}`}
+                          onClick={() => {
+                            void copyValue(`${mode}-${value.label}`, value.hex);
+                          }}
+                          className='flex cursor-pointer items-center justify-between gap-2 rounded-sm text-left outline-none focus-visible:ring-2 focus-visible:ring-ring'>
+                          <span
+                            className='text-[9px]'
+                            style={{ color: get('--muted-foreground', mode) }}>
+                            {value.label}
+                          </span>
+                          <span className='inline-flex items-center gap-1.5 font-mono text-[9px]'>
+                            {value.hex.toUpperCase()}
+                            {copiedKey === `${mode}-${value.label}` ? (
+                              <Check className='size-3' />
+                            ) : (
+                              <Copy className='size-3' />
+                            )}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+        <aside className='flex min-h-0 min-w-0 flex-col gap-4 border-t border-border p-4 @4xl/utilities:border-t-0'>
+          <div className='flex shrink-0 items-center justify-between gap-2'>
+            <span className={TYPE.label}>Export utilities</span>
+            <Button
+              variant='outline'
+              size='xs'
+              onClick={() => {
+                void copyValue('css', css);
+              }}>
+              {copiedKey === 'css' ? <Check className='size-3' /> : <Copy className='size-3' />}
+              {copiedKey === 'css' ? 'Copied CSS' : 'Copy CSS Vars'}
+            </Button>
+          </div>
+          <ToolSegments
+            value={format}
+            onValueChange={setFormat}
+            label='Utility export format'
+            items={[
+              { id: 'base', label: 'Base CSS' },
+              { id: 'themed', label: 'Theme CSS' },
+            ]}
+          />
+          <pre className='max-h-96 min-h-40 min-w-0 overflow-auto rounded-md border border-border bg-secondary p-3 font-mono text-[10px] leading-relaxed whitespace-pre text-muted-foreground @4xl/utilities:max-h-none @4xl/utilities:min-h-0 @4xl/utilities:flex-1'>
+            {css}
+          </pre>
+          <div className='flex shrink-0 flex-col gap-3 border-t border-border pt-3'>
+            <span className={TYPE.label}>Source palette</span>
+            <div className='flex flex-wrap gap-1.5'>
+              {slots.map((slot) => (
+                <span
+                  key={slot.id}
+                  className='size-5 rounded-sm border border-border'
+                  title={slot.color.hex.toUpperCase()}
+                  style={{ background: slot.color.hex }}
+                />
+              ))}
+            </div>
+            <span className={TYPE.meta}>
+              {format === 'base'
+                ? '6 base color variables'
+                : 'Light + dark / accent + subtle values'}
+            </span>
+          </div>
+        </aside>
       </div>
     </div>
   );

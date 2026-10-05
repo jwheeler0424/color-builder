@@ -1,27 +1,43 @@
-import { createChartScene } from "@tanstack/charts/scene";
-import { render } from "@testing-library/react";
-import { describe, expect, spyOn, test } from "bun:test";
-import { StrictMode } from "react";
+import { createChartScene } from '@tanstack/charts/scene';
+import { render } from '@testing-library/react';
+import { describe, expect, spyOn, test } from 'bun:test';
+import { StrictMode } from 'react';
 
-import { Chart } from "@/components/ui/chart";
+import { Chart } from '@/components/ui/chart';
+import { createEasingChart, EASING_OPTIONS } from '@/components/views/gradient-view';
 import {
   createChromaChart,
   createHueChart,
   createScoreChart,
   MAX_CHROMA,
   type PaletteChartPoint,
-} from "@/lib/tools/palette-charts";
+} from '@/lib/tools/palette-charts';
 
-describe("palette radar", () => {
-  test("preserves dimension order, values and finite positions", () => {
+test('easing thumbnails render continuous rounded paths without axes', () => {
+  for (const { id } of EASING_OPTIONS) {
+    const view = render(
+      <Chart definition={createEasingChart(id)} ariaLabel={`${id} curve`} width={44} height={24} />,
+    );
+    const path = view.container.querySelector('path[stroke="currentColor"]');
+    expect(path).not.toBeNull();
+    expect(path?.getAttribute('d')).not.toContain('NaN');
+    expect(path?.getAttribute('stroke-width')).toBe('1.75');
+    expect(path?.getAttribute('stroke-linecap')).toBe('round');
+    expect(view.container.querySelectorAll('text')).toHaveLength(0);
+    view.unmount();
+  }
+});
+
+describe('palette radar', () => {
+  test('preserves dimension order, values and finite positions', () => {
     const scores = { balance: 0, accessibility: 100, harmony: 50, uniqueness: 25 };
     const scene = createChartScene(createScoreChart(scores), { width: 280, height: 260 });
-    const points = scene.points.filter((point) => point.markId.includes("score-points"));
+    const points = scene.points.filter((point) => point.markId.includes('score-points'));
     expect(points.map((point) => point.datum.metric)).toEqual([
-      "balance",
-      "accessibility",
-      "harmony",
-      "uniqueness",
+      'balance',
+      'accessibility',
+      'harmony',
+      'uniqueness',
     ]);
     expect(points.map((point) => point.datum.value)).toEqual(Object.values(scores));
     for (const point of scene.points) {
@@ -30,7 +46,7 @@ describe("palette radar", () => {
     }
   });
 
-  test("keeps an explicit zero tooltip value", () => {
+  test('keeps an explicit zero tooltip value', () => {
     const definition = createScoreChart({
       balance: 0,
       accessibility: 0,
@@ -38,10 +54,10 @@ describe("palette radar", () => {
       uniqueness: 0,
     });
     const scene = createChartScene(definition, { width: 280, height: 260 });
-    expect(definition.tooltip.format(scene.points[0])).toBe("Balance: 0/100");
+    expect(definition.tooltip.format(scene.points[0])).toBe('Balance: 0/100');
   });
 
-  test("renders an accessible SVG and updates scores", () => {
+  test('renders an accessible SVG and updates scores', () => {
     const view = render(
       <Chart
         definition={createScoreChart({
@@ -50,13 +66,13 @@ describe("palette radar", () => {
           harmony: 60,
           uniqueness: 80,
         })}
-        ariaLabel="Palette radar"
+        ariaLabel='Palette radar'
         width={280}
         height={260}
       />,
     );
-    expect(view.getByLabelText("Palette radar")).toBeInTheDocument();
-    expect(view.container.querySelector("svg")).toBeInTheDocument();
+    expect(view.getByLabelText('Palette radar')).toBeInTheDocument();
+    expect(view.container.querySelector('svg')).toBeInTheDocument();
     view.rerender(
       <Chart
         definition={createScoreChart({
@@ -65,16 +81,16 @@ describe("palette radar", () => {
           harmony: 40,
           uniqueness: 20,
         })}
-        ariaLabel="Palette radar"
+        ariaLabel='Palette radar'
         width={280}
         height={260}
       />,
     );
-    expect(view.container.innerHTML).not.toContain("NaN");
+    expect(view.container.innerHTML).not.toContain('NaN');
   });
 
-  test("cleans up responsive observers under StrictMode", () => {
-    const disconnect = spyOn(ResizeObserver.prototype, "disconnect");
+  test('cleans up responsive observers under StrictMode', () => {
+    const disconnect = spyOn(ResizeObserver.prototype, 'disconnect');
     try {
       const view = render(
         <StrictMode>
@@ -85,12 +101,12 @@ describe("palette radar", () => {
               harmony: 0,
               uniqueness: 0,
             })}
-            ariaLabel="Responsive palette radar"
+            ariaLabel='Responsive palette radar'
             height={260}
           />
         </StrictMode>,
       );
-      expect(view.getByLabelText("Responsive palette radar")).toBeInTheDocument();
+      expect(view.getByLabelText('Responsive palette radar')).toBeInTheDocument();
       view.unmount();
       expect(disconnect).toHaveBeenCalled();
     } finally {
@@ -100,29 +116,29 @@ describe("palette radar", () => {
 });
 
 const colors: PaletteChartPoint[] = [
-  { id: "red", name: "Red", hex: "#ff0000", locked: false, lightness: 0, chroma: 0, hue: 0 },
+  { id: 'red', name: 'Red', hex: '#ff0000', locked: false, lightness: 0, chroma: 0, hue: 0 },
   {
-    id: "green",
-    name: "Green",
-    hex: "#00ff00",
+    id: 'green',
+    name: 'Green',
+    hex: '#00ff00',
     locked: true,
     lightness: 1,
     chroma: MAX_CHROMA,
     hue: 90,
   },
   {
-    id: "blue",
-    name: "Blue",
-    hex: "#0000ff",
+    id: 'blue',
+    name: 'Blue',
+    hex: '#0000ff',
     locked: false,
     lightness: 0.5,
     chroma: MAX_CHROMA,
     hue: 180,
   },
   {
-    id: "yellow",
-    name: "Yellow",
-    hex: "#ffff00",
+    id: 'yellow',
+    name: 'Yellow',
+    hex: '#ffff00',
     locked: false,
     lightness: 0.5,
     chroma: MAX_CHROMA,
@@ -130,21 +146,45 @@ const colors: PaletteChartPoint[] = [
   },
 ];
 
-describe("OKLCH charts", () => {
-  test("locked colors retain larger SVG markers", () => {
+describe('OKLCH charts', () => {
+  test('highlights a reading in both charts without moving palette points', () => {
+    for (const createChart of [createChromaChart, createHueChart]) {
+      const original = createChartScene(createChart(colors), { width: 352, height: 240 });
+      const highlighted = createChartScene(createChart(colors, 'green'), {
+        width: 352,
+        height: 240,
+      });
+      expect(highlighted.points.map((point) => [point.x, point.y, point.datum.id])).toEqual(
+        original.points.map((point) => [point.x, point.y, point.datum.id]),
+      );
+      const view = render(
+        <Chart
+          definition={createChart(colors, 'green')}
+          ariaLabel='Highlighted palette'
+          width={352}
+          height={240}
+        />,
+      );
+      expect(view.container.querySelector('circle[fill="#00ff00"]')?.getAttribute('r')).toBe('12');
+      expect(view.container.querySelector('circle[fill="#ff0000"]')?.getAttribute('r')).toBe('8');
+      view.unmount();
+    }
+  });
+
+  test('locked colors retain larger SVG markers', () => {
     const view = render(
       <Chart
         definition={createChromaChart(colors)}
-        ariaLabel="Lock marker sizes"
+        ariaLabel='Lock marker sizes'
         width={280}
         height={300}
       />,
     );
-    expect(view.container.querySelector('circle[fill="#00ff00"]')?.getAttribute("r")).toBe("10");
-    expect(view.container.querySelector('circle[fill="#ff0000"]')?.getAttribute("r")).toBe("8");
+    expect(view.container.querySelector('circle[fill="#00ff00"]')?.getAttribute('r')).toBe('10');
+    expect(view.container.querySelector('circle[fill="#ff0000"]')?.getAttribute('r')).toBe('8');
   });
 
-  test("scatter preserves values, domains, IDs and palette fills", () => {
+  test('scatter preserves values, domains, IDs and palette fills', () => {
     const scene = createChartScene(createChromaChart(colors), { width: 280, height: 300 });
     expect(scene.scales.x.domain).toEqual([0, MAX_CHROMA]);
     expect(scene.scales.y.domain).toEqual([0, 1]);
@@ -154,7 +194,7 @@ describe("OKLCH charts", () => {
     expect(scene.points[0].x).toBeLessThan(scene.points[1].x);
   });
 
-  test("polar hue starts at the top and runs clockwise", () => {
+  test('polar hue starts at the top and runs clockwise', () => {
     const rows = colors.map((point) => ({ ...point, chroma: MAX_CHROMA }));
     const scene = createChartScene(createHueChart(rows), { width: 280, height: 280 });
     const [top, right, bottom, left] = scene.points;
@@ -170,17 +210,17 @@ describe("OKLCH charts", () => {
     expect(wrapped.points[0].y).toBeCloseTo(top.y);
   });
 
-  test("coincident colors retain distinct keys and lock status in tooltips", () => {
-    const definition = createChromaChart([colors[1], { ...colors[1], id: "duplicate" }]);
+  test('coincident colors retain distinct keys and lock status in tooltips', () => {
+    const definition = createChromaChart([colors[1], { ...colors[1], id: 'duplicate' }]);
     const scene = createChartScene(definition, { width: 280, height: 300 });
     expect(new Set(scene.points.map((point) => point.key)).size).toBe(2);
-    expect(definition.tooltip.format(scene.points[0])).toContain("Locked");
+    expect(definition.tooltip.format(scene.points[0])).toContain('Locked');
     const zero = createChromaChart([colors[0]]);
     const zeroScene = createChartScene(zero, { width: 280, height: 300 });
-    expect(zero.tooltip.format(zeroScene.points[0])).toContain("L 0.00 | C 0.000");
+    expect(zero.tooltip.format(zeroScene.points[0])).toContain('L 0.00 | C 0.000');
   });
 
-  test("empty palettes and plot boundaries produce finite scenes", () => {
+  test('empty palettes and plot boundaries produce finite scenes', () => {
     for (const definition of [createChromaChart([]), createHueChart([])]) {
       expect(createChartScene(definition, { width: 240, height: 280 }).points).toHaveLength(0);
     }

@@ -5,9 +5,12 @@
  * Sub-tabs:  [Single Color] [Full Palette]
  */
 
-import React, { useState, useMemo } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { useChromaStore } from "@/hooks/use-chroma-store";
+import { useNavigate } from '@tanstack/react-router';
+import { Check, Copy, RefreshCw, Sprout } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+
+import ColorPickerModal from '@/components/modals/color-picker.modal';
+import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
   generateScale,
   textColor,
@@ -16,38 +19,26 @@ import {
   semanticSlotNames,
   hexToStop,
   nearestName,
-} from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import ColorPickerModal from "@/components/modals/color-picker.modal";
+  contrastRatio,
+} from '@/lib/utils';
+
+import { ToolButton as Button, ToolSegments, ToolTabs, TYPE, ViewHeader } from './view-ui';
 
 // ─── Tab bar ──────────────────────────────────────────────────────────────────
 
-type Tab = "single" | "palette";
+type Tab = 'single' | 'palette';
 
-function TabBar({
-  active,
-  setActive,
-}: {
-  active: Tab;
-  setActive: (t: Tab) => void;
-}) {
+function TabBar({ active, setActive }: { active: Tab; setActive: (t: Tab) => void }) {
   return (
-    <div className="flex border-b border-border shrink-0">
-      {(
-        [
-          ["single", "Single Color"],
-          ["palette", "Full Palette"],
-        ] as const
-      ).map(([id, label]) => (
-        <button
-          key={id}
-          onClick={() => setActive(id)}
-          className={`px-4 py-2.5 text-[10px] font-bold tracking-[.08em] uppercase border-r border-border cursor-pointer transition-colors ${active === id ? "text-foreground border-b-2 border-b-primary bg-accent/30 -mb-px" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
+    <ToolTabs
+      value={active}
+      onValueChange={setActive}
+      label='Scales'
+      items={[
+        { id: 'single', label: 'Single Color' },
+        { id: 'palette', label: 'Full Palette' },
+      ]}
+    />
   );
 }
 
@@ -55,7 +46,7 @@ function TabBar({
 // SINGLE COLOR TAB (was TintScaleView)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const TOKEN_TABS = ["css", "js", "tailwind", "json"] as const;
+const TOKEN_TABS = ['css', 'js', 'tailwind', 'json'] as const;
 
 function buildSingleTokens(
   scale: ReturnType<typeof generateScale>,
@@ -63,13 +54,13 @@ function buildSingleTokens(
   tab: string,
 ): string {
   switch (tab) {
-    case "css":
-      return `:root {\n${scale.map(({ step, hex }) => `  --${name}-${step}: ${hex};`).join("\n")}\n}`;
-    case "js":
-      return `export const ${name} = {\n${scale.map(({ step, hex }) => `  '${step}': '${hex}',`).join("\n")}\n};`;
-    case "tailwind":
-      return `// tailwind.config.js\ncolors: {\n  ${name}: {\n${scale.map(({ step, hex }) => `    '${step}': '${hex}',`).join("\n")}\n  }\n}`;
-    case "json":
+    case 'css':
+      return `:root {\n${scale.map(({ step, hex }) => `  --${name}-${step}: ${hex};`).join('\n')}\n}`;
+    case 'js':
+      return `export const ${name} = {\n${scale.map(({ step, hex }) => `  '${step}': '${hex}',`).join('\n')}\n};`;
+    case 'tailwind':
+      return `// tailwind.config.js\ncolors: {\n  ${name}: {\n${scale.map(({ step, hex }) => `    '${step}': '${hex}',`).join('\n')}\n  }\n}`;
+    case 'json':
       return JSON.stringify(
         {
           [name]: Object.fromEntries(scale.map(({ step, hex }) => [step, hex])),
@@ -78,7 +69,7 @@ function buildSingleTokens(
         2,
       );
     default:
-      return "";
+      return '';
   }
 }
 
@@ -98,6 +89,8 @@ function SingleColorTab() {
   const [copied, setCopied] = useState(false);
   const [inputVal, setInputVal] = useState(scaleHex);
   const [showPicker, setShowPicker] = useState(false);
+  const [selectedStep, setSelectedStep] = useState(500);
+  const [copiedHex, setCopiedHex] = useState<string | null>(null);
 
   React.useEffect(() => {
     setInputVal(scaleHex);
@@ -108,6 +101,17 @@ function SingleColorTab() {
     () => buildSingleTokens(scale, scaleName, scaleTokenTab),
     [scale, scaleName, scaleTokenTab],
   );
+  const selectedShade = scale.find((shade) => shade.step === selectedStep) ?? scale[0];
+  const copyShade = async (hex: string, step: number) => {
+    setSelectedStep(step);
+    try {
+      await navigator.clipboard.writeText(hex);
+      setCopiedHex(hex);
+      setTimeout(() => setCopiedHex(null), 1400);
+    } catch {
+      setCopiedHex(null);
+    }
+  };
 
   const handleInput = (v: string) => {
     setInputVal(v);
@@ -129,130 +133,175 @@ function SingleColorTab() {
     const picks = [1, 3, 5, 7, 9].map((i) => scale[i]).filter(Boolean);
     setSeeds(picks.map(({ hex }) => hexToStop(hex)));
     generate();
-    navigate({ to: "/palette" });
+    void navigate({ to: '/palette' });
   };
 
   return (
     <>
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 flex flex-col overflow-auto p-6">
-          <p className="text-muted-foreground text-[11px] mb-5">
-            50–950 design token scale from any base color. Click a chip to copy.
-          </p>
-
-          <div className="flex gap-2 items-center mb-6 max-w-150">
-            <div
-              className="w-11 h-11 rounded border-2 border-input shrink-0 cursor-pointer"
-              style={{ background: scaleHex }}
-              title="Click to pick color"
-              onClick={() => setShowPicker(true)}
-            />
-            <input
-              className="flex-1 bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors"
-              value={inputVal}
-              onChange={(e) => handleInput(e.target.value)}
-              placeholder="#3B82F6"
-              maxLength={7}
-              spellCheck={false}
-              autoComplete="off"
-            />
-            <Button variant="default" size="sm" onClick={handleGenerate}>
-              Generate
-            </Button>
-          </div>
-
-          <div className="flex rounded overflow-hidden h-13 max-w-225">
-            {scale.map(({ step, hex, rgb }) => {
-              const tc = textColor(rgb);
-              return (
-                <div
-                  key={step}
-                  className="flex flex-col items-center justify-center gap-0.5 font-mono text-[10px] cursor-pointer flex-1"
-                  style={{ background: hex }}
-                  title={`${step}: ${hex} — click to copy`}
-                  onClick={() =>
-                    navigator.clipboard.writeText(hex).catch(() => {})
-                  }
-                >
-                  <div
-                    className="font-bold tracking-[.04em]"
-                    style={{ color: tc }}
-                  >
-                    {step}
-                  </div>
-                  <div className="opacity-65 text-[9px]" style={{ color: tc }}>
-                    {hex.toUpperCase()}
-                  </div>
+      <div className='@container flex min-h-0 flex-1 flex-col overflow-auto @4xl:overflow-hidden'>
+        <div className='grid min-w-0 grid-cols-1 @4xl:min-h-0 @4xl:flex-1 @4xl:grid-cols-[minmax(0,1fr)_18rem]'>
+          <section className='@container/shades flex min-h-0 min-w-0 flex-col gap-4 p-4 @4xl:border-r @4xl:border-border'>
+            <div className='flex shrink-0 flex-wrap items-center justify-between gap-3'>
+              <div className='flex min-w-0 items-center gap-3'>
+                <button
+                  type='button'
+                  aria-label='Pick scale color'
+                  title='Pick scale color'
+                  onClick={() => setShowPicker(true)}
+                  className='size-10 shrink-0 cursor-pointer rounded-md border border-border outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                  style={{ background: scaleHex }}
+                />
+                <div className='flex min-w-0 flex-col gap-1'>
+                  <span className={TYPE.label}>Base color</span>
+                  <span className={`truncate ${TYPE.title}`}>
+                    {nearestName(hexToRgb(scaleHex))}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Right panel */}
-        <div className="w-[320px] bg-card border-l border-border overflow-y-auto shrink-0 p-4">
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2 font-display font-semibold">
-            Token Name
-          </div>
-          <input
-            className="w-full bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors mb-3"
-            value={scaleName}
-            onChange={(e) => setScaleName(e.target.value.trim() || "primary")}
-            placeholder="primary"
-            maxLength={24}
-            autoComplete="off"
-          />
-
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2 font-display font-semibold">
-            Export Format
-          </div>
-          <div className="flex-wrap mb-2.5 flex gap-1">
-            {TOKEN_TABS.map((tab) => (
+              </div>
+              <div className='flex items-center gap-2'>
+                <input
+                  aria-label='Scale base hex'
+                  aria-invalid={!parseHex(inputVal)}
+                  className='h-8 w-28 min-w-0 rounded border border-border bg-muted px-2 font-mono text-xs outline-none focus:border-ring aria-invalid:border-destructive'
+                  value={inputVal}
+                  onChange={(event) => handleInput(event.target.value)}
+                  placeholder='#3B82F6'
+                  maxLength={7}
+                  spellCheck={false}
+                  autoComplete='off'
+                />
+                <Button size='sm' onClick={handleGenerate}>
+                  <RefreshCw className='size-3.5' />
+                  Generate
+                </Button>
+              </div>
+            </div>
+            <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border pb-3'>
+              <div className='flex flex-wrap gap-1.5' aria-label='Palette base colors'>
+                {slots.map((slot) => (
+                  <button
+                    key={slot.id}
+                    type='button'
+                    aria-label={`Use ${slot.color.hex.toUpperCase()} as base`}
+                    title={slot.name || slot.color.hex.toUpperCase()}
+                    onClick={() => {
+                      setScaleHex(slot.color.hex);
+                      setInputVal(slot.color.hex);
+                    }}
+                    className='size-5 shrink-0 cursor-pointer rounded-sm border border-border outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                    style={{ background: slot.color.hex }}
+                  />
+                ))}
+              </div>
+              <span className={TYPE.mono}>11 shades / 50-950</span>
+            </div>
+            <div className='grid grid-cols-3 gap-3 @sm/shades:grid-cols-4 @xl/shades:grid-cols-6 @2xl/shades:grid-cols-11 @4xl/scales:min-h-0 @4xl/scales:flex-1'>
+              {scale.map(({ step, hex, rgb }) => (
+                <button
+                  key={step}
+                  type='button'
+                  aria-label={`Copy scale ${step}: ${hex}`}
+                  data-scale-step={step}
+                  title={`${scaleName}-${step}: ${hex.toUpperCase()}`}
+                  onFocus={() => setSelectedStep(step)}
+                  onClick={() => {
+                    void copyShade(hex, step);
+                  }}
+                  className='group flex min-w-0 cursor-pointer flex-col gap-2 text-left outline-none'>
+                  <span
+                    className={`flex min-h-24 w-full flex-1 items-start justify-between rounded-md border border-foreground/10 p-2 transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-ring ${selectedStep === step ? 'ring-1 ring-foreground/30' : ''}`}
+                    style={{ background: hex, color: textColor(rgb) }}>
+                    <span className='font-mono text-[11px] font-bold'>{step}</span>
+                    {copiedHex === hex && <Check className='size-3 shrink-0' />}
+                  </span>
+                  <span className='font-mono text-[10px] leading-none text-muted-foreground'>
+                    {hex.toUpperCase()}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <div className='grid shrink-0 grid-cols-2 items-center gap-4 border-t border-border pt-4 @xl/shades:grid-cols-[minmax(0,1fr)_auto_auto]'>
+              <div className='col-span-2 flex items-center gap-3 @xl/shades:col-span-1'>
+                <span
+                  className='size-9 shrink-0 rounded-md border border-border'
+                  style={{ background: selectedShade.hex }}
+                />
+                <div className='flex min-w-0 flex-col gap-1'>
+                  <span className={TYPE.label}>
+                    {scaleName}-{selectedShade.step}
+                  </span>
+                  <span className={TYPE.mono}>{selectedShade.hex.toUpperCase()}</span>
+                </div>
+              </div>
+              <div className='flex flex-col gap-1'>
+                <span className={TYPE.label}>On white</span>
+                <span className={TYPE.mono}>
+                  {contrastRatio(selectedShade.rgb, { r: 255, g: 255, b: 255 }).toFixed(2)}:1
+                </span>
+              </div>
+              <div className='flex flex-col gap-1'>
+                <span className={TYPE.label}>On black</span>
+                <span className={TYPE.mono}>
+                  {contrastRatio(selectedShade.rgb, { r: 0, g: 0, b: 0 }).toFixed(2)}:1
+                </span>
+              </div>
+            </div>
+          </section>
+          <aside className='flex min-h-0 min-w-0 flex-col gap-4 border-t border-border p-4 @4xl:border-t-0'>
+            <div className='flex shrink-0 items-center justify-between gap-2'>
+              <span className={TYPE.label}>Export scale</span>
               <Button
-                key={tab}
-                variant={scaleTokenTab === tab ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setScaleTokenTab(tab)}
-              >
-                {tab.toUpperCase()}
+                variant='outline'
+                size='xs'
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(tokens);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1400);
+                  } catch {
+                    setCopied(false);
+                  }
+                }}>
+                {copied ? <Check className='size-3' /> : <Copy className='size-3' />}
+                {copied ? 'Copied' : 'Copy tokens'}
               </Button>
-            ))}
-          </div>
-
-          <pre className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-75 overflow-y-auto">
-            {tokens}
-          </pre>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full mt-2"
-            onClick={() => {
-              navigator.clipboard.writeText(tokens).catch(() => {});
-              setCopied(true);
-              setTimeout(() => setCopied(false), 1400);
-            }}
-          >
-            {copied ? "✓ Copied" : "Copy"}
-          </Button>
-
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2 font-display font-semibold mt-4">
-            Use in Palette
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full"
-            onClick={useAsSeeds}
-          >
-            Use scale as seeds →
-          </Button>
+            </div>
+            <div className='flex shrink-0 flex-col gap-2'>
+              <label htmlFor='scale-token-name' className={TYPE.label}>
+                Token name
+              </label>
+              <input
+                id='scale-token-name'
+                aria-label='Scale token name'
+                className='h-8 w-full rounded border border-border bg-muted px-2 font-mono text-xs outline-none focus:border-ring'
+                value={scaleName}
+                onChange={(event) => setScaleName(event.target.value.trim() || 'primary')}
+                placeholder='primary'
+                maxLength={24}
+                autoComplete='off'
+              />
+            </div>
+            <ToolSegments
+              value={scaleTokenTab}
+              onValueChange={setScaleTokenTab}
+              label='Scale export format'
+              items={TOKEN_TABS.map((tab) => ({ id: tab, label: tab.toUpperCase() }))}
+            />
+            <pre className='max-h-80 min-h-40 min-w-0 overflow-auto rounded-md border border-border bg-secondary p-3 font-mono text-[10px] leading-relaxed whitespace-pre text-muted-foreground @4xl:max-h-none @4xl:min-h-0 @4xl:flex-1'>
+              {tokens}
+            </pre>
+            <Button variant='outline' size='sm' className='w-full shrink-0' onClick={useAsSeeds}>
+              <Sprout className='size-3.5' />
+              Use scale as seeds
+            </Button>
+          </aside>
         </div>
       </div>
 
       <ColorPickerModal
         isOpen={showPicker}
         initialHex={scaleHex}
-        title="Base color — Tint Scale"
+        title='Base color — Tint Scale'
         onApply={(hex) => {
           setScaleHex(hex);
           setInputVal(hex);
@@ -269,18 +318,18 @@ function SingleColorTab() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
-type ExportFmt = "css" | "tailwind" | "json";
+type ExportFmt = 'css' | 'tailwind' | 'json';
 
 function buildMultiScaleTokens(
   scales: { name: string; steps: ReturnType<typeof generateScale> }[],
   fmt: ExportFmt,
 ): string {
   switch (fmt) {
-    case "css":
-      return `:root {\n${scales.flatMap(({ name, steps }) => steps.map(({ step, hex }) => `  --${name}-${step}: ${hex};`)).join("\n")}\n}`;
-    case "tailwind":
-      return `// tailwind.config.js\ncolors: {\n${scales.map(({ name, steps }) => `  ${name}: {\n${steps.map(({ step, hex }) => `    '${step}': '${hex}',`).join("\n")}\n  },`).join("\n")}\n}`;
-    case "json":
+    case 'css':
+      return `:root {\n${scales.flatMap(({ name, steps }) => steps.map(({ step, hex }) => `  --${name}-${step}: ${hex};`)).join('\n')}\n}`;
+    case 'tailwind':
+      return `// tailwind.config.js\ncolors: {\n${scales.map(({ name, steps }) => `  ${name}: {\n${steps.map(({ step, hex }) => `    '${step}': '${hex}',`).join('\n')}\n  },`).join('\n')}\n}`;
+    case 'json':
       return JSON.stringify(
         Object.fromEntries(
           scales.map(({ name, steps }) => [
@@ -296,12 +345,13 @@ function buildMultiScaleTokens(
 
 function FullPaletteTab() {
   const { slots } = useChromaStore();
-  const [fmt, setFmt] = useState<ExportFmt>("css");
+  const [fmt, setFmt] = useState<ExportFmt>('css');
   const [copied, setCopied] = useState(false);
-  const [hoveredCell, setHoveredCell] = useState<{
+  const [selectedCell, setSelectedCell] = useState<{
     slot: number;
     step: number;
-  } | null>(null);
+  }>({ slot: 0, step: 500 });
+  const [copiedHex, setCopiedHex] = useState<string | null>(null);
 
   const slotNames = useMemo(() => semanticSlotNames(slots), [slots]);
   const scales = useMemo(
@@ -322,195 +372,171 @@ function FullPaletteTab() {
       ),
     [scales, fmt],
   );
+  const selectedScale = scales[selectedCell.slot] ?? scales[0];
+  const selectedShade =
+    selectedScale?.steps.find((shade) => shade.step === selectedCell.step) ??
+    selectedScale?.steps[0];
+  const copyShade = async (hex: string, slot: number, step: number) => {
+    setSelectedCell({ slot, step });
+    try {
+      await navigator.clipboard.writeText(hex);
+      setCopiedHex(hex);
+      setTimeout(() => setCopiedHex(null), 1400);
+    } catch {
+      setCopiedHex(null);
+    }
+  };
 
   if (!slots.length) {
     return (
-      <div className="flex-1 p-6">
-        <p className="text-muted-foreground text-[12px]">
-          Generate a palette first.
-        </p>
+      <div className='flex-1 p-6'>
+        <p className='text-[12px] text-muted-foreground'>Generate a palette first.</p>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-auto p-6">
-      <div className="mx-auto max-w-270">
-        <p className="text-muted-foreground text-[11px] mb-5">
-          Full 50–950 tint scale for every palette color simultaneously — like
-          Tailwind, Radix, or shadcn's color system. Click any chip to copy its
-          hex.
-        </p>
-
-        <div className="overflow-x-auto mb-7">
-          <table style={{ borderCollapse: "collapse", minWidth: 600 }}>
-            <thead>
-              <tr>
-                <th
-                  className="text-[9px] font-bold text-muted-foreground uppercase tracking-[.07em] whitespace-nowrap text-left"
-                  style={{ padding: "0 8px 8px 0" }}
-                >
-                  Color
-                </th>
-                {STEPS.map((step) => (
+    <div className='@container flex min-h-0 flex-1 flex-col overflow-auto @4xl:overflow-hidden'>
+      <div className='grid grid-cols-1 @4xl:min-h-0 @4xl:flex-1 @4xl:grid-cols-[minmax(0,1fr)_18rem]'>
+        <section className='flex min-h-0 min-w-0 flex-col gap-4 p-4 @4xl:border-r @4xl:border-border'>
+          <div className='flex shrink-0 items-center justify-between gap-3'>
+            <span className={TYPE.label}>Palette scales</span>
+            <span className={TYPE.mono}>
+              {scales.length} colors / {scales.length * STEPS.length} tokens
+            </span>
+          </div>
+          <div
+            className='min-w-0 overflow-auto rounded-md border border-border @4xl:min-h-0 @4xl:flex-1'
+            data-scale-matrix>
+            <table className='h-full w-full min-w-160 table-fixed border-separate border-spacing-0'>
+              <thead className='sticky top-0 z-20 bg-background'>
+                <tr>
                   <th
-                    key={step}
-                    className="text-[9px] font-bold text-muted-foreground uppercase tracking-[.06em] text-center"
-                    style={{ padding: "0 2px 8px", minWidth: 44 }}
-                  >
-                    {step}
+                    scope='col'
+                    className={`sticky left-0 z-30 w-28 border-b border-border bg-background px-3 py-3 text-left ${TYPE.label}`}>
+                    Color
                   </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {scales.map((scale, si) => (
-                <tr key={si}>
-                  <td
-                    className="pb-1 whitespace-nowrap"
-                    style={{ paddingRight: 10 }}
-                  >
-                    <div className="items-center flex gap-1.5">
-                      <div
-                        className="rounded shrink-0 w-3.5 h-3.5"
-                        style={{
-                          background: scale.hex,
-                          border: "1px solid rgba(128,128,128,.2)",
-                        }}
-                      />
-                      <span className="text-secondary-foreground font-bold text-[10px]">
-                        {scale.name}
-                      </span>
-                    </div>
-                    <div
-                      className="text-[8.5px] text-muted-foreground mt-0.5"
-                      style={{ paddingLeft: 20 }}
-                    >
-                      {nearestName(hexToRgb(scale.hex))}
-                    </div>
-                  </td>
-                  {scale.steps.map(({ step, hex, rgb }) => {
-                    const tc = textColor(rgb);
-                    const isHovered =
-                      hoveredCell?.slot === si && hoveredCell?.step === step;
-                    return (
-                      <td
-                        key={step}
-                        className="text-center"
-                        style={{ padding: "0 2px 4px" }}
-                      >
-                        <div
-                          style={{
-                            width: 42,
-                            height: 42,
-                            borderRadius: 5,
-                            background: hex,
-                            cursor: "pointer",
-                            border: isHovered
-                              ? "2px solid var(--color-foreground)"
-                              : "1px solid rgba(128,128,128,.15)",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "flex-end",
-                            padding: "0 0 3px",
-                            transition: "transform .1s",
-                            transform: isHovered ? "scale(1.12)" : "none",
-                          }}
-                          title={`${scale.name}-${step}: ${hex}`}
-                          onClick={() =>
-                            navigator.clipboard.writeText(hex).catch(() => {})
-                          }
-                          onMouseEnter={() =>
-                            setHoveredCell({ slot: si, step })
-                          }
-                          onMouseLeave={() => setHoveredCell(null)}
-                        >
-                          {isHovered && (
-                            <span
-                              className="text-[7.5px] font-mono font-bold"
-                              style={{ color: tc }}
-                            >
-                              {hex.slice(1).toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    );
-                  })}
+                  {STEPS.map((step) => (
+                    <th
+                      key={step}
+                      scope='col'
+                      className='border-b border-border px-1 py-3 text-center font-mono text-[10px] font-semibold text-muted-foreground'>
+                      {step}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="flex gap-3 mb-6 flex-wrap">
-          {scales.map((scale, i) => {
-            const s500 = scale.steps.find((s) => s.step === 500);
-            return (
-              <div
-                key={i}
-                className="flex items-center gap-1.5 bg-card rounded-md border border-muted px-2.5 py-1.5"
-              >
-                <div
-                  className="rounded shrink-0"
-                  style={{
-                    width: 20,
-                    height: 20,
-                    background: scale.hex,
-                    border: "1px solid rgba(128,128,128,.2)",
-                  }}
+              </thead>
+              <tbody>
+                {scales.map((scale, slotIndex) => (
+                  <tr key={slots[slotIndex].id}>
+                    <th
+                      scope='row'
+                      aria-label={`${scale.name} ${scale.hex.toUpperCase()}`}
+                      className='sticky left-0 z-10 border-b border-border bg-background px-3 py-2 text-left last:border-b-0'>
+                      <div className='flex min-w-0 items-center gap-2'>
+                        <span
+                          className='size-5 shrink-0 rounded-sm border border-border'
+                          style={{ background: scale.hex }}
+                        />
+                        <div className='flex min-w-0 flex-col gap-1'>
+                          <span
+                            className='truncate text-[11px] leading-tight font-semibold'
+                            title={scale.name}>
+                            {scale.name}
+                          </span>
+                          <span className='font-mono text-[9px] leading-none text-muted-foreground'>
+                            {scale.hex.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                    </th>
+                    {scale.steps.map(({ step, hex, rgb }) => (
+                      <td key={step} className='h-10 p-1'>
+                        <button
+                          type='button'
+                          data-scale-cell={`${slotIndex}-${step}`}
+                          aria-label={`Copy ${scale.name}-${step}: ${hex}`}
+                          title={`${scale.name}-${step}: ${hex.toUpperCase()}`}
+                          onFocus={() => setSelectedCell({ slot: slotIndex, step })}
+                          onClick={() => {
+                            void copyShade(hex, slotIndex, step);
+                          }}
+                          className={`flex h-full min-h-8 w-full cursor-pointer items-center justify-center rounded-sm border border-foreground/10 transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedCell.slot === slotIndex && selectedCell.step === step ? 'ring-1 ring-foreground/50' : ''}`}
+                          style={{ background: hex, color: textColor(rgb) }}>
+                          {copiedHex === hex && <Check className='size-3' />}
+                        </button>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {selectedShade && (
+            <div className='grid shrink-0 grid-cols-2 items-center gap-4 border-t border-border pt-4 @3xl:grid-cols-[minmax(0,1fr)_auto_auto]'>
+              <div className='col-span-2 flex min-w-0 items-center gap-3 @3xl:col-span-1'>
+                <span
+                  className='size-9 shrink-0 rounded-md border border-border'
+                  style={{ background: selectedShade.hex }}
                 />
-                <div>
-                  <div className="text-foreground font-bold text-[10px]">
-                    {scale.name}
-                  </div>
-                  <div className="font-mono text-muted-foreground text-[8.5px]">
-                    500: {s500?.hex ?? "—"}
-                  </div>
+                <div className='flex min-w-0 flex-col gap-1'>
+                  <span className={TYPE.label}>
+                    {selectedScale.name}-{selectedShade.step}
+                  </span>
+                  <span className={TYPE.mono}>{selectedShade.hex.toUpperCase()}</span>
                 </div>
               </div>
-            );
-          })}
-        </div>
-
-        <div>
-          <div className="justify-between items-center flex-wrap mb-2.5 flex gap-1.5">
-            <div className="text-[10px] tracking-widest uppercase text-muted-foreground font-display font-semibold">
-              Export All Scales
+              <div className='flex flex-col gap-1'>
+                <span className={TYPE.label}>On white</span>
+                <span className={TYPE.mono}>
+                  {contrastRatio(selectedShade.rgb, { r: 255, g: 255, b: 255 }).toFixed(2)}:1
+                </span>
+              </div>
+              <div className='flex flex-col gap-1'>
+                <span className={TYPE.label}>On black</span>
+                <span className={TYPE.mono}>
+                  {contrastRatio(selectedShade.rgb, { r: 0, g: 0, b: 0 }).toFixed(2)}:1
+                </span>
+              </div>
             </div>
-            <div className="flex gap-1">
-              {(["css", "tailwind", "json"] as const).map((f) => (
-                <Button
-                  key={f}
-                  variant={fmt === f ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setFmt(f)}
-                >
-                  {f === "css"
-                    ? "CSS Vars"
-                    : f === "tailwind"
-                      ? "Tailwind"
-                      : "JSON"}
-                </Button>
-              ))}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  navigator.clipboard.writeText(tokens).catch(() => {});
+          )}
+        </section>
+        <aside className='flex min-h-0 min-w-0 flex-col gap-4 border-t border-border p-4 @4xl:border-t-0'>
+          <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
+            <span className={TYPE.label}>Export all scales</span>
+            <Button
+              variant='outline'
+              size='xs'
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(tokens);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1400);
-                }}
-              >
-                {copied ? "✓ Copied" : "Copy"}
-              </Button>
-            </div>
+                } catch {
+                  setCopied(false);
+                }
+              }}>
+              {copied ? <Check className='size-3' /> : <Copy className='size-3' />}
+              {copied ? 'Copied' : 'Copy tokens'}
+            </Button>
           </div>
-          <pre className="bg-secondary border border-border rounded p-2.5 text-[9px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-80 overflow-y-auto">
+          <ToolSegments
+            value={fmt}
+            onValueChange={setFmt}
+            label='Palette scale export format'
+            items={[
+              { id: 'css', label: 'CSS Vars' },
+              { id: 'tailwind', label: 'Tailwind' },
+              { id: 'json', label: 'JSON' },
+            ]}
+          />
+          <pre className='max-h-80 min-h-40 min-w-0 overflow-auto rounded-md border border-border bg-secondary p-3 font-mono text-[10px] leading-relaxed whitespace-pre text-muted-foreground @4xl:max-h-none @4xl:min-h-0 @4xl:flex-1'>
             {tokens}
           </pre>
-        </div>
+          <div className={`shrink-0 border-t border-border pt-3 ${TYPE.mono}`}>
+            {scales.length} scales / 11 shades each
+          </div>
+        </aside>
       </div>
     </div>
   );
@@ -519,15 +545,16 @@ function FullPaletteTab() {
 // ─── Root export ──────────────────────────────────────────────────────────────
 
 export default function ScalesView() {
-  const [activeTab, setActiveTab] = useState<Tab>("single");
+  const [activeTab, setActiveTab] = useState<Tab>('single');
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="px-6 pt-5 pb-0 shrink-0">
-        <h2 className="mb-1">Scales</h2>
-      </div>
+    <div className='@container/scales flex min-h-0 flex-1 flex-col overflow-hidden'>
+      <ViewHeader
+        title='Scales'
+        description='Perceptual shades and ready-to-export color tokens.'
+      />
       <TabBar active={activeTab} setActive={setActiveTab} />
-      {activeTab === "single" && <SingleColorTab />}
-      {activeTab === "palette" && <FullPaletteTab />}
+      {activeTab === 'single' && <SingleColorTab />}
+      {activeTab === 'palette' && <FullPaletteTab />}
     </div>
   );
 }

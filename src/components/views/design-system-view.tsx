@@ -1,5 +1,24 @@
-import React, { useMemo, useState, useCallback } from "react";
-import { useChromaStore } from "@/hooks/use-chroma-store";
+import {
+  ArrowUpRight,
+  Check,
+  CheckCircle2,
+  Clock3,
+  Copy,
+  Layers,
+  MoreHorizontal,
+  Moon,
+  Plus,
+  RotateCcw,
+  Search,
+  Sun,
+  Trash2,
+  X,
+} from 'lucide-react';
+import { useMemo, useState, useCallback } from 'react';
+
+import type { PaletteSlot, SemanticToken, UtilityColorSet, UtilityRole } from '@/types';
+
+import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
   deriveThemeTokens,
   buildThemeCss,
@@ -13,33 +32,20 @@ import {
   apcaContrast,
   textColor,
   hexToRgb,
-  rgbToOklch,
-} from "@/lib/utils";
-import type {
-  PaletteSlot,
-  SemanticToken,
-  UtilityColorSet,
-  UtilityRole,
-} from "@/types";
-import { Button } from "@/components/ui/button";
-import HexInput from "../common/hex-input";
+} from '@/lib/utils';
 
-type Mode = "light" | "dark";
-type ExportFormat =
-  | "css"
-  | "tailwind3"
-  | "tailwind4"
-  | "figma"
-  | "styledictionary";
+import HexInput from '../common/hex-input';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { ToolButton as Button, ToolSegments, ToolTabs, TYPE } from './view-ui';
+
+type Mode = 'light' | 'dark';
+type ExportFormat = 'css' | 'tailwind3' | 'tailwind4' | 'figma' | 'styledictionary';
 
 // ─── Token override store (local to this view, persisted via parent store later) ──
 
 type Overrides = Record<string, { light: string; dark: string }>;
 
-function mergeTokens(
-  tokens: SemanticToken[],
-  overrides: Overrides,
-): SemanticToken[] {
+function mergeTokens(tokens: SemanticToken[], overrides: Overrides): SemanticToken[] {
   return tokens.map((t) => {
     const o = overrides[t.name];
     if (!o) return t;
@@ -49,455 +55,1048 @@ function mergeTokens(
 
 // ─── Token group definitions ──────────────────────────────────────────────────
 
-const TOKEN_GROUPS: {
+export const TOKEN_GROUPS: {
   label: string;
   desc: string;
   ids: string[];
   fourValue?: boolean;
 }[] = [
   {
-    label: "Page Surfaces",
-    desc: "Background layers following the 60-30-10 rule. Each tier needs a matching text color.",
+    label: 'Page Surfaces',
+    desc: 'Background layers following the 60-30-10 rule. Each tier needs a matching text color.',
     fourValue: true,
     ids: [
-      "--background",
-      "--foreground",
-      "--surface-dim",
-      "--surface-dim-foreground",
-      "--card",
-      "--card-foreground",
-      "--card-raised",
-      "--card-raised-foreground",
-      "--popover",
-      "--popover-foreground",
+      '--background',
+      '--foreground',
+      '--surface-dim',
+      '--surface-dim-foreground',
+      '--card',
+      '--card-foreground',
+      '--card-raised',
+      '--card-raised-foreground',
+      '--popover',
+      '--popover-foreground',
     ],
   },
   {
-    label: "Brand / Primary",
-    desc: "The main brand color — CTA buttons, active states, links.",
+    label: 'Brand / Primary',
+    desc: 'The main brand color — CTA buttons, active states, links.',
     fourValue: true,
     ids: [
-      "--primary",
-      "--primary-foreground",
-      "--primary-container",
-      "--primary-container-foreground",
+      '--primary',
+      '--primary-foreground',
+      '--primary-container',
+      '--primary-container-foreground',
     ],
   },
   {
-    label: "Secondary & Muted",
-    desc: "Supporting actions, secondary buttons, dimmed text, ghost surfaces.",
+    label: 'Secondary & Muted',
+    desc: 'Supporting actions, secondary buttons, dimmed text, ghost surfaces.',
     ids: [
-      "--secondary",
-      "--secondary-foreground",
-      "--accent",
-      "--accent-foreground",
-      "--muted",
-      "--muted-foreground",
+      '--secondary',
+      '--secondary-foreground',
+      '--accent',
+      '--accent-foreground',
+      '--muted',
+      '--muted-foreground',
     ],
   },
   {
-    label: "Borders, Inputs & Focus",
-    desc: "Structural colors — separators, form controls, keyboard focus ring.",
-    ids: ["--border", "--border-strong", "--input", "--ring"],
+    label: 'Borders, Inputs & Focus',
+    desc: 'Structural colors — separators, form controls, keyboard focus ring.',
+    ids: ['--border', '--border-strong', '--input', '--ring'],
   },
   {
-    label: "Destructive / Error",
-    desc: "Error states, destructive actions, deletion confirmations.",
-    ids: ["--destructive", "--destructive-foreground", "--destructive-subtle"],
+    label: 'Destructive / Error',
+    desc: 'Error states, destructive actions, deletion confirmations.',
+    ids: ['--destructive', '--destructive-foreground', '--destructive-subtle'],
   },
 ];
 
 // ─── Component preview ────────────────────────────────────────────────────────
 
-function ComponentPreview({
+type PreviewProject = {
+  id: string;
+  name: string;
+  category: string;
+  status: 'Active' | 'Review' | 'Complete' | 'Blocked';
+  progress: number;
+  owner: string;
+  due: string;
+};
+
+const PREVIEW_PROJECTS: PreviewProject[] = [
+  {
+    id: 'website',
+    name: 'Website refresh',
+    category: 'Marketing / Web',
+    status: 'Active',
+    progress: 72,
+    owner: 'AJ',
+    due: 'Oct 12',
+  },
+  {
+    id: 'mobile',
+    name: 'Mobile application',
+    category: 'Product / iOS',
+    status: 'Review',
+    progress: 45,
+    owner: 'NL',
+    due: 'Oct 18',
+  },
+  {
+    id: 'brand',
+    name: 'Brand guidelines',
+    category: 'Design / Identity',
+    status: 'Complete',
+    progress: 100,
+    owner: 'EC',
+    due: 'Oct 05',
+  },
+  {
+    id: 'portal',
+    name: 'Customer portal',
+    category: 'Engineering / Web',
+    status: 'Blocked',
+    progress: 31,
+    owner: 'JK',
+    due: 'Oct 21',
+  },
+];
+
+export type PreviewPage = 'landing' | 'projects' | 'activity' | 'settings';
+
+export function WorkspacePreview({
   tokens,
   slots,
+  utility,
   mode,
+  page,
+  onPageChange,
 }: {
   tokens: SemanticToken[];
   slots: PaletteSlot[];
+  utility: ReturnType<typeof deriveThemeTokens>['utility'];
   mode: Mode;
+  page?: PreviewPage;
+  onPageChange?: (page: PreviewPage) => void;
 }) {
-  const get = (name: string) =>
-    tokens.find((t) => t.name === name)?.[mode] ?? "#888";
-
-  const bg = get("--background");
-  const fg = get("--foreground");
-  const fgM = get("--muted-foreground");
-  const card = get("--card");
-  const cardR = get("--card-raised");
-  const pri = get("--primary");
-  const priFg = get("--primary-foreground");
-  const priC = get("--primary-container");
-  const priCFg = get("--primary-container-foreground");
-  const sec = get("--secondary");
-  const secFg = get("--secondary-foreground");
-  const muted = get("--muted");
-  const des = get("--destructive");
-  const desFg = get("--destructive-foreground");
-  const border = get("--border");
-  const ring = get("--ring");
-  const input = get("--input");
-  const surfD = get("--surface-dim");
-
-  const sorted = [...slots].sort(
-    (a, b) =>
-      rgbToOklch(hexToRgb(b.color.hex)).C - rgbToOklch(hexToRgb(a.color.hex)).C,
+  const get = (name: string) => tokens.find((token) => token.name === name)?.[mode] ?? '#888';
+  const [projects, setProjects] = useState(PREVIEW_PROJECTS);
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'all' | 'progress' | 'complete'>('all');
+  const [localView, setLocalView] = useState<PreviewPage>('projects');
+  const view = page ?? localView;
+  const setView = (next: PreviewPage) => {
+    setLocalView(next);
+    onPageChange?.(next);
+  };
+  const [creating, setCreating] = useState(false);
+  const [projectName, setProjectName] = useState('');
+  const [selected, setSelected] = useState<string[]>([]);
+  const [menuId, setMenuId] = useState<string | null>(null);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [profileName, setProfileName] = useState('Avery James');
+  const [profileEmail, setProfileEmail] = useState('avery@orbit.design');
+  const [workspaceName, setWorkspaceName] = useState('Design studio');
+  const [notifications, setNotifications] = useState({ updates: true, digest: false });
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const [resetRequested, setResetRequested] = useState(false);
+  const [annualBilling, setAnnualBilling] = useState(false);
+  const visible = projects.filter(
+    (project) =>
+      (filter === 'all' ||
+        (filter === 'complete' ? project.status === 'Complete' : project.status !== 'Complete')) &&
+      `${project.name} ${project.category}`.toLowerCase().includes(search.toLowerCase()),
   );
-  const a1 = sorted[0]?.color.hex ?? pri;
-  const a2 = sorted[1]?.color.hex ?? sec;
-  const a3 = sorted[2]?.color.hex ?? muted;
-  const a4 = sorted[3]?.color.hex ?? pri;
-
-  const BtnPri: React.CSSProperties = {
-    background: pri,
-    color: priFg,
-    border: "none",
-    borderRadius: 5,
-    padding: "5px 12px",
-    fontSize: 10,
-    fontWeight: 700,
-    cursor: "pointer",
+  const active = projects.filter((project) => project.status !== 'Complete').length;
+  const average = projects.length
+    ? Math.round(projects.reduce((total, project) => total + project.progress, 0) / projects.length)
+    : 0;
+  const blocked = projects.filter((project) => project.status === 'Blocked').length;
+  const primary = { background: get('--primary'), color: get('--primary-foreground') };
+  const secondary = {
+    background: get('--secondary'),
+    color: get('--secondary-foreground'),
+    borderColor: get('--border'),
   };
-  const BtnSec: React.CSSProperties = {
-    background: sec,
-    color: secFg,
-    border: `1px solid ${border}`,
-    borderRadius: 5,
-    padding: "5px 12px",
-    fontSize: 10,
-    fontWeight: 600,
+  const statusStyle = (status: PreviewProject['status']) => {
+    const role =
+      status === 'Complete'
+        ? 'success'
+        : status === 'Review'
+          ? 'warning'
+          : status === 'Blocked'
+            ? 'error'
+            : 'info';
+    return {
+      background: mode === 'light' ? utility[role].subtle : utility[role].subtleDark,
+      color: utility[role][mode],
+    };
   };
-  const BtnGhost: React.CSSProperties = {
-    background: "transparent",
-    color: fg,
-    border: `1px solid ${border}`,
-    borderRadius: 5,
-    padding: "5px 12px",
-    fontSize: 10,
-    fontWeight: 500,
-  };
-  const BtnDes: React.CSSProperties = {
-    background: des,
-    color: desFg,
-    border: "none",
-    borderRadius: 5,
-    padding: "5px 12px",
-    fontSize: 10,
-    fontWeight: 700,
+  const removeProjects = (ids: string[]) => {
+    setProjects((previous) => previous.filter((project) => !ids.includes(project.id)));
+    setSelected((previous) => previous.filter((id) => !ids.includes(id)));
+    setMenuId(null);
   };
 
   return (
     <div
+      data-component-preview={mode}
+      className='@container/workspace flex min-h-144 min-w-0 flex-col overflow-hidden rounded-md border @4xl/design:h-full @4xl/theme:h-full @4xl/tokens:h-full @4xl/design:min-h-0 @4xl/theme:min-h-0 @4xl/tokens:min-h-0'
       style={{
-        background: bg,
-        color: fg,
-        borderRadius: 10,
-        overflow: "hidden",
-        border: `1px solid ${border}`,
-        fontFamily: "system-ui, sans-serif",
-        fontSize: 11,
-        lineHeight: 1.5,
-        userSelect: "none",
-      }}
-    >
-      {/* Nav */}
-      <div
+        background: get('--background'),
+        color: get('--foreground'),
+        borderColor: get('--border'),
+      }}>
+      <header
+        className='flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3'
         style={{
-          background: card,
-          borderBottom: `1px solid ${border}`,
-          padding: "8px 14px",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        <div className="rounded shrink-0 w-4 h-4" style={{ background: a1 }} />
-        <span className="font-extrabold text-[12px] tracking-[-0.02em]">
-          Brand
-        </span>
-        <div className="flex gap-3 flex-1 ml-1.5">
-          {["Dashboard", "Projects", "Settings"].map((l, i) => (
-            <span
-              key={l}
-              style={{
-                color: i === 0 ? pri : fgM,
-                fontSize: 10,
-                fontWeight: i === 0 ? 700 : 400,
-              }}
-            >
-              {l}
-            </span>
+          background: get('--surface-dim'),
+          color: get('--surface-dim-foreground'),
+          borderColor: get('--border'),
+        }}>
+        <div className='flex items-center gap-2'>
+          <span className='grid size-7 place-items-center rounded-md' style={primary}>
+            <Layers className='size-4' />
+          </span>
+          <span className='font-display text-base font-bold'>Orbit</span>
+          <span
+            className='hidden border-l pl-2 text-[11px] @min-[24rem]/workspace:block'
+            style={{ color: get('--muted-foreground'), borderColor: get('--border') }}>
+            Team workspace
+          </span>
+        </div>
+        <nav className='flex items-center gap-3' aria-label={`${mode} workspace navigation`}>
+          {(['landing', 'projects', 'activity', 'settings'] as const).map((item) => (
+            <button
+              key={item}
+              type='button'
+              aria-pressed={view === item}
+              onClick={() => setView(item)}
+              className='cursor-pointer text-[11px] font-medium outline-none focus-visible:underline'
+              style={{ color: view === item ? get('--primary') : get('--muted-foreground') }}>
+              {item === 'landing'
+                ? 'Landing'
+                : item === 'projects'
+                  ? 'Projects'
+                  : item === 'activity'
+                    ? 'Activity'
+                    : 'Settings'}
+            </button>
           ))}
-        </div>
-        <button style={BtnPri}>Upgrade</button>
-      </div>
-
-      {/* Hero — primary-container */}
-      <div
-        style={{
-          background: priC,
-          padding: "14px",
-          borderBottom: `1px solid ${border}`,
-        }}
-      >
-        <div
-          className="inline-block text-2.5 font-bold mb-1.5"
-          style={{
-            background: pri,
-            color: priFg,
-            borderRadius: 20,
-            padding: "2px 8px",
-            letterSpacing: "0.05em",
-          }}
-        >
-          NEW
-        </div>
-        <div
-          className="font-extrabold mb-1"
-          style={{ color: priCFg, fontSize: 15, letterSpacing: "-0.03em" }}
-        >
-          Your design system, ready to ship
-        </div>
-        <div
-          className="text-[10px] mb-2.5"
-          style={{ color: priCFg, opacity: 0.75 }}
-        >
-          Built on perceptual color science with full accessibility stats.
-        </div>
-        <div className="flex gap-1.5">
-          <button style={BtnPri}>Get started →</button>
-          <div style={BtnSec}>Learn more</div>
-        </div>
-      </div>
-
-      {/* Main grid */}
-      <div className="grid gap-2.5 px-3.5 py-3 grid-cols-[1fr_160px]">
-        <div>
-          {/* Cards */}
-          <div
-            className="text-2.5 font-bold uppercase mb-1.5 tracking-[.08em]"
-            style={{ color: fgM }}
-          >
-            Projects
-          </div>
-          <div className="grid gap-1.5 mb-2.5 grid-cols-2">
-            {[
-              {
-                title: "Design System",
-                pct: 80,
-                accent: a1,
-                badge: "Active",
-                badgeBg: "rgba(34,197,94,.15)",
-                badgeFg: "#16a34a",
-              },
-              {
-                title: "Mobile App",
-                pct: 55,
-                accent: a2,
-                badge: "Review",
-                badgeBg: "rgba(234,179,8,.15)",
-                badgeFg: "#a16207",
-              },
-              {
-                title: "Landing Page",
-                pct: 30,
-                accent: a3,
-                badge: "Draft",
-                badgeBg: muted,
-                badgeFg: fgM,
-              },
-              {
-                title: "API Docs",
-                pct: 100,
-                accent: a4,
-                badge: "Complete",
-                badgeBg: "rgba(34,197,94,.15)",
-                badgeFg: "#16a34a",
-              },
-            ].map(({ title, pct, accent, badge, badgeBg, badgeFg }) => (
+          <span
+            className='grid size-7 place-items-center rounded-full text-[9px] font-bold'
+            title='Avery James'
+            style={{
+              background: get('--primary-container'),
+              color: get('--primary-container-foreground'),
+            }}>
+            AJ
+          </span>
+        </nav>
+      </header>
+      <main className='flex min-h-0 flex-1 flex-col gap-3 overflow-auto p-3'>
+        {view === 'landing' && (
+          <div className='flex shrink-0 flex-col gap-5'>
+            <section
+              className='relative flex min-h-80 items-end overflow-hidden rounded-md'
+              style={{ background: get('--primary-container') }}>
+              <img
+                src='https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1000&q=80'
+                alt='Bright collaborative workspace with desks and meeting areas'
+                className='absolute inset-0 h-full w-full object-cover'
+              />
               <div
-                key={title}
+                className='relative w-full p-5'
                 style={{
-                  background: card,
-                  border: `1px solid ${border}`,
-                  borderRadius: 6,
-                  overflow: "hidden",
-                }}
-              >
-                <div className="h-1" style={{ background: accent }} />
-                <div className="p-2">
-                  <div className="mb-1 font-bold text-[10px]">{title}</div>
-                  <div
-                    className="rounded mb-1.5 h-1"
-                    style={{ background: muted }}
-                  >
-                    <div
-                      style={{
-                        width: `${pct}%`,
-                        height: "100%",
-                        background: accent,
-                        borderRadius: 3,
-                      }}
-                    />
-                  </div>
-                  <span
-                    className="rounded text-[8.5px] font-semibold"
-                    style={{
-                      background: badgeBg,
-                      color: badgeFg,
-                      padding: "1px 5px",
+                  background: `${get('--primary-container')}ed`,
+                  color: get('--primary-container-foreground'),
+                }}>
+                <span className='text-[10px] font-semibold'>A shared home for ambitious teams</span>
+                <h3 className='mt-2 font-display text-3xl font-bold'>Orbit</h3>
+                <p className='mt-2 max-w-sm text-[12px] leading-relaxed'>
+                  Bring projects, conversations and progress together. Less busywork. More room for
+                  your best work.
+                </p>
+                <div className='mt-4 flex flex-wrap gap-2'>
+                  <button
+                    type='button'
+                    onClick={() => {
+                      setView('projects');
+                      setCreating(true);
                     }}
-                  >
-                    {badge}
-                  </span>
+                    className='h-8 cursor-pointer rounded-md px-3 text-[11px] font-semibold'
+                    style={primary}>
+                    Get started
+                    <ArrowUpRight className='ml-1 inline size-3' />
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() =>
+                      document
+                        .getElementById(`preview-pricing-${mode}`)
+                        ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                    }
+                    className='h-8 cursor-pointer rounded-md border px-3 text-[11px] font-semibold'
+                    style={secondary}>
+                    View pricing
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Alerts */}
-          <div
-            className="rounded flex gap-1.5 mb-1.5 px-2.5 py-2"
-            style={{
-              background: "rgba(59,130,246,.1)",
-              border: "1px solid rgba(59,130,246,.4)",
-            }}
-          >
-            <span className="text-[11px]">ℹ</span>
-            <span className="text-[9.5px]">
-              <strong>v3.2 available</strong> — Performance improvements and new
-              exports.
-            </span>
-          </div>
-          <div
-            className="rounded flex gap-1.5 px-2.5 py-2"
-            style={{
-              background: "rgba(34,197,94,.1)",
-              border: "1px solid rgba(34,197,94,.4)",
-            }}
-          >
-            <span className="text-[11px]">✓</span>
-            <span className="text-[9.5px]">
-              <strong>Deployment successful</strong> — All checks passed.
-            </span>
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div>
-          <div
-            style={{
-              background: cardR,
-              border: `1px solid ${border}`,
-              borderRadius: 6,
-              padding: 9,
-              marginBottom: 7,
-            }}
-          >
-            <div className="font-bold text-[10px] mb-2">Quick Actions</div>
-            {/* Input */}
+            </section>
             <div
-              style={{
-                background: input,
-                border: `1px solid ${border}`,
-                borderRadius: 4,
-                padding: "4px 6px",
-                fontSize: 9.5,
-                color: fgM,
-                marginBottom: 5,
-                outline: `2px solid ${ring}`,
-              }}
-            >
-              Search…
-            </div>
-            <button className="w-full mb-1 text-center" style={{ ...BtnPri }}>
-              New Project
-            </button>
-            <div className="text-center" style={{ ...BtnGhost }}>
-              Import
-            </div>
-          </div>
-
-          {/* Button showcase */}
-          <div
-            style={{
-              background: cardR,
-              border: `1px solid ${border}`,
-              borderRadius: 6,
-              padding: 9,
-              marginBottom: 7,
-            }}
-          >
-            <div className="mb-1.5 font-bold text-[10px]">Buttons</div>
-            <div className="flex-col flex gap-1">
-              <button className="text-center" style={{ ...BtnPri }}>
-                Primary
-              </button>
-              <div className="text-center" style={{ ...BtnSec }}>
-                Secondary
+              className='flex flex-wrap items-center justify-between gap-3 border-b pb-4 text-[10px]'
+              style={{ color: get('--muted-foreground'), borderColor: get('--border') }}>
+              <span>Trusted by teams that move work forward</span>
+              <div className='flex gap-4 font-display text-sm font-bold'>
+                <span>Acme</span>
+                <span>Capsule</span>
+                <span>Northstar</span>
               </div>
-              <div className="text-center" style={{ ...BtnGhost }}>
-                Ghost
+            </div>
+            <section className='flex flex-col gap-3'>
+              <h4 className='font-display text-lg font-bold'>Everything in one place</h4>
+              <div className='grid grid-cols-1 gap-3 @min-[28rem]/workspace:grid-cols-3'>
+                {[
+                  {
+                    icon: Layers,
+                    name: 'Project clarity',
+                    copy: 'Plans, milestones and owners. A clear path from idea to launch.',
+                  },
+                  {
+                    icon: CheckCircle2,
+                    name: 'Shared momentum',
+                    copy: 'See what is moving, what is done and where your team needs a hand.',
+                  },
+                  {
+                    icon: Clock3,
+                    name: 'Fewer check-ins',
+                    copy: 'Updates stay attached to the work. Everyone stays in the loop.',
+                  },
+                ].map(({ icon: Icon, name, copy }) => (
+                  <div key={name} className='flex flex-col gap-2'>
+                    <Icon className='size-5' style={{ color: get('--primary') }} />
+                    <span className='text-[12px] font-semibold'>{name}</span>
+                    <p
+                      className='text-[10px] leading-relaxed'
+                      style={{ color: get('--muted-foreground') }}>
+                      {copy}
+                    </p>
+                  </div>
+                ))}
               </div>
-              <button className="text-center" style={{ ...BtnDes }}>
-                Destructive
+            </section>
+            <section
+              id={`preview-pricing-${mode}`}
+              className='flex flex-col gap-3 border-t pt-4'
+              style={{ borderColor: get('--border') }}>
+              <div className='flex flex-wrap items-center justify-between gap-2'>
+                <h4 className='font-display text-lg font-bold'>A plan for your team</h4>
+                <div
+                  role='group'
+                  aria-label='Pricing cadence'
+                  className='flex gap-1 rounded-md border p-0.5'
+                  style={{ borderColor: get('--border') }}>
+                  {[false, true].map((annual) => (
+                    <button
+                      key={String(annual)}
+                      type='button'
+                      aria-pressed={annualBilling === annual}
+                      onClick={() => setAnnualBilling(annual)}
+                      className='h-6 cursor-pointer rounded-sm px-2 text-[10px]'
+                      style={
+                        annualBilling === annual ? primary : { color: get('--muted-foreground') }
+                      }>
+                      {annual ? 'Yearly' : 'Monthly'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className='grid grid-cols-1 gap-3 @min-[24rem]/workspace:grid-cols-2'>
+                {[
+                  {
+                    name: 'Starter',
+                    price: 'Free',
+                    details: 'For personal projects and small teams',
+                    action: 'Start free',
+                  },
+                  {
+                    name: 'Team',
+                    price: `$${annualBilling ? 12 : 16}`,
+                    details: 'Per member / month',
+                    action: 'Start Team plan',
+                  },
+                ].map((plan) => (
+                  <div
+                    key={plan.name}
+                    className='flex flex-col gap-3 rounded-md border p-4'
+                    style={{
+                      background: get('--card'),
+                      color: get('--card-foreground'),
+                      borderColor: plan.name === 'Team' ? get('--primary') : get('--border'),
+                    }}>
+                    <span className='text-xs font-semibold'>{plan.name}</span>
+                    <span className='font-display text-2xl font-bold'>{plan.price}</span>
+                    <p className='text-[10px]' style={{ color: get('--muted-foreground') }}>
+                      {plan.details}
+                    </p>
+                    <div className='flex flex-col gap-2 text-[10px]'>
+                      {[
+                        'Unlimited projects',
+                        'Shared activity',
+                        plan.name === 'Team'
+                          ? 'Advanced team permissions'
+                          : 'Up to 3 collaborators',
+                      ].map((feature) => (
+                        <span key={feature} className='flex items-center gap-1.5'>
+                          <Check className='size-3' style={{ color: get('--primary') }} />
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                    <button
+                      type='button'
+                      onClick={() => {
+                        setView('projects');
+                        setCreating(true);
+                      }}
+                      className='mt-auto h-8 cursor-pointer rounded-md border px-3 text-[11px] font-semibold'
+                      style={plan.name === 'Team' ? primary : secondary}>
+                      {plan.action}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
+        {view === 'settings' && (
+          <form
+            className='flex shrink-0 flex-col gap-4'
+            onSubmit={(event) => {
+              event.preventDefault();
+              setSettingsSaved(true);
+            }}>
+            <div className='flex items-center justify-between gap-3'>
+              <div>
+                <h3 className='font-display text-xl font-bold'>Workspace settings</h3>
+                <p className='mt-1 text-[10px]' style={{ color: get('--muted-foreground') }}>
+                  Profile and team preferences
+                </p>
+              </div>
+              <span
+                className='grid size-9 shrink-0 place-items-center rounded-full text-[11px] font-bold'
+                style={{
+                  background: get('--primary-container'),
+                  color: get('--primary-container-foreground'),
+                }}>
+                AJ
+              </span>
+            </div>
+            <section
+              className='flex flex-col gap-3 border-t pt-4'
+              style={{ borderColor: get('--border') }}>
+              <h4 className='text-[12px] font-semibold'>Profile</h4>
+              <div className='grid grid-cols-1 gap-3 @min-[28rem]/workspace:grid-cols-2'>
+                {[
+                  { label: 'Full name', value: profileName, set: setProfileName, type: 'text' },
+                  {
+                    label: 'Email address',
+                    value: profileEmail,
+                    set: setProfileEmail,
+                    type: 'email',
+                  },
+                  {
+                    label: 'Workspace name',
+                    value: workspaceName,
+                    set: setWorkspaceName,
+                    type: 'text',
+                  },
+                ].map((field) => (
+                  <label key={field.label} className='flex min-w-0 flex-col gap-1.5 text-[10px]'>
+                    {field.label}
+                    <input
+                      type={field.type}
+                      required
+                      value={field.value}
+                      onChange={(event) => {
+                        field.set(event.target.value);
+                        setSettingsSaved(false);
+                      }}
+                      className='h-9 min-w-0 rounded-md border px-2 text-[11px] outline-none focus-visible:ring-2'
+                      style={
+                        {
+                          background: get('--input'),
+                          color: get('--foreground'),
+                          borderColor: get('--border'),
+                          '--tw-ring-color': get('--ring'),
+                        } as React.CSSProperties
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+            </section>
+            <section
+              className='flex flex-col gap-3 border-t pt-4'
+              style={{ borderColor: get('--border') }}>
+              <h4 className='text-[12px] font-semibold'>Notifications</h4>
+              {(
+                [
+                  {
+                    id: 'updates',
+                    label: 'Project updates',
+                    detail: 'Changes to projects you follow',
+                  },
+                  {
+                    id: 'digest',
+                    label: 'Weekly digest',
+                    detail: 'A summary of your team activity',
+                  },
+                ] as const
+              ).map((option) => (
+                <label
+                  key={option.id}
+                  className='flex cursor-pointer items-center justify-between gap-3'>
+                  <span className='flex flex-col gap-1'>
+                    <span className='text-[11px] font-medium'>{option.label}</span>
+                    <span className='text-[10px]' style={{ color: get('--muted-foreground') }}>
+                      {option.detail}
+                    </span>
+                  </span>
+                  <input
+                    type='checkbox'
+                    checked={notifications[option.id]}
+                    onChange={(event) => {
+                      setNotifications((previous) => ({
+                        ...previous,
+                        [option.id]: event.target.checked,
+                      }));
+                      setSettingsSaved(false);
+                    }}
+                    style={{ accentColor: get('--primary') }}
+                  />
+                </label>
+              ))}
+            </section>
+            <div
+              className='flex items-center justify-between gap-3 border-t pt-3'
+              style={{ borderColor: get('--border') }}>
+              <span role='status' className='text-[10px]' style={{ color: utility.success[mode] }}>
+                {settingsSaved ? 'Preferences saved' : 'Changes apply to this workspace'}
+              </span>
+              <button
+                type='submit'
+                className='h-8 shrink-0 cursor-pointer rounded-md px-3 text-[11px] font-semibold'
+                style={primary}>
+                {settingsSaved ? 'Saved' : 'Save changes'}
               </button>
             </div>
-          </div>
-
-          {/* Error card */}
-          <div
-            style={{
-              background: "rgba(239,68,68,.08)",
-              border: `1px solid ${des}`,
-              borderRadius: 6,
-              padding: 8,
-            }}
-          >
-            <div className="text-[9.5px] font-bold mb-1" style={{ color: des }}>
-              ⚠ API limit reached
+            <section
+              className='flex flex-col gap-3 border-t pt-4'
+              style={{ borderColor: get('--border') }}>
+              <h4 className='text-[12px] font-semibold' style={{ color: get('--destructive') }}>
+                Danger zone
+              </h4>
+              <div
+                className='flex flex-wrap items-center justify-between gap-3 rounded-md border p-3'
+                style={{
+                  background: get('--destructive-subtle'),
+                  borderColor: get('--destructive'),
+                }}>
+                <div className='flex flex-col gap-1'>
+                  <span className='text-[11px] font-medium'>Reset workspace</span>
+                  <span className='text-[10px]' style={{ color: get('--muted-foreground') }}>
+                    Restore the sample projects and defaults.
+                  </span>
+                </div>
+                {resetRequested ? (
+                  <div className='flex gap-2'>
+                    <button
+                      type='button'
+                      onClick={() => setResetRequested(false)}
+                      className='h-8 cursor-pointer rounded-md border px-2 text-[10px]'
+                      style={secondary}>
+                      Keep workspace
+                    </button>
+                    <button
+                      type='button'
+                      onClick={() => {
+                        setProjects(PREVIEW_PROJECTS);
+                        setSelected([]);
+                        setCreating(false);
+                        setProjectName('');
+                        setSearch('');
+                        setFilter('all');
+                        setMenuId(null);
+                        setProfileName('Avery James');
+                        setProfileEmail('avery@orbit.design');
+                        setWorkspaceName('Design studio');
+                        setNotifications({ updates: true, digest: false });
+                        setSettingsSaved(false);
+                        setResetRequested(false);
+                      }}
+                      className='h-8 cursor-pointer rounded-md px-2 text-[10px] font-semibold'
+                      style={{
+                        background: get('--destructive'),
+                        color: get('--destructive-foreground'),
+                      }}>
+                      Confirm reset
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type='button'
+                    onClick={() => setResetRequested(true)}
+                    className='h-8 cursor-pointer rounded-md border px-2 text-[10px] font-semibold'
+                    style={{ color: get('--destructive'), borderColor: get('--destructive') }}>
+                    Reset workspace
+                  </button>
+                )}
+              </div>
+            </section>
+          </form>
+        )}
+        {(view === 'projects' || view === 'activity') && (
+          <>
+            <div className='flex flex-wrap items-start justify-between gap-3'>
+              <div>
+                <div
+                  className='mb-1 hidden text-[10px] @min-[34rem]/workspace:block'
+                  style={{ color: get('--muted-foreground') }}>
+                  Workspace / {view === 'projects' ? 'Projects' : 'Activity'}
+                </div>
+                <h3 className='font-display text-xl font-bold'>
+                  {view === 'projects' ? 'Projects' : 'Team activity'}
+                </h3>
+              </div>
+              <button
+                type='button'
+                onClick={() => {
+                  setCreating(true);
+                  setView('projects');
+                }}
+                className='inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md px-3 text-[11px] font-semibold outline-none focus-visible:ring-2 focus-visible:ring-offset-1'
+                style={primary}>
+                <Plus className='size-3.5' />
+                New project
+              </button>
             </div>
-            <div className="mb-1.5 text-2.5">Upgrade to continue.</div>
-            <button
-              className="w-full text-2.5 text-center"
-              style={{ ...BtnDes }}
-            >
-              Upgrade now
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div
+            <div className='grid grid-cols-3 gap-2'>
+              {[
+                { label: 'Active projects', value: active },
+                { label: 'Completion', value: `${average}%` },
+                { label: 'Needs review', value: blocked },
+              ].map((metric) => (
+                <div
+                  key={metric.label}
+                  className='flex min-w-0 flex-col gap-2 rounded-md border p-2.5 @min-[28rem]/workspace:flex-row @min-[28rem]/workspace:items-center @min-[28rem]/workspace:justify-between'
+                  style={{
+                    background: get('--card'),
+                    color: get('--card-foreground'),
+                    borderColor: get('--border'),
+                  }}>
+                  <span className='block text-[10px]' style={{ color: get('--muted-foreground') }}>
+                    {metric.label}
+                  </span>
+                  <span className='block font-display text-xl leading-none font-bold tabular-nums'>
+                    {metric.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+            {creating && (
+              <form
+                className='flex flex-col gap-3 rounded-md border p-3'
+                style={{
+                  background: get('--popover'),
+                  color: get('--popover-foreground'),
+                  borderColor: get('--border-strong'),
+                }}
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (!projectName.trim()) return;
+                  setProjects((previous) => [
+                    ...previous,
+                    {
+                      id: crypto.randomUUID(),
+                      name: projectName.trim(),
+                      category: 'Design / New project',
+                      status: 'Active',
+                      progress: 0,
+                      owner: 'AJ',
+                      due: 'Not set',
+                    },
+                  ]);
+                  setProjectName('');
+                  setCreating(false);
+                  setSearch('');
+                  setFilter('all');
+                }}>
+                <div className='flex items-center justify-between gap-2'>
+                  <span className='text-xs font-semibold'>Create project</span>
+                  <button
+                    type='button'
+                    title='Cancel new project'
+                    aria-label='Cancel new project'
+                    onClick={() => {
+                      setCreating(false);
+                      setProjectName('');
+                    }}
+                    className='cursor-pointer rounded-sm p-1'>
+                    <X className='size-3.5' />
+                  </button>
+                </div>
+                <label className='flex flex-col gap-1.5 text-[11px]'>
+                  Project name
+                  <input
+                    value={projectName}
+                    onChange={(event) => setProjectName(event.target.value)}
+                    autoFocus
+                    className='h-8 w-full rounded border px-2 text-xs outline-none'
+                    style={{
+                      background: get('--input'),
+                      color: get('--foreground'),
+                      borderColor: get('--border'),
+                      outline: `2px solid ${get('--ring')}`,
+                    }}
+                  />
+                </label>
+                <div className='flex justify-end gap-2'>
+                  <button
+                    type='button'
+                    onClick={() => {
+                      setCreating(false);
+                      setProjectName('');
+                    }}
+                    className='h-8 cursor-pointer rounded-md border px-3 text-[11px] font-semibold'
+                    style={secondary}>
+                    Cancel
+                  </button>
+                  <button
+                    type='submit'
+                    disabled={!projectName.trim()}
+                    className='h-8 cursor-pointer rounded-md px-3 text-[11px] font-semibold disabled:opacity-50'
+                    style={primary}>
+                    Create project
+                  </button>
+                </div>
+              </form>
+            )}
+            {view === 'projects' ? (
+              <>
+                <div
+                  className='flex flex-wrap items-center justify-between gap-3 border-b pb-3'
+                  style={{ borderColor: get('--border') }}>
+                  <div className='flex gap-3' role='group' aria-label='Project filters'>
+                    {(
+                      [
+                        { id: 'all', label: 'All projects' },
+                        { id: 'progress', label: 'In progress' },
+                        { id: 'complete', label: 'Completed' },
+                      ] as const
+                    ).map((item) => (
+                      <button
+                        key={item.id}
+                        type='button'
+                        aria-pressed={filter === item.id}
+                        onClick={() => setFilter(item.id)}
+                        className='cursor-pointer text-[10px] font-semibold'
+                        style={{
+                          color: filter === item.id ? get('--primary') : get('--muted-foreground'),
+                        }}>
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div
+                    className='flex h-8 w-full items-center gap-2 rounded-md border px-2 @min-[28rem]/workspace:w-40'
+                    style={{
+                      background: get('--input'),
+                      borderColor: get('--border'),
+                      outline: searchFocused ? `2px solid ${get('--ring')}` : undefined,
+                    }}>
+                    <Search
+                      className='size-3.5 shrink-0'
+                      style={{ color: get('--muted-foreground') }}
+                    />
+                    <input
+                      type='search'
+                      aria-label='Search projects'
+                      placeholder='Search projects'
+                      value={search}
+                      onChange={(event) => setSearch(event.target.value)}
+                      onFocus={() => setSearchFocused(true)}
+                      onBlur={() => setSearchFocused(false)}
+                      className='w-full min-w-0 bg-transparent text-[11px] outline-none'
+                    />
+                  </div>
+                </div>
+                {selected.length > 0 && (
+                  <div
+                    className='flex items-center justify-between gap-3 rounded-md p-2.5 text-[11px]'
+                    style={{
+                      background: get('--destructive-subtle'),
+                      color: get('--destructive'),
+                    }}>
+                    <span>{selected.length} selected</span>
+                    <button
+                      type='button'
+                      onClick={() => removeProjects(selected)}
+                      className='inline-flex cursor-pointer items-center gap-1.5 font-semibold'>
+                      <Trash2 className='size-3' />
+                      Delete selected
+                    </button>
+                  </div>
+                )}
+                <div
+                  className='shrink-0 overflow-hidden rounded-md border'
+                  style={{
+                    background: get('--card'),
+                    color: get('--card-foreground'),
+                    borderColor: get('--border'),
+                  }}>
+                  <div
+                    className='grid grid-cols-[1.25rem_minmax(0,1fr)_4.5rem_2rem] items-center gap-2 border-b px-3 py-2 text-[9px] font-semibold @min-[30rem]/workspace:grid-cols-[1.25rem_minmax(0,1fr)_4.5rem_4rem_2rem]'
+                    style={{
+                      background: get('--card-raised'),
+                      color: get('--muted-foreground'),
+                      borderColor: get('--border'),
+                    }}>
+                    <input
+                      type='checkbox'
+                      aria-label='Select all projects'
+                      checked={
+                        visible.length > 0 &&
+                        visible.every((project) => selected.includes(project.id))
+                      }
+                      onChange={(event) =>
+                        setSelected(
+                          event.target.checked
+                            ? [...new Set([...selected, ...visible.map((project) => project.id)])]
+                            : selected.filter(
+                                (id) => !visible.some((project) => project.id === id),
+                              ),
+                        )
+                      }
+                      style={{ accentColor: get('--primary') }}
+                    />
+                    <span>Project</span>
+                    <span>Status</span>
+                    <span className='hidden @min-[30rem]/workspace:block'>Due date</span>
+                    <span />
+                  </div>
+                  {visible.map((project, index) => (
+                    <div
+                      key={project.id}
+                      data-preview-project={project.id}
+                      className='grid grid-cols-[1.25rem_minmax(0,1fr)_4.5rem_2rem] items-center gap-2 border-b px-3 py-1.5 last:border-b-0 @min-[30rem]/workspace:grid-cols-[1.25rem_minmax(0,1fr)_4.5rem_4rem_2rem]'
+                      style={{
+                        borderColor: get('--border'),
+                        background: selected.includes(project.id) ? get('--accent') : undefined,
+                        color: selected.includes(project.id)
+                          ? get('--accent-foreground')
+                          : undefined,
+                      }}>
+                      <input
+                        type='checkbox'
+                        aria-label={`Select ${project.name}`}
+                        checked={selected.includes(project.id)}
+                        onChange={(event) =>
+                          setSelected(
+                            event.target.checked
+                              ? [...selected, project.id]
+                              : selected.filter((id) => id !== project.id),
+                          )
+                        }
+                        style={{ accentColor: get('--primary') }}
+                      />
+                      <div className='flex min-w-0 flex-col gap-1'>
+                        <div className='flex min-w-0 items-center gap-2'>
+                          <span
+                            className='truncate text-[11px] leading-tight font-semibold'
+                            title={project.name}>
+                            {project.name}
+                          </span>
+                          <span
+                            className='ml-auto hidden size-4 shrink-0 items-center justify-center rounded-full text-[8px] font-bold @min-[28rem]/workspace:flex'
+                            title={project.owner}
+                            style={{
+                              background:
+                                slots[index % slots.length]?.color.hex ?? get('--primary'),
+                              color: textColor(
+                                hexToRgb(
+                                  slots[index % slots.length]?.color.hex ?? get('--primary'),
+                                ),
+                              ),
+                            }}>
+                            {project.owner}
+                          </span>
+                        </div>
+                        <div className='flex min-w-0 items-center gap-2'>
+                          <span
+                            className='min-w-0 flex-1 truncate text-[9px] leading-none'
+                            style={{ color: get('--muted-foreground') }}>
+                            {project.category}
+                          </span>
+                          <div
+                            className='hidden h-1 w-10 shrink-0 overflow-hidden rounded-full @min-[28rem]/workspace:block'
+                            style={{ background: get('--muted') }}>
+                            <div
+                              className='h-full rounded-full'
+                              style={{
+                                width: `${project.progress}%`,
+                                background: get('--primary'),
+                              }}
+                            />
+                          </div>
+                          <span
+                            className='text-[8px] tabular-nums'
+                            style={{ color: get('--muted-foreground') }}>
+                            {project.progress}%
+                          </span>
+                        </div>
+                      </div>
+                      <span
+                        className='rounded px-1.5 py-1 text-center text-[9px] font-semibold'
+                        style={statusStyle(project.status)}>
+                        {project.status === 'Complete'
+                          ? 'Done'
+                          : project.status === 'Review'
+                            ? 'In review'
+                            : project.status}
+                      </span>
+                      <span
+                        className='hidden text-[10px] @min-[30rem]/workspace:block'
+                        style={{ color: get('--muted-foreground') }}>
+                        {project.due}
+                      </span>
+                      <Popover
+                        open={menuId === project.id}
+                        onOpenChange={(open) => setMenuId(open ? project.id : null)}>
+                        <PopoverTrigger
+                          aria-label={`Actions for ${project.name}`}
+                          title={`Actions for ${project.name}`}
+                          className='grid size-7 cursor-pointer place-items-center rounded-sm'
+                          style={{ color: get('--muted-foreground') }}>
+                          <MoreHorizontal className='size-4' />
+                        </PopoverTrigger>
+                        <PopoverContent
+                          aria-label={`${project.name} actions`}
+                          className='w-44 p-1.5'
+                          style={{
+                            background: get('--popover'),
+                            color: get('--popover-foreground'),
+                            borderColor: get('--border'),
+                          }}>
+                          <button
+                            type='button'
+                            disabled={project.status === 'Complete'}
+                            onClick={() => {
+                              setProjects((previous) =>
+                                previous.map((item) =>
+                                  item.id === project.id
+                                    ? { ...item, status: 'Complete', progress: 100 }
+                                    : item,
+                                ),
+                              );
+                              setMenuId(null);
+                            }}
+                            className='flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-2 text-left text-[11px] disabled:opacity-50'>
+                            <CheckCircle2 className='size-3.5' />
+                            Mark complete
+                          </button>
+                          <button
+                            type='button'
+                            onClick={() => removeProjects([project.id])}
+                            className='flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-2 text-left text-[11px]'
+                            style={{ color: get('--destructive') }}>
+                            <Trash2 className='size-3.5' />
+                            Delete project
+                          </button>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  ))}
+                  {visible.length === 0 && (
+                    <div
+                      className='px-4 py-8 text-center text-xs'
+                      style={{ color: get('--muted-foreground') }}>
+                      No projects found.
+                    </div>
+                  )}
+                </div>
+                <div
+                  className='flex items-start gap-2 rounded-md border p-3'
+                  style={{
+                    background: utility.info[mode === 'light' ? 'subtle' : 'subtleDark'],
+                    color: utility.info[mode],
+                    borderColor: get('--border'),
+                  }}>
+                  <Clock3 className='mt-0.5 size-3.5 shrink-0' />
+                  <div className='flex min-w-0 flex-1 flex-col gap-1'>
+                    <span className='text-[11px] font-semibold'>Next team review</span>
+                    <span className='text-[10px]'>Today at 2:30 PM · Product & design</span>
+                  </div>
+                  <ArrowUpRight className='size-3.5 shrink-0' />
+                </div>
+              </>
+            ) : (
+              <div
+                className='flex flex-col gap-4 rounded-md border p-4'
+                style={{
+                  background: get('--card-raised'),
+                  color: get('--card-raised-foreground'),
+                  borderColor: get('--border'),
+                }}>
+                {projects.map((project) => (
+                  <div key={project.id} className='flex items-start gap-3'>
+                    <span
+                      className='grid size-7 shrink-0 place-items-center rounded-full'
+                      style={statusStyle(project.status)}>
+                      {project.status === 'Complete' ? (
+                        <Check className='size-3.5' />
+                      ) : (
+                        <Clock3 className='size-3.5' />
+                      )}
+                    </span>
+                    <div className='flex min-w-0 flex-col gap-1'>
+                      <span className='text-[11px] font-semibold'>{project.name}</span>
+                      <span className='text-[10px]' style={{ color: get('--muted-foreground') }}>
+                        {project.status === 'Complete'
+                          ? 'Completed and ready to archive'
+                          : `${project.owner} updated the project`}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </main>
+      <footer
+        className='flex shrink-0 items-center justify-between gap-3 border-t px-4 py-2.5 text-[9px]'
         style={{
-          background: surfD,
-          borderTop: `1px solid ${border}`,
-          padding: "6px 14px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <span className="text-2.5" style={{ color: fgM }}>
-          © 2025 Brand Inc.
+          background: get('--surface-dim'),
+          color: get('--muted-foreground'),
+          borderColor: get('--border'),
+        }}>
+        <span>{projects.length} projects · Team plan</span>
+        <span className='inline-flex items-center gap-1'>
+          <Check className='size-3' />
+          All changes saved
         </span>
-        <div className="items-center flex gap-1">
-          {[a1, a2, a3, a4].map((h, i) => (
-            <div
-              key={i}
-              className="rounded h-1.5"
-              style={{ width: 6, background: h }}
-            />
-          ))}
-        </div>
-      </div>
+      </footer>
     </div>
   );
 }
 
 // ─── Token editor row ─────────────────────────────────────────────────────────
+
+const TOKEN_ROW_COLUMNS =
+  'grid-cols-[minmax(9rem,1.4fr)_minmax(7rem,1fr)_minmax(7rem,1fr)_3.5rem_1.5rem]';
 
 function TokenRow({
   token,
@@ -514,7 +1113,7 @@ function TokenRow({
 }) {
   const isOverridden = !!overrides[token.name];
   const val = overrides[token.name]?.[mode] ?? token[mode];
-  const otherMode: Mode = mode === "light" ? "dark" : "light";
+  const otherMode: Mode = mode === 'light' ? 'dark' : 'light';
   const otherVal = overrides[token.name]?.[otherMode] ?? token[otherMode];
 
   const rgb = hexToRgb(val);
@@ -525,39 +1124,30 @@ function TokenRow({
 
   return (
     <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "180px 1fr 1fr 80px 28px",
-        gap: 6,
-        alignItems: "center",
-        padding: "5px 0",
-        borderBottom: "1px solid var(--color-secondary)",
-        background: isOverridden ? "rgba(99,102,241,.04)" : undefined,
-      }}
-    >
-      <div className="items-center flex gap-1">
-        {isOverridden && (
-          <span className="text-primary font-bold text-[8px]">✎</span>
-        )}
-        <code className="font-mono text-secondary-foreground overflow-ellipsis whitespace-nowrap overflow-hidden text-2.5">
+      className={`grid min-w-120 ${TOKEN_ROW_COLUMNS} items-center gap-1.5 border-b border-border py-2 ${isOverridden ? 'bg-accent/30' : ''}`}>
+      <div className='flex min-w-0 items-center gap-1'>
+        {isOverridden && <span className='text-[8px] font-bold text-primary'>✎</span>}
+        <code className='truncate font-mono text-[10px] text-foreground/80' title={token.name}>
           {token.name}
         </code>
       </div>
 
       {/* Active mode editable */}
       <HexInput
+        aria-label={`${mode} ${token.name}`}
         value={val}
         onChange={(hex) => onOverride(token.name, mode, hex)}
         showSwatch
-        className="min-w-0"
+        className='min-w-0'
       />
 
       {/* Other mode editable */}
       <HexInput
+        aria-label={`${otherMode} ${token.name}`}
         value={otherVal}
         onChange={(hex) => onOverride(token.name, otherMode, hex)}
         showSwatch
-        className="min-w-0"
+        className='min-w-0'
       />
 
       {/* Contrast badge */}
@@ -565,26 +1155,26 @@ function TokenRow({
         style={{
           fontSize: 8.5,
           fontWeight: 700,
-          padding: "2px 5px",
+          padding: '2px 5px',
           borderRadius: 3,
-          textAlign: "center",
-          background: passes ? "rgba(34,197,94,.15)" : "rgba(239,68,68,.12)",
-          color: passes ? "#16a34a" : "#dc2626",
+          textAlign: 'center',
+          background: passes ? 'rgba(34,197,94,.15)' : 'rgba(239,68,68,.12)',
+          color: passes ? '#16a34a' : '#dc2626',
         }}
-        title={`Best contrast: ${bestRatio.toFixed(1)}:1`}
-      >
+        title={`Best contrast: ${bestRatio.toFixed(1)}:1`}>
         {passes ? `✓ ${bestRatio.toFixed(1)}` : `✗ ${bestRatio.toFixed(1)}`}
       </span>
 
       {/* Revert */}
       {isOverridden && (
-        <button
+        <Button
+          variant='ghost'
+          size='icon-xs'
+          aria-label={`Revert ${token.name}`}
           onClick={() => onRevert(token.name)}
-          title="Revert to generated"
-          className="bg-transparent border-none cursor-pointer text-[11px] text-muted-foreground p-0"
-        >
-          ↩
-        </button>
+          title='Revert to generated'>
+          <RotateCcw className='size-3' />
+        </Button>
       )}
     </div>
   );
@@ -592,100 +1182,154 @@ function TokenRow({
 
 // ─── Utility token row ────────────────────────────────────────────────────────
 
-function UtilityTokenRow({
+export function UtilityThemeCard({
   role,
   utility,
   mode,
 }: {
   role: UtilityRole;
-  utility: ReturnType<typeof deriveThemeTokens>["utility"];
+  utility: ReturnType<typeof deriveThemeTokens>['utility'];
   mode: Mode;
 }) {
   const u = utility[role];
-  const color = mode === "light" ? u.light : u.dark;
-  const subtle = mode === "light" ? u.subtle : u.subtleDark;
+  const color = mode === 'light' ? u.light : u.dark;
   const tc = textColor(hexToRgb(color));
+  const [copied, setCopied] = useState<string | null>(null);
+  const copyColor = async (hex: string, key: string) => {
+    try {
+      await navigator.clipboard.writeText(hex);
+      setCopied(key);
+      setTimeout(() => setCopied(null), 1400);
+    } catch {
+      setCopied(null);
+    }
+  };
 
   return (
-    <div className="flex items-center gap-2 py-1 px-0 border-b border-muted">
-      <div
-        className="rounded flex items-center justify-center shrink-0 text-[10px] font-bold"
-        style={{ width: 24, height: 24, background: color, color: tc }}
-      >
-        {role[0].toUpperCase()}
-      </div>
-      <span className="capitalize text-secondary-foreground font-semibold text-[10px] flex-1">
-        {role}
-      </span>
-      <div className="items-center flex gap-1.5">
-        {[
-          { label: mode, hex: color },
-          { label: "subtle", hex: subtle },
-          { label: "base", hex: u.base },
-        ].map(({ label, hex }) => (
-          <div
-            key={label}
-            title={`${label}: ${hex}`}
-            className="items-center flex gap-1"
-          >
-            <div
-              className="rounded w-3.5 h-3.5"
-              style={{
-                background: hex,
-                border: "1px solid rgba(128,128,128,.2)",
-              }}
+    <article
+      aria-label={`${role} utility colors`}
+      className='flex min-w-0 flex-col gap-3 rounded-md border border-border bg-card p-3'>
+      <div className='flex min-w-0 items-center gap-3'>
+        <span
+          className='grid size-9 shrink-0 place-items-center rounded-md border border-foreground/10 text-sm font-bold'
+          style={{ background: color, color: tc }}>
+          {role[0].toUpperCase()}
+        </span>
+        <div className='flex min-w-0 flex-1 flex-col gap-1'>
+          <h3 className={`${TYPE.title} capitalize`}>{role}</h3>
+          <span className={TYPE.meta}>{mode === 'light' ? 'Light' : 'Dark'} accent</span>
+        </div>
+        <div className='flex shrink-0 flex-col items-end gap-1'>
+          <span className={TYPE.label}>Base</span>
+          <button
+            type='button'
+            aria-label={`Copy ${role} base ${u.base}`}
+            title='Copy base color'
+            onClick={() => {
+              void copyColor(u.base, 'base');
+            }}
+            className='flex cursor-pointer items-center gap-2 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring'>
+            <span
+              className='size-4 rounded-sm border border-border'
+              style={{ background: u.base }}
             />
-            <span className="font-mono text-muted-foreground text-[8px]">
-              {label}
-            </span>
-          </div>
-        ))}
+            <span className={TYPE.mono}>{u.base.toUpperCase()}</span>
+            {copied === 'base' ? (
+              <Check className='size-3 text-primary' />
+            ) : (
+              <Copy className='size-3 text-muted-foreground' />
+            )}
+          </button>
+        </div>
       </div>
-    </div>
+      <div className='grid flex-1 grid-cols-2 gap-3 border-t border-border pt-3'>
+        {(['light', 'dark'] as const).map((theme) => {
+          const accent = u[theme];
+          const surface = theme === 'light' ? u.subtle : u.subtleDark;
+          return (
+            <div key={theme} className='flex min-w-0 flex-col gap-2'>
+              <span className={TYPE.label}>{theme === 'light' ? 'Light' : 'Dark'}</span>
+              <div
+                data-utility-preview={theme}
+                className='flex min-h-12 flex-1 items-center justify-between gap-2 rounded-md border border-foreground/10 p-2'
+                style={{ background: surface, color: accent }}>
+                <span
+                  className='rounded-sm px-2 py-1 text-[10px] font-semibold capitalize'
+                  style={{ background: accent, color: textColor(hexToRgb(accent)) }}>
+                  {role}
+                </span>
+                <span className='font-display text-base font-semibold'>Aa</span>
+              </div>
+              <button
+                type='button'
+                aria-label={`Copy ${role} ${theme} ${accent}`}
+                title={`Copy ${theme} accent`}
+                onClick={() => {
+                  void copyColor(accent, theme);
+                }}
+                className='flex min-w-0 cursor-pointer items-center justify-between gap-1 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring'>
+                <span className={TYPE.mono}>{accent.toUpperCase()}</span>
+                {copied === theme ? (
+                  <Check className='size-3 shrink-0 text-primary' />
+                ) : (
+                  <Copy className='size-3 shrink-0 text-muted-foreground' />
+                )}
+              </button>
+              <button
+                type='button'
+                aria-label={`Copy ${role} ${theme} subtle ${surface}`}
+                title={`Copy ${theme} subtle background`}
+                onClick={() => {
+                  void copyColor(surface, `${theme}-subtle`);
+                }}
+                className='flex min-w-0 cursor-pointer items-center justify-between gap-1 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring'>
+                <span className='text-[9px] text-muted-foreground'>Subtle</span>
+                <span className='font-mono text-[9px] text-muted-foreground'>
+                  {copied === `${theme}-subtle` ? 'Copied' : surface.toUpperCase()}
+                </span>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </article>
   );
 }
 
 // ─── Accessibility panel ──────────────────────────────────────────────────────
 
-function AccessibilityPanel({
-  tokens,
-  mode,
-}: {
-  tokens: SemanticToken[];
-  mode: Mode;
-}) {
+export function AccessibilityPanel({ tokens, mode }: { tokens: SemanticToken[]; mode: Mode }) {
   const pairs = [
-    { fg: "--foreground", bg: "--background", label: "Body text / page" },
+    { fg: '--foreground', bg: '--background', label: 'Body text / page' },
     {
-      fg: "--muted-foreground",
-      bg: "--background",
-      label: "Muted text / page",
+      fg: '--muted-foreground',
+      bg: '--background',
+      label: 'Muted text / page',
     },
-    { fg: "--foreground", bg: "--card", label: "Body text / card" },
+    { fg: '--card-foreground', bg: '--card', label: 'Body text / card' },
     {
-      fg: "--primary-foreground",
-      bg: "--primary",
-      label: "Primary button text",
-    },
-    {
-      fg: "--primary-container-foreground",
-      bg: "--primary-container",
-      label: "Container text",
+      fg: '--primary-foreground',
+      bg: '--primary',
+      label: 'Primary button text',
     },
     {
-      fg: "--secondary-foreground",
-      bg: "--secondary",
-      label: "Secondary button text",
+      fg: '--primary-container-foreground',
+      bg: '--primary-container',
+      label: 'Container text',
     },
     {
-      fg: "--destructive-foreground",
-      bg: "--destructive",
-      label: "Destructive text",
+      fg: '--secondary-foreground',
+      bg: '--secondary',
+      label: 'Secondary button text',
+    },
+    {
+      fg: '--destructive-foreground',
+      bg: '--destructive',
+      label: 'Destructive text',
     },
   ];
 
-  const get = (name: string) =>
-    tokens.find((t) => t.name === name)?.[mode] ?? "#888";
+  const get = (name: string) => tokens.find((t) => t.name === name)?.[mode] ?? '#888';
 
   const results = pairs.map(({ fg, bg, label }) => {
     const fgHex = get(fg),
@@ -698,113 +1342,145 @@ function AccessibilityPanel({
     return { label, fgHex, bgHex, ratio, level, lc };
   });
 
-  const passing = results.filter((r) => r.level !== "Fail").length;
-  const score = Math.round((passing / results.length) * 100);
+  const summaries = [
+    {
+      label: 'Text AA',
+      name: 'normal text AA',
+      count: results.filter((result) => result.ratio >= 4.5).length,
+    },
+    {
+      label: 'Text AAA',
+      name: 'normal text AAA',
+      count: results.filter((result) => result.ratio >= 7).length,
+    },
+    {
+      label: 'Large / UI',
+      name: 'large text AA',
+      count: results.filter((result) => result.ratio >= 3).length,
+    },
+  ];
+  const columns = 'grid-cols-[minmax(0,1fr)_3.25rem_2rem_3.75rem]';
+  const surface = get('--background');
+  const inspectorText = textColor(hexToRgb(surface));
+  const inspectorBorder = `color-mix(in oklch, ${inspectorText} 16%, transparent)`;
+  const ModeIcon = mode === 'light' ? Sun : Moon;
 
   return (
-    <div>
-      {/* Score badge */}
-      <div className="items-center mb-3 flex gap-3">
-        <div
-          style={{
-            width: 52,
-            height: 52,
-            borderRadius: 26,
-            flexShrink: 0,
-            background:
-              score >= 80
-                ? "rgba(34,197,94,.15)"
-                : score >= 50
-                  ? "rgba(234,179,8,.15)"
-                  : "rgba(239,68,68,.12)",
-            border: `2px solid ${score >= 80 ? "#16a34a" : score >= 50 ? "#a16207" : "#dc2626"}`,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+    <section
+      data-accessibility-mode={mode}
+      aria-label={`${mode} theme contrast`}
+      className='flex min-h-0 min-w-0 flex-col overflow-hidden rounded-md border'
+      style={
+        {
+          background: surface,
+          color: inspectorText,
+          borderColor: inspectorBorder,
+          '--foreground': inspectorText,
+          '--muted-foreground': `color-mix(in oklch, ${inspectorText} 65%, transparent)`,
+          '--border': inspectorBorder,
+        } as React.CSSProperties
+      }>
+      <div
+        className='flex shrink-0 items-center justify-between gap-3 border-b p-4'
+        style={{
+          background: `color-mix(in oklch, ${inspectorText} 5%, ${surface})`,
+          borderColor: inspectorBorder,
+        }}>
+        <div className='flex items-center gap-3'>
           <span
-            style={{
-              fontSize: 16,
-              fontWeight: 800,
-              color:
-                score >= 80 ? "#16a34a" : score >= 50 ? "#a16207" : "#dc2626",
-              lineHeight: 1,
-            }}
-          >
-            {score}%
+            className='grid size-9 shrink-0 place-items-center rounded-md border'
+            style={{ borderColor: inspectorBorder }}>
+            <ModeIcon className='size-4' />
           </span>
-          <span className="text-muted-foreground leading-[1.2] text-[7.5px]">
-            pairs AA
-          </span>
-        </div>
-        <div>
-          <div className="text-foreground font-bold text-[12px]">
-            {passing}/{results.length} pairs pass WCAG AA
-          </div>
-          <div className="text-muted-foreground leading-normal text-[10px]">
-            4.5:1 for body text · 3:1 for large text / UI
+          <div className='flex flex-col gap-1'>
+            <h3 className='font-display text-base leading-tight font-bold'>
+              {mode === 'light' ? 'Light theme' : 'Dark theme'}
+            </h3>
+            <span className={TYPE.meta}>7 contrast pairs</span>
           </div>
         </div>
+        <span className={TYPE.mono}>{surface.toUpperCase()}</span>
       </div>
-
-      {results.map(({ label, fgHex, bgHex, ratio, level, lc }) => {
-        const COLORS: Record<string, string> = {
-          AAA: "#16a34a",
-          AA: "#2563eb",
-          "AA Large": "#a16207",
-          Fail: "#dc2626",
-        };
-        const BG: Record<string, string> = {
-          AAA: "rgba(34,197,94,.14)",
-          AA: "rgba(59,130,246,.12)",
-          "AA Large": "rgba(234,179,8,.12)",
-          Fail: "rgba(239,68,68,.1)",
-        };
-        return (
+      <div className='grid shrink-0 grid-cols-3 gap-3 border-b border-border p-4'>
+        {summaries.map((summary) => (
           <div
-            key={label}
-            className="flex items-center border-b border-muted gap-2 py-1.5 px-0"
-          >
-            {/* Preview swatch */}
-            <div
-              className="rounded shrink-0 flex items-center justify-center"
-              style={{
-                width: 32,
-                height: 20,
-                background: bgHex,
-                border: "1px solid rgba(128,128,128,.2)",
-              }}
-            >
-              <div
-                className="w-4 h-1"
-                style={{ borderRadius: 1, background: fgHex }}
-              />
-            </div>
-            <span className="text-secondary-foreground text-2.5 flex-1">
-              {label}
-            </span>
-            <span className="font-mono text-muted-foreground text-2.5">
-              {ratio.toFixed(1)}:1
-            </span>
-            <span className="text-muted-foreground mr-0.5 text-2.5">
-              Lc{lc}
-            </span>
-            <span
-              className="text-[8px] font-bold rounded"
-              style={{
-                padding: "1px 5px",
-                background: BG[level],
-                color: COLORS[level],
-              }}
-            >
-              {level}
+            key={summary.name}
+            aria-label={`${mode} ${summary.name}`}
+            data-passing-count={summary.count}
+            className='flex flex-col gap-2'>
+            <span className={TYPE.label}>{summary.label}</span>
+            <span className={TYPE.stat}>
+              {summary.count}
+              <span className={`ml-1 ${TYPE.meta}`}>/ {results.length}</span>
             </span>
           </div>
-        );
-      })}
-    </div>
+        ))}
+      </div>
+      <div
+        className={`mx-4 grid shrink-0 ${columns} items-center gap-2 border-b border-border py-3 ${TYPE.label}`}>
+        <span>Token pairing</span>
+        <span className='text-right'>Ratio</span>
+        <span className='text-right' title='Absolute APCA contrast'>
+          |Lc|
+        </span>
+        <span className='text-right'>WCAG</span>
+      </div>
+      <div className='min-w-0 px-4 @4xl/design:min-h-0 @4xl/design:flex-1 @4xl/design:overflow-auto'>
+        {results.map(({ label, fgHex, bgHex, ratio, level, lc }) => {
+          const status =
+            level === 'AAA'
+              ? 'var(--success)'
+              : level === 'AA'
+                ? 'var(--primary)'
+                : level === 'AA Large'
+                  ? 'var(--warning)'
+                  : 'var(--destructive)';
+          return (
+            <div
+              key={label}
+              data-contrast-pair={label}
+              className={`grid ${columns} items-center gap-2 border-b border-border py-3 last:border-b-0`}>
+              <div className='flex min-w-0 items-center gap-2'>
+                <span
+                  role='img'
+                  aria-label={`${label} ${mode} contrast sample`}
+                  className='grid h-8 w-9 shrink-0 place-items-center rounded-sm border border-foreground/10 font-display text-base font-bold'
+                  style={{ background: bgHex, color: fgHex }}>
+                  Aa
+                </span>
+                <div className='flex min-w-0 flex-col gap-1'>
+                  <span className='truncate text-[11px] font-semibold' title={label}>
+                    {label}
+                  </span>
+                  <span
+                    className='truncate font-mono text-[9px] text-muted-foreground'
+                    title={`${fgHex.toUpperCase()} on ${bgHex.toUpperCase()}`}>
+                    {fgHex.toUpperCase()} / {bgHex.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+              <span className='text-right font-mono text-[10px] tabular-nums'>
+                {ratio.toFixed(2)}:1
+              </span>
+              <span className='text-right font-mono text-[10px] text-muted-foreground tabular-nums'>
+                {Math.round(lc)}
+              </span>
+              <span
+                className='justify-self-end rounded-sm px-1.5 py-1 text-[9px] leading-none font-semibold'
+                style={{
+                  color: `color-mix(in oklch, ${status} 55%, ${inspectorText})`,
+                  background: `color-mix(in oklch, ${status} 12%, transparent)`,
+                }}>
+                {level}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <p className={`shrink-0 border-t border-border px-4 py-3 ${TYPE.meta}`}>
+        AA 4.5:1 / AAA 7:1 / Large 3:1. APCA is experimental.
+      </p>
+    </section>
   );
 }
 
@@ -817,71 +1493,67 @@ function ExportPanel({
   tokens: ReturnType<typeof deriveThemeTokens>;
   utilityColors: UtilityColorSet;
 }) {
-  const [fmt, setFmt] = useState<ExportFormat>("css");
+  const [fmt, setFmt] = useState<ExportFormat>('css');
   const [copied, setCopied] = useState(false);
 
   const content = useMemo(() => {
     switch (fmt) {
-      case "css":
+      case 'css':
         return buildThemeCss(tokens);
-      case "tailwind3":
+      case 'tailwind3':
         return buildTailwindConfig(tokens, utilityColors);
-      case "tailwind4":
+      case 'tailwind4':
         return buildTailwindV4(tokens, utilityColors);
-      case "figma":
+      case 'figma':
         return buildFigmaTokens(tokens, utilityColors);
-      case "styledictionary":
+      case 'styledictionary':
         return buildStyleDictionary(tokens, utilityColors);
     }
   }, [fmt, tokens, utilityColors]);
 
   const TABS: { id: ExportFormat; label: string }[] = [
-    { id: "css", label: "CSS Vars" },
-    { id: "tailwind3", label: "Tailwind v3" },
-    { id: "tailwind4", label: "Tailwind v4" },
-    { id: "figma", label: "Figma" },
-    { id: "styledictionary", label: "Style Dict" },
+    { id: 'css', label: 'CSS Vars' },
+    { id: 'tailwind3', label: 'Tailwind v3' },
+    { id: 'tailwind4', label: 'Tailwind v4' },
+    { id: 'figma', label: 'Figma' },
+    { id: 'styledictionary', label: 'Style Dict' },
   ];
 
   const DESCRIPTIONS: Record<ExportFormat, string> = {
-    css: "Paste into your global stylesheet. Includes :root {} and .dark {} blocks.",
-    tailwind3:
-      "Merge into tailwind.config.js. Colors reference CSS vars for automatic dark mode.",
-    tailwind4: "Tailwind v4 CSS-first @theme {} block. Requires Tailwind v4+.",
-    figma: "Import via Tokens Studio plugin. Style Dictionary compatible.",
+    css: 'Paste into your global stylesheet. Includes :root {} and .dark {} blocks.',
+    tailwind3: 'Merge into tailwind.config.js. Colors reference CSS vars for automatic dark mode.',
+    tailwind4: 'Tailwind v4 CSS-first @theme {} block. Requires Tailwind v4+.',
+    figma: 'Import via Tokens Studio plugin. Style Dictionary compatible.',
     styledictionary:
-      "Amazon Style Dictionary format. Use with sd transform or any SD-compatible pipeline.",
+      'Amazon Style Dictionary format. Use with sd transform or any SD-compatible pipeline.',
   };
 
-  const copy = () => {
-    navigator.clipboard.writeText(content).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1400);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1400);
+    } catch {
+      setCopied(false);
+    }
   };
 
   return (
-    <div>
-      <div className="justify-between items-center flex-wrap mb-2.5 flex gap-1.5">
-        <div className="flex-wrap flex gap-1">
-          {TABS.map((t) => (
-            <Button
-              key={t.id}
-              variant={fmt === t.id ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setFmt(t.id)}
-            >
-              {t.label}
-            </Button>
-          ))}
-        </div>
-        <Button variant="ghost" size="sm" onClick={copy}>
-          {copied ? "✓ Copied" : "Copy"}
+    <div className='flex min-h-0 flex-1 flex-col gap-4'>
+      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3'>
+        <ToolSegments
+          value={fmt}
+          onValueChange={setFmt}
+          label='Design token export format'
+          items={TABS}
+        />
+        <Button variant='ghost' size='sm' onClick={copy}>
+          {copied ? <Check className='size-3.5' /> : <Copy className='size-3.5' />}
+          {copied ? 'Copied' : 'Copy'}
         </Button>
       </div>
-      <p className="text-muted-foreground mb-2 leading-relaxed text-[10.5px]">
-        {DESCRIPTIONS[fmt]}
-      </p>
-      <pre className="bg-secondary border border-border rounded p-2.5 text-[10px] leading-[1.7] text-muted-foreground whitespace-pre overflow-x-auto max-h-75 overflow-y-auto">
+      <p className={`shrink-0 ${TYPE.meta}`}>{DESCRIPTIONS[fmt]}</p>
+      <pre className='min-h-64 min-w-0 overflow-auto rounded-md border border-border bg-secondary p-4 font-mono text-[10px] leading-relaxed whitespace-pre text-muted-foreground @4xl/design:min-h-0 @4xl/design:flex-1'>
         {content}
       </pre>
     </div>
@@ -892,19 +1564,14 @@ function ExportPanel({
 
 export default function DesignSystemView() {
   const { slots, utilityColors } = useChromaStore();
-  const [mode, setMode] = useState<Mode>("light");
+  const [mode, setMode] = useState<Mode>('light');
   const [overrides, setOverrides] = useState<Overrides>({});
-  const [expandedGroup, setExpandedGroup] = useState<string | null>(
-    "Page Surfaces",
-  );
+  const [expandedGroup, setExpandedGroup] = useState<string | null>('Page Surfaces');
   const [activePanel, setActivePanel] = useState<
-    "tokens" | "utility" | "preview" | "accessibility" | "export"
-  >("preview");
+    'tokens' | 'utility' | 'preview' | 'accessibility' | 'export'
+  >('tokens');
 
-  const baseTokens = useMemo(
-    () => deriveThemeTokens(slots, utilityColors),
-    [slots, utilityColors],
-  );
+  const baseTokens = useMemo(() => deriveThemeTokens(slots, utilityColors), [slots, utilityColors]);
 
   const slotNames = useMemo(() => semanticSlotNames(slots), [slots]);
 
@@ -923,17 +1590,15 @@ export default function DesignSystemView() {
         ...prev,
         [name]: {
           light:
-            m === "light"
+            m === 'light'
               ? hex
               : (prev[name]?.light ??
                 baseTokens.semantic.find((t) => t.name === name)?.light ??
                 hex),
           dark:
-            m === "dark"
+            m === 'dark'
               ? hex
-              : (prev[name]?.dark ??
-                baseTokens.semantic.find((t) => t.name === name)?.dark ??
-                hex),
+              : (prev[name]?.dark ?? baseTokens.semantic.find((t) => t.name === name)?.dark ?? hex),
         },
       }));
     },
@@ -953,11 +1618,11 @@ export default function DesignSystemView() {
 
   if (!slots.length) {
     return (
-      <div className="flex-1 overflow-auto p-6">
-        <div className="mb-5">
+      <div className='min-h-0 flex-1 overflow-auto p-6'>
+        <div className='mb-5'>
           <h2>Design System Studio</h2>
         </div>
-        <p className="text-muted-foreground text-[12px]">
+        <p className='text-[12px] text-muted-foreground'>
           Generate a palette first to build your design system.
         </p>
       </div>
@@ -965,232 +1630,206 @@ export default function DesignSystemView() {
   }
 
   const PANELS: { id: typeof activePanel; label: string }[] = [
-    { id: "preview", label: "⬛ Preview" },
-    { id: "tokens", label: "⚙ Tokens" },
-    { id: "utility", label: "🎨 Utility" },
-    { id: "accessibility", label: "♿ Accessibility" },
-    { id: "export", label: "↗ Export" },
+    { id: 'preview', label: 'Preview' },
+    { id: 'tokens', label: 'Tokens' },
+    { id: 'utility', label: 'Utility' },
+    { id: 'accessibility', label: 'Accessibility' },
+    { id: 'export', label: 'Export' },
   ];
+  const tokenGroups = TOKEN_GROUPS.filter((group) =>
+    tokens.semantic.some((token) => group.ids.includes(token.name)),
+  );
+  const activeGroup = tokenGroups.find((group) => group.label === expandedGroup) ?? tokenGroups[0];
+  const groupTokens =
+    activeGroup?.ids.flatMap((name) => tokens.semantic.filter((token) => token.name === name)) ??
+    [];
 
   return (
-    <div className="flex-1 overflow-auto p-6">
-      <div className="mx-auto max-w-270">
-        {/* Header */}
-        <div className="mb-5">
-          <div className="justify-between items-start flex-wrap flex gap-2.5">
-            <div>
-              <h2>Design System Studio</h2>
-              <p>
-                Edit tokens, preview components in real time, check
-                accessibility, and export in any format. Palette slot{" "}
-                <strong>{slotNames[0] ?? "primary"}</strong> drives the primary
-                brand color.
-              </p>
-            </div>
-            <div className="items-center flex shrink-0 gap-1">
-              {(["light", "dark"] as const).map((m) => (
-                <Button
-                  key={m}
-                  variant={mode === m ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setMode(m)}
-                >
-                  {m === "light" ? "☀ Light" : "☾ Dark"}
-                </Button>
-              ))}
-              {overrideCount > 0 && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={revertAll}
-                  title="Revert all token overrides"
-                >
-                  ↩ Revert all ({overrideCount})
-                </Button>
-              )}
-            </div>
+    <div className='@container/design flex min-h-0 flex-1 flex-col overflow-hidden'>
+      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border p-4'>
+        <div className='flex min-w-0 flex-wrap items-center gap-3'>
+          <div className='flex flex-col gap-1'>
+            <span className={TYPE.label}>Source palette</span>
+            <span className={TYPE.meta}>
+              {tokens.semantic.length} tokens / {slots.length} colors
+            </span>
+          </div>
+          <div className='flex flex-wrap gap-1.5'>
+            {slots.map((slot, index) => (
+              <span
+                key={slot.id}
+                title={`${slotNames[index]}: ${slot.color.hex.toUpperCase()}`}
+                className={`size-6 shrink-0 rounded-sm border border-border ${index === 0 ? 'ring-1 ring-primary ring-offset-1 ring-offset-background' : ''}`}
+                style={{ background: slot.color.hex }}
+              />
+            ))}
           </div>
         </div>
-
-        {/* Palette source strip */}
-        <div className="items-center flex-wrap mb-4 flex gap-1.5">
-          <span className="text-muted-foreground uppercase tracking-[.07em] font-bold text-[9.5px]">
-            Palette →
-          </span>
-          {slots.map((slot, i) => (
-            <div key={i} className="flex-col items-center flex gap-0.5">
-              <div
-                style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: i === 0 ? 8 : 5,
-                  background: slot.color.hex,
-                  border:
-                    i === 0
-                      ? "2px solid var(--color-foreground)"
-                      : "1px solid rgba(128,128,128,.2)",
-                  boxShadow:
-                    i === 0 ? "0 0 0 3px var(--color-primary)" : "none",
-                }}
-              />
-              <span className="font-mono text-muted-foreground text-[7.5px]">
-                {slotNames[i]}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Panel nav */}
-        <div className="flex flex-wrap border-b border-muted gap-1 mb-4.5 pb-2.5">
-          {PANELS.map((p) => (
+        <div className='flex flex-wrap items-center gap-2'>
+          <ToolSegments
+            value={mode}
+            onValueChange={setMode}
+            label='Design system mode'
+            items={[
+              { id: 'light', label: 'Light' },
+              { id: 'dark', label: 'Dark' },
+            ]}
+          />
+          {overrideCount > 0 && (
             <Button
-              key={p.id}
-              variant={activePanel === p.id ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setActivePanel(p.id)}
-            >
-              {p.label}
+              variant='destructive'
+              size='sm'
+              onClick={revertAll}
+              title='Revert all token overrides'>
+              <RotateCcw className='size-3.5' />
+              Revert all ({overrideCount})
             </Button>
-          ))}
+          )}
         </div>
-
+      </div>
+      <ToolTabs
+        value={activePanel}
+        onValueChange={setActivePanel}
+        label='Design system panels'
+        items={PANELS}
+      />
+      <div
+        key={activePanel}
+        data-design-panel={activePanel}
+        className={`min-h-0 min-w-0 flex-1 ${activePanel === 'tokens' || activePanel === 'export' ? 'flex flex-col overflow-hidden' : activePanel === 'utility' || activePanel === 'accessibility' ? 'flex flex-col overflow-auto @4xl/design:overflow-hidden' : activePanel === 'preview' ? 'flex flex-col overflow-auto p-4 @4xl/design:overflow-hidden' : 'overflow-auto p-4'}`}>
         {/* ── Preview panel ── */}
-        {activePanel === "preview" && (
-          <div>
-            <div className="grid gap-4 grid-cols-2">
-              {(["light", "dark"] as const).map((m) => (
-                <div key={m}>
-                  <div className="text-muted-foreground uppercase tracking-[.07em] mb-2 font-bold text-[10px]">
-                    {m === "light" ? "☀ Light mode" : "☾ Dark mode"}
-                  </div>
-                  <ComponentPreview
+        {activePanel === 'preview' && (
+          <div className='grid grid-cols-1 gap-4 @4xl/design:min-h-0 @4xl/design:flex-1 @4xl/design:grid-cols-2'>
+            {(['light', 'dark'] as const).map((m) => (
+              <div key={m} className='flex min-h-0 min-w-0 flex-col gap-3'>
+                <div className='flex shrink-0 items-center justify-between gap-2'>
+                  <span className={TYPE.label}>{m === 'light' ? 'Light theme' : 'Dark theme'}</span>
+                  <span className={TYPE.mono}>
+                    {tokens.semantic.find((token) => token.name === '--background')?.[m]}
+                  </span>
+                </div>
+                <div className='min-h-0 flex-1'>
+                  <WorkspacePreview
                     tokens={tokens.semantic}
                     slots={slots}
+                    utility={tokens.utility}
                     mode={m}
                   />
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Token editor panel ── */}
-        {activePanel === "tokens" && (
-          <div>
-            {/* Header row */}
-            <div className="grid gap-1.5 mb-1 grid-cols-[180px_1fr_1fr_80px_28px] py-1 px-0 border-b-2 border-muted">
-              {["Token", "Light", "Dark", "Contrast", ""].map((h) => (
-                <span
-                  key={h}
-                  className="text-muted-foreground uppercase tracking-[.06em] font-bold text-2.5"
-                >
-                  {h}
-                </span>
-              ))}
-            </div>
-
-            {TOKEN_GROUPS.map((group) => {
-              const groupTokens = group.ids.flatMap((id) =>
-                tokens.semantic.filter((t) => t.name === id),
-              );
-              if (!groupTokens.length) return null;
-              const isOpen = expandedGroup === group.label;
-
-              return (
-                <div key={group.label} className="mb-2">
-                  <button
-                    onClick={() =>
-                      setExpandedGroup(isOpen ? null : group.label)
-                    }
-                    className="w-full bg-card border border-muted rounded cursor-pointer flex items-center gap-2 text-left px-2.5 py-2"
-                  >
-                    <span className="text-foreground font-bold text-[9.5px] flex-1">
-                      {group.label}
-                    </span>
-                    <span className="text-muted-foreground text-2.5">
-                      {groupTokens.length} tokens
-                    </span>
-                    <span className="text-muted-foreground text-[11px]">
-                      {isOpen ? "▾" : "▸"}
-                    </span>
-                  </button>
-
-                  {isOpen && (
-                    <div className="border-b border-muted py-1.5 px-0">
-                      {group.desc && (
-                        <p className="text-[10px] text-muted-foreground leading-normal mt-0 mx-0 mb-2">
-                          {group.desc}
-                        </p>
-                      )}
-                      {groupTokens.map((t) => (
-                        <TokenRow
-                          key={t.name}
-                          token={t}
-                          overrides={overrides}
-                          mode={mode}
-                          onOverride={handleOverride}
-                          onRevert={handleRevert}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* ── Utility colors panel ── */}
-        {activePanel === "utility" && (
-          <div>
-            <p className="text-muted-foreground mb-3 leading-relaxed text-[11px]">
-              Utility colors are derived from the palette hues and
-              locked/unlocked individually in the Utility tab. Each has a base,
-              light mode, dark mode, and subtle (tinted) variant.
-            </p>
-            <div
-              className="grid gap-1.5 mb-1 py-1 px-0 border-b-2 border-muted"
-              style={{ gridTemplateColumns: "180px 1fr 1fr 1fr" }}
-            >
-              {["Role", "Color", "Subtle", "Base"].map((h) => (
-                <span
-                  key={h}
-                  className="text-muted-foreground uppercase font-bold text-2.5"
-                >
-                  {h}
-                </span>
-              ))}
-            </div>
-            {(Object.keys(tokens.utility) as UtilityRole[]).map((role) => (
-              <UtilityTokenRow
-                key={role}
-                role={role}
-                utility={tokens.utility}
-                mode={mode}
-              />
+              </div>
             ))}
           </div>
         )}
 
-        {/* ── Accessibility panel ── */}
-        {activePanel === "accessibility" && (
-          <div>
-            <div className="grid gap-5 grid-cols-2">
-              {(["light", "dark"] as const).map((m) => (
-                <div key={m}>
-                  <div className="text-muted-foreground uppercase tracking-[.07em] mb-2.5 font-bold text-[10px]">
-                    {m === "light" ? "☀ Light mode" : "☾ Dark mode"}
-                  </div>
-                  <AccessibilityPanel tokens={tokens.semantic} mode={m} />
+        {/* ── Token editor panel ── */}
+        {activePanel === 'tokens' && (
+          <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto @3xl/design:grid-cols-[10rem_minmax(0,1fr)] @3xl/design:grid-rows-[minmax(0,1fr)] @3xl/design:overflow-hidden'>
+            <aside className='flex min-h-0 min-w-0 flex-col gap-3 border-b border-border p-3 @3xl/design:border-r @3xl/design:border-b-0'>
+              <span className={`hidden ${TYPE.label} @3xl/design:block`}>Token groups</span>
+              <div
+                role='group'
+                aria-label='Token groups'
+                className='flex min-w-0 gap-1 overflow-x-auto @3xl/design:min-h-0 @3xl/design:flex-col @3xl/design:overflow-auto'>
+                {tokenGroups.map((group) => (
+                  <Button
+                    key={group.label}
+                    variant='ghost'
+                    size='sm'
+                    aria-pressed={activeGroup?.label === group.label}
+                    onClick={() => setExpandedGroup(group.label)}
+                    className={`min-w-0 justify-between gap-3 @3xl/design:w-full ${activeGroup?.label === group.label ? 'border-border bg-accent/30 text-foreground' : 'text-muted-foreground'}`}>
+                    <span className='truncate' title={group.label}>
+                      {group.label}
+                    </span>
+                    <span className='text-[9px]'>
+                      {tokens.semantic.filter((token) => group.ids.includes(token.name)).length}
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            </aside>
+            <section className='flex min-h-0 min-w-0 flex-col gap-4 p-4'>
+              <div className='flex shrink-0 flex-wrap items-start justify-between gap-3'>
+                <div className='flex min-w-0 flex-col gap-1'>
+                  <h3 className={TYPE.title}>{activeGroup?.label}</h3>
+                  {activeGroup?.desc && <p className={TYPE.meta}>{activeGroup.desc}</p>}
                 </div>
-              ))}
-            </div>
+                <span className={TYPE.mono}>{groupTokens.length} tokens</span>
+              </div>
+              <div className='min-w-0 overflow-auto @3xl/design:min-h-0 @3xl/design:flex-1'>
+                <div
+                  className={`sticky top-0 z-10 grid min-w-120 ${TOKEN_ROW_COLUMNS} gap-1.5 border-b border-border bg-background py-3 ${TYPE.label}`}>
+                  {[
+                    'Token',
+                    mode === 'light' ? 'Light' : 'Dark',
+                    mode === 'light' ? 'Dark' : 'Light',
+                    'Contrast',
+                    '',
+                  ].map((heading, index) => (
+                    <span key={index}>{heading}</span>
+                  ))}
+                </div>
+                {groupTokens.map((token) => (
+                  <TokenRow
+                    key={token.name}
+                    token={token}
+                    overrides={overrides}
+                    mode={mode}
+                    onOverride={handleOverride}
+                    onRevert={handleRevert}
+                  />
+                ))}
+              </div>
+              <div className={`shrink-0 border-t border-border pt-3 ${TYPE.meta}`}>
+                {overrideCount
+                  ? `${overrideCount} modified token${overrideCount === 1 ? '' : 's'}`
+                  : 'Generated palette values'}
+              </div>
+            </section>
           </div>
         )}
 
+        {/* ── Utility colors panel ── */}
+        {activePanel === 'utility' && (
+          <>
+            <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border p-4'>
+              <div className='flex flex-col gap-1'>
+                <span className={TYPE.label}>Semantic utility colors</span>
+                <span className={TYPE.meta}>Base, accent and subtle values for both themes</span>
+              </div>
+              <span className={TYPE.mono}>{Object.keys(tokens.utility).length} roles</span>
+            </div>
+            <div className='grid min-w-0 grid-cols-1 gap-4 p-4 @xl/design:grid-cols-2 @4xl/design:min-h-0 @4xl/design:flex-1 @4xl/design:auto-rows-[minmax(min-content,1fr)] @4xl/design:grid-cols-3 @4xl/design:overflow-auto'>
+              {(Object.keys(tokens.utility) as UtilityRole[]).map((role) => (
+                <UtilityThemeCard key={role} role={role} utility={tokens.utility} mode={mode} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* ── Accessibility panel ── */}
+        {activePanel === 'accessibility' && (
+          <>
+            <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border p-4'>
+              <div className='flex flex-col gap-1'>
+                <span className={TYPE.label}>Theme contrast</span>
+                <span className={TYPE.meta}>Semantic foreground and background pairs</span>
+              </div>
+              <span className={TYPE.mono}>WCAG 2.1 / APCA |Lc|</span>
+            </div>
+            <div className='grid grid-cols-1 gap-6 p-4 @4xl/design:min-h-0 @4xl/design:flex-1 @4xl/design:grid-cols-2'>
+              {(['light', 'dark'] as const).map((theme) => (
+                <AccessibilityPanel key={theme} tokens={tokens.semantic} mode={theme} />
+              ))}
+            </div>
+          </>
+        )}
+
         {/* ── Export panel ── */}
-        {activePanel === "export" && (
-          <ExportPanel tokens={tokens} utilityColors={utilityColors} />
+        {activePanel === 'export' && (
+          <div className='flex min-h-0 flex-1 flex-col p-4'>
+            <ExportPanel tokens={tokens} utilityColors={utilityColors} />
+          </div>
         )}
       </div>
     </div>

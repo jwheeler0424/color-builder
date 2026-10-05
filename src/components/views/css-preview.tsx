@@ -1,406 +1,94 @@
-import React, { useMemo, useState } from "react";
-import { useChromaStore } from "@/hooks/use-chroma-store";
 import {
-  deriveThemeTokens,
-  textColor,
-  rgbToOklch,
-  hexToRgb,
-} from "@/lib/utils";
-import type { PaletteSlot } from "@/types";
+  Check,
+  CheckCircle2,
+  Circle,
+  CircleAlert,
+  Copy,
+  Focus,
+  Info,
+  Moon,
+  Search,
+  Sun,
+  TriangleAlert,
+} from 'lucide-react';
+import { useMemo, useState } from 'react';
 
-type PreviewMode = "light" | "dark" | "split";
+import { useChromaStore } from '@/hooks/use-chroma-store';
+import { buildThemeCss, deriveThemeTokens, textColor, hexToRgb } from '@/lib/utils';
+
+import { TOKEN_GROUPS, WorkspacePreview, type PreviewPage } from './design-system-view';
+import { ToolButton as Button, ToolSegments, ToolTabs, TYPE } from './view-ui';
+
+type PreviewMode = 'light' | 'dark' | 'split';
 
 // ─── Mini App Preview ─────────────────────────────────────────────────────────
 
-function MiniApp({
-  tokens,
-  slots,
-  mode,
-}: {
-  tokens: ReturnType<typeof deriveThemeTokens>;
-  slots: PaletteSlot[];
-  mode: "light" | "dark";
-}) {
-  const get = (name: string) =>
-    tokens.semantic.find((t) => t.name === name)?.[mode] ?? "#888";
-
-  const bg = get("--background");
-  const fg = get("--foreground");
-  const fgMuted = get("--muted-foreground");
-  const card = get("--card");
-  const surfaceDim = get("--surface-dim");
-  const cardRaised = get("--card-raised");
-  const primary = get("--primary");
-  const primaryFg = get("--primary-foreground");
-  const primaryCont = get("--primary-container");
-  const primaryContFg = get("--primary-container-foreground");
-  const secondary = get("--secondary");
-  const secondaryFg = get("--secondary-foreground");
-  const muted = get("--muted");
-  const border = get("--border");
-  const destructive = get("--destructive");
-  const destructiveFg = get("--destructive-foreground");
-  const ring = get("--ring");
-
-  const util = tokens.utility;
-  const successColor =
-    mode === "light" ? util.success?.light : util.success?.dark;
-  const successSubtle =
-    mode === "light" ? util.success?.subtle : util.success?.subtleDark;
-  const infoColor = mode === "light" ? util.info?.light : util.info?.dark;
-  const infoSubtle =
-    mode === "light" ? util.info?.subtle : util.info?.subtleDark;
-  const errorColor = mode === "light" ? util.error?.light : util.error?.dark;
-  const warningColor =
-    mode === "light" ? util.warning?.light : util.warning?.dark;
-  const warningSubtle =
-    mode === "light" ? util.warning?.subtle : util.warning?.subtleDark;
-
-  const accentColors = [...slots]
-    .sort(
-      (a, b) =>
-        rgbToOklch(hexToRgb(b.color.hex)).C -
-        rgbToOklch(hexToRgb(a.color.hex)).C,
-    )
-    .slice(0, 4)
-    .map((s) => s.color.hex);
-  const a1 = accentColors[0] ?? primary;
-  const a2 = accentColors[1] ?? primary;
-  const a3 = accentColors[2] ?? primary;
-
-  const btnPrimary: React.CSSProperties = {
-    background: primary,
-    color: primaryFg,
-    border: "none",
-    borderRadius: 5,
-    padding: "6px 14px",
-    fontSize: 11,
-    fontWeight: 700,
-    cursor: "pointer",
-  };
-  const btnOutline: React.CSSProperties = {
-    background: "transparent",
-    color: fg,
-    border: `1px solid ${border}`,
-    borderRadius: 5,
-    padding: "6px 14px",
-    fontSize: 11,
-    cursor: "pointer",
-  };
-
-  return (
-    <div
-      style={{
-        background: bg,
-        color: fg,
-        borderRadius: 8,
-        overflow: "hidden",
-        border: `1px solid ${border}`,
-        fontFamily: "system-ui, sans-serif",
-        fontSize: 11,
-        lineHeight: 1.5,
-      }}
-    >
-      {/* Mode badge row */}
-      <div
-        style={{
-          background: surfaceDim,
-          borderBottom: `1px solid ${border}`,
-          padding: "5px 12px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div className="flex gap-1">
-          {accentColors.map((hex, i) => (
-            <div
-              key={i}
-              className="rounded-full"
-              style={{ width: 7, height: 7, background: hex }}
-            />
-          ))}
-        </div>
-        <span
-          className="text-[9px] font-semibold uppercase tracking-[.06em]"
-          style={{ color: fgMuted }}
-        >
-          {mode === "light" ? "☀ Light" : "☾ Dark"}
-        </span>
-      </div>
-
-      {/* Nav */}
-      <div
-        style={{
-          background: card,
-          borderBottom: `1px solid ${border}`,
-          padding: "9px 14px",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-        }}
-      >
-        <div className="rounded shrink-0 w-4 h-4" style={{ background: a1 }} />
-        <span
-          className="font-extrabold text-[12px] flex-1"
-          style={{ color: fg }}
-        >
-          Brand
-        </span>
-        {["Docs", "Pricing", "Blog"].map((l) => (
-          <span key={l} className="text-[10px]" style={{ color: fgMuted }}>
-            {l}
-          </span>
-        ))}
-        <button className="text-[10px] px-2.5 py-1" style={{ ...btnPrimary }}>
-          Sign in
-        </button>
-      </div>
-
-      {/* Hero — primary-container */}
-      <div
-        style={{
-          background: primaryCont,
-          padding: "16px 14px",
-          borderBottom: `1px solid ${border}`,
-        }}
-      >
-        <div
-          className="inline-flex items-center text-[8.5px] font-bold tracking-[.05em] gap-1.5 mb-2"
-          style={{
-            background: primary,
-            color: primaryFg,
-            borderRadius: 20,
-            padding: "2px 8px",
-          }}
-        >
-          <div
-            className="rounded-full"
-            style={{ width: 5, height: 5, background: primaryFg, opacity: 0.7 }}
-          />
-          JUST LAUNCHED
-        </div>
-        <div
-          className="text-base font-extrabold mb-1.5"
-          style={{ color: primaryContFg, letterSpacing: "-0.025em" }}
-        >
-          Design at the speed of thought
-        </div>
-        <div
-          className="text-[10px] mb-3 leading-relaxed"
-          style={{ color: primaryContFg, opacity: 0.72 }}
-        >
-          Your palette, your tokens, your system — built automatically.
-        </div>
-        <div className="flex gap-2">
-          <button style={btnPrimary}>Get started →</button>
-          <button style={btnOutline}>View demo</button>
-        </div>
-      </div>
-
-      {/* Feature cards */}
-      <div
-        style={{
-          padding: "12px 14px",
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: 8,
-          borderBottom: `1px solid ${border}`,
-        }}
-      >
-        {[
-          {
-            title: "Color Science",
-            desc: "OKLCH perceptual palette",
-            accent: a1,
-          },
-          {
-            title: "Dark Mode",
-            desc: "M3 tonal surface elevation",
-            accent: a2,
-          },
-          { title: "Accessibility", desc: "WCAG AA/AAA contrast", accent: a3 },
-        ].map(({ title, desc, accent }) => (
-          <div
-            key={title}
-            style={{
-              background: card,
-              border: `1px solid ${border}`,
-              borderRadius: 6,
-              padding: 10,
-            }}
-          >
-            <div
-              className="rounded mb-2"
-              style={{
-                width: 24,
-                height: 24,
-                background: accent,
-                opacity: 0.9,
-              }}
-            />
-            <div className="font-bold text-[10.5px] mb-1.5">{title}</div>
-            <div
-              className="text-[9.5px] leading-normal"
-              style={{ color: fgMuted }}
-            >
-              {desc}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Alerts — utility colors, fully mode-aware */}
-      <div
-        style={{
-          padding: "10px 14px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 5,
-          borderBottom: `1px solid ${border}`,
-        }}
-      >
-        {[
-          {
-            bg: successSubtle ?? surfaceDim,
-            borderColor: successColor ?? primary,
-            icon: "✓",
-            label: "Deployment complete",
-            sub: "All checks passed",
-          },
-          {
-            bg: infoSubtle ?? surfaceDim,
-            borderColor: infoColor ?? primary,
-            icon: "ℹ",
-            label: "New version available",
-            sub: "v3.2.1 ready to install",
-          },
-          {
-            bg: warningSubtle ?? muted,
-            borderColor: warningColor ?? primary,
-            icon: "⚠",
-            label: "Usage at 84%",
-            sub: "Consider upgrading your plan",
-          },
-        ].map(({ bg: alertBg, borderColor, icon, label, sub }) => (
-          <div
-            key={label}
-            style={{
-              background: alertBg,
-              border: `1px solid ${borderColor}`,
-              borderRadius: 5,
-              padding: "6px 10px",
-              display: "flex",
-              gap: 8,
-              alignItems: "center",
-            }}
-          >
-            <div
-              className="rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 w-4.5"
-              style={{
-                height: 18,
-                background: borderColor,
-                color: textColor(hexToRgb(borderColor)),
-              }}
-            >
-              {icon}
-            </div>
-            <div>
-              <div className="font-bold text-[10px]">{label}</div>
-              <div className="text-[9px]" style={{ color: fgMuted }}>
-                {sub}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Input + focus ring demo */}
-      <div
-        className="flex gap-2 items-center"
-        style={{ padding: "10px 14px", background: surfaceDim }}
-      >
-        <div
-          style={{
-            flex: 1,
-            background: card,
-            border: `2px solid ${ring}`,
-            borderRadius: 5,
-            padding: "6px 10px",
-            color: fgMuted,
-            fontSize: 10,
-            boxShadow: `0 0 0 3px ${ring}40`,
-          }}
-        >
-          Enter your email…
-        </div>
-        <button style={btnPrimary}>Subscribe</button>
-        <button
-          className="border-none rounded text-[10px] font-semibold px-2.5 py-1.5"
-          style={{ background: destructive, color: destructiveFg }}
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ─── Token Role Legend ────────────────────────────────────────────────────────
 
-function TokenLegend({
+export function TokenLegend({
   tokens,
   mode,
+  query = '',
+  copiedKey,
+  onCopy,
 }: {
   tokens: ReturnType<typeof deriveThemeTokens>;
-  mode: "light" | "dark";
+  mode: 'light' | 'dark';
+  query?: string;
+  copiedKey?: string | null;
+  onCopy: (key: string, hex: string) => void;
 }) {
-  const groups = [
-    {
-      label: "60% Neutral surface",
-      ids: ["--background", "--surface-dim", "--card", "--card-raised"],
-    },
-    {
-      label: "30% Content surface",
-      ids: ["--secondary", "--muted", "--popover"],
-    },
-    {
-      label: "10% Brand / CTA",
-      ids: ["--primary", "--primary-container", "--ring"],
-    },
-  ];
+  const groups = TOKEN_GROUPS.map((group) => ({
+    label: group.label,
+    tokens: tokens.semantic.filter(
+      (token) =>
+        group.ids.includes(token.name) &&
+        `${token.name} ${group.label}`.toLowerCase().includes(query.trim().toLowerCase()),
+    ),
+  })).filter((group) => group.tokens.length);
 
   return (
-    <div className="flex-wrap flex gap-5">
-      {groups.map(({ label, ids }) => (
-        <div key={label} className="flex-[1_1_160px]">
-          <div className="text-muted-foreground uppercase tracking-[.07em] mb-1.5 font-bold text-[9px]">
+    <div className='flex flex-col gap-5'>
+      {groups.length === 0 && <p className={TYPE.meta}>No matching tokens.</p>}
+      {groups.map(({ label, tokens: groupTokens }) => (
+        <div key={label} className='min-w-0'>
+          <div className='mb-1.5 text-[9px] font-bold tracking-[.07em] text-muted-foreground uppercase'>
             {label}
           </div>
-          <div className="flex-wrap flex gap-1">
-            {ids.map((id) => {
-              const tok = tokens.semantic.find((t) => t.name === id);
-              const hex = tok?.[mode];
-              if (!hex) return null;
+          <div className='flex flex-col gap-2'>
+            {groupTokens.map((token) => {
+              const id = token.name;
+              const hex = token[mode];
               return (
-                <div
+                <button
+                  type='button'
+                  data-token-role={id}
+                  aria-label={`Copy ${mode} ${id} ${hex}`}
+                  onClick={() => onCopy(`${mode}:${id}`, hex)}
                   key={id}
                   title={id}
-                  className="flex-col items-center flex gap-0.5"
-                >
+                  className='grid min-w-0 cursor-pointer grid-cols-[1.25rem_minmax(0,1fr)_auto_0.75rem] items-center gap-2 rounded-sm text-left outline-none focus-visible:ring-2 focus-visible:ring-ring'>
                   <div
-                    className="rounded"
+                    className='rounded'
                     style={{
-                      width: 24,
-                      height: 24,
+                      width: 20,
+                      height: 20,
                       background: hex,
-                      border: "1px solid rgba(128,128,128,.2)",
+                      border: '1px solid rgba(128,128,128,.2)',
                     }}
                   />
-                  <span className="text-[7.5px] text-muted-foreground font-mono overflow-hidden text-ellipsis whitespace-nowrap text-center max-w-7">
-                    {id.replace("--", "")}
+                  <span className='truncate font-mono text-[10px] text-foreground/80'>
+                    {id.replace('--', '')}
                   </span>
-                </div>
+                  <span className='font-mono text-[9px] text-muted-foreground'>
+                    {hex.toUpperCase()}
+                  </span>
+                  {copiedKey === `${mode}:${id}` ? (
+                    <Check className='size-3 text-primary' />
+                  ) : (
+                    <Copy className='size-3 text-muted-foreground' />
+                  )}
+                </button>
               );
             })}
           </div>
@@ -414,71 +102,72 @@ function TokenLegend({
 
 function UtilityPanel({
   tokens,
+  mode,
+  onCopy,
+  copiedKey,
 }: {
   tokens: ReturnType<typeof deriveThemeTokens>;
+  mode: 'light' | 'dark';
+  onCopy: (key: string, hex: string) => void;
+  copiedKey: string | null;
 }) {
-  const ICONS: Record<string, string> = {
-    info: "ℹ",
-    success: "✓",
-    warning: "⚠",
-    error: "✕",
-    neutral: "○",
-    focus: "◎",
+  const ICONS = {
+    info: Info,
+    success: CheckCircle2,
+    warning: TriangleAlert,
+    error: CircleAlert,
+    neutral: Circle,
+    focus: Focus,
   };
   const roles = Object.keys(tokens.utility) as (keyof typeof tokens.utility)[];
 
   return (
-    <div className="grid gap-4 grid-cols-2">
-      {(["light", "dark"] as const).map((m) => (
+    <div className='grid grid-cols-1 gap-4'>
+      {[mode].map((m) => (
         <div key={m}>
-          <div className="text-[9.5px] font-bold text-muted-foreground uppercase tracking-[.07em] mb-2">
-            {m === "light" ? "☀ Light" : "☾ Dark"}
+          <div className='mb-2 text-[9.5px] font-bold tracking-[.07em] text-muted-foreground uppercase'>
+            {m === 'light' ? '☀ Light' : '☾ Dark'}
           </div>
-          <div className="flex-col flex gap-1.5">
+          <div className='flex flex-col gap-1.5'>
             {roles.map((role) => {
-              const color =
-                m === "light"
-                  ? tokens.utility[role].light
-                  : tokens.utility[role].dark;
+              const Icon = ICONS[role];
+              const color = m === 'light' ? tokens.utility[role].light : tokens.utility[role].dark;
               const subtle =
-                m === "light"
-                  ? tokens.utility[role].subtle
-                  : tokens.utility[role].subtleDark;
+                m === 'light' ? tokens.utility[role].subtle : tokens.utility[role].subtleDark;
               return (
-                <div
+                <button
+                  type='button'
+                  aria-label={`Copy ${m} ${role} ${color}`}
+                  onClick={() => onCopy(`${m}:utility:${role}`, color)}
                   key={role}
+                  className='min-w-0 cursor-pointer text-left outline-none focus-visible:ring-2 focus-visible:ring-ring'
                   style={{
                     background: subtle,
+                    color: textColor(hexToRgb(subtle)),
                     border: `1px solid ${color}`,
                     borderRadius: 6,
-                    padding: "6px 10px",
-                    display: "flex",
-                    alignItems: "center",
+                    padding: '6px 10px',
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: 8,
-                  }}
-                >
+                  }}>
                   <div
-                    className="rounded-full shrink-0 flex items-center justify-center text-[10px]"
-                    style={{ width: 20, height: 20, background: color }}
-                  >
-                    <span style={{ color: textColor(hexToRgb(color)) }}>
-                      {ICONS[role]}
-                    </span>
+                    className='flex shrink-0 items-center justify-center rounded-full text-[10px]'
+                    style={{ width: 20, height: 20, background: color }}>
+                    <Icon className='size-3' style={{ color: textColor(hexToRgb(color)) }} />
                   </div>
-                  <span className="capitalize font-bold text-[10px] flex-1">
-                    {role}
-                  </span>
-                  <div className="items-center flex gap-1">
+                  <span className='flex-1 text-[10px] font-bold capitalize'>{role}</span>
+                  <div className='flex items-center gap-1'>
                     <div
-                      title="filled"
-                      className="rounded w-3.5 h-3.5"
+                      title='filled'
+                      className='h-3.5 w-3.5 rounded'
                       style={{
                         background: color,
-                        border: "1px solid rgba(128,128,128,.2)",
+                        border: '1px solid rgba(128,128,128,.2)',
                       }}
                     />
                     <div
-                      title="subtle"
+                      title='subtle'
                       style={{
                         width: 14,
                         height: 14,
@@ -487,11 +176,10 @@ function UtilityPanel({
                         border: `1px solid ${color}`,
                       }}
                     />
-                    <span className="text-[8.5px] text-muted-foreground font-mono ml-0.5">
-                      {color}
-                    </span>
+                    <span className='ml-0.5 font-mono text-[8.5px]'>{color}</span>
+                    {copiedKey === `${m}:utility:${role}` && <Check className='size-3' />}
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -505,107 +193,211 @@ function UtilityPanel({
 
 export default function CssPreview() {
   const { slots, utilityColors } = useChromaStore();
-  const [previewMode, setPreviewMode] = useState<PreviewMode>("split");
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('split');
+  const [inspector, setInspector] = useState<'tokens' | 'utility' | 'css'>('tokens');
+  const [inspectorMode, setInspectorMode] = useState<'light' | 'dark'>('light');
+  const [page, setPage] = useState<PreviewPage>('projects');
+  const [query, setQuery] = useState('');
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const tokens = useMemo(
-    () => deriveThemeTokens(slots, utilityColors),
-    [slots, utilityColors],
-  );
+  const tokens = useMemo(() => deriveThemeTokens(slots, utilityColors), [slots, utilityColors]);
+  const css = buildThemeCss(tokens);
+  const copyValue = async (key: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 1400);
+    } catch {
+      setCopiedKey(null);
+    }
+  };
 
   if (!slots.length) {
     return (
-      <div className="flex-1 overflow-auto p-6">
-        <div className="mb-5">
+      <div className='min-h-0 flex-1 overflow-auto p-6'>
+        <div className='mb-5'>
           <h2>Live CSS Preview</h2>
         </div>
-        <p className="text-muted-foreground text-[12px]">
+        <p className='text-[12px] text-muted-foreground'>
           Generate a palette first to see the preview.
         </p>
       </div>
     );
   }
 
-  const showLight = previewMode === "light" || previewMode === "split";
-  const showDark = previewMode === "dark" || previewMode === "split";
+  const showLight = previewMode === 'light' || previewMode === 'split';
+  const showDark = previewMode === 'dark' || previewMode === 'split';
+  const inspectedMode = previewMode === 'split' ? inspectorMode : previewMode;
 
   return (
-    <div className="flex-1 overflow-auto p-6">
-      <div className="max-w-240 mx-auto">
-        <div className="mb-5">
-          <h2>Live CSS Preview</h2>
-          <p>
-            Your palette applied to a real UI — nav, hero, cards, alerts (with
-            correct dark subtle backgrounds), inputs with focus ring, and
-            destructive actions. Both light and dark use your generated theme
-            tokens throughout.
-          </p>
+    <div className='@container/css flex min-h-0 flex-1 flex-col overflow-auto @4xl/tokens:overflow-hidden'>
+      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border p-4'>
+        <div className='flex flex-col gap-1'>
+          <span className={TYPE.label}>Live theme comparison</span>
+          <span className={TYPE.meta}>
+            {tokens.semantic.length} semantic tokens / {slots.length} palette colors
+          </span>
         </div>
-
-        {/* Mode toggle */}
-        <div className="mb-5 flex gap-1">
-          {(
-            [
-              { key: "split", label: "⬛ Split" },
-              { key: "light", label: "☀ Light only" },
-              { key: "dark", label: "☾ Dark only" },
-            ] as { key: PreviewMode; label: string }[]
-          ).map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setPreviewMode(key)}
-              style={{
-                background:
-                  previewMode === key
-                    ? "var(--color-primary)"
-                    : "var(--color-secondary)",
-                color:
-                  previewMode === key
-                    ? "#fff"
-                    : "var(--color-secondary-foreground)",
-                border: "none",
-                borderRadius: 5,
-                padding: "5px 12px",
-                fontSize: 11,
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* App previews */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: showLight && showDark ? "1fr 1fr" : "1fr",
-            gap: 16,
-            marginBottom: 28,
-          }}
-        >
-          {showLight && <MiniApp tokens={tokens} slots={slots} mode="light" />}
-          {showDark && <MiniApp tokens={tokens} slots={slots} mode="dark" />}
-        </div>
-
-        {/* Token legend */}
-        <div className="mb-7">
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-            Token roles ({previewMode === "dark" ? "dark" : "light"} mode)
+        <ToolSegments
+          value={previewMode}
+          onValueChange={setPreviewMode}
+          label='CSS preview mode'
+          items={[
+            { id: 'split', label: 'Split' },
+            { id: 'light', label: 'Light only' },
+            { id: 'dark', label: 'Dark only' },
+          ]}
+        />
+      </div>
+      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3'>
+        <ToolSegments
+          value={page}
+          onValueChange={setPage}
+          label='CSS sample page'
+          items={[
+            { id: 'landing', label: 'Landing' },
+            { id: 'projects', label: 'Projects' },
+            { id: 'activity', label: 'Activity' },
+            { id: 'settings', label: 'Settings' },
+          ]}
+        />
+        <span className={TYPE.mono}>
+          {previewMode === 'split'
+            ? 'Light + dark'
+            : previewMode === 'light'
+              ? 'Light theme'
+              : 'Dark theme'}
+        </span>
+      </div>
+      <div className='grid auto-rows-max grid-cols-1 @4xl/css:min-h-0 @4xl/css:flex-1 @4xl/css:grid-cols-[minmax(0,1fr)_16rem] @4xl/css:grid-rows-[minmax(0,1fr)]'>
+        <section className='@container/previews flex min-h-0 min-w-0 flex-col p-4 @4xl/tokens:overflow-auto @4xl/tokens:border-r @4xl/tokens:border-border'>
+          <div
+            className={`grid min-w-0 grid-cols-1 gap-4 @4xl/tokens:min-h-0 @4xl/tokens:flex-1 ${showLight && showDark ? '@min-[45rem]/previews:grid-cols-2' : ''}`}>
+            {(['light', 'dark'] as const)
+              .filter((mode) => (mode === 'light' ? showLight : showDark))
+              .map((mode) => (
+                <div
+                  key={mode}
+                  data-css-preview={mode}
+                  className='flex min-w-0 flex-col gap-3 @4xl/tokens:min-h-0'>
+                  <div className='flex shrink-0 items-center justify-between gap-2'>
+                    <span className={`inline-flex items-center gap-2 ${TYPE.label}`}>
+                      {mode === 'light' ? (
+                        <Sun className='size-3.5' />
+                      ) : (
+                        <Moon className='size-3.5' />
+                      )}
+                      {mode === 'light' ? 'Light theme' : 'Dark theme'}
+                    </span>
+                    <span className={TYPE.mono}>
+                      {tokens.semantic.find((token) => token.name === '--background')?.[mode]}
+                    </span>
+                  </div>
+                  <div
+                    className='min-w-0 @4xl/tokens:min-h-0 @4xl/tokens:flex-1'
+                    style={{
+                      background: tokens.semantic.find((token) => token.name === '--background')?.[
+                        mode
+                      ],
+                    }}>
+                    <WorkspacePreview
+                      tokens={tokens.semantic}
+                      slots={slots}
+                      utility={tokens.utility}
+                      mode={mode}
+                      page={page}
+                      onPageChange={setPage}
+                    />
+                  </div>
+                </div>
+              ))}
           </div>
-          <TokenLegend
-            tokens={tokens}
-            mode={previewMode === "dark" ? "dark" : "light"}
+        </section>
+        <aside className='flex min-h-0 min-w-0 flex-col gap-4 border-t border-border p-4 @4xl/css:border-t-0'>
+          <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
+            <span className={TYPE.label}>Token inspector</span>
+            {previewMode === 'split' && (
+              <ToolSegments
+                value={inspectorMode}
+                onValueChange={setInspectorMode}
+                label='Token inspector mode'
+                items={[
+                  { id: 'light', label: 'Light' },
+                  { id: 'dark', label: 'Dark' },
+                ]}
+              />
+            )}
+          </div>
+          <ToolTabs
+            value={inspector}
+            onValueChange={setInspector}
+            label='CSS token inspector'
+            stretch
+            items={[
+              { id: 'tokens', label: 'Roles' },
+              { id: 'utility', label: 'Utility' },
+              { id: 'css', label: 'CSS' },
+            ]}
           />
-        </div>
-
-        {/* Utility panel */}
-        <div>
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
-            Utility colors — filled + correct subtle backgrounds for both modes
+          {inspector === 'tokens' && (
+            <label className='flex h-8 shrink-0 items-center gap-2 rounded-md border border-border bg-muted px-2'>
+              <Search className='size-3.5 shrink-0 text-muted-foreground' />
+              <input
+                type='search'
+                aria-label='Search CSS tokens'
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder='Find a token'
+                className='w-full min-w-0 bg-transparent text-[11px] outline-none'
+              />
+            </label>
+          )}
+          {inspector === 'css' && (
+            <Button
+              variant='outline'
+              size='sm'
+              className='shrink-0'
+              onClick={() => {
+                void copyValue('css', css);
+              }}>
+              {copiedKey === 'css' ? <Check className='size-3' /> : <Copy className='size-3' />}
+              {copiedKey === 'css' ? 'Copied CSS' : 'Copy theme CSS'}
+            </Button>
+          )}
+          <div
+            key={inspector}
+            className='max-h-120 min-w-0 overflow-auto @4xl/css:max-h-none @4xl/css:min-h-0 @4xl/css:flex-1'>
+            {inspector === 'tokens' ? (
+              <TokenLegend
+                tokens={tokens}
+                mode={inspectedMode}
+                query={query}
+                copiedKey={copiedKey}
+                onCopy={(key, hex) => {
+                  void copyValue(key, hex);
+                }}
+              />
+            ) : inspector === 'utility' ? (
+              <UtilityPanel
+                tokens={tokens}
+                mode={inspectedMode}
+                copiedKey={copiedKey}
+                onCopy={(key, hex) => {
+                  void copyValue(key, hex);
+                }}
+              />
+            ) : (
+              <pre className='min-h-full rounded-md border border-border bg-secondary p-3 font-mono text-[10px] leading-relaxed whitespace-pre text-muted-foreground'>
+                {css}
+              </pre>
+            )}
           </div>
-          <UtilityPanel tokens={tokens} />
-        </div>
+          <span className={`shrink-0 border-t border-border pt-3 ${TYPE.meta}`}>
+            {inspector === 'css'
+              ? 'Theme CSS / light + dark'
+              : `${inspectedMode === 'light' ? 'Light' : 'Dark'} theme values`}
+          </span>
+        </aside>
       </div>
     </div>
   );

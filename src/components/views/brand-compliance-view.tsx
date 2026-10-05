@@ -6,9 +6,10 @@
  * harmonic compatibility score, and practical pairing recommendations.
  */
 
-import { useState, useMemo } from "react";
-import { useChromaStore } from "@/hooks/use-chroma-store";
-import { useRegisterHotkey } from "@/providers/hotkey.provider";
+import { Pencil, Plus, SwatchBook, Trash2 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+
+import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
   cn,
   hexToRgb,
@@ -17,16 +18,18 @@ import {
   contrastRatio,
   rgbToOklch,
   nearestName,
-} from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+} from '@/lib/utils';
+import { useRegisterHotkey } from '@/providers/hotkey.provider';
+
+import { ToolButton as Button, TYPE, ViewHeader } from './view-ui';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function contrastBadge(ratio: number) {
-  if (ratio >= 7) return { label: "AAA", color: "#00c853" };
-  if (ratio >= 4.5) return { label: "AA", color: "#69f0ae" };
-  if (ratio >= 3) return { label: "AA Lg", color: "#ffd740" };
-  return { label: "Fail", color: "#ff1744" };
+  if (ratio >= 7) return { label: 'AAA', color: 'var(--success)' };
+  if (ratio >= 4.5) return { label: 'AA', color: 'var(--success)' };
+  if (ratio >= 3) return { label: 'AA Large', color: 'var(--warning)' };
+  return { label: 'Fail', color: 'var(--destructive)' };
 }
 
 function oklchDist(hexA: string, hexB: string): number {
@@ -35,8 +38,7 @@ function oklchDist(hexA: string, hexB: string): number {
   // Weighted OKLCH distance: L difference counts less than chroma/hue
   const dL = (a.L - b.L) * 50;
   const dC = (a.C - b.C) * 100;
-  const dH =
-    (Math.min(Math.abs(a.H - b.H), 360 - Math.abs(a.H - b.H)) / 360) * 100;
+  const dH = (Math.min(Math.abs(a.H - b.H), 360 - Math.abs(a.H - b.H)) / 360) * 100;
   return Math.sqrt(dL * dL + dC * dC + dH * dH);
 }
 
@@ -49,17 +51,18 @@ export default function BrandComplianceView() {
   const removeBrand = useChromaStore((s) => s.removeBrandColor);
   const updateBrand = useChromaStore((s) => s.updateBrandColor);
 
-  const [hexInput, setHexInput] = useState("");
-  const [labelInput, setLabelInput] = useState("");
+  const [hexInput, setHexInput] = useState('');
+  const [labelInput, setLabelInput] = useState('');
   const [inputErr, setInputErr] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useRegisterHotkey({
-    key: "b",
-    label: "Add brand color",
-    group: "Brand",
+    key: 'b',
+    label: 'Add brand color',
+    group: 'Brand',
     handler: () => {
-      document.getElementById("brand-hex-input")?.focus();
+      document.getElementById('brand-hex-input')?.focus();
     },
   });
 
@@ -67,12 +70,13 @@ export default function BrandComplianceView() {
     const hex = parseHex(hexInput);
     if (!hex) {
       setInputErr(true);
-      setTimeout(() => setInputErr(false), 600);
       return;
     }
     addBrand(hex, labelInput.trim() || nearestName(hexToRgb(hex)));
-    setHexInput("");
-    setLabelInput("");
+    setSelectedId(useChromaStore.getState().brandColors.at(-1)?.id ?? null);
+    setHexInput('');
+    setLabelInput('');
+    setInputErr(false);
   };
 
   // For each brand color × palette slot: compute all compliance metrics
@@ -80,13 +84,8 @@ export default function BrandComplianceView() {
     return brandColors.map((brand) => ({
       brand,
       pairs: slots.map((slot) => {
-        const ratio = contrastRatio(
-          hexToRgb(brand.hex),
-          hexToRgb(slot.color.hex),
-        );
-        const apcaVal = Math.abs(
-          apcaContrast(hexToRgb(brand.hex), hexToRgb(slot.color.hex)),
-        );
+        const ratio = contrastRatio(hexToRgb(brand.hex), hexToRgb(slot.color.hex));
+        const apcaVal = Math.abs(apcaContrast(hexToRgb(brand.hex), hexToRgb(slot.color.hex)));
         const dist = oklchDist(brand.hex, slot.color.hex);
         const badge = contrastBadge(ratio);
         const harmonious = dist < 25; // within perceptual harmony zone
@@ -96,243 +95,288 @@ export default function BrandComplianceView() {
     }));
   }, [brandColors, slots]);
 
-  return (
-    <div className="flex-1 overflow-auto p-7">
-      <div className="mx-auto max-w-225">
-        <div className="mb-6">
-          <h2>Brand Compliance</h2>
-          <p>
-            Check how well your palette pairs with core brand colors — contrast
-            ratios, perceptual harmony, and pairing recommendations.
-          </p>
-        </div>
+  const selected = matrix.find(({ brand }) => brand.id === selectedId) ?? matrix[0];
+  const pairs = selected?.pairs ?? [];
+  const bestPair = [...pairs].sort((first, second) => second.ratio - first.ratio)[0];
+  const pairColumns =
+    'grid-cols-[minmax(0,1fr)_3.75rem_3rem_3rem] @2xl/results:grid-cols-[minmax(0,1fr)_4rem_3.5rem_3.5rem_6rem]';
 
-        {/* Brand color input */}
-        <div className="bg-card border border-border rounded-lg p-4 mb-6">
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-3 font-display font-semibold">
-            Add Brand Color
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            <div className="flex gap-2 items-center">
-              {hexInput && parseHex(hexInput) && (
-                <div
-                  className="w-8 h-8 rounded border border-border shrink-0"
-                  style={{ background: parseHex(hexInput) || undefined }}
-                />
-              )}
+  return (
+    <div className='@container flex min-h-0 flex-1 flex-col overflow-hidden'>
+      <ViewHeader
+        title='Brand Compliance'
+        description='Palette contrast and perceptual pairing against your brand colors.'
+      />
+      <div className='grid min-h-0 flex-1 grid-cols-1 overflow-auto border-t border-border @3xl:grid-cols-[15rem_minmax(0,1fr)] @3xl:overflow-hidden'>
+        <aside className='flex min-h-0 min-w-0 flex-col border-b border-border @3xl:border-r @3xl:border-b-0'>
+          <form
+            className='flex shrink-0 flex-col gap-3 border-b border-border p-4'
+            onSubmit={(event) => {
+              event.preventDefault();
+              handleAdd();
+            }}>
+            <div className={TYPE.label}>Add brand color</div>
+            <label htmlFor='brand-hex-input' className={TYPE.meta}>
+              Hex color
+            </label>
+            <div className='flex items-center gap-2'>
               <input
-                id="brand-hex-input"
-                className={cn(
-                  "bg-muted border rounded px-2 py-1.5 text-[12px] font-mono outline-none transition-colors w-28",
-                  inputErr
-                    ? "border-destructive"
-                    : "border-border focus:border-ring",
-                )}
+                type='color'
+                aria-label='Brand color swatch'
+                title='Choose brand color'
+                value={parseHex(hexInput) ?? '#0057b8'}
+                onChange={(event) => {
+                  setHexInput(event.target.value);
+                  setInputErr(false);
+                }}
+                className='size-9 shrink-0 cursor-pointer overflow-hidden rounded-sm border border-border bg-transparent p-0 [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch-wrapper]:p-0'
+              />
+              <input
+                id='brand-hex-input'
                 value={hexInput}
-                onChange={(e) => setHexInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                placeholder="#0057B8"
+                onChange={(event) => {
+                  setHexInput(event.target.value);
+                  setInputErr(false);
+                }}
+                placeholder='#0057B8'
                 maxLength={7}
                 spellCheck={false}
+                aria-invalid={inputErr}
+                aria-describedby={inputErr ? 'brand-hex-error' : undefined}
+                className={cn(
+                  'h-9 min-w-0 flex-1 rounded border bg-muted px-2 font-mono text-xs outline-none focus:border-ring',
+                  inputErr ? 'border-destructive' : 'border-border',
+                )}
               />
             </div>
+            {inputErr && (
+              <p id='brand-hex-error' role='alert' className='text-[11px] text-destructive'>
+                Enter a valid hex color.
+              </p>
+            )}
+            <label htmlFor='brand-label-input' className={TYPE.meta}>
+              Name <span className='text-muted-foreground/70'>(optional)</span>
+            </label>
             <input
-              className="flex-1 min-w-35 bg-muted border border-border rounded px-2 py-1.5 text-[12px] outline-none focus:border-ring transition-colors"
+              id='brand-label-input'
               value={labelInput}
-              onChange={(e) => setLabelInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-              placeholder="Label (e.g. Brand Blue)"
+              onChange={(event) => setLabelInput(event.target.value)}
+              placeholder='Brand Blue'
+              className='h-9 min-w-0 rounded border border-border bg-muted px-2 text-xs outline-none focus:border-ring'
             />
-            <Button variant="default" size="sm" onClick={handleAdd}>
-              + Add
+            <Button type='submit' size='sm'>
+              <Plus className='size-3.5' />
+              Add color
             </Button>
+          </form>
+          <div className='flex shrink-0 items-center justify-between px-4 pt-4 pb-2'>
+            <span className={TYPE.label}>Brand colors</span>
+            <span className={TYPE.mono}>{brandColors.length}</span>
           </div>
-        </div>
-
-        {/* Brand colors list */}
-        {brandColors.length > 0 && (
-          <div className="flex gap-3 flex-wrap mb-6">
-            {brandColors.map((b) => (
+          <div className='min-h-0 flex-1 overflow-auto px-2 pb-2'>
+            {brandColors.length === 0 && (
+              <p className={`px-2 py-3 ${TYPE.meta}`}>No brand colors yet.</p>
+            )}
+            {brandColors.map((brand) => (
               <div
-                key={b.id}
-                className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2"
-              >
-                <div
-                  className="w-5 h-5 rounded-sm border border-border"
-                  style={{ background: b.hex }}
+                key={brand.id}
+                className={`flex min-w-0 items-center gap-2 rounded-sm px-2 py-3 ${selected?.brand.id === brand.id ? 'bg-accent/50' : ''}`}>
+                <span
+                  className='size-7 shrink-0 rounded-sm border border-border'
+                  style={{ background: brand.hex }}
                 />
-                {editingId === b.id ? (
+                {editingId === brand.id ? (
                   <input
-                    className="bg-muted border border-border rounded px-1.5 py-0.5 text-[11px] w-28 outline-none focus:border-ring"
-                    defaultValue={b.label}
+                    aria-label='Rename brand color'
+                    defaultValue={brand.label}
                     autoFocus
-                    onBlur={(e) => {
-                      updateBrand(b.id, { label: e.target.value || b.label });
+                    className='min-w-0 flex-1 rounded border border-border bg-muted px-1 py-1 text-xs outline-none focus:border-ring'
+                    onBlur={(event) => {
+                      updateBrand(brand.id, { label: event.target.value.trim() || brand.label });
                       setEditingId(null);
                     }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === "Escape")
-                        (e.target as HTMLInputElement).blur();
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') event.currentTarget.blur();
+                      if (event.key === 'Escape') setEditingId(null);
                     }}
                   />
                 ) : (
-                  <span
-                    className="text-[12px] cursor-text hover:text-primary transition-colors"
-                    onClick={() => setEditingId(b.id)}
-                    title="Click to rename"
-                  >
-                    {b.label}
-                  </span>
+                  <button
+                    type='button'
+                    aria-pressed={selected?.brand.id === brand.id}
+                    onClick={() => setSelectedId(brand.id)}
+                    className='flex min-w-0 flex-1 cursor-pointer flex-col gap-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring'>
+                    <span className={`max-w-full truncate ${TYPE.title}`} title={brand.label}>
+                      {brand.label}
+                    </span>
+                    <span className={TYPE.mono}>{brand.hex.toUpperCase()}</span>
+                  </button>
                 )}
-                <span className="text-[10px] text-muted-foreground font-mono">
-                  {b.hex.toUpperCase()}
-                </span>
-                <button
-                  className="text-muted-foreground hover:text-destructive text-xs bg-transparent border-none cursor-pointer ml-1"
-                  onClick={() => removeBrand(b.id)}
-                >
-                  ×
-                </button>
+                <div className='flex shrink-0 flex-col'>
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    size='icon-xs'
+                    title={`Rename ${brand.label}`}
+                    aria-label={`Rename ${brand.label}`}
+                    onClick={() => setEditingId(brand.id)}>
+                    <Pencil className='size-3' />
+                  </Button>
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    size='icon-xs'
+                    title={`Remove ${brand.label}`}
+                    aria-label={`Remove ${brand.label}`}
+                    onClick={() => removeBrand(brand.id)}>
+                    <Trash2 className='size-3 text-muted-foreground' />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
-        )}
-
-        {/* Compliance matrix */}
-        {matrix.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <div className="text-4xl mb-4">🎨</div>
-            <p className="text-sm">
-              Add brand colors above to start checking palette compliance.
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-8">
-            {matrix.map(({ brand, pairs }) => (
-              <div key={brand.id}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div
-                    className="w-6 h-6 rounded border border-border"
-                    style={{ background: brand.hex }}
+        </aside>
+        <section className='@container/results flex min-h-0 min-w-0 flex-col'>
+          {!selected ? (
+            <div className='flex min-h-64 flex-1 flex-col items-center justify-center gap-3 p-6 text-muted-foreground'>
+              <SwatchBook className='size-8' strokeWidth={1.25} />
+              <p className={TYPE.title}>No brand colors</p>
+            </div>
+          ) : (
+            <>
+              <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border p-4'>
+                <div className='flex min-w-0 items-center gap-3'>
+                  <span
+                    className='size-10 shrink-0 rounded-md border border-border'
+                    style={{ background: selected.brand.hex }}
                   />
-                  <span className="font-display font-bold text-sm">
-                    {brand.label}
-                  </span>
-                  <span className="text-muted-foreground font-mono text-[11px]">
-                    {brand.hex.toUpperCase()}
-                  </span>
+                  <div className='flex min-w-0 flex-col gap-1'>
+                    <h3 className={`${TYPE.title} wrap-break-word`}>{selected.brand.label}</h3>
+                    <span className={TYPE.mono}>{selected.brand.hex.toUpperCase()}</span>
+                  </div>
                 </div>
-
-                <div
-                  className="grid gap-2"
-                  style={{
-                    gridTemplateColumns: `repeat(${Math.min(pairs.length, 6)}, 1fr)`,
-                  }}
-                >
-                  {pairs.map(
-                    ({
-                      slot,
-                      ratio,
-                      apcaVal,
-                      dist,
-                      badge,
-                      harmonious,
-                      complementary,
-                    }) => {
-                      const name =
-                        slot.name || nearestName(hexToRgb(slot.color.hex));
-                      return (
-                        <div
-                          key={slot.id}
-                          className="rounded-lg border border-border overflow-hidden"
-                          title={`${name}\nContrast: ${ratio.toFixed(2)}:1\nAPCA: ${apcaVal.toFixed(0)}Lc\nΔOKLCH: ${dist.toFixed(1)}`}
-                        >
-                          {/* Color pair preview */}
-                          <div className="h-14 flex">
-                            <div
-                              className="flex-1"
-                              style={{ background: brand.hex }}
-                            />
-                            <div
-                              className="flex-1"
-                              style={{ background: slot.color.hex }}
-                            />
-                          </div>
-                          {/* Metrics */}
-                          <div className="bg-card p-2">
-                            <div className="text-[10px] font-mono font-semibold mb-1 truncate">
-                              {name}
-                            </div>
-                            <div className="flex items-center justify-between gap-1 flex-wrap">
-                              <span
-                                className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold text-white"
-                                style={{ background: badge.color }}
-                              >
-                                {badge.label}
-                              </span>
-                              <span className="text-[9px] font-mono text-muted-foreground">
-                                {ratio.toFixed(1)}:1
-                              </span>
-                            </div>
-                            <div className="text-[9px] text-muted-foreground mt-1">
-                              APCA {apcaVal.toFixed(0)}Lc · Δ{dist.toFixed(0)}
-                            </div>
-                            {harmonious && (
-                              <div
-                                className="text-[9px] mt-1"
-                                style={{ color: "#69f0ae" }}
-                              >
-                                ✦ Harmonious
-                              </div>
-                            )}
-                            {complementary && (
-                              <div
-                                className="text-[9px] mt-1"
-                                style={{ color: "#ffd740" }}
-                              >
-                                ◈ Complementary
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    },
-                  )}
-                </div>
-
-                {/* Summary row */}
-                <div className="mt-2 flex gap-3 text-[10px] text-muted-foreground">
-                  <span>
-                    {pairs.filter((p) => p.ratio >= 4.5).length}/{pairs.length}{" "}
-                    pass AA
-                  </span>
-                  <span>
-                    {pairs.filter((p) => p.ratio >= 7).length}/{pairs.length}{" "}
-                    pass AAA
-                  </span>
-                  <span>
-                    {pairs.filter((p) => p.harmonious).length} harmonious
-                  </span>
-                  <span>
-                    Best:{" "}
-                    {pairs.reduce(
-                      (best, p) => (p.ratio > best.ratio ? p : best),
-                      pairs[0],
-                    ).slot.name ||
-                      nearestName(
-                        hexToRgb(
-                          pairs.reduce(
-                            (best, p) => (p.ratio > best.ratio ? p : best),
-                            pairs[0],
-                          ).slot.color.hex,
-                        ),
-                      )}
-                  </span>
-                </div>
+                <span className={TYPE.meta}>{pairs.length} palette colors</span>
               </div>
-            ))}
-          </div>
-        )}
+              {pairs.length === 0 ? (
+                <div className={`flex flex-1 items-center justify-center p-6 ${TYPE.meta}`}>
+                  No palette colors to compare.
+                </div>
+              ) : (
+                <>
+                  <div className='grid shrink-0 grid-cols-2 gap-x-6 gap-y-4 border-b border-border p-4 @2xl/results:grid-cols-4'>
+                    {[
+                      {
+                        label: 'WCAG AA',
+                        value: `${pairs.filter((pair) => pair.ratio >= 4.5).length}/${pairs.length}`,
+                      },
+                      {
+                        label: 'WCAG AAA',
+                        value: `${pairs.filter((pair) => pair.ratio >= 7).length}/${pairs.length}`,
+                      },
+                      {
+                        label: 'Harmonious',
+                        value: String(pairs.filter((pair) => pair.harmonious).length),
+                      },
+                    ].map(({ label, value }) => (
+                      <div key={label} className='flex flex-col gap-2'>
+                        <span className={TYPE.label}>{label}</span>
+                        <span className={TYPE.metric}>{value}</span>
+                      </div>
+                    ))}
+                    <div className='flex min-w-0 flex-col gap-2'>
+                      <span className={TYPE.label}>Best contrast</span>
+                      <span className={TYPE.title}>
+                        {bestPair?.slot.name || nearestName(hexToRgb(bestPair!.slot.color.hex))}
+                      </span>
+                      <span className={TYPE.mono}>{bestPair?.ratio.toFixed(2)}:1</span>
+                    </div>
+                  </div>
+                  <div className='flex min-h-0 flex-1 flex-col px-4 py-3'>
+                    <div
+                      className={`grid shrink-0 ${pairColumns} items-center gap-2 border-b border-border pb-3 ${TYPE.label}`}>
+                      <span>Palette color</span>
+                      <span className='text-right'>Contrast</span>
+                      <span className='text-right' title='Absolute APCA contrast'>
+                        |Lc|
+                      </span>
+                      <span className='text-right' title='Weighted OKLCH distance'>
+                        Dist.
+                      </span>
+                      <span className='hidden text-right @2xl/results:block'>Pairing</span>
+                    </div>
+                    <div className='grid auto-rows-[minmax(2.5rem,1fr)] @3xl:min-h-0 @3xl:flex-1 @3xl:auto-rows-fr'>
+                      {pairs.map(
+                        ({ slot, ratio, apcaVal, dist, badge, harmonious, complementary }) => {
+                          const name = slot.name || nearestName(hexToRgb(slot.color.hex));
+                          return (
+                            <div
+                              key={slot.id}
+                              className={`grid ${pairColumns} min-w-0 items-center gap-2 border-b border-border last:border-b-0`}>
+                              <div className='flex min-w-0 items-center gap-2'>
+                                <div className='flex h-7 w-14 shrink-0 gap-1' aria-hidden='true'>
+                                  <span
+                                    className='flex flex-1 items-center justify-center rounded-sm border border-foreground/10 text-[10px] font-bold'
+                                    style={{
+                                      background: selected.brand.hex,
+                                      color: slot.color.hex,
+                                    }}>
+                                    Aa
+                                  </span>
+                                  <span
+                                    className='flex flex-1 items-center justify-center rounded-sm border border-foreground/10 text-[10px] font-bold'
+                                    style={{
+                                      background: slot.color.hex,
+                                      color: selected.brand.hex,
+                                    }}>
+                                    Aa
+                                  </span>
+                                </div>
+                                <div className='flex min-w-0 flex-col gap-0.5'>
+                                  <span
+                                    className='truncate text-[11px] leading-tight font-semibold'
+                                    title={name}>
+                                    {name}
+                                  </span>
+                                  <span className='font-mono text-[10px] leading-none text-muted-foreground'>
+                                    {slot.color.hex.toUpperCase()}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className='flex flex-col items-end gap-0.5'>
+                                <span className='font-mono text-[11px] leading-none tabular-nums'>
+                                  {ratio.toFixed(2)}:1
+                                </span>
+                                <span
+                                  className='text-[9px] leading-none font-semibold'
+                                  style={{ color: badge.color }}>
+                                  {badge.label}
+                                </span>
+                              </div>
+                              <span className='text-right font-mono text-[11px] tabular-nums'>
+                                {apcaVal.toFixed(0)}
+                              </span>
+                              <span className='text-right font-mono text-[11px] tabular-nums'>
+                                {dist.toFixed(1)}
+                              </span>
+                              <span
+                                className={`hidden text-right text-[10px] @2xl/results:block ${harmonious ? 'text-success' : complementary ? 'text-warning' : 'text-muted-foreground'}`}>
+                                {harmonious
+                                  ? 'Harmonious'
+                                  : complementary
+                                    ? 'Complementary'
+                                    : 'Neutral'}
+                              </span>
+                            </div>
+                          );
+                        },
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </section>
       </div>
     </div>
   );
