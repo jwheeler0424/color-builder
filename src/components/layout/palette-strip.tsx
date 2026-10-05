@@ -12,7 +12,7 @@
  * Calls onEditSlot(index) when a slot is double-clicked or edit button pressed.
  */
 
-import { useState, useCallback, useMemo, useId } from "react";
+import { Fragment, useState, useCallback, useMemo, useId } from "react";
 import {
   DndContext,
   closestCenter,
@@ -71,9 +71,7 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
   const handleDragCancel = useCallback(() => setActiveSlotId(null), []);
 
   const slotIds = useMemo(() => slots.map((s) => s.id), [slots]);
-  const activeSlot = activeSlotId
-    ? (slots.find((s) => s.id === activeSlotId) ?? null)
-    : null;
+  const activeSlot = activeSlotId ? (slots.find((s) => s.id === activeSlotId) ?? null) : null;
   const activeSlotIndex = activeSlot ? slots.indexOf(activeSlot) : -1;
 
   return (
@@ -87,7 +85,7 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
     >
       <SortableContext items={slotIds} strategy={horizontalListSortingStrategy}>
         {slots.map((slot, i) => (
-          <>
+          <Fragment key={slot.id}>
             {slots.length < 10 && i === 0 && (
               <SlotButton key={`button-${slot.id}`} index={-1} adjust={true} />
             )}
@@ -114,7 +112,7 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
                 adjust={i === slots.length - 1}
               />
             )}
-          </>
+          </Fragment>
         ))}
       </SortableContext>
 
@@ -128,9 +126,7 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
           <SlotCard
             slot={activeSlot}
             index={activeSlotIndex}
-            isEdge={
-              activeSlotIndex === 0 || activeSlotIndex === slots.length - 1
-            }
+            isEdge={activeSlotIndex === 0 || activeSlotIndex === slots.length - 1}
             onEdit={() => {}}
             overlay
           />

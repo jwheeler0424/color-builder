@@ -5,9 +5,15 @@
  * Sub-tabs:  [Score] [Compare]
  */
 
+import { useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useMemo } from "react";
+
 import type { SavedPalette } from "@/types";
+
+import { Button } from "@/components/ui/button";
+import { Chart } from "@/components/ui/chart";
 import { useChromaStore } from "@/hooks/use-chroma-store";
+import { createScoreChart, type RadarScores } from "@/lib/tools/palette-charts";
 import {
   scorePalette,
   hexToRgb,
@@ -17,8 +23,6 @@ import {
   loadSaved,
   hexToStop,
 } from "@/lib/utils";
-import { useNavigate } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -30,7 +34,7 @@ function TabBar({
   setActive: (t: "score" | "compare") => void;
 }) {
   return (
-    <div className="flex border-b border-border shrink-0">
+    <div className="flex shrink-0 border-b border-border">
       {(
         [
           ["score", "Score"],
@@ -40,7 +44,7 @@ function TabBar({
         <button
           key={id}
           onClick={() => setActive(id)}
-          className={`px-4 py-2.5 text-[10px] font-bold tracking-[.08em] uppercase border-r border-border cursor-pointer transition-colors ${active === id ? "text-foreground border-b-2 border-b-primary bg-accent/30 -mb-px" : "text-muted-foreground hover:text-foreground"}`}
+          className={`cursor-pointer border-r border-border px-4 py-2.5 text-[10px] font-bold tracking-[.08em] uppercase transition-colors ${active === id ? "-mb-px border-b-2 border-b-primary bg-accent/30 text-foreground" : "text-muted-foreground hover:text-foreground"}`}
         >
           {label}
         </button>
@@ -51,102 +55,26 @@ function TabBar({
 
 // ─── Sub-tab: Score ───────────────────────────────────────────────────────────
 
-function RadarChart({ scores }: { scores: Record<string, number> }) {
-  const SIZE = 200,
-    cx = SIZE / 2,
-    cy = SIZE / 2,
-    r = 80;
-  const entries = Object.entries(scores),
-    n = entries.length;
-  const angles = entries.map((_, i) => ((i / n) * 360 - 90) * (Math.PI / 180));
-  const gridLevels = [20, 40, 60, 80, 100];
-  const polarPoint = (angle: number, value: number) => ({
-    x: cx + r * (value / 100) * Math.cos(angle),
-    y: cy + r * (value / 100) * Math.sin(angle),
-  });
-  const dataPoints = entries.map(([, v], i) => polarPoint(angles[i], v));
-  const dataPath =
-    dataPoints
-      .map(
-        (p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)},${p.y.toFixed(1)}`,
-      )
-      .join(" ") + " Z";
+function RadarChart({ scores }: { scores: RadarScores }) {
   return (
-    <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
-      {gridLevels.map((pct) => (
-        <circle
-          key={pct}
-          cx={cx}
-          cy={cy}
-          r={(pct / 100) * r}
-          fill="none"
-          stroke="rgba(255,255,255,.06)"
-          strokeWidth={1}
-        />
-      ))}
-      {angles.map((angle, i) => {
-        const end = polarPoint(angle, 100);
-        return (
-          <line
-            key={i}
-            x1={cx}
-            y1={cy}
-            x2={end.x.toFixed(1)}
-            y2={end.y.toFixed(1)}
-            stroke="rgba(255,255,255,.08)"
-            strokeWidth={1}
-          />
-        );
-      })}
-      <path
-        d={dataPath}
-        fill="rgba(232,255,0,.15)"
-        stroke="#e8ff00"
-        strokeWidth={1.5}
-      />
-      {dataPoints.map((p, i) => (
-        <circle
-          key={i}
-          cx={p.x.toFixed(1)}
-          cy={p.y.toFixed(1)}
-          r={4}
-          fill="#e8ff00"
-        />
-      ))}
-      {entries.map(([key, val], i) => {
-        const lp = polarPoint(angles[i], 100 + 20);
-        return (
-          <text
-            key={key}
-            x={lp.x.toFixed(1)}
-            y={lp.y.toFixed(1)}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize={9}
-            fill="rgba(255,255,255,.5)"
-            fontFamily="Space Mono, monospace"
-          >
-            {key.charAt(0).toUpperCase() + key.slice(1)}
-          </text>
-        );
-      })}
-    </svg>
+    <Chart
+      definition={createScoreChart(scores)}
+      ariaLabel="Palette scores: balance, accessibility, harmony and uniqueness, from zero to one hundred"
+      height={260}
+      className="rounded-md border border-border/70 bg-muted/35 p-2"
+    />
   );
 }
 
 function ScoreTab() {
   const slots = useChromaStore((s) => s.slots);
   const score = useMemo(() => scorePalette(slots), [slots]);
-  const slotNames = useMemo(
-    () => slots.map((s) => nearestName(hexToRgb(s.color.hex))),
-    [slots],
-  );
+  const slotNames = useMemo(() => slots.map((s) => nearestName(hexToRgb(s.color.hex))), [slots]);
 
   if (!slots.length) return <EmptyState />;
 
   const { balance, accessibility, harmony, uniqueness, overall } = score;
-  const scoreColor = (v: number) =>
-    v >= 75 ? "#00e676" : v >= 50 ? "#fff176" : "#ff4455";
+  const scoreColor = (v: number) => (v >= 75 ? "#00e676" : v >= 50 ? "#fff176" : "#ff4455");
   const feedback = [
     {
       label: "Hue Balance",
@@ -193,43 +121,34 @@ function ScoreTab() {
   return (
     <div className="flex-1 overflow-auto p-6">
       <div className="mx-auto" style={{ maxWidth: 760 }}>
-        <p className="text-muted-foreground text-[11px] mb-5">
-          Objective evaluation across four dimensions. Scores are relative, not
-          absolute targets.
+        <p className="mb-5 text-[11px] text-muted-foreground">
+          Objective evaluation across four dimensions. Scores are relative, not absolute targets.
         </p>
-        <div className="flex gap-8 items-start mt-2">
-          <div className="flex flex-col items-center gap-3 shrink-0">
-            <RadarChart
-              scores={{ balance, accessibility, harmony, uniqueness }}
-            />
+        <div className="mt-2 flex min-w-0 flex-wrap items-start gap-6">
+          <div className="mx-auto flex w-full max-w-80 min-w-0 flex-col items-center gap-3">
+            <RadarChart scores={{ balance, accessibility, harmony, uniqueness }} />
             <div className="text-center">
               <div
-                className="text-[36px] font-extrabold font-display"
+                className="font-display text-[36px] font-extrabold"
                 style={{ color: scoreColor(overall) }}
               >
                 {overall}
               </div>
-              <div className="text-muted-foreground uppercase tracking-widest text-[10px]">
+              <div className="text-[10px] tracking-widest text-muted-foreground uppercase">
                 Overall
               </div>
             </div>
           </div>
-          <div className="flex-1 flex flex-col gap-5">
+          <div className="flex min-w-0 flex-1 basis-64 flex-col gap-5">
             {feedback.map(({ label, value, note }) => (
               <div key={label} className="flex flex-col">
-                <div className="justify-between flex mb-1">
-                  <span className="font-bold text-[12px]">{label}</span>
-                  <span
-                    className="text-[12px] font-extrabold"
-                    style={{ color: scoreColor(value) }}
-                  >
+                <div className="mb-1 flex justify-between">
+                  <span className="text-[12px] font-bold">{label}</span>
+                  <span className="text-[12px] font-extrabold" style={{ color: scoreColor(value) }}>
                     {value}
                   </span>
                 </div>
-                <div
-                  className="rounded mb-1.5 h-1"
-                  style={{ background: "var(--color-input)" }}
-                >
+                <div className="mb-1.5 h-1 rounded" style={{ background: "var(--color-input)" }}>
                   <div
                     style={{
                       height: "100%",
@@ -240,29 +159,26 @@ function ScoreTab() {
                     }}
                   />
                 </div>
-                <div className="text-muted-foreground leading-normal text-[11px]">
-                  {note}
-                </div>
+                <div className="text-[11px] leading-normal text-muted-foreground">{note}</div>
               </div>
             ))}
           </div>
         </div>
         <div className="mt-6">
-          <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2 font-display font-semibold">
+          <div className="mb-2 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
             Your Palette
           </div>
-          <div className="flex h-13 rounded overflow-hidden">
+          <div className="flex h-13 overflow-hidden rounded">
             {slots.map((slot, i) => (
               <div
                 key={i}
-                className="flex-1 flex items-end"
+                className="flex flex-1 items-end"
                 style={{ background: slot.color.hex, padding: "0 0 4px 4px" }}
               >
                 <span
                   style={{
                     fontSize: 8,
-                    color:
-                      slot.color.hex === "#000000" ? "#fff" : "rgba(0,0,0,.6)",
+                    color: slot.color.hex === "#000000" ? "#fff" : "rgba(0,0,0,.6)",
                     fontFamily: "var(--font-mono)",
                   }}
                 >
@@ -310,7 +226,7 @@ function paletteStats(hexes: string[]) {
 function SwatchStrip({ hexes }: { hexes: string[] }) {
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   return (
-    <div className="flex-wrap flex gap-1">
+    <div className="flex flex-wrap gap-1">
       {hexes.map((hex, i) => (
         <div
           key={i}
@@ -320,7 +236,7 @@ function SwatchStrip({ hexes }: { hexes: string[] }) {
             setCopiedIdx(i);
             setTimeout(() => setCopiedIdx(null), 900);
           }}
-          className="rounded-md cursor-pointer flex items-center justify-center shrink-0"
+          className="flex shrink-0 cursor-pointer items-center justify-center rounded-md"
           style={{
             width: 40,
             height: 40,
@@ -333,10 +249,7 @@ function SwatchStrip({ hexes }: { hexes: string[] }) {
               className="text-[9px] font-bold"
               style={{
                 color:
-                  contrastRatio(hexToRgb(hex), { r: 255, g: 255, b: 255 }) >=
-                  4.5
-                    ? "#fff"
-                    : "#000",
+                  contrastRatio(hexToRgb(hex), { r: 255, g: 255, b: 255 }) >= 4.5 ? "#fff" : "#000",
               }}
             >
               ✓
@@ -363,32 +276,19 @@ function StatRow({
 }) {
   const delta = b - a,
     winner = Math.abs(delta) < 0.005 ? "tie" : delta > 0 ? "b" : "a";
-  const betterSide = higherIsBetter
-    ? winner
-    : winner === "a"
-      ? "b"
-      : winner === "b"
-        ? "a"
-        : "tie";
+  const betterSide = higherIsBetter ? winner : winner === "a" ? "b" : winner === "b" ? "a" : "tie";
   const fmt = (v: number) =>
-    unit === "%"
-      ? `${Math.round(v * 100)}%`
-      : unit === "°"
-        ? `${Math.round(v)}°`
-        : v.toFixed(3);
+    unit === "%" ? `${Math.round(v * 100)}%` : unit === "°" ? `${Math.round(v)}°` : v.toFixed(3);
   return (
-    <div className="grid gap-2 items-center border-b border-muted grid-cols-[1fr_80px_80px] py-1.5">
-      <span className="text-secondary-foreground text-[10px]">{label}</span>
+    <div className="grid grid-cols-[1fr_80px_80px] items-center gap-2 border-b border-muted py-1.5">
+      <span className="text-[10px] text-secondary-foreground">{label}</span>
       <span
         style={{
           fontSize: 10,
           fontFamily: "var(--font-mono)",
           textAlign: "right",
           fontWeight: betterSide === "a" ? 700 : 400,
-          color:
-            betterSide === "a"
-              ? "var(--color-foreground)"
-              : "var(--color-muted-foreground)",
+          color: betterSide === "a" ? "var(--color-foreground)" : "var(--color-muted-foreground)",
         }}
       >
         {fmt(a)}
@@ -399,10 +299,7 @@ function StatRow({
           fontFamily: "var(--font-mono)",
           textAlign: "right",
           fontWeight: betterSide === "b" ? 700 : 400,
-          color:
-            betterSide === "b"
-              ? "var(--color-foreground)"
-              : "var(--color-muted-foreground)",
+          color: betterSide === "b" ? "var(--color-foreground)" : "var(--color-muted-foreground)",
         }}
       >
         {fmt(b)}
@@ -439,21 +336,14 @@ function CompareTab() {
   const options = [CURRENT, ...saved];
   const palA = options.find((p) => p.id === (selA ?? "__current__")) ?? CURRENT;
   const palB = options.find((p) => p.id === selB) ?? saved[0];
-  const statsA = useMemo(
-    () => (palA ? paletteStats(palA.hexes) : null),
-    [palA],
-  );
-  const statsB = useMemo(
-    () => (palB ? paletteStats(palB.hexes) : null),
-    [palB],
-  );
+  const statsA = useMemo(() => (palA ? paletteStats(palA.hexes) : null), [palA]);
+  const statsB = useMemo(() => (palB ? paletteStats(palB.hexes) : null), [palB]);
 
   if (saved.length === 0)
     return (
       <div className="flex-1 overflow-auto p-6">
-        <p className="text-muted-foreground text-[12px]">
-          Save some palettes first using ♡ in the header, then compare them
-          here.
+        <p className="text-[12px] text-muted-foreground">
+          Save some palettes first using ♡ in the header, then compare them here.
         </p>
       </div>
     );
@@ -461,11 +351,11 @@ function CompareTab() {
   return (
     <div className="flex-1 overflow-auto p-6">
       <div className="mx-auto" style={{ maxWidth: 1000 }}>
-        <p className="text-muted-foreground text-[11px] mb-5">
-          Compare two palettes side-by-side — hue spread, chroma, lightness,
-          accessibility, and color names.
+        <p className="mb-5 text-[11px] text-muted-foreground">
+          Compare two palettes side-by-side — hue spread, chroma, lightness, accessibility, and
+          color names.
         </p>
-        <div className="grid gap-4 mb-6 grid-cols-2">
+        <div className="mb-6 grid grid-cols-2 gap-4">
           {(
             [
               ["Palette A", selA ?? "__current__", setSelA],
@@ -473,15 +363,13 @@ function CompareTab() {
             ] as const
           ).map(([label, sel, setSel]) => (
             <div key={label}>
-              <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              <div className="mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
                 {label}
               </div>
               <select
                 value={sel ?? ""}
-                onChange={(e) =>
-                  (setSel as (v: string) => void)(e.target.value)
-                }
-                className="w-full bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono outline-none focus:border-ring transition-colors mb-2"
+                onChange={(e) => (setSel as (v: string) => void)(e.target.value)}
+                className="mb-2 w-full rounded border border-border bg-muted px-2 py-1.5 font-mono text-[12px] text-foreground transition-colors outline-none focus:border-ring"
               >
                 {options.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -498,25 +386,19 @@ function CompareTab() {
         {palA && palB && statsA && statsB && (
           <>
             <div className="mb-6">
-              <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-display font-semibold">
+              <div className="mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
                 Stats Comparison
               </div>
-              <div className="grid gap-2 mb-1.5 grid-cols-[1fr_80px_80px]">
-                <span className="text-muted-foreground uppercase font-bold text-[9px]">
-                  Metric
-                </span>
-                <span className="text-foreground text-right font-bold text-[9px]">
+              <div className="mb-1.5 grid grid-cols-[1fr_80px_80px] gap-2">
+                <span className="text-[9px] font-bold text-muted-foreground uppercase">Metric</span>
+                <span className="text-right text-[9px] font-bold text-foreground">
                   {palA.name.slice(0, 12)}
                 </span>
-                <span className="text-primary text-right font-bold text-[9px]">
+                <span className="text-right text-[9px] font-bold text-primary">
                   {palB.name.slice(0, 12)}
                 </span>
               </div>
-              <StatRow
-                label="Avg chroma (vividness)"
-                a={statsA.avgChroma}
-                b={statsB.avgChroma}
-              />
+              <StatRow label="Avg chroma (vividness)" a={statsA.avgChroma} b={statsB.avgChroma} />
               <StatRow
                 label="Avg lightness"
                 a={statsA.avgLight}
@@ -524,12 +406,7 @@ function CompareTab() {
                 unit="%"
                 higherIsBetter={false}
               />
-              <StatRow
-                label="Hue spread"
-                a={statsA.hueSpread}
-                b={statsB.hueSpread}
-                unit="°"
-              />
+              <StatRow label="Hue spread" a={statsA.hueSpread} b={statsB.hueSpread} unit="°" />
               <StatRow
                 label={`AA accessibility (/${Math.max(statsA.total, statsB.total)})`}
                 a={statsA.aaAny / statsA.total}
@@ -591,9 +468,7 @@ function CompareTab() {
 function EmptyState() {
   return (
     <div className="flex-1 overflow-auto p-6">
-      <p className="text-muted-foreground text-[12px]">
-        Generate a palette first.
-      </p>
+      <p className="text-[12px] text-muted-foreground">Generate a palette first.</p>
     </div>
   );
 }
@@ -603,8 +478,8 @@ function EmptyState() {
 export default function ScoreView() {
   const [activeTab, setActiveTab] = useState<"score" | "compare">("score");
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="px-6 pt-5 pb-0 shrink-0">
+    <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="shrink-0 px-6 pt-5 pb-0">
         <h2 className="mb-1">Score & Compare</h2>
       </div>
       <TabBar active={activeTab} setActive={setActiveTab} />

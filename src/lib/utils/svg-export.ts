@@ -6,7 +6,8 @@
  */
 
 import type { PaletteSlot } from "@/types";
-import { hexToRgb, nearestName, rgbToHsl, textColor } from "@/lib/utils";
+import { hexToRgb, rgbToHsl, textColor } from "./color-math.utils";
+import { nearestName } from "./palette.utils";
 
 export interface SvgExportOptions {
   /** Pixel width of each swatch (default 180) */
@@ -29,10 +30,7 @@ function esc(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-export function generateSvgSwatch(
-  slots: PaletteSlot[],
-  options: SvgExportOptions = {},
-): string {
+export function generateSvgSwatch(slots: PaletteSlot[], options: SvgExportOptions = {}): string {
   const {
     swatchW = 180,
     swatchH = 220,
@@ -59,10 +57,7 @@ export function generateSvgSwatch(
       const tokenName = slot.name || nearestName(rgb);
 
       // APCA-lite: simple relative luminance for the contrast badge
-      const lum =
-        0.2126 * (rgb.r / 255) +
-        0.7152 * (rgb.g / 255) +
-        0.0722 * (rgb.b / 255);
+      const lum = 0.2126 * (rgb.r / 255) + 0.7152 * (rgb.g / 255) + 0.0722 * (rgb.b / 255);
       const contrastVsWhite = 1.05 / (lum + 0.05);
       const contrastVsBlack = (lum + 0.05) / 0.05;
       const ratio = Math.max(contrastVsWhite, contrastVsBlack).toFixed(1);

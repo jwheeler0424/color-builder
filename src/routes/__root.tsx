@@ -1,25 +1,20 @@
-// src/routes/__root.tsx
-/// <reference types="vite/client" />
-import {
-  HeadContent,
-  Outlet,
-  Scripts,
-  createRootRouteWithContext,
-} from "@tanstack/react-router";
-import { TanStackDevtools } from "@tanstack/react-devtools";
-import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { PacerDevtoolsPanel } from "@tanstack/react-pacer-devtools";
-import * as React from "react";
 import type { QueryClient } from "@tanstack/react-query";
+
+import { TanStackDevtools } from "@tanstack/react-devtools";
+import { PacerDevtoolsPanel } from "@tanstack/react-pacer-devtools";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
+import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import * as React from "react";
+
 import { DefaultCatchBoundary } from "@/components/default-catch-boundary";
 import { NotFound } from "@/components/not-found";
-import appCss from "@/styles/globals.css?url";
-import { seo } from "@/lib/utils/seo";
-import { ThemeProvider } from "@/providers/theme.provider";
-import { HotkeyProvider } from "@/providers/hotkey.provider";
-import { getThemeServerFn, Theme } from "@/lib/theme";
+import { ToasterGlobal } from "@/components/ui/toast";
 import { CommandPaletteProvider } from "@/components/views/command-palette";
+import { getTheme, type Theme } from "@/lib/theme";
+import { seo } from "@/lib/utils/seo";
+import { HotkeyProvider } from "@/providers/hotkey.provider";
+import { ThemeProvider } from "@/providers/theme.provider";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -39,73 +34,38 @@ export const Route = createRootRouteWithContext<{
         description: `Chroma ELITE is a type-safe, client-first, color palette generator and editor built with TanStack Router. `,
       }),
     ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      {
-        rel: "apple-touch-icon",
-        sizes: "180x180",
-        href: "/apple-touch-icon.png",
-      },
-      {
-        rel: "icon",
-        type: "image/png",
-        sizes: "32x32",
-        href: "/favicon-32x32.png",
-      },
-      {
-        rel: "icon",
-        type: "image/png",
-        sizes: "16x16",
-        href: "/favicon-16x16.png",
-      },
-      { rel: "manifest", href: "/site.webmanifest", color: "#282828" },
-      { rel: "icon", href: "/favicon.ico" },
-    ],
-    // scripts: [
-    //   {
-    //     src: "/customScript.js",
-    //     type: "text/javascript",
-    //   },
-    // ],
+    links: [{ rel: "manifest", href: "/site.webmanifest", color: "#282828" }],
   }),
   errorComponent: (props) => (
-    <RootDocument theme="auto">
+    <RootLayout theme={getTheme()}>
       <DefaultCatchBoundary {...props} />
-    </RootDocument>
+    </RootLayout>
   ),
   notFoundComponent: () => <NotFound />,
-  beforeLoad: async () => ({ theme: await getThemeServerFn() }),
+  beforeLoad: () => ({ theme: getTheme() }),
   component: RootComponent,
 });
 
 function RootComponent() {
   const { theme } = Route.useRouteContext();
   return (
-    <RootDocument theme={theme}>
+    <RootLayout theme={theme}>
       <Outlet />
-    </RootDocument>
+    </RootLayout>
   );
 }
 
-function RootDocument({
-  children,
-  theme,
-}: {
-  children: React.ReactNode;
-  theme: Theme;
-}) {
-  const htmlClass = theme === "auto" ? "" : theme;
+function RootLayout({ children, theme }: { children: React.ReactNode; theme: Theme }) {
   return (
-    <html className={htmlClass}>
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <HotkeyProvider>
-          <CommandPaletteProvider>
-            <ThemeProvider theme={theme}>{children}</ThemeProvider>
-          </CommandPaletteProvider>
-        </HotkeyProvider>
+    <>
+      <HeadContent />
+      <HotkeyProvider>
+        <CommandPaletteProvider>
+          <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        </CommandPaletteProvider>
+      </HotkeyProvider>
+      <ToasterGlobal />
+      {process.env.NODE_ENV !== "production" && (
         <TanStackDevtools
           config={{
             position: "bottom-right",
@@ -128,8 +88,7 @@ function RootDocument({
             },
           ]}
         />
-        <Scripts />
-      </body>
-    </html>
+      )}
+    </>
   );
 }

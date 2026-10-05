@@ -1,29 +1,51 @@
 "use client";
 
 import * as React from "react";
-import { OTPInput, OTPInputContext } from "input-otp";
+import { OTPField as OTPPrimitive } from "@base-ui/react/otp-field";
 
 import { cn } from "@/lib/utils";
 import { MinusIcon } from "lucide-react";
 
+const InputOTPContext = React.createContext(6);
+
 function InputOTP({
   className,
   containerClassName,
+  maxLength = 6,
+  length = maxLength,
+  onChange,
+  onComplete,
+  onValueChange,
+  onValueComplete,
   ...props
-}: React.ComponentProps<typeof OTPInput> & {
+}: Omit<OTPPrimitive.Root.Props, "length"> & {
+  length?: number;
+  maxLength?: number;
+  onChange?: (value: string) => void;
+  onComplete?: (value: string) => void;
   containerClassName?: string;
 }) {
   return (
-    <OTPInput
-      data-slot="input-otp"
-      containerClassName={cn(
-        "cn-input-otp flex items-center has-disabled:opacity-50",
-        containerClassName,
-      )}
-      spellCheck={false}
-      className={cn("disabled:cursor-not-allowed", className)}
-      {...props}
-    />
+    <InputOTPContext.Provider value={length}>
+      <OTPPrimitive.Root
+        data-slot="input-otp"
+        length={length}
+        onValueChange={(value, details) => {
+          onValueChange?.(value, details);
+          onChange?.(value);
+        }}
+        onValueComplete={(value, details) => {
+          onValueComplete?.(value, details);
+          onComplete?.(value);
+        }}
+        className={cn(
+          "cn-input-otp flex items-center has-disabled:opacity-50",
+          containerClassName,
+          className,
+        )}
+        {...props}
+      />
+    </InputOTPContext.Provider>
   );
 }
 
@@ -44,42 +66,33 @@ function InputOTPSlot({
   index,
   className,
   ...props
-}: React.ComponentProps<"div"> & {
+}: OTPPrimitive.Input.Props & {
   index: number;
 }) {
-  const inputOTPContext = React.useContext(OTPInputContext);
-  const { char, hasFakeCaret, isActive } = inputOTPContext?.slots[index] ?? {};
+  const length = React.useContext(InputOTPContext);
 
   return (
-    <div
+    <OTPPrimitive.Input
       data-slot="input-otp-slot"
-      data-active={isActive}
+      aria-label={`Character ${index + 1} of ${length}`}
       className={cn(
-        "dark:bg-input/30 border-input data-[active=true]:border-ring data-[active=true]:ring-ring/50 data-[active=true]:aria-invalid:ring-destructive/20 dark:data-[active=true]:aria-invalid:ring-destructive/40 aria-invalid:border-destructive data-[active=true]:aria-invalid:border-destructive size-9 border-y border-r text-sm shadow-xs transition-all outline-none first:rounded-l-md first:border-l last:rounded-r-md data-[active=true]:ring-[3px] relative flex items-center justify-center data-[active=true]:z-10",
+        "relative size-9 border-y border-r border-input bg-transparent text-center text-sm shadow-xs transition-all outline-none first:rounded-l-md first:border-l last:rounded-r-md focus:z-10 focus:border-ring focus:ring-[3px] focus:ring-ring/50 aria-invalid:border-destructive disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
         className,
       )}
       {...props}
-    >
-      {char}
-      {hasFakeCaret && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="animate-caret-blink bg-foreground duration-1000 h-4 w-px" />
-        </div>
-      )}
-    </div>
+    />
   );
 }
 
 function InputOTPSeparator({ ...props }: React.ComponentProps<"div">) {
   return (
-    <div
+    <OTPPrimitive.Separator
       data-slot="input-otp-separator"
       className="[&_svg:not([class*='size-'])]:size-4 flex items-center"
-      role="separator"
       {...props}
     >
       <MinusIcon />
-    </div>
+    </OTPPrimitive.Separator>
   );
 }
 

@@ -1,0 +1,301 @@
+hex | current name | source | family | tone | oklch
+#DD0055 | Anger | named-colors | Red | medium/vivid | L0.57 C0.229 H11
+#9C4C59 | Classic Country Ruby | composed | Red | medium/moderate | L0.52 C0.107 H11
+#F22463 | Ceramic Lantern Cardinal Red | composed | Red | medium/vivid | L0.62 C0.234 H11
+#9A7579 | Dark Plum Grayish Brown | color-pedia | Red | medium/grayish | L0.60 C0.047 H11
+#9E143E | Ceramic Ripe Red | composed | Red | medium/strong | L0.45 C0.170 H11
+#C5717D | Orchard Ember Crimson | composed | Red | medium/moderate | L0.64 C0.107 H11
+#E4195B | Blazing Lantern Cardinal Red | composed | Red | medium/vivid | L0.59 C0.227 H11
+#B63151 | Maroon Wine | color-pedia | Red | medium/strong | L0.52 C0.169 H11
+#904D57 | Woven Pure Cardinal Red | composed | Red | medium/moderate | L0.50 C0.090 H11
+#814D54 | Rouge Charm | named-colors | Red | medium/muted | L0.48 C0.071 H11
+#C03D5A | Glossy Lacquer Scarlet | composed | Red | medium/strong | L0.56 C0.167 H11
+#D34E69 | Painted Valentine Cherry Red | composed | Red | medium/strong | L0.61 C0.168 H11
+#C03F5B | Bold Lacquer Crimson | composed | Red | medium/strong | L0.56 C0.165 H11
+#E4677D | Tiger Pink | color-pedia | Red | light/strong | L0.67 C0.156 H11
+#B54A5E | Maroonish Plum | color-pedia | Red | medium/moderate | L0.56 C0.140 H11
+#B75767 | Glazed Fresh Cardinal Red | composed | Red | medium/moderate | L0.58 C0.125 H11
+#663F44 | Beetroot | named-colors | Red | dark/muted | L0.41 C0.055 H11
+#D00650 | True Dazzling Crimson | composed | Red | medium/vivid | L0.55 C0.217 H11
+#75343F | Smoldering Country Carmine | composed | Red | dark/moderate | L0.42 C0.092 H11
+#EA5976 | Soft Jewel Scarlet | composed | Red | light/strong | L0.66 C0.180 H11
+#660C26 | Dusky Country Cardinal Red | composed | Red | dark/moderate | L0.33 C0.122 H11
+#FB607F | Brink Pink | named-colors | Red | light/strong | L0.70 C0.190 H11
+#C36F7B | Red-Pinkish Purple | color-pedia | Red | medium/moderate | L0.64 C0.107 H11
+#DC4165 | Heritage Salsa Garnet | composed | Red | medium/strong | L0.61 C0.191 H11
+#5F3E42 | Vulcan Burgundy | named-colors | Red | dark/grayish | L0.40 C0.047 H11
+#C63056 | Dark Red Wine | color-pedia | Red | medium/strong | L0.55 C0.186 H11
+#811834 | Rich Natural Ruby | composed | Red | dark/moderate | L0.40 C0.139 H11
+#A74557 | Dark Plum-Brownish Red | color-pedia | Red | medium/moderate | L0.53 C0.130 H11
+#5D2B33 | Faded Crimson | composed | Red | dark/muted | L0.36 C0.073 H11
+#DF2D5E | Electric Hearth Crimson | composed | Red | medium/vivid | L0.60 C0.211 H11
+#3C2427 | Dark Grayish Brown | color-pedia | Red | very dark/muted | L0.29 C0.037 H11
+#A85562 | Woven Orchard Crimson | composed | Red | medium/moderate | L0.55 C0.109 H11
+#D94B69 | Ripe Lacquer Ruby | composed | Red | medium/strong | L0.62 C0.178 H11
+#D72D5B | Blazing Ember Scarlet | composed | Red | medium/vivid | L0.58 C0.204 H11
+#DF4F6D | Bright Beacon Cardinal Red | composed | Red | medium/strong | L0.63 C0.180 H11
+#AC2448 | Painted Royal Scarlet | composed | Red | medium/strong | L0.49 C0.171 H11
+#E05973 | Glossy Sunfire Cardinal Red | composed | Red | medium/strong | L0.64 C0.169 H11
+#6E0C29 | Rich Folk Cardinal Red | composed | Red | dark/moderate | L0.35 C0.130 H11
+#80565B | Rose Branch | named-colors | Red | medium/muted | L0.50 C0.056 H11
+#E44268 | Ceramic Cinnabar Garnet | composed | Red | medium/strong | L0.62 C0.198 H11
+#C8385A | Cherry Lolly | named-colors | Red | medium/strong | L0.56 C0.180 H11
+#D93D62 | Tapestry Matador Garnet | composed | Red | medium/strong | L0.60 C0.192 H11
+#F51C62 | Neon Pomegranate Ruby | composed | Red | medium/vivid | L0.63 C0.240 H11
+#E3496B | Glazed Pomegranate Cherry Red | composed | Red | medium/strong | L0.63 C0.190 H11
+#CA1850 | California Sunset | named-colors | Red | medium/vivid | L0.54 C0.206 H11
+#7E0B2F | Smoldering Jewel Red | composed | Red | dark/strong | L0.38 C0.145 H11
+#AE3952 | Ceramic Ripe Scarlet | composed | Red | medium/strong | L0.52 C0.152 H11
+#CE385C | Lush Lacquer Garnet | composed | Red | medium/strong | L0.57 C0.186 H11
+#735054 | Plumberry | named-colors | Red | medium/grayish | L0.47 C0.047 H11
+#6A0E28 | Dark Garden Scarlet | composed | Red | dark/moderate | L0.34 C0.124 H11
+#891235 | Smoldering Rich Scarlet | composed | Red | dark/strong | L0.41 C0.152 H11
+#7E2639 | Suō | named-colors | Red | dark/moderate | L0.41 C0.121 H11
+#B58E92 | Sunlit Crimson | composed | Red | light/grayish | L0.68 C0.048 H11
+#F55979 | Morning Lush Carmine | composed | Red | light/strong | L0.68 C0.191 H11
+#D70A53 | Debian Red | named-colors | Red | medium/vivid | L0.56 C0.222 H12
+#E74068 | Radiant Ember Garnet | composed | Red | medium/vivid | L0.63 C0.203 H12
+#E4205C | Bright Poppy Cardinal Red | composed | Red | medium/vivid | L0.60 C0.224 H12
+#9C4856 | Baked Bahama | named-colors | Red | medium/moderate | L0.51 C0.113 H12
+#49091A | Ripe Scarlet | composed | Red | very dark/strong | L0.27 C0.094 H12
+#E9677E | Breezy Glossy Crimson | composed | Red | light/strong | L0.68 C0.162 H12
+#F2125F | Radiant Rosehip Cardinal Red | composed | Red | medium/vivid | L0.62 C0.241 H12
+#E41059 | Glazed Paprika Cherry Red | composed | Red | medium/vivid | L0.59 C0.231 H12
+#94686D | Dark Warm Plum | color-pedia | Red | medium/muted | L0.56 C0.057 H12
+#9E003A | Cranberry | named-colors | Red | dark/strong | L0.45 C0.178 H12
+#885D62 | Rabbit Paws | named-colors | Red | medium/muted | L0.53 C0.057 H12
+#B8294E | Lush Valentine Red | composed | Red | medium/strong | L0.52 C0.179 H12
+#661529 | Stormy Orchard Cherry Red | composed | Red | dark/moderate | L0.34 C0.114 H12
+#DE0C56 | Deep Plum Red | color-pedia | Red | medium/vivid | L0.58 C0.227 H12
+#914D57 | Rialto | named-colors | Red | medium/moderate | L0.50 C0.092 H12
+#DD1657 | Dazzling Lacquer Crimson | composed | Red | medium/vivid | L0.58 C0.223 H12
+#B58086 | Morning Cherry Red | composed | Red | light/muted | L0.65 C0.066 H12
+#B26D76 | Heritage Antique Ruby | composed | Red | medium/muted | L0.61 C0.088 H12
+#ED4B6F | Glossy Sunfire Carmine | composed | Red | medium/strong | L0.65 C0.198 H12
+#FA1863 | Painted Brilliant Beacon Red | composed | Red | medium/vivid | L0.63 C0.245 H12
+#9F2D47 | Crimson Strawberry | named-colors | Red | medium/strong | L0.48 C0.150 H12
+#F42463 | Heritage Poppy Cardinal Red | composed | Red | medium/vivid | L0.63 C0.235 H12
+#E22E5F | Bright Kiln Garnet | composed | Red | medium/vivid | L0.60 C0.213 H12
+#BA4A5F | Bold Valentine Scarlet | composed | Red | medium/strong | L0.56 C0.145 H12
+#E93F68 | Radiant Valentine Cardinal Red | composed | Red | medium/vivid | L0.63 C0.206 H12
+#D81154 | Brilliant Beacon Scarlet | composed | Red | medium/vivid | L0.57 C0.221 H12
+#EB1E5E | Brilliant Matador Cardinal Red | composed | Red | medium/vivid | L0.61 C0.231 H12
+#C92954 | Classic Poppy Red | composed | Red | medium/strong | L0.55 C0.194 H12
+#A0676E | Classic Antique Cherry Red | composed | Red | medium/muted | L0.58 C0.074 H12
+#C00048 | Heritage Electric Cherry Red | composed | Red | medium/vivid | L0.52 C0.206 H12
+#7D2538 | Velvet Clear Cherry Red | composed | Red | dark/moderate | L0.41 C0.121 H12
+#6B2935 | Rich Natural Garnet | composed | Red | dark/moderate | L0.38 C0.095 H12
+#B2777E | Painted Vintage Carmine | composed | Red | medium/muted | L0.63 C0.075 H12
+#C8144E | Glazed Radiant Cardinal Red | composed | Red | medium/vivid | L0.54 C0.206 H12
+#3D0C17 | Starless Red | composed | Red | very dark/moderate | L0.25 C0.076 H12
+#F51360 | Pure Pleasure | named-colors | Red | medium/vivid | L0.62 C0.243 H12
+#443133 | Flare Carmine | composed | Red | dark/grayish | L0.34 C0.028 H12
+#C13355 | Woven Kiln Red | composed | Red | medium/strong | L0.55 C0.178 H12
+#BD164A | Ripe Poppy Crimson | composed | Red | medium/strong | L0.52 C0.196 H12
+#7C022C | Rich Ripe Crimson | composed | Red | dark/strong | L0.38 C0.148 H12
+#C99298 | Bright Hushed Ruby | composed | Red | light/muted | L0.71 C0.067 H12
+#B60244 | Jewel Paprika Crimson | composed | Red | medium/strong | L0.50 C0.197 H12
+#BA1749 | True Chili Scarlet | composed | Red | medium/strong | L0.51 C0.193 H12
+#EC788A | Sunlit Jewel Scarlet | composed | Red | light/strong | L0.71 C0.144 H12
+#B15161 | True Country Carmine | composed | Red | medium/moderate | L0.56 C0.126 H12
+#D33C5F | Jewel Lacquer Cardinal Red | composed | Red | medium/strong | L0.59 C0.187 H12
+#512C31 | Purple Kite | named-colors | Red | dark/muted | L0.34 C0.055 H12
+#D52557 | Radiant Paprika Red | composed | Red | medium/vivid | L0.57 C0.208 H12
+#BA1F4B | Ripe Ember Scarlet | composed | Red | medium/strong | L0.52 C0.188 H12
+#E67E8D | Soft Country Crimson | composed | Red | light/moderate | L0.71 C0.129 H12
+#F1617C | Soft Bold Cherry Red | composed | Red | light/strong | L0.68 C0.178 H12
+#9E344A | Glazed Bright Carmine | composed | Red | medium/strong | L0.49 C0.141 H12
+#D86F7F | Morning Orchard Crimson | composed | Red | light/moderate | L0.67 C0.132 H12
+#501421 | Ember Scarlet | composed | Red | very dark/strong | L0.30 C0.089 H12
+#370612 | Country Cherry Red | composed | Red | very dark/moderate | L0.22 C0.077 H12
+#FE4471 | Morning Neon Scarlet | composed | Red | light/vivid | L0.67 C0.221 H12
+#C06371 | Tapestry Orchard Garnet | composed | Red | medium/moderate | L0.61 C0.119 H12
+#9D5660 | Dark Cherry Wine | color-pedia | Red | medium/moderate | L0.54 C0.094 H12
+#B21C47 | Bold Rosehip Red | composed | Red | medium/strong | L0.50 C0.183 H12
+#C23556 | Bright Pomegranate Scarlet | composed | Red | medium/strong | L0.55 C0.177 H12
+#F45777 | Breezy Bright Ruby | composed | Red | light/strong | L0.67 C0.192 H12
+#B63753 | Raspberry Wine | named-colors | Red | medium/strong | L0.53 C0.163 H12
+#BE214D | Ceramic Beacon Crimson | composed | Red | medium/strong | L0.53 C0.190 H12
+#A32D48 | Warrior Queen | named-colors | Red | medium/strong | L0.49 C0.154 H12
+#EA095A | Classic Pomegranate Ruby | composed | Red | medium/vivid | L0.60 C0.237 H12
+#F80C60 | Ceramic Radiant Salsa Red | composed | Red | medium/vivid | L0.63 C0.247 H12
+#C31E4E | Jazzy | named-colors | Red | medium/strong | L0.53 C0.197 H12
+#EB3765 | Maraschino Cherry Red | color-pedia | Red | medium/vivid | L0.62 C0.215 H12
+#E04E6C | Tapestry Beacon Cardinal Red | composed | Red | medium/strong | L0.63 C0.182 H12
+#D78791 | Spring Natural Cherry Red | composed | Red | light/moderate | L0.71 C0.099 H12
+#D3385D | Ceramic Lantern Garnet | composed | Red | medium/strong | L0.58 C0.191 H12
+#C22650 | Heritage Paprika Scarlet | composed | Red | medium/strong | L0.54 C0.190 H12
+#8A7476 | Classic Muted Cardinal Red | composed | Red | medium/grayish | L0.58 C0.028 H12
+#CD094E | True Radiant Carmine | composed | Red | medium/vivid | L0.54 C0.214 H12
+#DA0F54 | Dazzling Salsa Crimson | composed | Red | medium/vivid | L0.57 C0.223 H12
+#9C2542 | Big Dip O'ruby | named-colors | Red | medium/strong | L0.46 C0.155 H12
+#DF7484 | Bright Country Cherry Red | composed | Red | light/moderate | L0.69 C0.134 H12
+#FE2B68 | Gentle Vivid Cardinal Red | composed | Red | light/vivid | L0.65 C0.240 H12
+#9B4654 | Tapestry Country Scarlet | composed | Red | medium/moderate | L0.51 C0.114 H12
+#F1025C | Neon Tulip Garnet | composed | Red | medium/vivid | L0.61 C0.244 H12
+#6B4247 | Purplish Brown | named-colors | Red | dark/muted | L0.43 C0.057 H12
+#873A47 | Heritage Garden Garnet | composed | Red | medium/moderate | L0.46 C0.106 H12
+#A81040 | Tapestry Ripe Ruby | composed | Red | medium/strong | L0.47 C0.181 H12
+#E9687E | Ambitious Rose | named-colors | Red | light/strong | L0.68 C0.160 H12
+#20080C | Nocturne Crimson | composed | Red | very dark/muted | L0.18 C0.042 H12
+#B39C9E | Roaring Twenties | named-colors | Red | light/grayish | L0.71 C0.027 H12
+#B94159 | Glazed Beacon Crimson | composed | Red | medium/strong | L0.55 C0.155 H12
+#E70E59 | Firelight Red | color-pedia | Red | medium/vivid | L0.59 C0.233 H12
+#FF2266 | Peevish Red | named-colors | Red | medium/vivid | L0.65 C0.245 H12
+#E4205B | Dazzling Kiln Ruby | composed | Red | medium/vivid | L0.60 C0.224 H12
+#FF6A85 | Sunlit Ember Scarlet | composed | Red | light/strong | L0.72 C0.182 H12
+#A24857 | Agapornis Red Parrot | named-colors | Red | medium/moderate | L0.52 C0.120 H12
+#77343F | Smoldering Country Garnet | composed | Red | dark/moderate | L0.42 C0.094 H12
+#984A56 | Woven Garden Cardinal Red | composed | Red | medium/moderate | L0.51 C0.105 H12
+#F5456E | Light Radiant Red | composed | Red | light/vivid | L0.66 C0.212 H12
+#F82163 | Glazed Brilliant Cinnabar Scarlet | composed | Red | medium/vivid | L0.63 C0.240 H12
+#8F6267 | Painted Dusty Cardinal Red | composed | Red | medium/muted | L0.55 C0.059 H12
+#F46D84 | Soft Royal Red | composed | Red | light/strong | L0.70 C0.166 H12
+#DD0F55 | Vivid Matador Crimson | composed | Red | medium/vivid | L0.58 C0.225 H12
+#C91E50 | Tapestry Electric Cherry Red | composed | Red | medium/vivid | L0.54 C0.202 H12
+#A23D50 | Strawberry Daiquiri | named-colors | Red | medium/moderate | L0.50 C0.134 H12
+#AA2346 | Glazed Ripe Ruby | composed | Red | medium/strong | L0.49 C0.170 H12
+#C39297 | Profound Pink | named-colors | Red | light/muted | L0.71 C0.060 H12
+#651227 | Smoldering Garden Cardinal Red | composed | Red | dark/moderate | L0.34 C0.116 H12
+#E75270 | Classic Pomegranate Garnet | composed | Red | medium/strong | L0.65 C0.184 H12
+#C0415B | Painted Tulip Red | composed | Red | medium/strong | L0.56 C0.162 H12
+#A22042 | True Crimson | named-colors | Red | medium/strong | L0.47 C0.165 H12
+#D71854 | Brilliant Chili Crimson | composed | Red | medium/vivid | L0.57 C0.217 H12
+#730B2A | Dark Folk Ruby | composed | Red | dark/moderate | L0.36 C0.135 H12
+#CA2A54 | Caramel Red | color-pedia | Red | medium/strong | L0.55 C0.195 H12
+#C46D79 | True Matador Scarlet | composed | Red | medium/moderate | L0.64 C0.111 H12
+#FC5779 | Bright Vivid Cherry Red | composed | Red | light/vivid | L0.69 C0.200 H12
+#862A3D | Smoldering Beacon Crimson | composed | Red | dark/moderate | L0.43 C0.126 H12
+#992A43 | Heritage Jewel Red | composed | Red | medium/strong | L0.46 C0.146 H12
+#DD275A | Blazing Poppy Red | composed | Red | medium/vivid | L0.59 C0.214 H12
+#F71A61 | Ceramic Beacon Cherry Red | composed | Red | medium/vivid | L0.63 C0.242 H12
+#FF6280 | Gentle Ember Crimson | composed | Red | light/strong | L0.71 C0.191 H12
+#6F2B37 | Deep Garden Carmine | composed | Red | dark/moderate | L0.39 C0.097 H12
+#EF045B | Dazzling Poppy Ruby | composed | Red | medium/vivid | L0.61 C0.242 H12
+#C96272 | Triple Berry | named-colors | Red | medium/moderate | L0.62 C0.131 H12
+#B2485B | Punky Pink | named-colors | Red | medium/moderate | L0.55 C0.139 H12
+#A14454 | Woven Clear Crimson | composed | Red | medium/moderate | L0.51 C0.124 H12
+#99394B | Woven Orchard Scarlet | composed | Red | medium/moderate | L0.48 C0.129 H12
+#EC3A66 | Dazzling Valentine Ruby | composed | Red | medium/vivid | L0.63 C0.213 H12
+#C54B62 | Glazed Paprika Scarlet | composed | Red | medium/strong | L0.58 C0.156 H12
+#DD1155 | Red-Eye | named-colors | Red | medium/vivid | L0.58 C0.224 H12
+#D74162 | Classic Lantern Carmine | composed | Red | medium/strong | L0.60 C0.186 H12
+#52282E | Washed Cherry Red | composed | Red | dark/muted | L0.34 C0.063 H12
+#902A40 | Rumba Red | named-colors | Red | dark/moderate | L0.45 C0.137 H12
+#AA646D | Classic Pure Garnet | composed | Red | medium/moderate | L0.58 C0.091 H12
+#D77885 | Bright Natural Red | composed | Red | light/moderate | L0.68 C0.119 H12
+#BA898E | Gentle Mellow Crimson | composed | Red | light/muted | L0.68 C0.060 H12
+#F62663 | Brilliant Tulip Cherry Red | composed | Red | medium/vivid | L0.63 C0.236 H12
+#BC0546 | Radiant Garnet | composed | Red | medium/vivid | L0.51 C0.201 H12
+#6E2533 | Dark Clear Cardinal Red | composed | Red | dark/moderate | L0.38 C0.104 H12
+#570D20 | Tulip Scarlet | composed | Red | dark/moderate | L0.30 C0.105 H12
+#C1979B | Spring Faded Cherry Red | composed | Red | light/muted | L0.72 C0.051 H12
+#E71D5B | Vivid Beacon Carmine | composed | Red | medium/vivid | L0.60 C0.228 H12
+#E24065 | Rich Valentine Carmine | composed | Red | medium/strong | L0.62 C0.198 H12
+#EF075B | Neon Kiln Cherry Red | composed | Red | medium/vivid | L0.61 C0.241 H12
+#712735 | Merlot Fields | named-colors | Red | dark/moderate | L0.39 C0.105 H12
+#B75E6B | Sensuous | named-colors | Red | medium/moderate | L0.59 C0.115 H12
+#D9375E | Royal Lantern Garnet | composed | Red | medium/strong | L0.59 C0.198 H12
+#A5083D | Classic Jewel Ruby | composed | Red | medium/strong | L0.46 C0.181 H12
+#C92351 | Rose Red | named-colors | Red | medium/strong | L0.55 C0.199 H12
+#FC6C85 | Ultra Red | named-colors | Red | light/strong | L0.71 C0.176 H12
+#D67B87 | Soft Country Red | composed | Red | light/moderate | L0.69 C0.114 H12
+#9A7276 | March Pink | named-colors | Red | medium/muted | L0.59 C0.051 H12
+#AE3B52 | True Lush Cardinal Red | composed | Red | medium/strong | L0.52 C0.150 H12
+#7A002A | Twilight Jewel Ruby | composed | Red | dark/strong | L0.37 C0.148 H12
+#CD586C | Jewel Flare Carmine | composed | Red | medium/strong | L0.61 C0.149 H12
+#CA717D | Bright Garden Scarlet | composed | Red | light/moderate | L0.65 C0.113 H12
+#BA6873 | Dusky Rose | named-colors | Red | medium/moderate | L0.61 C0.105 H12
+#E32E5E | True Ember Carmine | composed | Red | medium/vivid | L0.60 C0.214 H12
+#AC6A72 | Classic Vintage Garnet | composed | Red | medium/muted | L0.60 C0.085 H12
+#CA6977 | Caramel Rose | color-pedia | Red | medium/moderate | L0.64 C0.123 H12
+#E64468 | Glossy Pomegranate Garnet | composed | Red | medium/strong | L0.63 C0.198 H12
+#A31A40 | Painted Lush Cardinal Red | composed | Red | medium/strong | L0.47 C0.170 H12
+#A12744 | Classic Lush Crimson | composed | Red | medium/strong | L0.48 C0.158 H12
+#BF6C77 | Heritage Pure Cherry Red | composed | Red | medium/moderate | L0.63 C0.106 H12
+#D60B51 | Brilliant Rouge Crimson | composed | Red | medium/vivid | L0.56 C0.221 H12
+#C40D4A | Glazed Vivid Red | composed | Red | medium/vivid | L0.53 C0.205 H12
+#FC2264 | Ceramic Radiant Salsa Scarlet | composed | Red | medium/vivid | L0.64 C0.243 H12
+#D13259 | Glazed Hearth Carmine | composed | Red | medium/strong | L0.57 C0.194 H12
+#A8013D | Glazed Rich Garnet | composed | Red | medium/strong | L0.47 C0.186 H12
+#54383B | Port Glow | named-colors | Red | dark/grayish | L0.37 C0.040 H12
+#C62450 | Painted Valentine Scarlet | composed | Red | medium/strong | L0.54 C0.195 H12
+#CE1D51 | Love Surge | named-colors | Red | medium/vivid | L0.55 C0.207 H12
+#921B3A | Twilight Lush Scarlet | composed | Red | dark/strong | L0.44 C0.153 H12
+#E82F60 | Wine Red Or Scarlet | color-pedia | Red | medium/vivid | L0.61 C0.218 H12
+#E66D80 | Gentle Lush Red | composed | Red | light/strong | L0.68 C0.151 H12
+#865F63 | Tapestry Worn Carmine | composed | Red | medium/muted | L0.53 C0.051 H12
+#C76A77 | Lovebirds | named-colors | Red | medium/moderate | L0.63 C0.118 H12
+#6F373F | Rich Hushed Cherry Red | composed | Red | dark/muted | L0.41 C0.079 H12
+#8C6C6F | Chocolate Sparkle | named-colors | Red | medium/grayish | L0.56 C0.041 H12
+#9B4B57 | Maroon 579B | color-pedia | Red | medium/moderate | L0.52 C0.107 H12
+#E96C80 | Spring Lush Scarlet | composed | Red | light/strong | L0.69 C0.155 H12
+#E9205C | Brilliant Flare Ruby | composed | Red | medium/vivid | L0.61 C0.228 H12
+#F91A61 | Heritage Bright Kiln Scarlet | composed | Red | medium/vivid | L0.63 C0.244 H12
+#A17176 | Dark Redish Brown | color-pedia | Red | medium/muted | L0.60 C0.061 H12
+#CF3F5E | Bright Tulip Cardinal Red | composed | Red | medium/strong | L0.58 C0.180 H12
+#C78189 | Morning Hushed Ruby | composed | Red | light/muted | L0.68 C0.087 H12
+#D84B67 | True Pomegranate Cardinal Red | composed | Red | medium/strong | L0.61 C0.177 H12
+#E1697C | Slice of Watermelon | named-colors | Red | light/strong | L0.67 C0.150 H12
+#BC8389 | Soft Hushed Scarlet | composed | Red | light/muted | L0.67 C0.071 H12
+#963648 | Tapestry Clear Red | composed | Red | medium/moderate | L0.47 C0.129 H12
+#B22F4D | Glossy Sunfire Crimson | composed | Red | medium/strong | L0.51 C0.167 H12
+#76082A | Stormy Natural Cherry Red | composed | Red | dark/moderate | L0.37 C0.140 H12
+#E22A5C | Woven Pomegranate Cherry Red | composed | Red | medium/vivid | L0.60 C0.216 H12
+#92233D | Twilight Royal Red | composed | Red | dark/strong | L0.44 C0.146 H12
+#90686C | Mauve-a-Lish | named-colors | Red | medium/muted | L0.56 C0.052 H12
+#FE627F | Light Paprika Crimson | composed | Red | light/strong | L0.70 C0.190 H12
+#E3295C | Vivid Salsa Cherry Red | composed | Red | medium/vivid | L0.60 C0.218 H12
+#E83F66 | Bright Lantern Cardinal Red | composed | Red | medium/vivid | L0.63 C0.205 H12
+#E80C58 | Dazzling Pomegranate Ruby | composed | Red | medium/vivid | L0.60 C0.235 H12
+#D71252 | Brilliant Sunfire Crimson | composed | Red | medium/vivid | L0.57 C0.219 H12
+#E93763 | Woven Rouge Cardinal Red | composed | Red | medium/vivid | L0.62 C0.213 H12
+#FA1961 | True Bright Rouge Crimson | composed | Red | medium/vivid | L0.63 C0.245 H12
+#C73657 | Lush Salsa Scarlet | composed | Red | medium/strong | L0.56 C0.181 H12
+#4F3A3C | Dark Puce | named-colors | Red | dark/grayish | L0.37 C0.030 H12
+#BE5868 | Classic Folk Ruby | composed | Red | medium/moderate | L0.59 C0.132 H12
+#A56E74 | Ceramic Vintage Scarlet | composed | Red | medium/muted | L0.60 C0.070 H12
+#99787B | Ceramic Ashen Garnet | composed | Red | medium/grayish | L0.61 C0.041 H12
+#5C222C | Vintage Cardinal Red | composed | Red | dark/muted | L0.34 C0.085 H12
+#78142E | Stormy Folk Cardinal Red | composed | Red | dark/moderate | L0.38 C0.133 H12
+#B24F5F | Heritage Orchard Cherry Red | composed | Red | medium/moderate | L0.56 C0.129 H12
+#BE4F62 | Popstar | named-colors | Red | medium/strong | L0.58 C0.143 H12
+#EA4067 | Radiant Hearth Carmine | composed | Red | medium/vivid | L0.63 C0.206 H12
+#AE3850 | Maroon Shade | color-pedia | Red | medium/strong | L0.52 C0.153 H12
+#D91453 | Radiant Paprika Scarlet | composed | Red | medium/vivid | L0.57 C0.220 H12
+#7C072C | Rich Glossy Garnet | composed | Red | dark/strong | L0.38 C0.146 H12
+#EA0F59 | Brilliant Valentine Carmine | composed | Red | medium/vivid | L0.60 C0.235 H12
+#3F2B2D | Salsa Crimson | composed | Red | dark/grayish | L0.31 C0.030 H12
+#801A33 | Stormy Natural Scarlet | composed | Red | dark/moderate | L0.40 C0.136 H12
+#AC0D40 | Classic Lush Ruby | composed | Red | medium/strong | L0.48 C0.185 H12
+#A82746 | Woven Lush Scarlet | composed | Red | medium/strong | L0.49 C0.165 H12
+#F12961 | Radiant Chili Cardinal Red | composed | Red | medium/vivid | L0.63 C0.230 H12
+#E76178 | Cherry Static | named-colors | Red | light/strong | L0.67 C0.167 H12
+#D35E71 | Painted Rosehip Ruby | composed | Red | medium/strong | L0.63 C0.148 H12
+#C77680 | Sunlit Garden Scarlet | composed | Red | light/moderate | L0.66 C0.102 H12
+#650021 | Merguez | named-colors | Red | dark/moderate | L0.32 C0.129 H12
+#700627 | Rich Natural Scarlet | composed | Red | dark/moderate | L0.35 C0.135 H12
+#DE2659 | Vivid Kiln Scarlet | composed | Red | medium/vivid | L0.59 C0.215 H12
+#4C1C24 | Vino Tinto | named-colors | Red | dark/muted | L0.30 C0.073 H12
+#6D1D2E | Rich Natural Red | composed | Red | dark/moderate | L0.37 C0.113 H12
+#3E2A2C | Wenge Black | named-colors | Red | dark/grayish | L0.31 C0.030 H12
+#5D1927 | Fresh Scarlet | composed | Red | dark/moderate | L0.33 C0.099 H12
+#C0707A | Glazed Natural Carmine | composed | Red | medium/moderate | L0.64 C0.102 H12
+#D1084E | Tapestry Vivid Red | composed | Red | medium/vivid | L0.55 C0.217 H12
+#C70049 | Heritage Radiant Ruby | composed | Red | medium/vivid | L0.53 C0.211 H12
+#80444C | Dark Strawberry | named-colors | Red | medium/muted | L0.46 C0.083 H12
+#F52461 | Brilliant Tulip Carmine | composed | Red | medium/vivid | L0.63 C0.236 H12
+#F81F61 | Heritage Neon Cinnabar Scarlet | composed | Red | medium/vivid | L0.63 C0.241 H12
+#AC1E44 | French Wine | named-colors | Red | medium/strong | L0.49 C0.176 H12
+#B02F4C | Painted Pomegranate Red | composed | Red | medium/strong | L0.51 C0.165 H12
+#BB0044 | Red Paracentrotus | named-colors | Red | medium/vivid | L0.50 C0.202 H12
+#9A2B43 | Crimson Shadows | named-colors | Red | medium/strong | L0.47 C0.146 H12
+#F72963 | Ceramic Rouge Carmine | composed | Red | medium/vivid | L0.64 C0.235 H12
+#A3374C | Painted Rich Carmine | composed | Red | medium/strong | L0.50 C0.143 H12
+#F7175F | Electric Sunfire Ruby | composed | Red | medium/vivid | L0.63 C0.243 H12
+#B35966 | Hot Flamingo | named-colors | Red | medium/moderate | L0.58 C0.117 H12
+#BA214A | Maroon 214A | color-pedia | Red | medium/strong | L0.52 C0.186 H12
+#9B5A62 | Painted Hushed Scarlet | composed | Red | medium/muted | L0.54 C0.086 H12
+#F2215F | Electric Matador Cherry Red | composed | Red | medium/vivid | L0.62 C0.235 H12
+#721C2F | Dark Garden Carmine | composed | Red | dark/moderate | L0.37 C0.119 H12
+#BC254C | Rich Bloodstone Crimson | composed | Red | medium/strong | L0.52 C0.185 H12

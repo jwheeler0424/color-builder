@@ -9,177 +9,60 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ChromaRouteImport } from './routes/_chroma'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiPaletteRouteImport } from './routes/api/palette'
-import { Route as ApiHelloRouteImport } from './routes/api/hello'
-import { Route as ChromaUtilityRouteImport } from './routes/_chroma/utility'
-import { Route as ChromaThemeRouteImport } from './routes/_chroma/theme'
-import { Route as ChromaScoringRouteImport } from './routes/_chroma/scoring'
-import { Route as ChromaScaleRouteImport } from './routes/_chroma/scale'
-import { Route as ChromaSavedRouteImport } from './routes/_chroma/saved'
-import { Route as ChromaPreviewRouteImport } from './routes/_chroma/preview'
-import { Route as ChromaPickerRouteImport } from './routes/_chroma/picker'
-import { Route as ChromaPaletteRouteImport } from './routes/_chroma/palette'
-import { Route as ChromaP3RouteImport } from './routes/_chroma/p3'
-import { Route as ChromaOklchScatterRouteImport } from './routes/_chroma/oklch-scatter'
-import { Route as ChromaMultiscaleRouteImport } from './routes/_chroma/multiscale'
-import { Route as ChromaMixerRouteImport } from './routes/_chroma/mixer'
-import { Route as ChromaGradientRouteImport } from './routes/_chroma/gradient'
-import { Route as ChromaExtractRouteImport } from './routes/_chroma/extract'
-import { Route as ChromaExportRouteImport } from './routes/_chroma/export'
-import { Route as ChromaDesignsystemRouteImport } from './routes/_chroma/designsystem'
-import { Route as ChromaConverterRouteImport } from './routes/_chroma/converter'
-import { Route as ChromaContrastRouteImport } from './routes/_chroma/contrast'
-import { Route as ChromaComparisonRouteImport } from './routes/_chroma/comparison'
-import { Route as ChromaColorblindRouteImport } from './routes/_chroma/colorblind'
-import { Route as ChromaBuildRouteImport } from './routes/_chroma/build'
-import { Route as ChromaBrandRouteImport } from './routes/_chroma/brand'
-import { Route as ChromaAnalyzeRouteImport } from './routes/_chroma/analyze'
+import { Route as ChromaRouteImport } from './routes/_chroma'
 import { Route as ChromaAccessibilityRouteImport } from './routes/_chroma/accessibility'
-import { Route as ChromaExportIndexRouteImport } from './routes/_chroma/export/index'
-import { Route as ChromaBuildIndexRouteImport } from './routes/_chroma/build/index'
+import { Route as ChromaAnalyzeRouteImport } from './routes/_chroma/analyze'
+import { Route as ChromaBrandRouteImport } from './routes/_chroma/brand'
+import { Route as ChromaBuildRouteImport } from './routes/_chroma/build'
+import { Route as ChromaColorblindRouteImport } from './routes/_chroma/colorblind'
+import { Route as ChromaComparisonRouteImport } from './routes/_chroma/comparison'
+import { Route as ChromaContrastRouteImport } from './routes/_chroma/contrast'
+import { Route as ChromaConverterRouteImport } from './routes/_chroma/converter'
+import { Route as ChromaDesignsystemRouteImport } from './routes/_chroma/designsystem'
+import { Route as ChromaExportRouteImport } from './routes/_chroma/export'
+import { Route as ChromaExtractRouteImport } from './routes/_chroma/extract'
+import { Route as ChromaGradientRouteImport } from './routes/_chroma/gradient'
+import { Route as ChromaMixerRouteImport } from './routes/_chroma/mixer'
+import { Route as ChromaMultiscaleRouteImport } from './routes/_chroma/multiscale'
+import { Route as ChromaOklchScatterRouteImport } from './routes/_chroma/oklch-scatter'
+import { Route as ChromaP3RouteImport } from './routes/_chroma/p3'
+import { Route as ChromaPaletteRouteImport } from './routes/_chroma/palette'
+import { Route as ChromaPickerRouteImport } from './routes/_chroma/picker'
+import { Route as ChromaPreviewRouteImport } from './routes/_chroma/preview'
+import { Route as ChromaSavedRouteImport } from './routes/_chroma/saved'
+import { Route as ChromaScaleRouteImport } from './routes/_chroma/scale'
+import { Route as ChromaScoringRouteImport } from './routes/_chroma/scoring'
+import { Route as ChromaThemeRouteImport } from './routes/_chroma/theme'
+import { Route as ChromaUtilityRouteImport } from './routes/_chroma/utility'
+import { Route as ApiPaletteRouteImport } from './routes/api/palette'
 import { Route as ChromaAnalyzeIndexRouteImport } from './routes/_chroma/analyze/index'
-import { Route as ApiHelloNameRouteImport } from './routes/api/hello.$name'
-import { Route as ChromaExportUtilityRouteImport } from './routes/_chroma/export/utility'
-import { Route as ChromaExportThemeRouteImport } from './routes/_chroma/export/theme'
-import { Route as ChromaExportScaleRouteImport } from './routes/_chroma/export/scale'
-import { Route as ChromaExportDesignsystemRouteImport } from './routes/_chroma/export/designsystem'
-import { Route as ChromaBuildMixerRouteImport } from './routes/_chroma/build/mixer'
-import { Route as ChromaBuildGradientRouteImport } from './routes/_chroma/build/gradient'
-import { Route as ChromaBuildExtractRouteImport } from './routes/_chroma/build/extract'
-import { Route as ChromaAnalyzeVisualizeRouteImport } from './routes/_chroma/analyze/visualize'
-import { Route as ChromaAnalyzeScoringRouteImport } from './routes/_chroma/analyze/scoring'
-import { Route as ChromaAnalyzeBrandRouteImport } from './routes/_chroma/analyze/brand'
 import { Route as ChromaAnalyzeAccessibilityRouteImport } from './routes/_chroma/analyze/accessibility'
+import { Route as ChromaAnalyzeBrandRouteImport } from './routes/_chroma/analyze/brand'
+import { Route as ChromaAnalyzeScoringRouteImport } from './routes/_chroma/analyze/scoring'
+import { Route as ChromaAnalyzeVisualizeRouteImport } from './routes/_chroma/analyze/visualize'
+import { Route as ChromaBuildIndexRouteImport } from './routes/_chroma/build/index'
+import { Route as ChromaBuildExtractRouteImport } from './routes/_chroma/build/extract'
+import { Route as ChromaBuildGradientRouteImport } from './routes/_chroma/build/gradient'
+import { Route as ChromaBuildMixerRouteImport } from './routes/_chroma/build/mixer'
+import { Route as ChromaExportIndexRouteImport } from './routes/_chroma/export/index'
+import { Route as ChromaExportDesignsystemRouteImport } from './routes/_chroma/export/designsystem'
+import { Route as ChromaExportScaleRouteImport } from './routes/_chroma/export/scale'
+import { Route as ChromaExportThemeRouteImport } from './routes/_chroma/export/theme'
+import { Route as ChromaExportUtilityRouteImport } from './routes/_chroma/export/utility'
 
-const ChromaRoute = ChromaRouteImport.update({
-  id: '/_chroma',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPaletteRoute = ApiPaletteRouteImport.update({
-  id: '/api/palette',
-  path: '/api/palette',
+const ChromaRoute = ChromaRouteImport.update({
+  id: '/_chroma',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiHelloRoute = ApiHelloRouteImport.update({
-  id: '/api/hello',
-  path: '/api/hello',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChromaUtilityRoute = ChromaUtilityRouteImport.update({
-  id: '/utility',
-  path: '/utility',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaThemeRoute = ChromaThemeRouteImport.update({
-  id: '/theme',
-  path: '/theme',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaScoringRoute = ChromaScoringRouteImport.update({
-  id: '/scoring',
-  path: '/scoring',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaScaleRoute = ChromaScaleRouteImport.update({
-  id: '/scale',
-  path: '/scale',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaSavedRoute = ChromaSavedRouteImport.update({
-  id: '/saved',
-  path: '/saved',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaPreviewRoute = ChromaPreviewRouteImport.update({
-  id: '/preview',
-  path: '/preview',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaPickerRoute = ChromaPickerRouteImport.update({
-  id: '/picker',
-  path: '/picker',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaPaletteRoute = ChromaPaletteRouteImport.update({
-  id: '/palette',
-  path: '/palette',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaP3Route = ChromaP3RouteImport.update({
-  id: '/p3',
-  path: '/p3',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaOklchScatterRoute = ChromaOklchScatterRouteImport.update({
-  id: '/oklch-scatter',
-  path: '/oklch-scatter',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaMultiscaleRoute = ChromaMultiscaleRouteImport.update({
-  id: '/multiscale',
-  path: '/multiscale',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaMixerRoute = ChromaMixerRouteImport.update({
-  id: '/mixer',
-  path: '/mixer',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaGradientRoute = ChromaGradientRouteImport.update({
-  id: '/gradient',
-  path: '/gradient',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaExtractRoute = ChromaExtractRouteImport.update({
-  id: '/extract',
-  path: '/extract',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaExportRoute = ChromaExportRouteImport.update({
-  id: '/export',
-  path: '/export',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaDesignsystemRoute = ChromaDesignsystemRouteImport.update({
-  id: '/designsystem',
-  path: '/designsystem',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaConverterRoute = ChromaConverterRouteImport.update({
-  id: '/converter',
-  path: '/converter',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaContrastRoute = ChromaContrastRouteImport.update({
-  id: '/contrast',
-  path: '/contrast',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaComparisonRoute = ChromaComparisonRouteImport.update({
-  id: '/comparison',
-  path: '/comparison',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaColorblindRoute = ChromaColorblindRouteImport.update({
-  id: '/colorblind',
-  path: '/colorblind',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaBuildRoute = ChromaBuildRouteImport.update({
-  id: '/build',
-  path: '/build',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaBrandRoute = ChromaBrandRouteImport.update({
-  id: '/brand',
-  path: '/brand',
+const ChromaAccessibilityRoute = ChromaAccessibilityRouteImport.update({
+  id: '/accessibility',
+  path: '/accessibility',
   getParentRoute: () => ChromaRoute,
 } as any)
 const ChromaAnalyzeRoute = ChromaAnalyzeRouteImport.update({
@@ -187,80 +70,124 @@ const ChromaAnalyzeRoute = ChromaAnalyzeRouteImport.update({
   path: '/analyze',
   getParentRoute: () => ChromaRoute,
 } as any)
-const ChromaAccessibilityRoute = ChromaAccessibilityRouteImport.update({
-  id: '/accessibility',
-  path: '/accessibility',
+const ChromaBrandRoute = ChromaBrandRouteImport.update({
+  id: '/brand',
+  path: '/brand',
   getParentRoute: () => ChromaRoute,
 } as any)
-const ChromaExportIndexRoute = ChromaExportIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ChromaExportRoute,
+const ChromaBuildRoute = ChromaBuildRouteImport.update({
+  id: '/build',
+  path: '/build',
+  getParentRoute: () => ChromaRoute,
 } as any)
-const ChromaBuildIndexRoute = ChromaBuildIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ChromaBuildRoute,
+const ChromaColorblindRoute = ChromaColorblindRouteImport.update({
+  id: '/colorblind',
+  path: '/colorblind',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaComparisonRoute = ChromaComparisonRouteImport.update({
+  id: '/comparison',
+  path: '/comparison',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaContrastRoute = ChromaContrastRouteImport.update({
+  id: '/contrast',
+  path: '/contrast',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaConverterRoute = ChromaConverterRouteImport.update({
+  id: '/converter',
+  path: '/converter',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaDesignsystemRoute = ChromaDesignsystemRouteImport.update({
+  id: '/designsystem',
+  path: '/designsystem',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaExportRoute = ChromaExportRouteImport.update({
+  id: '/export',
+  path: '/export',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaExtractRoute = ChromaExtractRouteImport.update({
+  id: '/extract',
+  path: '/extract',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaGradientRoute = ChromaGradientRouteImport.update({
+  id: '/gradient',
+  path: '/gradient',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaMixerRoute = ChromaMixerRouteImport.update({
+  id: '/mixer',
+  path: '/mixer',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaMultiscaleRoute = ChromaMultiscaleRouteImport.update({
+  id: '/multiscale',
+  path: '/multiscale',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaOklchScatterRoute = ChromaOklchScatterRouteImport.update({
+  id: '/oklch-scatter',
+  path: '/oklch-scatter',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaP3Route = ChromaP3RouteImport.update({
+  id: '/p3',
+  path: '/p3',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaPaletteRoute = ChromaPaletteRouteImport.update({
+  id: '/palette',
+  path: '/palette',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaPickerRoute = ChromaPickerRouteImport.update({
+  id: '/picker',
+  path: '/picker',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaPreviewRoute = ChromaPreviewRouteImport.update({
+  id: '/preview',
+  path: '/preview',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaSavedRoute = ChromaSavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaScaleRoute = ChromaScaleRouteImport.update({
+  id: '/scale',
+  path: '/scale',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaScoringRoute = ChromaScoringRouteImport.update({
+  id: '/scoring',
+  path: '/scoring',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaThemeRoute = ChromaThemeRouteImport.update({
+  id: '/theme',
+  path: '/theme',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ChromaUtilityRoute = ChromaUtilityRouteImport.update({
+  id: '/utility',
+  path: '/utility',
+  getParentRoute: () => ChromaRoute,
+} as any)
+const ApiPaletteRoute = ApiPaletteRouteImport.update({
+  id: '/api/palette',
+  path: '/api/palette',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ChromaAnalyzeIndexRoute = ChromaAnalyzeIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => ChromaAnalyzeRoute,
-} as any)
-const ApiHelloNameRoute = ApiHelloNameRouteImport.update({
-  id: '/$name',
-  path: '/$name',
-  getParentRoute: () => ApiHelloRoute,
-} as any)
-const ChromaExportUtilityRoute = ChromaExportUtilityRouteImport.update({
-  id: '/utility',
-  path: '/utility',
-  getParentRoute: () => ChromaExportRoute,
-} as any)
-const ChromaExportThemeRoute = ChromaExportThemeRouteImport.update({
-  id: '/theme',
-  path: '/theme',
-  getParentRoute: () => ChromaExportRoute,
-} as any)
-const ChromaExportScaleRoute = ChromaExportScaleRouteImport.update({
-  id: '/scale',
-  path: '/scale',
-  getParentRoute: () => ChromaExportRoute,
-} as any)
-const ChromaExportDesignsystemRoute =
-  ChromaExportDesignsystemRouteImport.update({
-    id: '/designsystem',
-    path: '/designsystem',
-    getParentRoute: () => ChromaExportRoute,
-  } as any)
-const ChromaBuildMixerRoute = ChromaBuildMixerRouteImport.update({
-  id: '/mixer',
-  path: '/mixer',
-  getParentRoute: () => ChromaBuildRoute,
-} as any)
-const ChromaBuildGradientRoute = ChromaBuildGradientRouteImport.update({
-  id: '/gradient',
-  path: '/gradient',
-  getParentRoute: () => ChromaBuildRoute,
-} as any)
-const ChromaBuildExtractRoute = ChromaBuildExtractRouteImport.update({
-  id: '/extract',
-  path: '/extract',
-  getParentRoute: () => ChromaBuildRoute,
-} as any)
-const ChromaAnalyzeVisualizeRoute = ChromaAnalyzeVisualizeRouteImport.update({
-  id: '/visualize',
-  path: '/visualize',
-  getParentRoute: () => ChromaAnalyzeRoute,
-} as any)
-const ChromaAnalyzeScoringRoute = ChromaAnalyzeScoringRouteImport.update({
-  id: '/scoring',
-  path: '/scoring',
-  getParentRoute: () => ChromaAnalyzeRoute,
-} as any)
-const ChromaAnalyzeBrandRoute = ChromaAnalyzeBrandRouteImport.update({
-  id: '/brand',
-  path: '/brand',
   getParentRoute: () => ChromaAnalyzeRoute,
 } as any)
 const ChromaAnalyzeAccessibilityRoute =
@@ -269,6 +196,67 @@ const ChromaAnalyzeAccessibilityRoute =
     path: '/accessibility',
     getParentRoute: () => ChromaAnalyzeRoute,
   } as any)
+const ChromaAnalyzeBrandRoute = ChromaAnalyzeBrandRouteImport.update({
+  id: '/brand',
+  path: '/brand',
+  getParentRoute: () => ChromaAnalyzeRoute,
+} as any)
+const ChromaAnalyzeScoringRoute = ChromaAnalyzeScoringRouteImport.update({
+  id: '/scoring',
+  path: '/scoring',
+  getParentRoute: () => ChromaAnalyzeRoute,
+} as any)
+const ChromaAnalyzeVisualizeRoute = ChromaAnalyzeVisualizeRouteImport.update({
+  id: '/visualize',
+  path: '/visualize',
+  getParentRoute: () => ChromaAnalyzeRoute,
+} as any)
+const ChromaBuildIndexRoute = ChromaBuildIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ChromaBuildRoute,
+} as any)
+const ChromaBuildExtractRoute = ChromaBuildExtractRouteImport.update({
+  id: '/extract',
+  path: '/extract',
+  getParentRoute: () => ChromaBuildRoute,
+} as any)
+const ChromaBuildGradientRoute = ChromaBuildGradientRouteImport.update({
+  id: '/gradient',
+  path: '/gradient',
+  getParentRoute: () => ChromaBuildRoute,
+} as any)
+const ChromaBuildMixerRoute = ChromaBuildMixerRouteImport.update({
+  id: '/mixer',
+  path: '/mixer',
+  getParentRoute: () => ChromaBuildRoute,
+} as any)
+const ChromaExportIndexRoute = ChromaExportIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ChromaExportRoute,
+} as any)
+const ChromaExportDesignsystemRoute =
+  ChromaExportDesignsystemRouteImport.update({
+    id: '/designsystem',
+    path: '/designsystem',
+    getParentRoute: () => ChromaExportRoute,
+  } as any)
+const ChromaExportScaleRoute = ChromaExportScaleRouteImport.update({
+  id: '/scale',
+  path: '/scale',
+  getParentRoute: () => ChromaExportRoute,
+} as any)
+const ChromaExportThemeRoute = ChromaExportThemeRouteImport.update({
+  id: '/theme',
+  path: '/theme',
+  getParentRoute: () => ChromaExportRoute,
+} as any)
+const ChromaExportUtilityRoute = ChromaExportUtilityRouteImport.update({
+  id: '/utility',
+  path: '/utility',
+  getParentRoute: () => ChromaExportRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -296,7 +284,6 @@ export interface FileRoutesByFullPath {
   '/scoring': typeof ChromaScoringRoute
   '/theme': typeof ChromaThemeRoute
   '/utility': typeof ChromaUtilityRoute
-  '/api/hello': typeof ApiHelloRouteWithChildren
   '/api/palette': typeof ApiPaletteRoute
   '/analyze/accessibility': typeof ChromaAnalyzeAccessibilityRoute
   '/analyze/brand': typeof ChromaAnalyzeBrandRoute
@@ -309,7 +296,6 @@ export interface FileRoutesByFullPath {
   '/export/scale': typeof ChromaExportScaleRoute
   '/export/theme': typeof ChromaExportThemeRoute
   '/export/utility': typeof ChromaExportUtilityRoute
-  '/api/hello/$name': typeof ApiHelloNameRoute
   '/analyze/': typeof ChromaAnalyzeIndexRoute
   '/build/': typeof ChromaBuildIndexRoute
   '/export/': typeof ChromaExportIndexRoute
@@ -337,7 +323,6 @@ export interface FileRoutesByTo {
   '/scoring': typeof ChromaScoringRoute
   '/theme': typeof ChromaThemeRoute
   '/utility': typeof ChromaUtilityRoute
-  '/api/hello': typeof ApiHelloRouteWithChildren
   '/api/palette': typeof ApiPaletteRoute
   '/analyze/accessibility': typeof ChromaAnalyzeAccessibilityRoute
   '/analyze/brand': typeof ChromaAnalyzeBrandRoute
@@ -350,7 +335,6 @@ export interface FileRoutesByTo {
   '/export/scale': typeof ChromaExportScaleRoute
   '/export/theme': typeof ChromaExportThemeRoute
   '/export/utility': typeof ChromaExportUtilityRoute
-  '/api/hello/$name': typeof ApiHelloNameRoute
   '/analyze': typeof ChromaAnalyzeIndexRoute
   '/build': typeof ChromaBuildIndexRoute
   '/export': typeof ChromaExportIndexRoute
@@ -383,7 +367,6 @@ export interface FileRoutesById {
   '/_chroma/scoring': typeof ChromaScoringRoute
   '/_chroma/theme': typeof ChromaThemeRoute
   '/_chroma/utility': typeof ChromaUtilityRoute
-  '/api/hello': typeof ApiHelloRouteWithChildren
   '/api/palette': typeof ApiPaletteRoute
   '/_chroma/analyze/accessibility': typeof ChromaAnalyzeAccessibilityRoute
   '/_chroma/analyze/brand': typeof ChromaAnalyzeBrandRoute
@@ -396,7 +379,6 @@ export interface FileRoutesById {
   '/_chroma/export/scale': typeof ChromaExportScaleRoute
   '/_chroma/export/theme': typeof ChromaExportThemeRoute
   '/_chroma/export/utility': typeof ChromaExportUtilityRoute
-  '/api/hello/$name': typeof ApiHelloNameRoute
   '/_chroma/analyze/': typeof ChromaAnalyzeIndexRoute
   '/_chroma/build/': typeof ChromaBuildIndexRoute
   '/_chroma/export/': typeof ChromaExportIndexRoute
@@ -429,7 +411,6 @@ export interface FileRouteTypes {
     | '/scoring'
     | '/theme'
     | '/utility'
-    | '/api/hello'
     | '/api/palette'
     | '/analyze/accessibility'
     | '/analyze/brand'
@@ -442,7 +423,6 @@ export interface FileRouteTypes {
     | '/export/scale'
     | '/export/theme'
     | '/export/utility'
-    | '/api/hello/$name'
     | '/analyze/'
     | '/build/'
     | '/export/'
@@ -470,7 +450,6 @@ export interface FileRouteTypes {
     | '/scoring'
     | '/theme'
     | '/utility'
-    | '/api/hello'
     | '/api/palette'
     | '/analyze/accessibility'
     | '/analyze/brand'
@@ -483,7 +462,6 @@ export interface FileRouteTypes {
     | '/export/scale'
     | '/export/theme'
     | '/export/utility'
-    | '/api/hello/$name'
     | '/analyze'
     | '/build'
     | '/export'
@@ -515,7 +493,6 @@ export interface FileRouteTypes {
     | '/_chroma/scoring'
     | '/_chroma/theme'
     | '/_chroma/utility'
-    | '/api/hello'
     | '/api/palette'
     | '/_chroma/analyze/accessibility'
     | '/_chroma/analyze/brand'
@@ -528,7 +505,6 @@ export interface FileRouteTypes {
     | '/_chroma/export/scale'
     | '/_chroma/export/theme'
     | '/_chroma/export/utility'
-    | '/api/hello/$name'
     | '/_chroma/analyze/'
     | '/_chroma/build/'
     | '/_chroma/export/'
@@ -537,19 +513,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChromaRoute: typeof ChromaRouteWithChildren
-  ApiHelloRoute: typeof ApiHelloRouteWithChildren
   ApiPaletteRoute: typeof ApiPaletteRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_chroma': {
-      id: '/_chroma'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof ChromaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -557,172 +525,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/palette': {
-      id: '/api/palette'
-      path: '/api/palette'
-      fullPath: '/api/palette'
-      preLoaderRoute: typeof ApiPaletteRouteImport
+    '/_chroma': {
+      id: '/_chroma'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ChromaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/hello': {
-      id: '/api/hello'
-      path: '/api/hello'
-      fullPath: '/api/hello'
-      preLoaderRoute: typeof ApiHelloRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_chroma/utility': {
-      id: '/_chroma/utility'
-      path: '/utility'
-      fullPath: '/utility'
-      preLoaderRoute: typeof ChromaUtilityRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/theme': {
-      id: '/_chroma/theme'
-      path: '/theme'
-      fullPath: '/theme'
-      preLoaderRoute: typeof ChromaThemeRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/scoring': {
-      id: '/_chroma/scoring'
-      path: '/scoring'
-      fullPath: '/scoring'
-      preLoaderRoute: typeof ChromaScoringRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/scale': {
-      id: '/_chroma/scale'
-      path: '/scale'
-      fullPath: '/scale'
-      preLoaderRoute: typeof ChromaScaleRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/saved': {
-      id: '/_chroma/saved'
-      path: '/saved'
-      fullPath: '/saved'
-      preLoaderRoute: typeof ChromaSavedRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/preview': {
-      id: '/_chroma/preview'
-      path: '/preview'
-      fullPath: '/preview'
-      preLoaderRoute: typeof ChromaPreviewRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/picker': {
-      id: '/_chroma/picker'
-      path: '/picker'
-      fullPath: '/picker'
-      preLoaderRoute: typeof ChromaPickerRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/palette': {
-      id: '/_chroma/palette'
-      path: '/palette'
-      fullPath: '/palette'
-      preLoaderRoute: typeof ChromaPaletteRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/p3': {
-      id: '/_chroma/p3'
-      path: '/p3'
-      fullPath: '/p3'
-      preLoaderRoute: typeof ChromaP3RouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/oklch-scatter': {
-      id: '/_chroma/oklch-scatter'
-      path: '/oklch-scatter'
-      fullPath: '/oklch-scatter'
-      preLoaderRoute: typeof ChromaOklchScatterRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/multiscale': {
-      id: '/_chroma/multiscale'
-      path: '/multiscale'
-      fullPath: '/multiscale'
-      preLoaderRoute: typeof ChromaMultiscaleRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/mixer': {
-      id: '/_chroma/mixer'
-      path: '/mixer'
-      fullPath: '/mixer'
-      preLoaderRoute: typeof ChromaMixerRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/gradient': {
-      id: '/_chroma/gradient'
-      path: '/gradient'
-      fullPath: '/gradient'
-      preLoaderRoute: typeof ChromaGradientRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/extract': {
-      id: '/_chroma/extract'
-      path: '/extract'
-      fullPath: '/extract'
-      preLoaderRoute: typeof ChromaExtractRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/export': {
-      id: '/_chroma/export'
-      path: '/export'
-      fullPath: '/export'
-      preLoaderRoute: typeof ChromaExportRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/designsystem': {
-      id: '/_chroma/designsystem'
-      path: '/designsystem'
-      fullPath: '/designsystem'
-      preLoaderRoute: typeof ChromaDesignsystemRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/converter': {
-      id: '/_chroma/converter'
-      path: '/converter'
-      fullPath: '/converter'
-      preLoaderRoute: typeof ChromaConverterRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/contrast': {
-      id: '/_chroma/contrast'
-      path: '/contrast'
-      fullPath: '/contrast'
-      preLoaderRoute: typeof ChromaContrastRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/comparison': {
-      id: '/_chroma/comparison'
-      path: '/comparison'
-      fullPath: '/comparison'
-      preLoaderRoute: typeof ChromaComparisonRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/colorblind': {
-      id: '/_chroma/colorblind'
-      path: '/colorblind'
-      fullPath: '/colorblind'
-      preLoaderRoute: typeof ChromaColorblindRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/build': {
-      id: '/_chroma/build'
-      path: '/build'
-      fullPath: '/build'
-      preLoaderRoute: typeof ChromaBuildRouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/brand': {
-      id: '/_chroma/brand'
-      path: '/brand'
-      fullPath: '/brand'
-      preLoaderRoute: typeof ChromaBrandRouteImport
+    '/_chroma/accessibility': {
+      id: '/_chroma/accessibility'
+      path: '/accessibility'
+      fullPath: '/accessibility'
+      preLoaderRoute: typeof ChromaAccessibilityRouteImport
       parentRoute: typeof ChromaRoute
     }
     '/_chroma/analyze': {
@@ -732,26 +546,166 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChromaAnalyzeRouteImport
       parentRoute: typeof ChromaRoute
     }
-    '/_chroma/accessibility': {
-      id: '/_chroma/accessibility'
-      path: '/accessibility'
-      fullPath: '/accessibility'
-      preLoaderRoute: typeof ChromaAccessibilityRouteImport
+    '/_chroma/brand': {
+      id: '/_chroma/brand'
+      path: '/brand'
+      fullPath: '/brand'
+      preLoaderRoute: typeof ChromaBrandRouteImport
       parentRoute: typeof ChromaRoute
     }
-    '/_chroma/export/': {
-      id: '/_chroma/export/'
-      path: '/'
-      fullPath: '/export/'
-      preLoaderRoute: typeof ChromaExportIndexRouteImport
-      parentRoute: typeof ChromaExportRoute
+    '/_chroma/build': {
+      id: '/_chroma/build'
+      path: '/build'
+      fullPath: '/build'
+      preLoaderRoute: typeof ChromaBuildRouteImport
+      parentRoute: typeof ChromaRoute
     }
-    '/_chroma/build/': {
-      id: '/_chroma/build/'
-      path: '/'
-      fullPath: '/build/'
-      preLoaderRoute: typeof ChromaBuildIndexRouteImport
-      parentRoute: typeof ChromaBuildRoute
+    '/_chroma/colorblind': {
+      id: '/_chroma/colorblind'
+      path: '/colorblind'
+      fullPath: '/colorblind'
+      preLoaderRoute: typeof ChromaColorblindRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/comparison': {
+      id: '/_chroma/comparison'
+      path: '/comparison'
+      fullPath: '/comparison'
+      preLoaderRoute: typeof ChromaComparisonRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/contrast': {
+      id: '/_chroma/contrast'
+      path: '/contrast'
+      fullPath: '/contrast'
+      preLoaderRoute: typeof ChromaContrastRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/converter': {
+      id: '/_chroma/converter'
+      path: '/converter'
+      fullPath: '/converter'
+      preLoaderRoute: typeof ChromaConverterRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/designsystem': {
+      id: '/_chroma/designsystem'
+      path: '/designsystem'
+      fullPath: '/designsystem'
+      preLoaderRoute: typeof ChromaDesignsystemRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/export': {
+      id: '/_chroma/export'
+      path: '/export'
+      fullPath: '/export'
+      preLoaderRoute: typeof ChromaExportRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/extract': {
+      id: '/_chroma/extract'
+      path: '/extract'
+      fullPath: '/extract'
+      preLoaderRoute: typeof ChromaExtractRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/gradient': {
+      id: '/_chroma/gradient'
+      path: '/gradient'
+      fullPath: '/gradient'
+      preLoaderRoute: typeof ChromaGradientRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/mixer': {
+      id: '/_chroma/mixer'
+      path: '/mixer'
+      fullPath: '/mixer'
+      preLoaderRoute: typeof ChromaMixerRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/multiscale': {
+      id: '/_chroma/multiscale'
+      path: '/multiscale'
+      fullPath: '/multiscale'
+      preLoaderRoute: typeof ChromaMultiscaleRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/oklch-scatter': {
+      id: '/_chroma/oklch-scatter'
+      path: '/oklch-scatter'
+      fullPath: '/oklch-scatter'
+      preLoaderRoute: typeof ChromaOklchScatterRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/p3': {
+      id: '/_chroma/p3'
+      path: '/p3'
+      fullPath: '/p3'
+      preLoaderRoute: typeof ChromaP3RouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/palette': {
+      id: '/_chroma/palette'
+      path: '/palette'
+      fullPath: '/palette'
+      preLoaderRoute: typeof ChromaPaletteRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/picker': {
+      id: '/_chroma/picker'
+      path: '/picker'
+      fullPath: '/picker'
+      preLoaderRoute: typeof ChromaPickerRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/preview': {
+      id: '/_chroma/preview'
+      path: '/preview'
+      fullPath: '/preview'
+      preLoaderRoute: typeof ChromaPreviewRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/saved': {
+      id: '/_chroma/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof ChromaSavedRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/scale': {
+      id: '/_chroma/scale'
+      path: '/scale'
+      fullPath: '/scale'
+      preLoaderRoute: typeof ChromaScaleRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/scoring': {
+      id: '/_chroma/scoring'
+      path: '/scoring'
+      fullPath: '/scoring'
+      preLoaderRoute: typeof ChromaScoringRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/theme': {
+      id: '/_chroma/theme'
+      path: '/theme'
+      fullPath: '/theme'
+      preLoaderRoute: typeof ChromaThemeRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/_chroma/utility': {
+      id: '/_chroma/utility'
+      path: '/utility'
+      fullPath: '/utility'
+      preLoaderRoute: typeof ChromaUtilityRouteImport
+      parentRoute: typeof ChromaRoute
+    }
+    '/api/palette': {
+      id: '/api/palette'
+      path: '/api/palette'
+      fullPath: '/api/palette'
+      preLoaderRoute: typeof ApiPaletteRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_chroma/analyze/': {
       id: '/_chroma/analyze/'
@@ -760,74 +714,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChromaAnalyzeIndexRouteImport
       parentRoute: typeof ChromaAnalyzeRoute
     }
-    '/api/hello/$name': {
-      id: '/api/hello/$name'
-      path: '/$name'
-      fullPath: '/api/hello/$name'
-      preLoaderRoute: typeof ApiHelloNameRouteImport
-      parentRoute: typeof ApiHelloRoute
-    }
-    '/_chroma/export/utility': {
-      id: '/_chroma/export/utility'
-      path: '/utility'
-      fullPath: '/export/utility'
-      preLoaderRoute: typeof ChromaExportUtilityRouteImport
-      parentRoute: typeof ChromaExportRoute
-    }
-    '/_chroma/export/theme': {
-      id: '/_chroma/export/theme'
-      path: '/theme'
-      fullPath: '/export/theme'
-      preLoaderRoute: typeof ChromaExportThemeRouteImport
-      parentRoute: typeof ChromaExportRoute
-    }
-    '/_chroma/export/scale': {
-      id: '/_chroma/export/scale'
-      path: '/scale'
-      fullPath: '/export/scale'
-      preLoaderRoute: typeof ChromaExportScaleRouteImport
-      parentRoute: typeof ChromaExportRoute
-    }
-    '/_chroma/export/designsystem': {
-      id: '/_chroma/export/designsystem'
-      path: '/designsystem'
-      fullPath: '/export/designsystem'
-      preLoaderRoute: typeof ChromaExportDesignsystemRouteImport
-      parentRoute: typeof ChromaExportRoute
-    }
-    '/_chroma/build/mixer': {
-      id: '/_chroma/build/mixer'
-      path: '/mixer'
-      fullPath: '/build/mixer'
-      preLoaderRoute: typeof ChromaBuildMixerRouteImport
-      parentRoute: typeof ChromaBuildRoute
-    }
-    '/_chroma/build/gradient': {
-      id: '/_chroma/build/gradient'
-      path: '/gradient'
-      fullPath: '/build/gradient'
-      preLoaderRoute: typeof ChromaBuildGradientRouteImport
-      parentRoute: typeof ChromaBuildRoute
-    }
-    '/_chroma/build/extract': {
-      id: '/_chroma/build/extract'
-      path: '/extract'
-      fullPath: '/build/extract'
-      preLoaderRoute: typeof ChromaBuildExtractRouteImport
-      parentRoute: typeof ChromaBuildRoute
-    }
-    '/_chroma/analyze/visualize': {
-      id: '/_chroma/analyze/visualize'
-      path: '/visualize'
-      fullPath: '/analyze/visualize'
-      preLoaderRoute: typeof ChromaAnalyzeVisualizeRouteImport
-      parentRoute: typeof ChromaAnalyzeRoute
-    }
-    '/_chroma/analyze/scoring': {
-      id: '/_chroma/analyze/scoring'
-      path: '/scoring'
-      fullPath: '/analyze/scoring'
-      preLoaderRoute: typeof ChromaAnalyzeScoringRouteImport
+    '/_chroma/analyze/accessibility': {
+      id: '/_chroma/analyze/accessibility'
+      path: '/accessibility'
+      fullPath: '/analyze/accessibility'
+      preLoaderRoute: typeof ChromaAnalyzeAccessibilityRouteImport
       parentRoute: typeof ChromaAnalyzeRoute
     }
     '/_chroma/analyze/brand': {
@@ -837,12 +728,82 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChromaAnalyzeBrandRouteImport
       parentRoute: typeof ChromaAnalyzeRoute
     }
-    '/_chroma/analyze/accessibility': {
-      id: '/_chroma/analyze/accessibility'
-      path: '/accessibility'
-      fullPath: '/analyze/accessibility'
-      preLoaderRoute: typeof ChromaAnalyzeAccessibilityRouteImport
+    '/_chroma/analyze/scoring': {
+      id: '/_chroma/analyze/scoring'
+      path: '/scoring'
+      fullPath: '/analyze/scoring'
+      preLoaderRoute: typeof ChromaAnalyzeScoringRouteImport
       parentRoute: typeof ChromaAnalyzeRoute
+    }
+    '/_chroma/analyze/visualize': {
+      id: '/_chroma/analyze/visualize'
+      path: '/visualize'
+      fullPath: '/analyze/visualize'
+      preLoaderRoute: typeof ChromaAnalyzeVisualizeRouteImport
+      parentRoute: typeof ChromaAnalyzeRoute
+    }
+    '/_chroma/build/': {
+      id: '/_chroma/build/'
+      path: '/'
+      fullPath: '/build/'
+      preLoaderRoute: typeof ChromaBuildIndexRouteImport
+      parentRoute: typeof ChromaBuildRoute
+    }
+    '/_chroma/build/extract': {
+      id: '/_chroma/build/extract'
+      path: '/extract'
+      fullPath: '/build/extract'
+      preLoaderRoute: typeof ChromaBuildExtractRouteImport
+      parentRoute: typeof ChromaBuildRoute
+    }
+    '/_chroma/build/gradient': {
+      id: '/_chroma/build/gradient'
+      path: '/gradient'
+      fullPath: '/build/gradient'
+      preLoaderRoute: typeof ChromaBuildGradientRouteImport
+      parentRoute: typeof ChromaBuildRoute
+    }
+    '/_chroma/build/mixer': {
+      id: '/_chroma/build/mixer'
+      path: '/mixer'
+      fullPath: '/build/mixer'
+      preLoaderRoute: typeof ChromaBuildMixerRouteImport
+      parentRoute: typeof ChromaBuildRoute
+    }
+    '/_chroma/export/': {
+      id: '/_chroma/export/'
+      path: '/'
+      fullPath: '/export/'
+      preLoaderRoute: typeof ChromaExportIndexRouteImport
+      parentRoute: typeof ChromaExportRoute
+    }
+    '/_chroma/export/designsystem': {
+      id: '/_chroma/export/designsystem'
+      path: '/designsystem'
+      fullPath: '/export/designsystem'
+      preLoaderRoute: typeof ChromaExportDesignsystemRouteImport
+      parentRoute: typeof ChromaExportRoute
+    }
+    '/_chroma/export/scale': {
+      id: '/_chroma/export/scale'
+      path: '/scale'
+      fullPath: '/export/scale'
+      preLoaderRoute: typeof ChromaExportScaleRouteImport
+      parentRoute: typeof ChromaExportRoute
+    }
+    '/_chroma/export/theme': {
+      id: '/_chroma/export/theme'
+      path: '/theme'
+      fullPath: '/export/theme'
+      preLoaderRoute: typeof ChromaExportThemeRouteImport
+      parentRoute: typeof ChromaExportRoute
+    }
+    '/_chroma/export/utility': {
+      id: '/_chroma/export/utility'
+      path: '/utility'
+      fullPath: '/export/utility'
+      preLoaderRoute: typeof ChromaExportUtilityRouteImport
+      parentRoute: typeof ChromaExportRoute
     }
   }
 }
@@ -962,33 +923,11 @@ const ChromaRouteChildren: ChromaRouteChildren = {
 const ChromaRouteWithChildren =
   ChromaRoute._addFileChildren(ChromaRouteChildren)
 
-interface ApiHelloRouteChildren {
-  ApiHelloNameRoute: typeof ApiHelloNameRoute
-}
-
-const ApiHelloRouteChildren: ApiHelloRouteChildren = {
-  ApiHelloNameRoute: ApiHelloNameRoute,
-}
-
-const ApiHelloRouteWithChildren = ApiHelloRoute._addFileChildren(
-  ApiHelloRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChromaRoute: ChromaRouteWithChildren,
-  ApiHelloRoute: ApiHelloRouteWithChildren,
   ApiPaletteRoute: ApiPaletteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

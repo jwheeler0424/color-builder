@@ -1,24 +1,40 @@
-import { createServerFn } from "@tanstack/react-start";
-import { getCookie, setCookie } from "@tanstack/react-start/server";
-import * as z from "zod";
+import * as z from 'zod';
 
-export type Theme = "light" | "dark" | "auto";
+export type Theme = 'light' | 'dark' | 'auto';
 
-const STORAGE_KEY = "chroma-theme";
+const STORAGE_KEY = 'chroma-theme';
 
-export const getThemeServerFn = createServerFn().handler(
-  (): Theme => (getCookie(STORAGE_KEY) as Theme | undefined) ?? "auto",
-);
+const themeValidator = z.enum(['light', 'dark', 'auto']);
 
-const themeValidator = z.enum(["light", "dark", "auto"]);
+export function getTheme(): Theme {
+  if (typeof document === 'undefined') return 'auto';
 
-export const setThemeServerFn = createServerFn()
-  .inputValidator(themeValidator)
-  .handler(({ data }) =>
-    setCookie(STORAGE_KEY, data, {
-      httpOnly: false, // readable client-side if ever needed
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 365, // 1 year
-      path: "/",
-    }),
-  );
+  const cookie = document.cookie
+    .split(';')
+    .map((entry) => entry.trim())
+    .find((entry) => entry.startsWith(`${STORAGE_KEY}=`));
+
+  if (!cookie) return 'auto';
+
+  try {
+    const result = themeValidator.safeParse(
+      decodeURIComponent(cookie.slice(STORAGE_KEY.length + 1)),
+    );
+    return result.success ? result.data : 'auto';
+  } catch {
+    return 'auto';
+  }
+}
+
+export function applyTheme(theme: Theme): void {
+  if (typeof document === 'undefined') return;
+  document.documentElement.classList.remove('light', 'dark', 'auto');
+  document.documentElement.classList.add(theme);
+}
+
+export function setTheme(theme: Theme): void {
+  const value = themeValidator.parse(theme);
+  if (typeof document === 'undefined') return;
+  document.cookie = `${STORAGE_KEY}=${value}; Max-Age=31536000; Path=/; SameSite=Lax`;
+  applyTheme(value);
+}

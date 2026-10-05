@@ -35,7 +35,6 @@ src/
       calendar.tsx                              // calendar/date selection UI component
       card.tsx                                  // card surface/container UI primitive
       carousel.tsx                              // horizontally navigable carousel component
-      chart.tsx                                 // chart wrapper utilities and shared styling
       checkbox.tsx                              // checkbox input component
       collapsible.tsx                           // expandable/collapsible content primitive
       command.tsx                               // command palette style input/list UI

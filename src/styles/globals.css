@@ -14,6 +14,14 @@
 @import "@fontsource-variable/syne";
 @import "@fontsource/bricolage-grotesque";
 
+#root {
+  isolation: isolate;
+}
+
+body {
+  position: relative;
+}
+
 /* ───────────────────────────────────────────────────────────────────────── */
 
 /*
@@ -81,43 +89,34 @@
   --sidebar-border: oklch(0.82 0.02 240.77);
   --sidebar-ring: oklch(0.57 0.11 228.92);
 
-  --font-display:
-    "Bricolage Grotesque", "Source Code Pro Variable", "Geist Variable",
-    sans-serif;
+  --font-display: "Bricolage Grotesque", "Source Code Pro Variable", "Geist Variable", sans-serif;
   --font-sans:
-    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif:
-    "Source Serif 4", "Geist Variable", "Syne Variable", ui-serif, Georgia,
-    Cambria, "Times New Roman", Times, serif;
+    "Source Serif 4", "Geist Variable", "Syne Variable", ui-serif, Georgia, Cambria,
+    "Times New Roman", Times, serif;
   --font-mono:
-    "Space Mono", "Source Code Pro Variable", "Geist Mono Variable",
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+    "Space Mono", "Source Code Pro Variable", "Geist Mono Variable", ui-monospace, SFMono-Regular,
+    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-mono-alt:
-    "Space Grotesk", "Source Code Pro Variable", "Geist Mono Variable",
-    "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+    "Space Grotesk", "Source Code Pro Variable", "Geist Mono Variable", "Space Mono", ui-monospace,
+    SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
   --radius: 0.625rem;
 
   --shadow-2xs: 0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.03);
   --shadow-xs: 0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.03);
   --shadow-sm:
-    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06),
-    0px 1px 2px -1px oklch(0.49 0.09 235 / 0.06);
+    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06), 0px 1px 2px -1px oklch(0.49 0.09 235 / 0.06);
   --shadow:
-    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06),
-    0px 1px 2px -1px oklch(0.49 0.09 235 / 0.06);
+    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06), 0px 1px 2px -1px oklch(0.49 0.09 235 / 0.06);
   --shadow-md:
-    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06),
-    0px 2px 4px -1px oklch(0.49 0.09 235 / 0.06);
+    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06), 0px 2px 4px -1px oklch(0.49 0.09 235 / 0.06);
   --shadow-lg:
-    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06),
-    0px 4px 6px -1px oklch(0.49 0.09 235 / 0.06);
+    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06), 0px 4px 6px -1px oklch(0.49 0.09 235 / 0.06);
   --shadow-xl:
-    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06),
-    0px 8px 10px -1px oklch(0.49 0.09 235 / 0.06);
+    0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.06), 0px 8px 10px -1px oklch(0.49 0.09 235 / 0.06);
   --shadow-2xl: 0px 1px 2.5px 0px oklch(0.49 0.09 235 / 0.15);
 }
 
@@ -171,16 +170,11 @@
 
   --shadow-2xs: 0px 1px 2px 0px oklch(0 0 0 / 0.01);
   --shadow-xs: 0px 1px 2px 0px oklch(0 0 0 / 0.01);
-  --shadow-sm:
-    0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
-  --shadow:
-    0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
-  --shadow-md:
-    0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 2px 4px -1px oklch(0 0 0 / 0.01);
-  --shadow-lg:
-    0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 4px 6px -1px oklch(0 0 0 / 0.01);
-  --shadow-xl:
-    0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 8px 10px -1px oklch(0 0 0 / 0.01);
+  --shadow-sm: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+  --shadow: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+  --shadow-md: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 2px 4px -1px oklch(0 0 0 / 0.01);
+  --shadow-lg: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 4px 6px -1px oklch(0 0 0 / 0.01);
+  --shadow-xl: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 8px 10px -1px oklch(0 0 0 / 0.01);
   --shadow-2xl: 0px 1px 2px 0px oklch(0 0 0 / 0.03);
 }
 
@@ -235,16 +229,11 @@
 
     --shadow-2xs: 0px 1px 2px 0px oklch(0 0 0 / 0.01);
     --shadow-xs: 0px 1px 2px 0px oklch(0 0 0 / 0.01);
-    --shadow-sm:
-      0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
-    --shadow:
-      0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
-    --shadow-md:
-      0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 2px 4px -1px oklch(0 0 0 / 0.01);
-    --shadow-lg:
-      0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 4px 6px -1px oklch(0 0 0 / 0.01);
-    --shadow-xl:
-      0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 8px 10px -1px oklch(0 0 0 / 0.01);
+    --shadow-sm: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+    --shadow: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+    --shadow-md: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 2px 4px -1px oklch(0 0 0 / 0.01);
+    --shadow-lg: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 4px 6px -1px oklch(0 0 0 / 0.01);
+    --shadow-xl: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 8px 10px -1px oklch(0 0 0 / 0.01);
     --shadow-2xl: 0px 1px 2px 0px oklch(0 0 0 / 0.03);
   }
 }

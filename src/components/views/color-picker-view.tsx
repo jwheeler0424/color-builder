@@ -38,7 +38,7 @@ import { OklchSliders } from "../common/sliders/oklch-sliders";
 import { OklabSliders } from "../common/sliders/oklab-sliders";
 import { CmykSliders } from "../common/sliders/cmyk-sliders";
 import HexInput from "../common/hex-input";
-import { PanelSection, PanelSectionLabel } from "../panel";
+import { PanelGroup as PanelSection, PanelGroupLabel as PanelSectionLabel } from "../panel";
 
 // EyeDropper is a browser API not yet in lib.dom.d.ts
 interface EyeDropper {
@@ -103,16 +103,7 @@ export default function ColorPickerView() {
   const name = useMemo(() => nearestName(rgb), [rgb]);
 
   const displayHex = toHexAlpha(pickerHex, pickerAlpha);
-  const cssOut = cssString(
-    pickerMode,
-    rgb,
-    hsl,
-    hsv,
-    oklch,
-    oklab,
-    cmyk,
-    pickerAlpha,
-  );
+  const cssOut = cssString(pickerMode, rgb, hsl, hsv, oklch, oklab, cmyk, pickerAlpha);
   const previewStyle =
     pickerAlpha < 100
       ? {
@@ -121,30 +112,16 @@ export default function ColorPickerView() {
       : { background: pickerHex };
 
   // Setters — each converts its space back to hex as canonical
-  const setRgb = useCallback(
-    (r: RGB) => setPickerHex(rgbToHex(r)),
-    [setPickerHex],
-  );
-  const setHsl = useCallback(
-    (h: HSL) => setPickerHex(rgbToHex(hslToRgb(h))),
-    [setPickerHex],
-  );
-  const setHsv = useCallback(
-    (h: HSV) => setPickerHex(rgbToHex(hsvToRgb(h))),
-    [setPickerHex],
-  );
-  const setOklch = useCallback(
-    (o: OKLCH) => setPickerHex(rgbToHex(oklchToRgb(o))),
-    [setPickerHex],
-  );
+  const setRgb = useCallback((r: RGB) => setPickerHex(rgbToHex(r)), [setPickerHex]);
+  const setHsl = useCallback((h: HSL) => setPickerHex(rgbToHex(hslToRgb(h))), [setPickerHex]);
+  const setHsv = useCallback((h: HSV) => setPickerHex(rgbToHex(hsvToRgb(h))), [setPickerHex]);
+  const setOklch = useCallback((o: OKLCH) => setPickerHex(rgbToHex(oklchToRgb(o))), [setPickerHex]);
   const setOklab = useCallback(
-    (o: { L: number; a: number; b: number }) =>
-      setPickerHex(rgbToHex(oklabToRgb(o))),
+    (o: { L: number; a: number; b: number }) => setPickerHex(rgbToHex(oklabToRgb(o))),
     [setPickerHex],
   );
   const setCmyk = useCallback(
-    (c: { c: number; m: number; y: number; k: number }) =>
-      setPickerHex(rgbToHex(cmykToRgb(c))),
+    (c: { c: number; m: number; y: number; k: number }) => setPickerHex(rgbToHex(cmykToRgb(c))),
     [setPickerHex],
   );
 
@@ -168,9 +145,7 @@ export default function ColorPickerView() {
   );
 
   const useSeed = useCallback(() => {
-    setSeeds([
-      hexToStop(pickerHex, pickerAlpha < 100 ? pickerAlpha : undefined),
-    ]);
+    setSeeds([hexToStop(pickerHex, pickerAlpha < 100 ? pickerAlpha : undefined)]);
     addRecent(displayHex);
     generate();
     navigate({ to: "/palette" });
@@ -239,14 +214,8 @@ export default function ColorPickerView() {
                 fontWeight: 700,
                 border: "none",
                 cursor: "pointer",
-                background:
-                  pickerMode === m.id
-                    ? "var(--color-primary)"
-                    : "var(--color-secondary)",
-                color:
-                  pickerMode === m.id
-                    ? "#fff"
-                    : "var(--color-secondary-foreground)",
+                background: pickerMode === m.id ? "var(--color-primary)" : "var(--color-secondary)",
+                color: pickerMode === m.id ? "#fff" : "var(--color-secondary-foreground)",
                 transition: "background .12s",
               }}
             >
@@ -318,8 +287,7 @@ export default function ColorPickerView() {
               <div
                 className="absolute rounded inset-0"
                 style={{
-                  background:
-                    "repeating-conic-gradient(#444 0% 25%,#222 0% 50%) 0 0/10px 10px",
+                  background: "repeating-conic-gradient(#444 0% 25%,#222 0% 50%) 0 0/10px 10px",
                 }}
               />
               <div
@@ -330,11 +298,7 @@ export default function ColorPickerView() {
             <div className="flex-1 flex flex-col gap-1.5">
               <div className="flex gap-1.5 items-center">
                 {/* <label>HEX CODE</label> */}
-                <HexInput
-                  value={displayHex}
-                  onChange={handleHexInput}
-                  label="HEX CODE"
-                />
+                <HexInput value={displayHex} onChange={handleHexInput} label="HEX CODE" />
               </div>
               {/* CSS output string for current mode */}
               <div className="flex items-center gap-1 mt-1 bg-muted rounded px-1.5 py-1">
@@ -412,14 +376,8 @@ export default function ColorPickerView() {
           <InfoRow label="HSV" value={toCssHsv(hsv, pickerAlpha)} mono />
           <InfoRow label="OKLCH" value={toCssOklch(oklch, pickerAlpha)} mono />
           <InfoRow label="OKLab" value={toCssOklab(oklab, pickerAlpha)} mono />
-          <InfoRow
-            label="CMYK"
-            value={`${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%`}
-          />
-          <InfoRow
-            label="Lum."
-            value={`${(luminance(rgb) * 100).toFixed(1)}%`}
-          />
+          <InfoRow label="CMYK" value={`${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%`} />
+          <InfoRow label="Lum." value={`${(luminance(rgb) * 100).toFixed(1)}%`} />
         </div>
       </PanelSection>
 
@@ -442,15 +400,7 @@ export default function ColorPickerView() {
   );
 }
 
-function InfoRow({
-  label,
-  value,
-  mono,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
+function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   const [copied, setCopied] = React.useState(false);
   const copy = () => {
     navigator.clipboard.writeText(value).catch(() => {});

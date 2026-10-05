@@ -1,5 +1,5 @@
 import type { HarmonyDef, ThemeDef, CBType, GradientPreset } from "@/types";
-import { hexToRgb } from "@/lib/utils";
+import { hexToRgb } from "@/lib/utils/color-math.utils";
 import ColorNames from "./named-colors/color-names.json";
 
 // ─── Harmonies ────────────────────────────────────────────────────────────────
@@ -679,10 +679,7 @@ export const GRAD_PRESETS: GradientPreset[] = [
 
 // ─── Color Names — pre-parsed at module load ──────────────────────────────────
 
-const NAMED_RAW: [string, string][] = ColorNames.map((color) => [
-  color.name,
-  color.hex,
-]);
+const NAMED_RAW: [string, string][] = ColorNames.map((color) => [color.name, color.hex]);
 
 export const NAMED = NAMED_RAW.map(([name, hex]) => ({
   name,

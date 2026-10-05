@@ -1,48 +1,49 @@
-import { Monitor, Moon, Sun } from "lucide-react";
-import { useRouteContext, useRouter } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { setThemeServerFn, type Theme } from "@/lib/theme";
+import { useRouteContext, useRouter } from '@tanstack/react-router';
+import { Monitor, Moon, Sun } from 'lucide-react';
 
-const CYCLE: Theme[] = ["light", "dark", "auto"];
+import { Button } from '@/components/ui/button';
+import { setTheme, type Theme } from '@/lib/theme';
+
+const CYCLE: Theme[] = ['light', 'dark', 'auto'];
 
 const LABELS: Record<Theme, string> = {
-  light: "Light",
-  dark: "Dark",
-  auto: "Auto",
+  light: 'Light',
+  dark: 'Dark',
+  auto: 'Auto',
 };
 
 const NEXT_LABEL: Record<Theme, string> = {
-  light: "Switch to dark mode",
-  dark: "Switch to auto mode",
-  auto: "Switch to light mode",
+  light: 'Switch to dark mode',
+  dark: 'Switch to auto mode',
+  auto: 'Switch to light mode',
 };
 
 function ThemeIcon({ theme }: { theme: Theme }) {
-  if (theme === "dark") return <Moon className="size-5" />;
-  if (theme === "light") return <Sun className="size-5" />;
-  return <Monitor className="size-5" />;
+  if (theme === 'dark') return <Moon className='size-5' />;
+  if (theme === 'light') return <Sun className='size-5' />;
+  return <Monitor className='size-5' />;
 }
 
 export function ThemeToggle() {
-  const { theme } = useRouteContext({ from: "__root__" });
+  const { theme } = useRouteContext({ from: '__root__' });
   const router = useRouter();
 
   function cycleTheme() {
     const next = CYCLE[(CYCLE.indexOf(theme) + 1) % CYCLE.length];
-    setThemeServerFn({ data: next }).then(() => router.invalidate());
+    setTheme(next);
+    void router.invalidate();
   }
 
   return (
     <Button
-      variant="ghost"
-      size="icon-lg"
+      variant='ghost'
+      size='icon-lg'
       onClick={cycleTheme}
       aria-label={NEXT_LABEL[theme]}
       title={`Theme: ${LABELS[theme]} — click to cycle`}
-      className="text-muted-foreground"
-    >
+      className='text-muted-foreground'>
       <ThemeIcon theme={theme} />
-      <span className="sr-only">{NEXT_LABEL[theme]}</span>
+      <span className='sr-only'>{NEXT_LABEL[theme]}</span>
     </Button>
   );
 }
