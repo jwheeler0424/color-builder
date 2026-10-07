@@ -1,7 +1,13 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useMemo } from "react";
-import type { RGB, HSL, HSV, OKLCH } from "@/types";
+import { useState, useCallback, useMemo } from 'react';
+
+import type { RGB, HSL, HSV, OKLCH, PickerMode } from '@/types';
+
+import ColorWheel from '@/components/common/color-wheel';
+import { Button } from '@/components/ui/button';
+import useChromaStore from '@/hooks/use-chroma-store';
+import { useCmykProfile } from '@/hooks/use-cmyk-profile';
 import {
   hexToRgb,
   rgbToHex,
@@ -20,24 +26,16 @@ import {
   cssString,
   parseHexAlpha,
   cmykToRgb,
-} from "@/lib/utils";
-import ColorWheel from "@/components/common/color-wheel";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
-import { RgbSliders } from "../common/sliders/rgb-sliders";
-import { HslSliders } from "../common/sliders/hsl-sliders";
-import { HsvSliders } from "../common/sliders/hsv-sliders";
-import { OklchSliders } from "../common/sliders/oklch-sliders";
-import { OklabSliders } from "../common/sliders/oklab-sliders";
-import useChromaStore from "@/hooks/use-chroma-store";
-import HexInput from "../common/hex-input";
-import { CmykSliders } from "../common/sliders/cmyk-sliders";
+} from '@/lib/utils';
+
+import HexInput from '../common/hex-input';
+import { CmykSliders } from '../common/sliders/cmyk-sliders';
+import { HslSliders } from '../common/sliders/hsl-sliders';
+import { HsvSliders } from '../common/sliders/hsv-sliders';
+import { OklabSliders } from '../common/sliders/oklab-sliders';
+import { OklchSliders } from '../common/sliders/oklch-sliders';
+import { RgbSliders } from '../common/sliders/rgb-sliders';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -57,9 +55,6 @@ export default function ColorPickerModal({
   onClose,
 }: ColorPickerModalProps) {
   const [hex, setHex] = useState(initialHex);
-  const [mode, setMode] = useState<
-    "hsl" | "rgb" | "hsv" | "oklch" | "oklab" | "cmyk"
-  >("hsl");
   const {
     pickerHex,
     pickerAlpha,
@@ -81,20 +76,12 @@ export default function ColorPickerModal({
   const hsv = useMemo(() => rgbToHsv(rgb), [rgb]);
   const oklch = useMemo(() => rgbToOklch(rgb), [rgb]);
   const oklab = useMemo(() => rgbToOklab(rgb), [rgb]);
-  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb]);
+  const profile = useCmykProfile();
+  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb, profile.converter]);
   const name = useMemo(() => nearestName(rgb), [rgb]);
 
   const displayHex = toHexAlpha(pickerHex, pickerAlpha);
-  const cssOut = cssString(
-    pickerMode,
-    rgb,
-    hsl,
-    hsv,
-    oklch,
-    oklab,
-    cmyk,
-    pickerAlpha,
-  );
+  const cssOut = cssString(pickerMode, rgb, hsl, hsv, oklch, oklab, cmyk, pickerAlpha);
   const previewStyle =
     pickerAlpha < 100
       ? {
@@ -103,30 +90,16 @@ export default function ColorPickerModal({
       : { background: pickerHex };
 
   // Setters — each converts its space back to hex as canonical
-  const setRgb = useCallback(
-    (r: RGB) => setPickerHex(rgbToHex(r)),
-    [setPickerHex],
-  );
-  const setHsl = useCallback(
-    (h: HSL) => setPickerHex(rgbToHex(hslToRgb(h))),
-    [setPickerHex],
-  );
-  const setHsv = useCallback(
-    (h: HSV) => setPickerHex(rgbToHex(hsvToRgb(h))),
-    [setPickerHex],
-  );
-  const setOklch = useCallback(
-    (o: OKLCH) => setPickerHex(rgbToHex(oklchToRgb(o))),
-    [setPickerHex],
-  );
+  const setRgb = useCallback((r: RGB) => setPickerHex(rgbToHex(r)), [setPickerHex]);
+  const setHsl = useCallback((h: HSL) => setPickerHex(rgbToHex(hslToRgb(h))), [setPickerHex]);
+  const setHsv = useCallback((h: HSV) => setPickerHex(rgbToHex(hsvToRgb(h))), [setPickerHex]);
+  const setOklch = useCallback((o: OKLCH) => setPickerHex(rgbToHex(oklchToRgb(o))), [setPickerHex]);
   const setOklab = useCallback(
-    (o: { L: number; a: number; b: number }) =>
-      setPickerHex(rgbToHex(oklabToRgb(o))),
+    (o: { L: number; a: number; b: number }) => setPickerHex(rgbToHex(oklabToRgb(o))),
     [setPickerHex],
   );
   const setCmyk = useCallback(
-    (c: { c: number; m: number; y: number; k: number }) =>
-      setPickerHex(rgbToHex(cmykToRgb(c))),
+    (c: { c: number; m: number; y: number; k: number }) => setPickerHex(rgbToHex(cmykToRgb(c))),
     [setPickerHex],
   );
 
@@ -176,7 +149,7 @@ export default function ColorPickerModal({
   };
 
   const handleEyeDropper = async () => {
-    if (typeof window !== "undefined" && "EyeDropper" in window) {
+    if (typeof window !== 'undefined' && 'EyeDropper' in window) {
       try {
         const dropper = new (window as any).EyeDropper();
         const { sRGBHex } = await dropper.open();
@@ -189,60 +162,55 @@ export default function ColorPickerModal({
   };
 
   const MODES = [
-    { id: "hsl", label: "HSL" },
-    { id: "rgb", label: "RGB" },
-    { id: "hsv", label: "HSV" },
-    { id: "oklch", label: "OKLCH" },
-    { id: "oklab", label: "OKLab" },
-    { id: "cmyk", label: "CMYK" },
+    { id: 'hsl', label: 'HSL' },
+    { id: 'rgb', label: 'RGB' },
+    { id: 'hsv', label: 'HSV' },
+    { id: 'oklch', label: 'OKLCH' },
+    { id: 'oklab', label: 'OKLab' },
+    { id: 'cmyk', label: 'CMYK' },
   ];
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-105 bg-background border-border shadow-2xl p-0 overflow-hidden outline-none">
-        <DialogHeader className="p-6 pb-0 flex flex-row items-center gap-4 space-y-0">
-          <div className="flex shrink-0 rounded-xl overflow-hidden border border-border h-12 w-24 shadow-inner bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAACtJREFUGFdjZEADJmDMBmS9Z8AEEBMBmCCMBmEiMAnAGAzARCASjCHMAAByfQgLDX8mZwAAAABJRU5ErkJggg==')]">
-            <div
-              className="flex-1"
-              title="Original"
-              style={{ background: initialHex }}
-            />
-            <div className="flex-1" title="New" style={{ background: hex }} />
+      <DialogContent className='overflow-hidden border-border bg-background p-0 shadow-2xl outline-none sm:max-w-105'>
+        <DialogHeader className='flex flex-row items-center gap-4 space-y-0 p-6 pb-0'>
+          <div className="flex h-12 w-24 shrink-0 overflow-hidden rounded-xl border border-border bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAACtJREFUGFdjZEADJmDMBmS9Z8AEEBMBmCCMBmEiMAnAGAzARCASjCHMAAByfQgLDX8mZwAAAABJRU5ErkJggg==')] shadow-inner">
+            <div className='flex-1' title='Original' style={{ background: initialHex }} />
+            <div className='flex-1' title='New' style={{ background: hex }} />
           </div>
-          <div className="flex flex-col min-w-0">
-            <DialogTitle className="text-sm font-bold uppercase tracking-tight truncate">
-              {title ?? "Edit Color Swatch"}
+          <div className='flex min-w-0 flex-col'>
+            <DialogTitle className='truncate text-sm font-bold tracking-tight uppercase'>
+              {title ?? 'Edit Color Swatch'}
             </DialogTitle>
-            <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest truncate">
+            <span className='truncate font-mono text-[10px] tracking-widest text-muted-foreground uppercase'>
               {name}
             </span>
           </div>
         </DialogHeader>
 
-        <div className="px-6 py-6 flex flex-col gap-6">
-          <div className="flex justify-center py-4 bg-secondary/10 rounded-3xl border border-border/40">
+        <div className='flex flex-col gap-6 px-6 py-6'>
+          <div className='flex justify-center rounded-3xl border border-border/40 bg-secondary/10 py-4'>
             <ColorWheel hsl={hsl} size={210} onChange={handleWheelChange} />
           </div>
 
-          <div className="flex p-1 bg-secondary/40 rounded-xl gap-1 border border-border/50">
+          <div className='flex gap-1 rounded-xl border border-border/50 bg-secondary/40 p-1'>
             {MODES.map((m) => (
               <button
                 key={m.id}
-                onClick={() => setMode(m.id as any)}
-                className={`flex-1 py-1.5 rounded-lg text-[9px] font-extrabold uppercase tracking-widest transition-all ${
-                  mode === m.id
-                    ? "bg-background text-foreground shadow-sm ring-1 ring-black/5"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
+                onClick={() => setPickerMode(m.id as PickerMode)}
+                className={`flex-1 rounded-lg py-1.5 text-[9px] font-extrabold tracking-widest uppercase transition-all ${
+                  pickerMode === m.id
+                    ? 'bg-background text-foreground shadow-sm ring-1 ring-black/5'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}>
                 {m.label}
               </button>
             ))}
           </div>
 
-          <div className="min-h-36.25 px-0.5">
+          <div className='min-h-36.25 px-0.5'>
             {/* Sliders for active mode */}
-            {pickerMode === "rgb" && (
+            {pickerMode === 'rgb' && (
               <RgbSliders
                 rgb={rgb}
                 alpha={pickerAlpha}
@@ -251,7 +219,7 @@ export default function ColorPickerModal({
                 onAlpha={setPickerAlpha}
               />
             )}
-            {pickerMode === "hsl" && (
+            {pickerMode === 'hsl' && (
               <HslSliders
                 hsl={hsl}
                 alpha={pickerAlpha}
@@ -260,7 +228,7 @@ export default function ColorPickerModal({
                 onAlpha={setPickerAlpha}
               />
             )}
-            {pickerMode === "hsv" && (
+            {pickerMode === 'hsv' && (
               <HsvSliders
                 hsv={hsv}
                 alpha={pickerAlpha}
@@ -269,7 +237,7 @@ export default function ColorPickerModal({
                 onAlpha={setPickerAlpha}
               />
             )}
-            {pickerMode === "oklch" && (
+            {pickerMode === 'oklch' && (
               <OklchSliders
                 oklch={oklch}
                 alpha={pickerAlpha}
@@ -278,7 +246,7 @@ export default function ColorPickerModal({
                 onAlpha={setPickerAlpha}
               />
             )}
-            {pickerMode === "oklab" && (
+            {pickerMode === 'oklab' && (
               <OklabSliders
                 oklab={oklab}
                 alpha={pickerAlpha}
@@ -287,7 +255,7 @@ export default function ColorPickerModal({
                 onAlpha={setPickerAlpha}
               />
             )}
-            {pickerMode === "cmyk" && (
+            {pickerMode === 'cmyk' && (
               <CmykSliders
                 cmyk={cmyk}
                 alpha={pickerAlpha}
@@ -299,69 +267,60 @@ export default function ColorPickerModal({
           </div>
 
           {/* Preview + hex input */}
-          <div className="flex flex-col gap-4 w-full max-w-100 mt-3">
-            <div className="flex gap-4 w-full">
+          <div className='mt-3 flex w-full max-w-100 flex-col gap-4'>
+            <div className='flex w-full gap-4'>
               {/* Checkerboard shows through for alpha */}
-              <div className="relative size-16 shrink-0">
+              <div className='relative size-16 shrink-0'>
                 <div
-                  className="absolute rounded inset-0"
+                  className='absolute inset-0 rounded'
                   style={{
-                    background:
-                      "repeating-conic-gradient(#444 0% 25%,#222 0% 50%) 0 0/10px 10px",
+                    background: 'repeating-conic-gradient(#444 0% 25%,#222 0% 50%) 0 0/10px 10px',
                   }}
                 />
                 <div
-                  className="size-full rounded border-2 border-input shrink-0 relative"
+                  className='relative size-full shrink-0 rounded border-2 border-input'
                   style={{ ...previewStyle }}
                 />
               </div>
-              <div className="flex-1 flex flex-col gap-1.5">
-                <div className="flex gap-1.5 items-center">
+              <div className='flex flex-1 flex-col gap-1.5'>
+                <div className='flex items-center gap-1.5'>
                   {/* <label>HEX CODE</label> */}
-                  <HexInput
-                    value={displayHex}
-                    onChange={handleHexInput}
-                    label="HEX CODE"
-                  />
+                  <HexInput value={displayHex} onChange={handleHexInput} label='HEX CODE' />
                 </div>
                 {/* CSS output string for current mode */}
-                <div className="flex items-center gap-1 mt-1 bg-muted rounded px-1.5 py-1">
-                  <span className="font-mono text-muted-foreground overflow-ellipsis whitespace-nowrap overflow-hidden text-[9px] flex-1">
+                <div className='mt-1 flex items-center gap-1 rounded bg-muted px-1.5 py-1'>
+                  <span className='flex-1 overflow-hidden font-mono text-[9px] overflow-ellipsis whitespace-nowrap text-muted-foreground'>
                     {cssOut}
                   </span>
                   <button
                     onClick={copyCss}
                     style={{
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
                       fontSize: 9,
-                      color: copied
-                        ? "#4ade80"
-                        : "var(--color-muted-foreground)",
-                      padding: "0 2px",
+                      color: copied ? '#4ade80' : 'var(--color-muted-foreground)',
+                      padding: '0 2px',
                       flexShrink: 0,
-                    }}
-                  >
-                    {copied ? "✓" : "copy"}
+                    }}>
+                    {copied ? '✓' : 'copy'}
                   </button>
                 </div>
               </div>
             </div>
-            <div className="flex gap-1.5 items-center justify-end">
+            <div className='flex items-center justify-end gap-1.5'>
               {/* <Button variant="default" size="sm" onClick={useSeed}>
               → Seed Palette
             </Button>
             <Button variant="ghost" size="sm" onClick={addToPalette}>
               + Add
             </Button> */}
-              {typeof window !== "undefined" && "EyeDropper" in window && (
+              {typeof window !== 'undefined' && 'EyeDropper' in window && (
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  title="Sample color from screen (EyeDropper API)"
-                  onClick={handleEyeDropper}
-                >
+                  variant='ghost'
+                  size='sm'
+                  title='Sample color from screen (EyeDropper API)'
+                  onClick={handleEyeDropper}>
                   ⊕ Pick
                 </Button>
               )}
@@ -369,10 +328,10 @@ export default function ColorPickerModal({
           </div>
 
           <div>
-            <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-3 px-1">
+            <div className='mb-3 px-1 text-[9px] font-bold tracking-widest text-muted-foreground uppercase'>
               Hue Suggestions
             </div>
-            <div className="flex justify-between px-0.5">
+            <div className='flex justify-between px-0.5'>
               {Array.from({ length: 10 }, (_, i) => {
                 const h = (i / 10) * 360;
                 const sugHex = rgbToHex(hslToRgb({ h, s: hsl.s, l: hsl.l }));
@@ -380,7 +339,7 @@ export default function ColorPickerModal({
                   <button
                     key={i}
                     onClick={() => updateColor(sugHex)}
-                    className="size-7 rounded-lg border border-black/10 transition-transform hover:scale-125 hover:z-10 shadow-sm"
+                    className='size-7 rounded-lg border border-black/10 shadow-sm transition-transform hover:z-10 hover:scale-125'
                     style={{ background: sugHex }}
                   />
                 );
@@ -389,21 +348,19 @@ export default function ColorPickerModal({
           </div>
         </div>
 
-        <DialogFooter className="p-6 pt-0 gap-3">
+        <DialogFooter className='gap-3 p-6 pt-0'>
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             onClick={onClose}
-            className="text-[11px] font-bold uppercase tracking-wider h-9"
-          >
+            className='h-9 text-[11px] font-bold tracking-wider uppercase'>
             Cancel
           </Button>
           <Button
-            variant="default"
-            size="sm"
+            variant='default'
+            size='sm'
             onClick={() => onApply(hex)}
-            className="text-[11px] font-bold uppercase tracking-wider px-8 h-9 shadow-lg shadow-primary/20"
-          >
+            className='h-9 px-8 text-[11px] font-bold tracking-wider uppercase shadow-lg shadow-primary/20'>
             Apply Changes
           </Button>
         </DialogFooter>

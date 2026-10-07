@@ -137,7 +137,7 @@ function OklchTab() {
       slots.map((slot) => {
         const rgb = hexToRgb(slot.color.hex);
         const lch = rgbToOklch(rgb);
-        const name = slot.name || nearestName(rgb);
+        const name = slot.name || nearestName(slot.color);
         return {
           slot,
           lch,

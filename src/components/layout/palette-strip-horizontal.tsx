@@ -19,16 +19,19 @@
  * For now, the reorder affordance is visually hidden on touch.
  */
 
-import React, { useRef, useState, useCallback, useMemo } from "react";
-import { useChromaStore } from "@/hooks/use-chroma-store";
-import { textColor, hexToRgb, rgbToHsl, nearestName, cn } from "@/lib/utils";
+import React, { useRef, useState, useCallback, useMemo } from 'react';
+
+import type { ColorStop } from '@/types';
+
+import { useChromaStore } from '@/hooks/use-chroma-store';
+import { textColor, hexToRgb, rgbToHsl, nearestName, cn } from '@/lib/utils';
 
 // ─── Horizontal Slot Card ─────────────────────────────────────────────────────
 
 interface HSlotCardProps {
   slot: {
     id: string;
-    color: { hex: string; a?: number };
+    color: ColorStop;
     locked?: boolean;
     name?: string;
   };
@@ -42,7 +45,7 @@ function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
   const rgb = useMemo(() => hexToRgb(slot.color.hex), [slot.color.hex]);
   const hsl = useMemo(() => rgbToHsl(rgb), [rgb]);
   const tc = useMemo(() => textColor(rgb), [rgb]);
-  const autoName = useMemo(() => nearestName(rgb), [rgb]);
+  const autoName = nearestName(slot.color);
 
   const [lastTap, setLastTap] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -72,70 +75,60 @@ function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
     <div
       onClick={handleTap}
       className={cn(
-        "relative flex flex-col shrink-0 h-full select-none",
-        "scroll-snap-align-center transition-all duration-150",
-        active && "ring-2 ring-inset ring-white/40",
+        'relative flex h-full shrink-0 flex-col select-none',
+        'scroll-snap-align-center transition-all duration-150',
+        active && 'ring-2 ring-white/40 ring-inset',
       )}
-      style={{ width: slotWidth, background: bg }}
-    >
+      style={{ width: slotWidth, background: bg }}>
       {/* Lock badge */}
       {slot.locked && (
-        <div
-          className="absolute top-2 right-2 text-[10px] opacity-70"
-          style={{ color: tc }}
-        >
+        <div className='absolute top-2 right-2 text-[10px] opacity-70' style={{ color: tc }}>
           🔒
         </div>
       )}
 
-      <div className="flex-1" />
+      <div className='flex-1' />
 
       {/* Bottom info */}
-      <div className="flex flex-col gap-1 p-2">
+      <div className='flex flex-col gap-1 p-2'>
         {/* Name */}
         <div
-          className="font-mono text-[9px] font-semibold opacity-60 leading-none truncate"
-          style={{ color: tc }}
-        >
+          className='truncate font-mono text-[9px] leading-none font-semibold opacity-60'
+          style={{ color: tc }}>
           {slot.name || autoName}
         </div>
 
         {/* Hex */}
         <button
-          className="text-left font-mono text-[11px] font-bold uppercase tracking-wider leading-none hover:opacity-80 transition-opacity"
+          className='text-left font-mono text-[11px] leading-none font-bold tracking-wider uppercase transition-opacity hover:opacity-80'
           style={{ color: tc }}
           onClick={handleCopy}
-          title="Copy hex"
-        >
+          title='Copy hex'>
           {slot.color.hex.toUpperCase()}
         </button>
 
         {/* HSL */}
-        <div
-          className="font-mono text-[9px] opacity-45 leading-none"
-          style={{ color: tc }}
-        >
+        <div className='font-mono text-[9px] leading-none opacity-45' style={{ color: tc }}>
           {Math.round(hsl.h)}° {Math.round(hsl.l)}%
         </div>
 
         {/* Edit button */}
         <button
-          className="mt-1 flex items-center justify-center w-6 h-6 rounded bg-black/40 border border-white/10 hover:bg-black/60 transition-colors"
+          className='mt-1 flex h-6 w-6 items-center justify-center rounded border border-white/10 bg-black/40 transition-colors hover:bg-black/60'
           style={{ color: tc }}
           onClick={(e) => {
             e.stopPropagation();
             onEdit(index);
           }}
-          title="Edit color"
-        >
+          title='Edit color'>
           <span style={{ fontSize: 10 }}>✎</span>
         </button>
       </div>
 
       {/* Copied toast */}
       {copied && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <span className="bg-black/80 text-white text-[10px] font-mono px-2 py-1 rounded-full">
+        <div className='pointer-events-none absolute inset-0 flex items-center justify-center'>
+          <span className='rounded-full bg-black/80 px-2 py-1 font-mono text-[10px] text-white'>
             Copied!
           </span>
         </div>
@@ -177,19 +170,16 @@ export function PaletteStripHorizontal({
   }, [slotWidth, slots.length]);
 
   return (
-    <div
-      className={cn("flex flex-col shrink-0 border-b border-border", className)}
-    >
+    <div className={cn('flex shrink-0 flex-col border-b border-border', className)}>
       {/* Scrollable strip */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-webkit-overflow-scrolling:touch]"
+        className='flex [scrollbar-width:none] overflow-x-auto overflow-y-hidden [-webkit-overflow-scrolling:touch]'
         style={{
-          height: typeof height === "number" ? `${height}px` : height,
-          scrollSnapType: showDots ? "x mandatory" : "x proximity",
-        }}
-      >
+          height: typeof height === 'number' ? `${height}px` : height,
+          scrollSnapType: showDots ? 'x mandatory' : 'x proximity',
+        }}>
         {slots.map((slot, i) => (
           <HSlotCard
             key={slot.id}
@@ -205,25 +195,24 @@ export function PaletteStripHorizontal({
       {/* Dot indicators (mobile) */}
       {showDots && slots.length > 0 && (
         <div
-          className="flex items-center justify-center gap-1.5 py-2 overflow-x-auto [scrollbar-width:none]"
-          role="tablist"
-          aria-label="Palette slots"
-        >
+          className='flex [scrollbar-width:none] items-center justify-center gap-1.5 overflow-x-auto py-2'
+          role='tablist'
+          aria-label='Palette slots'>
           {slots.map((slot, i) => (
             <button
               key={slot.id}
-              role="tab"
+              role='tab'
               aria-selected={activeIndex === i}
               aria-label={`Slot ${i + 1}: ${slot.color.hex}`}
               className={cn(
-                "rounded-full shrink-0 transition-all cursor-pointer border-0 p-0",
-                activeIndex === i ? "w-4 h-2" : "w-2 h-2 opacity-40",
+                'shrink-0 cursor-pointer rounded-full border-0 p-0 transition-all',
+                activeIndex === i ? 'h-2 w-4' : 'h-2 w-2 opacity-40',
               )}
               style={{ background: slot.color.hex }}
               onClick={() => {
                 scrollRef.current?.scrollTo({
                   left: i * slotWidth,
-                  behavior: "smooth",
+                  behavior: 'smooth',
                 });
               }}
             />

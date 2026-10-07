@@ -1,3 +1,7 @@
+import type { ColorValue } from '@/lib/engine/color';
+import type { DisplayGamutId } from '@/lib/engine/gamuts/types';
+import type { SpaceId } from '@/lib/engine/palette';
+
 // ─── Primitives ───────────────────────────────────────────────────────────────
 
 export interface RGB {
@@ -35,6 +39,8 @@ export interface OKLCH {
 // ─── Palette ──────────────────────────────────────────────────────────────────
 
 export interface ColorStop {
+  value?: ColorValue;
+  css?: string;
   hex: string;
   readonly rgb: RGB;
   readonly hsl: HSL;
@@ -51,22 +57,22 @@ export interface PaletteSlot {
 }
 
 export type HarmonyMode =
-  | "analogous"
-  | "complementary"
-  | "split-comp"
-  | "triadic"
-  | "tetradic"
-  | "square"
-  | "monochromatic"
-  | "shades"
-  | "double-split"
-  | "compound"
-  | "natural"
-  | "random"
-  | "matsuda_L"
-  | "matsuda_Y"
-  | "matsuda_X"
-  | "matsuda_T";
+  | 'analogous'
+  | 'complementary'
+  | 'split-comp'
+  | 'triadic'
+  | 'tetradic'
+  | 'square'
+  | 'monochromatic'
+  | 'shades'
+  | 'double-split'
+  | 'compound'
+  | 'natural'
+  | 'random'
+  | 'matsuda_L'
+  | 'matsuda_Y'
+  | 'matsuda_X'
+  | 'matsuda_T';
 
 export interface HarmonyDef {
   id: HarmonyMode;
@@ -81,9 +87,10 @@ export interface ThemeDef {
 
 // ─── Gradient ─────────────────────────────────────────────────────────────────
 
-export type GradientType = "linear" | "radial" | "conic";
+export type GradientType = 'linear' | 'radial' | 'conic';
 
 export interface GradientStop {
+  value?: ColorValue;
   hex: string;
   pos: number;
 }
@@ -117,7 +124,7 @@ export interface ScaleEntry {
   rgb: RGB;
   hsl: HSL;
 }
-export type TokenFormat = "css" | "js" | "tailwind" | "json";
+export type TokenFormat = 'css' | 'js' | 'tailwind' | 'json';
 
 // ─── Saved ────────────────────────────────────────────────────────────────────
 
@@ -137,20 +144,14 @@ export interface PaletteSnapshot {
   id: string;
   /** Human label, e.g. "Before generate" */
   label: string;
-  slots: Array<{ id: string; hex: string; name?: string; locked: boolean }>;
+  slots: Array<{ id: string; hex: string; color?: ColorStop; name?: string; locked: boolean }>;
   mode: HarmonyMode;
   createdAt: number;
 }
 
 // ─── Utility Colors ───────────────────────────────────────────────────────────
 
-export type UtilityRole =
-  | "info"
-  | "success"
-  | "warning"
-  | "error"
-  | "neutral"
-  | "focus";
+export type UtilityRole = 'info' | 'success' | 'warning' | 'error' | 'neutral' | 'focus';
 export interface UtilityColor {
   role: UtilityRole;
   label: string;
@@ -186,20 +187,13 @@ export interface ThemeTokenSet {
 
 // ─── Mixer ────────────────────────────────────────────────────────────────────
 
-export type MixSpace = "oklch" | "hsl" | "rgb";
+export type MixSpace = 'oklch' | 'hsl' | 'rgb';
 
-export type PickerMode = "rgb" | "hsl" | "hsv" | "oklch" | "oklab" | "cmyk";
+export type PickerMode = 'rgb' | 'hsl' | 'hsv' | 'oklch' | 'oklab' | 'cmyk';
 
 // ─── Export ───────────────────────────────────────────────────────────────────
 
-export type ExportTab =
-  | "hex"
-  | "css"
-  | "array"
-  | "scss"
-  | "figma"
-  | "tailwind"
-  | "svg";
+export type ExportTab = 'hex' | 'css' | 'array' | 'scss' | 'figma' | 'tailwind' | 'svg';
 
 // ─── Brand Compliance ─────────────────────────────────────────────────────────
 
@@ -212,6 +206,10 @@ export interface BrandColor {
 // ─── App State ────────────────────────────────────────────────────────────────
 
 export interface ChromaState {
+  paletteSpace: SpaceId;
+  displayGamut: DisplayGamutId;
+  generationPending: boolean;
+  generationError: string | null;
   mode: HarmonyMode;
   count: number;
   seeds: ColorStop[];
@@ -221,7 +219,7 @@ export interface ChromaState {
   paletteSnapshots: PaletteSnapshot[];
   recentColors: string[];
   gradient: GradientState;
-  seedMode: "influence" | "pin";
+  seedMode: 'influence' | 'pin';
   temperature: number;
   pickerHex: string;
   pickerAlpha: number;
@@ -231,9 +229,9 @@ export interface ChromaState {
   scaleTokenTab: TokenFormat;
   convInput: string;
   exportTab: ExportTab;
-  modal: "export" | "share" | "save" | "shortcuts" | null;
+  modal: 'export' | 'share' | 'save' | 'shortcuts' | null;
   saveName: string;
-  extractedColors: RGB[];
+  extractedColors: ColorStop[];
   imgSrc: string | null;
   utilityColors: UtilityColorSet;
   brandColors: BrandColor[];
@@ -242,6 +240,8 @@ export interface ChromaState {
 // ─── Store Actions ────────────────────────────────────────────────────────────
 
 export interface ChromaActions {
+  setPaletteSpace: (space: SpaceId) => void;
+  setDisplayGamut: (display: DisplayGamutId) => void;
   setMode: (mode: HarmonyMode) => void;
   setCount: (count: number) => void;
   setHoverSlot: (index: number | null) => void;
@@ -259,11 +259,11 @@ export interface ChromaActions {
   renameSlot: (index: number, name: string | undefined) => void;
   loadPalette: (slots: PaletteSlot[], mode: HarmonyMode, count: number) => void;
   restoreSnapshot: (snap: PaletteSnapshot) => void;
-  setSeedMode: (mode: "influence" | "pin") => void;
+  setSeedMode: (mode: 'influence' | 'pin') => void;
   setTemperature: (t: number) => void;
   setPickerHex: (hex: string) => void;
   setPickerAlpha: (alpha: number) => void;
-  setPickerMode: (mode: ChromaState["pickerMode"]) => void;
+  setPickerMode: (mode: ChromaState['pickerMode']) => void;
   addRecent: (hex: string) => void;
   setGradient: (partial: Partial<GradientState>) => void;
   setScaleHex: (hex: string) => void;
@@ -271,19 +271,16 @@ export interface ChromaActions {
   setScaleTokenTab: (tab: TokenFormat) => void;
   setConvInput: (input: string) => void;
   setExportTab: (tab: ExportTab) => void;
-  openModal: (modal: ChromaState["modal"]) => void;
+  openModal: (modal: ChromaState['modal']) => void;
   closeModal: () => void;
   setSaveName: (name: string) => void;
-  setExtracted: (colors: RGB[], imgSrc: string) => void;
+  setExtracted: (colors: ColorStop[], imgSrc: string) => void;
   setUtilityColor: (role: UtilityRole, color: ColorStop) => void;
   toggleUtilityLock: (role: UtilityRole) => void;
   regenUtilityColors: () => void;
   addBrandColor: (hex: string, label: string) => void;
   removeBrandColor: (id: string) => void;
-  updateBrandColor: (
-    id: string,
-    patch: Partial<Omit<BrandColor, "id">>,
-  ) => void;
+  updateBrandColor: (id: string, patch: Partial<Omit<BrandColor, 'id'>>) => void;
 }
 
 export type ChromaStore = ChromaState & ChromaActions;

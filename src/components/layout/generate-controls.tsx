@@ -21,13 +21,17 @@
  *   onEdit(i) — called when a seed color swatch is clicked for editing
  */
 
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import { RefreshCw } from 'lucide-react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 
-import type { HarmonyMode, HSL } from '@/types';
+import type { SpaceId, DisplayGamutId } from '@/lib/engine/browser';
+import type { HarmonyMode, ColorStop } from '@/types';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { HARMONIES, MAX_SLOTS, THEMES } from '@/lib/constants/chroma';
-import { cn, parseHex, hexToStop, genPalette } from '@/lib/utils';
+import { renderColor } from '@/lib/engine/browser';
+import { computeColorPalette } from '@/lib/engine/runtime/palette-runtime';
+import { cn, hexToStop, stopToColor } from '@/lib/utils';
 
 // ─── Section helpers ────────────────────────────────────────────────────────────────
 
@@ -82,18 +86,33 @@ function HarmonyPicker({
   onSelect,
 }: {
   mode: HarmonyMode;
-  base: HSL | undefined;
+  base: ColorStop | undefined;
   onSelect: (mode: HarmonyMode) => void;
 }) {
-  const baseKey = base ? `${Math.round(base.h)}-${Math.round(base.s)}-${Math.round(base.l)}` : '';
-  const previews = useMemo(
-    () =>
-      Object.fromEntries(
-        HARMONIES.map((h) => [h.id, genPalette(h.id, 5, base ? [base] : null).map((c) => c.hex)]),
-      ) as Record<string, string[]>,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [baseKey],
-  );
+  const { paletteSpace, displayGamut } = useChromaStore();
+  const [previews, setPreviews] = useState<Record<string, string[]>>({});
+  useEffect(() => {
+    const controller = new AbortController();
+    void (async () => {
+      const result: Record<string, string[]> = {};
+      for (const harmony of HARMONIES) {
+        const colors = await computeColorPalette(
+          {
+            harmony: harmony.id,
+            count: 5,
+            seeds: base ? [stopToColor(base)] : [],
+            space: paletteSpace,
+            display: displayGamut,
+            seed: 1,
+          },
+          controller.signal,
+        );
+        result[harmony.id] = colors.map((color) => renderColor(color).css);
+      }
+      if (!controller.signal.aborted) setPreviews(result);
+    })().catch(() => undefined);
+    return () => controller.abort();
+  }, [base, paletteSpace, displayGamut]);
   const grouped = new Set(HARMONY_GROUPS.flatMap((g) => g.ids));
   const groups = [
     ...HARMONY_GROUPS,
@@ -125,7 +144,7 @@ function HarmonyPicker({
                     selected ? 'border-primary' : 'border-border hover:border-input',
                   )}>
                   <span className='flex h-8'>
-                    {previews[id]?.map((hex, j) => (
+                    {(previews[id] ?? Array<string>(5).fill('var(--muted)')).map((hex, j) => (
                       <span key={j} className='flex-1' style={{ background: hex }} />
                     ))}
                   </span>
@@ -180,6 +199,10 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
     setSeeds,
     setSeedMode,
     setTemperature,
+    paletteSpace,
+    displayGamut,
+    setPaletteSpace,
+    setDisplayGamut,
   } = useChromaStore();
 
   const [seedInp, setSeedInp] = useState('');
@@ -193,18 +216,54 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
   }, [generate]);
 
   const handleAddSeed = useCallback(() => {
-    const hex = parseHex(seedInp);
-    if (!hex) {
+    try {
+      addSeed(hexToStop(seedInp));
+    } catch {
       setSeedErr(true);
       setTimeout(() => setSeedErr(false), 600);
       return;
     }
-    addSeed(hexToStop(hex));
     setSeedInp('');
   }, [seedInp, addSeed]);
 
   return (
     <>
+      {show('colors') && (
+        <Section>
+          <SectionLabel>Color Space</SectionLabel>
+          <select
+            aria-label='Generation color space'
+            className='w-full rounded border border-border bg-secondary px-2 py-1.5 text-xs'
+            value={paletteSpace}
+            onChange={(event) => {
+              setPaletteSpace(event.target.value as SpaceId);
+              debouncedGenerate();
+            }}>
+            <option value='cam16'>CAM16-UCS</option>
+            <option value='oklch'>OKLCH</option>
+            <option value='cielab'>CIELAB</option>
+            <option value='hsl'>HSL</option>
+            <option value='hsv'>HSV</option>
+          </select>
+          <label
+            className='mt-3 block text-[10px] font-semibold text-muted-foreground'
+            htmlFor={`display-gamut-${section ?? 'all'}`}>
+            Display Gamut
+          </label>
+          <select
+            aria-label='Display gamut'
+            className='mt-1 w-full rounded border border-border bg-secondary px-2 py-1.5 text-xs'
+            value={displayGamut}
+            onChange={(event) => {
+              setDisplayGamut(event.target.value as DisplayGamutId);
+              debouncedGenerate();
+            }}>
+            <option value='srgb'>sRGB</option>
+            <option value='p3'>Display P3</option>
+            <option value='rec2020'>Rec.2020</option>
+          </select>
+        </Section>
+      )}
       {/* ── Colors count ── */}
       {show('colors') && (
         <Section>
@@ -294,7 +353,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
               <div key={i} className='flex items-center gap-1.5'>
                 <button
                   className='h-4 w-4 shrink-0 rounded-sm border border-white/10'
-                  style={{ background: s.hex }}
+                  style={{ background: s.css ?? s.hex }}
                   onClick={() => onEditSeed?.(i)}
                   title={`Edit seed: ${s.hex}`}
                 />
@@ -323,7 +382,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
               onChange={(e) => setSeedInp(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddSeed()}
               placeholder='#F4A261'
-              maxLength={7}
+              maxLength={200}
               spellCheck={false}
               autoComplete='off'
             />
@@ -386,7 +445,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
           </p>
           <HarmonyPicker
             mode={mode}
-            base={seeds[0]?.hsl ?? slots[0]?.color.hsl}
+            base={seeds[0] ?? slots[0]?.color}
             onSelect={(m) => {
               setMode(m);
               generate();
@@ -418,12 +477,16 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
                   type='button'
                   onClick={() => onPreviewSelect(i)}
                   className='flex-1 cursor-pointer border-0 p-0'
-                  style={{ background: s.color.hex }}
+                  style={{ background: s.color.css ?? s.color.hex }}
                   title={s.color.hex.toUpperCase()}
                   aria-label={`Color ${i + 1}, ${s.color.hex.toUpperCase()}`}
                 />
               ) : (
-                <div key={s.id} className='flex-1' style={{ background: s.color.hex }} />
+                <div
+                  key={s.id}
+                  className='flex-1'
+                  style={{ background: s.color.css ?? s.color.hex }}
+                />
               ),
             )}
           </div>
@@ -438,13 +501,22 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
 
 export function GenerateFooter() {
   const generate = useChromaStore((s) => s.generate);
+  const pending = useChromaStore((state) => state.generationPending);
+  const error = useChromaStore((state) => state.generationError);
   return (
     <div className='shrink-0 border-t border-r border-border bg-card px-4 py-3'>
       <button
         className='w-full cursor-pointer rounded border-0 bg-primary py-2.5 text-[12px] font-bold text-primary-foreground transition-opacity hover:opacity-90'
+        aria-busy={pending}
         onClick={generate}>
-        ⟳ Generate
+        <RefreshCw className='mr-2 inline size-3.5' aria-hidden='true' />
+        {pending ? 'Generating...' : 'Generate'}
       </button>
+      {error && (
+        <p role='alert' className='mt-2 text-xs text-destructive'>
+          {error}
+        </p>
+      )}
       <p className='mt-1.5 text-center text-[10px] text-muted-foreground'>
         <kbd>Space</kbd> generate · <kbd>Ctrl+Z</kbd> undo · <kbd>?</kbd> shortcuts
       </p>

@@ -23,7 +23,20 @@ import type { GradientStop, GradientState, GradientType } from '@/types';
 import { Chart } from '@/components/ui/chart';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { GRAD_PRESETS, CB_TYPES } from '@/lib/constants/chroma';
-import { parseHex, clamp, applySimMatrix, hexToRgb, rgbToHex } from '@/lib/utils';
+import {
+  applyEasing,
+  redistributeGradientStops,
+  buildGradientCss,
+  sampleGradient,
+  parseColor,
+  VISION_TYPES,
+  type ColorGradient,
+  type VisionType,
+} from '@/lib/engine/browser';
+import { renderColor } from '@/lib/engine/color';
+import { clamp } from '@/lib/utils';
+import { colorToStop, stopToColor } from '@/lib/utils/color-stop.utils';
+export { applyEasing, redistributeGradientStops } from '@/lib/engine/gradient';
 
 import GradientStopBar from '../common/gradient-stop-bar';
 import { ToolButton as Button, ToolSegments, ToolTabs, TYPE, ViewHeader } from './view-ui';
@@ -57,68 +70,6 @@ export const EASING_OPTIONS = [
 
 type EasingMode = (typeof EASING_OPTIONS)[number]['id'];
 
-export function applyEasing(value: number, mode: string): number {
-  const position = clamp(value, 0, 1);
-  if (position === 0 || position === 1) return position;
-  if (mode === 'front-loaded') return Math.sqrt(position);
-  if (mode === 'back-loaded') return Math.pow(position, 2.5);
-  const aliases: Record<string, string> = {
-    'ease-in': 'quadratic-in',
-    'ease-out': 'quadratic-out',
-    'ease-in-out': 'quadratic-in-out',
-  };
-  const match =
-    /^(quadratic|cubic|quartic|quintic|sine|exponential|circular)-(in|out|in-out)$/.exec(
-      aliases[mode] ?? mode,
-    );
-  if (!match) return position;
-  const curve = (input: number) => {
-    if (input === 0 || input === 1) return input;
-    switch (match[1]) {
-      case 'quadratic':
-        return input ** 2;
-      case 'cubic':
-        return input ** 3;
-      case 'quartic':
-        return input ** 4;
-      case 'quintic':
-        return input ** 5;
-      case 'sine':
-        return 1 - Math.cos((input * Math.PI) / 2);
-      case 'exponential':
-        return 2 ** (10 * input - 10);
-      default:
-        return 1 - Math.sqrt(1 - input * input);
-    }
-  };
-  if (match[2] === 'in') return curve(position);
-  if (match[2] === 'out') return 1 - curve(1 - position);
-  return position < 0.5 ? curve(position * 2) / 2 : 1 - curve((1 - position) * 2) / 2;
-}
-
-export function redistributeGradientStops(gradient: GradientState, mode: string) {
-  const sorted = gradient.stops
-    .map((stop, index) => ({ stop, index }))
-    .sort((first, second) => first.stop.pos - second.stop.pos);
-  const start = sorted[0]?.stop.pos ?? 0;
-  const end = sorted.at(-1)?.stop.pos ?? 100;
-  return {
-    stops: sorted.map(({ stop }, index) => ({
-      ...stop,
-      pos:
-        index === 0 || index === sorted.length - 1
-          ? stop.pos
-          : Math.round(
-              (start + (end - start) * applyEasing(index / (sorted.length - 1), mode)) * 10,
-            ) / 10,
-    })),
-    selectedStop: Math.max(
-      0,
-      sorted.findIndex(({ index }) => index === gradient.selectedStop),
-    ),
-  };
-}
-
 const DIRECTIONS = [
   { label: 'Right', val: 'to right', icon: ArrowRight },
   { label: 'Left', val: 'to left', icon: ArrowLeft },
@@ -130,14 +81,19 @@ const DIRECTIONS = [
   { label: 'Top right', val: 'to top right', icon: ArrowUpRight },
 ];
 
+function engineGradient(gradient: GradientState): ColorGradient {
+  return {
+    type: gradient.type,
+    dir: gradient.dir,
+    stops: gradient.stops.map((stop) => ({
+      color: stop.value ?? parseColor(stop.hex),
+      pos: stop.pos,
+    })),
+  };
+}
+
 export function buildCss(grad: GradientState, interp: 'srgb' | 'oklab' | 'oklch' = 'srgb'): string {
-  const sorted = grad.stops.slice().sort((a, b) => a.pos - b.pos);
-  const str = sorted.map((x) => `${x.hex} ${x.pos}%`).join(', ');
-  const inSpace = interp !== 'srgb' ? ` in ${interp}` : '';
-  if (grad.type === 'radial') return `radial-gradient(circle at center${inSpace}, ${str})`;
-  if (grad.type === 'conic')
-    return `conic-gradient(${grad.dir.startsWith('from ') ? grad.dir : 'from 0deg'}${inSpace}, ${str})`;
-  return `linear-gradient(${grad.dir.startsWith('from ') ? 'to right' : grad.dir}${inSpace}, ${str})`;
+  return buildGradientCss(engineGradient(grad), interp);
 }
 
 export function buildPreviewCss(
@@ -145,18 +101,8 @@ export function buildPreviewCss(
   interpolation: 'srgb' | 'oklab' | 'oklch',
   vision = 'normal',
 ): string {
-  const simulation = CB_TYPES.find((type) => type.id === vision);
-  if (!simulation || simulation.id === 'normal') return buildCss(gradient, interpolation);
-  return buildCss(
-    {
-      ...gradient,
-      stops: gradient.stops.map((stop) => ({
-        ...stop,
-        hex: rgbToHex(applySimMatrix(hexToRgb(stop.hex), simulation.matrix)),
-      })),
-    },
-    interpolation,
-  );
+  const type: VisionType = VISION_TYPES.find((option) => option.id === vision)?.id ?? 'normal';
+  return buildGradientCss(engineGradient(gradient), interpolation, type);
 }
 
 export function createEasingChart(mode: EasingMode) {
@@ -260,20 +206,12 @@ export default function GradientView() {
   const handleAddStop = useCallback(
     (pos: number) => {
       setEasing('custom');
-      // Find the colour at that position by interpolating nearest stops
-      const sorted = g.stops.slice().sort((a, b) => a.pos - b.pos);
-      let hex = '#ffffff';
-      for (let i = 0; i < sorted.length - 1; i++) {
-        if (pos >= sorted[i].pos && pos <= sorted[i + 1].pos) {
-          hex = sorted[i].hex; // use left neighbour's colour as default
-          break;
-        }
-      }
-      const stops = [...g.stops, { hex, pos }];
+      const color = colorToStop(sampleGradient(engineGradient(g), pos, interpSpace));
+      const stops = [...g.stops, { hex: color.hex, value: color.value, pos }];
       setGrad({ stops, selectedStop: stops.length - 1 });
       setPanel('stops');
     },
-    [g.stops, setGrad],
+    [g, interpSpace, setGrad],
   );
 
   const handleRemoveStop = useCallback(
@@ -291,10 +229,15 @@ export default function GradientView() {
   );
 
   const handleStopColor = (v: string) => {
-    const h = parseHex(v);
-    if (!h) return;
-    const stops = g.stops.map((s, i) => (i === g.selectedStop ? { ...s, hex: h } : s));
-    setGrad({ stops });
+    try {
+      const color = colorToStop(parseColor(v));
+      const stops = g.stops.map((stop, index) =>
+        index === g.selectedStop ? { ...stop, hex: color.hex, value: color.value } : stop,
+      );
+      setGrad({ stops });
+    } catch {
+      return;
+    }
   };
 
   const copyCss = async () => {
@@ -312,6 +255,7 @@ export default function GradientView() {
     const n = slots.length;
     const stops: GradientStop[] = slots.map((slot, i) => ({
       hex: slot.color.hex,
+      value: stopToColor(slot.color),
       pos: Math.round((i / (n - 1 || 1)) * 100),
     }));
     setGrad({ stops, selectedStop: 0 });
@@ -493,7 +437,7 @@ export default function GradientView() {
                     title={`Stop ${index + 1}: ${stop.hex} at ${stop.pos}%`}
                     onClick={() => setGrad({ selectedStop: index })}
                     className={`size-8 shrink-0 cursor-pointer rounded-sm border border-border outline-none focus-visible:ring-2 focus-visible:ring-ring ${g.selectedStop === index ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}
-                    style={{ background: stop.hex }}
+                    style={{ background: stop.value ? renderColor(stop.value).css : stop.hex }}
                   />
                 ))}
               </div>
@@ -509,18 +453,31 @@ export default function GradientView() {
                   className='size-9 shrink-0 cursor-pointer rounded-sm border border-border bg-transparent p-0 [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch-wrapper]:p-0'
                 />
                 <input
-                  key={`${g.selectedStop}-${selectedStop?.hex}`}
+                  key={`${g.selectedStop}-${JSON.stringify(selectedStop?.value ?? selectedStop?.hex)}`}
                   aria-label='Selected stop hex'
                   className='w-full rounded border border-border bg-muted px-2 py-1.5 font-mono text-[12px] tracking-[.06em] text-foreground transition-colors outline-none placeholder:text-muted-foreground focus:border-ring'
-                  defaultValue={selectedStop?.hex ?? ''}
+                  defaultValue={
+                    selectedStop?.value &&
+                    (selectedStop.value.display !== 'srgb' || selectedStop.value.alpha < 1)
+                      ? renderColor(selectedStop.value).css
+                      : (selectedStop?.hex ?? '')
+                  }
                   onBlur={(event) => {
                     handleStopColor(event.target.value);
-                    event.target.value = parseHex(event.target.value) ?? selectedStop?.hex ?? '';
+                    try {
+                      const color = colorToStop(parseColor(event.target.value));
+                      event.target.value =
+                        color.value?.display === 'srgb' && color.value.alpha === 1
+                          ? color.hex
+                          : (color.css ?? color.hex);
+                    } catch {
+                      event.target.value = selectedStop?.hex ?? '';
+                    }
                   }}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter') event.currentTarget.blur();
                   }}
-                  maxLength={7}
+                  maxLength={200}
                   spellCheck={false}
                   autoComplete='off'
                 />

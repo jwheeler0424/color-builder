@@ -1,4 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useMemo } from 'react';
+
+import { useChromaStore } from '@/hooks/use-chroma-store';
+import { useCmykProfile } from '@/hooks/use-cmyk-profile';
 import {
   hexToRgb,
   rgbToHsl,
@@ -17,33 +20,26 @@ import {
   toCssOklch,
   toCssOklab,
   toHexAlpha,
-} from "@/lib/utils";
-import { useChromaStore } from "@/hooks/use-chroma-store";
-import { Button } from "../ui/button";
+} from '@/lib/utils';
+
+import { Button } from '../ui/button';
+import { CmykProfileControl } from './cmyk-profile-control';
 
 // ─── Section helpers ──────────────────────────────────────────────────────────
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2.5 font-semibold">
+    <p className='mb-2.5 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
       {children}
     </p>
   );
 }
 
 function Section({ children }: { children: React.ReactNode }) {
-  return <div className="px-4 py-3.5 border-b border-border">{children}</div>;
+  return <div className='border-b border-border px-4 py-3.5'>{children}</div>;
 }
 
-function InfoRow({
-  label,
-  value,
-  mono,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
+function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   const [copied, setCopied] = React.useState(false);
   const copy = () => {
     navigator.clipboard.writeText(value).catch(() => {});
@@ -51,38 +47,31 @@ function InfoRow({
     setTimeout(() => setCopied(false), 1000);
   };
   return (
-    <div className="justify-between items-center flex gap-1.5">
-      <span className="text-muted-foreground shrink-0 min-w-9.5">{label}</span>
+    <div className='flex items-center justify-between gap-1.5'>
+      <span className='min-w-9.5 shrink-0 text-muted-foreground'>{label}</span>
       <span
         style={{
-          fontFamily: mono ? "var(--font-mono)" : undefined,
+          fontFamily: mono ? 'var(--font-mono)' : undefined,
           fontSize: mono ? 9.5 : undefined,
-          color: "var(--color-foreground)",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
+          color: 'var(--color-foreground)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
           flex: 1,
-          textAlign: "right",
-          cursor: "pointer",
+          textAlign: 'right',
+          cursor: 'pointer',
         }}
         title={`Click to copy: ${value}`}
-        onClick={copy}
-      >
-        {copied ? "✓ copied" : value}
+        onClick={copy}>
+        {copied ? '✓ copied' : value}
       </span>
     </div>
   );
 }
 
 export function ColorPickerPanel() {
-  const {
-    pickerHex,
-    pickerAlpha,
-    setPickerHex,
-    setPickerAlpha,
-    recentColors,
-    slots,
-  } = useChromaStore();
+  const { pickerHex, pickerAlpha, setPickerHex, setPickerAlpha, recentColors, slots } =
+    useChromaStore();
 
   // All derived values from canonical hex
   const rgb = useMemo(() => hexToRgb(pickerHex), [pickerHex]);
@@ -90,22 +79,23 @@ export function ColorPickerPanel() {
   const hsv = useMemo(() => rgbToHsv(rgb), [rgb]);
   const oklch = useMemo(() => rgbToOklch(rgb), [rgb]);
   const oklab = useMemo(() => rgbToOklab(rgb), [rgb]);
-  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb]);
+  const profile = useCmykProfile();
+  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb, profile.converter]);
   const lch = useMemo(() => oklabToLch(oklab), [oklab]); // for display only
 
   const displayHex = toHexAlpha(pickerHex, pickerAlpha);
 
   return (
-    <aside className="w-[320px] bg-card border-l border-border flex flex-col h-full shrink-0">
+    <aside className='flex h-full w-[320px] shrink-0 flex-col border-l border-border bg-card'>
       {/* Recent colors */}
       {recentColors.length > 0 && (
         <Section>
           <SectionLabel>Recent</SectionLabel>
-          <div className="flex items-center gap-2.5">
+          <div className='flex items-center gap-2.5'>
             {recentColors.map((rh, i) => (
               <div
                 key={i}
-                className="w-5.5 h-5.5 rounded cursor-pointer border border-white/10 transition-transform hover:scale-110"
+                className='h-5.5 w-5.5 cursor-pointer rounded border border-white/10 transition-transform hover:scale-110'
                 style={{ background: rh }}
                 title={rh}
                 onClick={() => {
@@ -122,37 +112,38 @@ export function ColorPickerPanel() {
       {/* Color info — all formats */}
       <Section>
         <SectionLabel>Color Values</SectionLabel>
-        <div className="text-[11px] text-muted-foreground leading-[2.1]">
-          <InfoRow label="Name" value={nearestName(rgb)} />
-          <InfoRow label="HEX" value={displayHex.toUpperCase()} mono />
-          <InfoRow label="RGB" value={toCssRgb(rgb, pickerAlpha)} mono />
-          <InfoRow label="HSL" value={toCssHsl(hsl, pickerAlpha)} mono />
-          <InfoRow label="HSV" value={toCssHsv(hsv, pickerAlpha)} mono />
-          <InfoRow label="OKLCH" value={toCssOklch(oklch, pickerAlpha)} mono />
-          <InfoRow label="OKLab" value={toCssOklab(oklab, pickerAlpha)} mono />
+        <div className='text-[11px] leading-[2.1] text-muted-foreground'>
+          <InfoRow label='Name' value={nearestName(rgb)} />
+          <InfoRow label='HEX' value={displayHex.toUpperCase()} mono />
+          <InfoRow label='RGB' value={toCssRgb(rgb, pickerAlpha)} mono />
+          <InfoRow label='HSL' value={toCssHsl(hsl, pickerAlpha)} mono />
+          <InfoRow label='HSV' value={toCssHsv(hsv, pickerAlpha)} mono />
+          <InfoRow label='OKLCH' value={toCssOklch(oklch, pickerAlpha)} mono />
+          <InfoRow label='OKLab' value={toCssOklab(oklab, pickerAlpha)} mono />
           <InfoRow
-            label="CMYK"
-            value={`${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%`}
+            label='CMYK'
+            value={cmyk ? `${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%` : 'ICC profile required'}
           />
-          <InfoRow
-            label="Lum."
-            value={`${(luminance(rgb) * 100).toFixed(1)}%`}
-          />
+          <InfoRow label='Lum.' value={`${(luminance(rgb) * 100).toFixed(1)}%`} />
         </div>
       </Section>
 
       {/* Palette quick-pick */}
+      <Section>
+        <SectionLabel>CMYK Profile</SectionLabel>
+        <CmykProfileControl />
+      </Section>
       {slots.length > 0 && (
         <Section>
           <SectionLabel>Palette</SectionLabel>
-          <div className="flex flex-wrap gap-2.5 p-px">
+          <div className='flex flex-wrap gap-2.5 p-px'>
             {slots.map((slot, i) => (
               <Button
                 key={i}
-                className="cursor-pointer transition-transform hover:scale-110"
+                className='cursor-pointer transition-transform hover:scale-110'
                 style={{ background: slot.color.hex }}
                 title={slot.color.hex}
-                size={"icon-sm"}
+                size={'icon-sm'}
                 onClick={() => setPickerHex(slot.color.hex)}
               />
             ))}

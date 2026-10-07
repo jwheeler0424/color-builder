@@ -1,5 +1,5 @@
 [serve.static]
-plugins = ["bun-plugin-tailwind"]
+plugins = ["bun-plugin-tailwind", "./lcms-browser.plugin.ts"]
 env = "BUN_PUBLIC_*"
 
 [test]

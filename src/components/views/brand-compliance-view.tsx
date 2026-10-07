@@ -286,7 +286,7 @@ export default function BrandComplianceView() {
                     <div className='flex min-w-0 flex-col gap-2'>
                       <span className={TYPE.label}>Best contrast</span>
                       <span className={TYPE.title}>
-                        {bestPair?.slot.name || nearestName(hexToRgb(bestPair!.slot.color.hex))}
+                        {bestPair?.slot.name || nearestName(bestPair!.slot.color)}
                       </span>
                       <span className={TYPE.mono}>{bestPair?.ratio.toFixed(2)}:1</span>
                     </div>
@@ -307,7 +307,7 @@ export default function BrandComplianceView() {
                     <div className='grid auto-rows-[minmax(2.5rem,1fr)] @3xl:min-h-0 @3xl:flex-1 @3xl:auto-rows-fr'>
                       {pairs.map(
                         ({ slot, ratio, apcaVal, dist, badge, harmonious, complementary }) => {
-                          const name = slot.name || nearestName(hexToRgb(slot.color.hex));
+                          const name = slot.name || nearestName(slot.color);
                           return (
                             <div
                               key={slot.id}

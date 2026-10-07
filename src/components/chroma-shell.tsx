@@ -20,6 +20,7 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { MobileShell } from '@/components/layout/mobile-shell';
 import { TabletShell } from '@/components/layout/tablet-shell';
 import { useChromaStore } from '@/hooks/use-chroma-store';
+import { subscribeColorNames } from '@/lib/tools/color-names';
 import { useRegisterHotkey } from '@/providers/hotkey.provider';
 
 import { DesktopStudio } from './desktop/desktop-shell';
@@ -89,6 +90,26 @@ export function ChromaShell() {
   useEffect(() => {
     useChromaStore.persist?.rehydrate?.();
   }, []);
+
+  useEffect(
+    () =>
+      subscribeColorNames(() => {
+        useChromaStore.setState((state) => ({
+          slots: state.slots.map((slot) => ({
+            ...slot,
+            color: { ...slot.color, rgb: { ...slot.color.rgb } },
+          })),
+          seeds: state.seeds.map((color) => ({ ...color, rgb: { ...color.rgb } })),
+          utilityColors: Object.fromEntries(
+            Object.entries(state.utilityColors).map(([role, entry]) => [
+              role,
+              { ...entry, color: { ...entry.color, rgb: { ...entry.color.rgb } } },
+            ]),
+          ) as typeof state.utilityColors,
+        }));
+      }),
+    [],
+  );
 
   // Global Escape → close modal (each shell also handles this locally,
   // but keep it here as a safety net)

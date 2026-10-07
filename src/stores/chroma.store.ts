@@ -1,3 +1,4 @@
+import { castDraft } from 'immer';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
@@ -9,31 +10,50 @@ import type {
   PaletteSnapshot,
   HarmonyMode,
   BrandColor,
-  HSL,
   ColorStop,
 } from '@/types';
 
 import { MAX_SLOTS } from '@/lib/constants/chroma';
+import { OKLAB } from '@/lib/engine/browser';
+import { computeColorPalette } from '@/lib/engine/runtime/palette-runtime';
 import {
   generateUtilityColors,
   mergeUtilityColors,
   regenerateUtilityColors,
 } from '@/lib/utils/color-math.utils';
-import { genPalette, cloneSlot, hexToStop, decodeUrl, savePrefs } from '@/lib/utils/palette.utils';
+import {
+  generatePalette,
+  stopToColor,
+  colorToStop,
+  cloneSlot,
+  hexToStop,
+  decodeUrl,
+  savePrefs,
+} from '@/lib/utils/palette.utils';
 
-function colorDistance(a: HSL, b: HSL) {
-  const dh = Math.min(Math.abs(a.h - b.h), 360 - Math.abs(a.h - b.h)) / 180;
-  const ds = Math.abs(a.s - b.s);
-  const dl = Math.abs(a.l - b.l);
-  return dh * dh + ds * ds + dl * dl;
+let generationController: AbortController | undefined;
+
+function generationSignature(state: ChromaState): string {
+  return JSON.stringify([
+    state.slots,
+    state.seeds,
+    state.mode,
+    state.count,
+    state.seedMode,
+    state.temperature,
+    state.paletteSpace,
+    state.displayGamut,
+    state.utilityColors,
+  ]);
 }
 
-function findClosestPaletteIndex(hsl: HSL, palette: ColorStop[]) {
+function findClosestPaletteIndex(color: ColorStop, palette: ColorStop[]) {
+  const lab = OKLAB.xyzToLab(stopToColor(color).xyz);
   let bestIndex = 0;
   let bestDist = Infinity;
 
   for (let i = 0; i < palette.length; i++) {
-    const d = colorDistance(hsl, palette[i].hsl);
+    const d = OKLAB.distance(lab, OKLAB.xyzToLab(stopToColor(palette[i]).xyz));
     if (d < bestDist) {
       bestDist = d;
       bestIndex = i;
@@ -50,18 +70,14 @@ function sanitizeSlots(slots: unknown[]): PaletteSlot[] {
   return slots.flatMap((slot) => {
     if (!slot || typeof slot !== 'object') return [];
     const s = slot as Record<string, unknown>;
-    const rawHex = (s.color as Record<string, unknown>)?.hex;
-    if (typeof rawHex !== 'string' || !/^#[0-9a-fA-F]{6,8}$/.test(rawHex)) return [];
-    const rgb = (s.color as Record<string, unknown>)?.rgb as Record<string, unknown> | undefined;
-    const needsRegen =
-      !rgb ||
-      typeof rgb.r !== 'number' ||
-      isNaN(rgb.r as number) ||
-      ((rgb.r as number) < 2 && (rgb.g as number) < 2 && (rgb.b as number) < 2);
-    const storedA = (s.color as Record<string, unknown>)?.a;
-    const alpha = typeof storedA === 'number' ? storedA : undefined;
-    const color = needsRegen ? hexToStop(rawHex, alpha) : (s.color as ReturnType<typeof hexToStop>);
-    if (alpha !== undefined && color.a === undefined) color.a = alpha;
+    const raw = s.color as ColorStop | undefined;
+    if (!raw || (!raw.value && typeof raw.hex !== 'string')) return [];
+    let color: ColorStop;
+    try {
+      color = colorToStop(stopToColor(raw));
+    } catch {
+      return [];
+    }
     // Ensure stable id — old persisted slots may not have one
     const id = typeof s.id === 'string' ? s.id : crypto.randomUUID();
     return [
@@ -86,6 +102,7 @@ function makeSnapshot(slots: PaletteSlot[], mode: HarmonyMode, label: string): P
     slots: slots.map((s) => ({
       id: s.id,
       hex: s.color.hex,
+      color: colorToStop(stopToColor(s.color)),
       name: s.name,
       locked: s.locked,
     })),
@@ -114,6 +131,10 @@ function makeInitialState(): ChromaState {
   }));
 
   return {
+    paletteSpace: 'cam16',
+    displayGamut: 'srgb',
+    generationPending: false,
+    generationError: null,
     seeds: [],
     history: [],
     paletteSnapshots: [],
@@ -146,8 +167,16 @@ function makeInitialState(): ChromaState {
 
 export const useChromaStore = create<ChromaStore>()(
   persist(
-    immer((set) => ({
+    immer((set, get) => ({
       ...makeInitialState(),
+      setPaletteSpace: (space) =>
+        set((state) => {
+          state.paletteSpace = space;
+        }),
+      setDisplayGamut: (display) =>
+        set((state) => {
+          state.displayGamut = display;
+        }),
 
       // ── Palette ─────────────────────────────────────────────────────────────
 
@@ -165,7 +194,7 @@ export const useChromaStore = create<ChromaStore>()(
         }),
       addSeed: (seed) =>
         set((s) => {
-          s.seeds.push(seed);
+          s.seeds.push(castDraft(seed));
         }),
       removeSeed: (index) =>
         set((s) => {
@@ -173,29 +202,25 @@ export const useChromaStore = create<ChromaStore>()(
         }),
       setSeeds: (seeds) =>
         set((s) => {
-          s.seeds = seeds;
+          s.seeds = castDraft(seeds);
         }),
       insertSlot: (atIndex: number) => {
         set((state) => {
           const slots = state.slots;
           if (slots.length >= MAX_SLOTS) return;
 
-          const { mode, seedMode, temperature } = state;
+          const { mode, temperature } = state;
 
-          const seedHsls = slots.map((slot) => ({ ...slot.color.hsl }));
-
-          const palette = genPalette(
-            mode,
-            MAX_SLOTS,
-            seedHsls.length ? seedHsls : null,
-            seedMode,
+          const palette = generatePalette({
+            harmony: mode,
+            count: MAX_SLOTS,
+            seeds: slots.map((slot) => stopToColor(slot.color)),
+            seedMode: 'influence',
             temperature,
-          );
+          });
 
           // Project slots onto palette
-          const paletteIndexes = slots.map((slot) =>
-            findClosestPaletteIndex(slot.color.hsl, palette),
-          );
+          const paletteIndexes = slots.map((slot) => findClosestPaletteIndex(slot.color, palette));
 
           const leftIndex = atIndex > 0 ? paletteIndexes[atIndex - 1] : -1;
 
@@ -205,60 +230,100 @@ export const useChromaStore = create<ChromaStore>()(
           const candidates = [];
 
           for (let i = leftIndex + 1; i < rightIndex; i++) {
-            const hex = palette[i].hex;
+            const color = palette[i];
 
-            if (!slots.some((s) => s.color.hex === hex)) {
-              candidates.push(hex);
+            if (!slots.some((slot) => slot.color.hex === color.hex)) {
+              candidates.push(color);
             }
           }
 
           if (!candidates.length) return;
 
-          const newHex = candidates[Math.floor(Math.random() * candidates.length)];
+          const newColor = candidates[Math.floor(Math.random() * candidates.length)];
 
           const newSlot: PaletteSlot = {
             id: crypto.randomUUID(),
-            color: hexToStop(newHex),
+            color: newColor,
             locked: false,
           };
 
           const next = [...slots];
-          next.splice(atIndex, 0, newSlot);
+          next.splice(atIndex, 0, castDraft(newSlot));
 
           return { slots: next };
         });
       },
-      generate: () =>
-        set((s) => {
-          // Push to in-memory undo history (last 25)
-          s.history = [...s.history, s.slots.map(cloneSlot)].slice(-25);
-          // Push persistent snapshot (last 50)
-          s.paletteSnapshots = [
-            makeSnapshot(s.slots as PaletteSlot[], s.mode, 'Before generate'),
-            ...s.paletteSnapshots,
-          ].slice(0, 50);
-          const seedHsls = s.seeds.map((seed) => ({ ...seed.hsl }));
-          const newColors = genPalette(
-            s.mode,
-            s.count,
-            seedHsls.length ? seedHsls : null,
-            s.seedMode,
-            s.temperature,
-          );
-          const seedCount = s.seedMode === 'pin' ? s.seeds.length : 0;
-          s.slots = newColors.map((color, i) =>
-            s.slots[i]?.locked
-              ? cloneSlot(s.slots[i])
-              : {
-                  id: s.slots[i]?.id ?? crypto.randomUUID(),
-                  color,
-                  locked: i < seedCount,
-                  name: undefined,
-                },
-          );
-          s.utilityColors = mergeUtilityColors(s.utilityColors, generateUtilityColors(s.slots));
-          savePrefs(s.mode, s.count);
-        }),
+      generate: () => {
+        generationController?.abort();
+        const controller = new AbortController();
+        generationController = controller;
+        const current = get();
+        const signature = generationSignature(current);
+        const locked = current.slots.flatMap((slot, index) =>
+          slot.locked && index < current.count ? [{ index, color: stopToColor(slot.color) }] : [],
+        );
+        set((state) => {
+          state.generationPending = true;
+          state.generationError = null;
+        });
+        void computeColorPalette(
+          {
+            harmony: current.mode,
+            count: current.count,
+            seeds: current.seeds.map(stopToColor),
+            seedMode: current.seedMode,
+            temperature: current.temperature,
+            space: current.paletteSpace,
+            display: current.displayGamut,
+            locked,
+          },
+          controller.signal,
+        )
+          .then((values) => {
+            if (controller.signal.aborted) return;
+            if (generationSignature(get()) !== signature) {
+              set((state) => {
+                state.generationPending = false;
+              });
+              return;
+            }
+            set((state) => {
+              state.history = castDraft([...state.history, state.slots.map(cloneSlot)].slice(-25));
+              state.paletteSnapshots = castDraft(
+                [
+                  makeSnapshot(state.slots, state.mode, 'Before generate'),
+                  ...state.paletteSnapshots,
+                ].slice(0, 50),
+              );
+              const seedCount = state.seedMode === 'pin' ? state.seeds.length : 0;
+              let pinned = 0;
+              state.slots = castDraft(
+                values.map((value, index) =>
+                  state.slots[index]?.locked
+                    ? cloneSlot(state.slots[index])
+                    : {
+                        id: state.slots[index]?.id ?? crypto.randomUUID(),
+                        color: colorToStop(value),
+                        locked: pinned++ < seedCount,
+                      },
+                ),
+              );
+              state.utilityColors = castDraft(
+                mergeUtilityColors(state.utilityColors, generateUtilityColors(state.slots)),
+              );
+              state.generationPending = false;
+              savePrefs(state.mode, state.count);
+            });
+          })
+          .catch((error: unknown) => {
+            if (controller.signal.aborted) return;
+            set((state) => {
+              state.generationPending = false;
+              state.generationError =
+                error instanceof Error ? error.message : 'Palette generation failed.';
+            });
+          });
+      },
 
       undo: () =>
         set((s) => {
@@ -273,20 +338,22 @@ export const useChromaStore = create<ChromaStore>()(
         }),
       editSlotColor: (index, color) =>
         set((s) => {
-          s.slots[index].color = color;
+          s.slots[index].color = castDraft(color);
         }),
       addSlot: (color, index) =>
         set((s) => {
-          if (index === undefined)
-            return s.slots.push({
+          if (index === undefined) {
+            s.slots.push({
               id: crypto.randomUUID(),
-              color,
+              color: castDraft(color),
               locked: false,
             });
+            return;
+          }
 
           s.slots.splice(index, 0, {
             id: crypto.randomUUID(),
-            color,
+            color: castDraft(color),
             locked: false,
           });
         }),
@@ -308,27 +375,34 @@ export const useChromaStore = create<ChromaStore>()(
 
       loadPalette: (slots, mode, count) =>
         set((s) => {
-          s.history = [...s.history, s.slots.map(cloneSlot)].slice(-25);
-          s.paletteSnapshots = [
-            makeSnapshot(s.slots as PaletteSlot[], s.mode, `Before load`),
-            ...s.paletteSnapshots,
-          ].slice(0, 50);
-          s.slots = slots;
+          s.history = castDraft([...s.history, s.slots.map(cloneSlot)].slice(-25));
+          s.paletteSnapshots = castDraft(
+            [
+              makeSnapshot(s.slots as PaletteSlot[], s.mode, `Before load`),
+              ...s.paletteSnapshots,
+            ].slice(0, 50),
+          );
+          s.slots = castDraft(slots);
           s.mode = mode;
           s.count = count;
-          s.utilityColors = mergeUtilityColors(s.utilityColors, generateUtilityColors(slots));
+          s.utilityColors = castDraft(
+            mergeUtilityColors(s.utilityColors, generateUtilityColors(slots)),
+          );
         }),
 
       restoreSnapshot: (snap) =>
         set((s) => {
-          s.history = [...s.history, s.slots.map(cloneSlot)].slice(-25);
-          s.slots = snap.slots.map((ss) => ({
-            id: ss.id,
-            color: hexToStop(ss.hex),
-            locked: ss.locked,
-            name: ss.name,
-          }));
+          s.history = castDraft([...s.history, s.slots.map(cloneSlot)].slice(-25));
+          s.slots = castDraft(
+            snap.slots.map((ss) => ({
+              id: ss.id,
+              color: ss.color ? colorToStop(stopToColor(ss.color)) : hexToStop(ss.hex),
+              locked: ss.locked,
+              name: ss.name,
+            })),
+          );
           s.mode = snap.mode;
+          s.count = s.slots.length;
         }),
 
       // ── Picker ──────────────────────────────────────────────────────────────
@@ -413,7 +487,7 @@ export const useChromaStore = create<ChromaStore>()(
 
       setExtracted: (colors, imgSrc) =>
         set((s) => {
-          s.extractedColors = colors;
+          s.extractedColors = castDraft(colors);
           s.imgSrc = imgSrc;
         }),
 
@@ -421,7 +495,7 @@ export const useChromaStore = create<ChromaStore>()(
 
       setUtilityColor: (role, color) =>
         set((s) => {
-          s.utilityColors[role].color = color;
+          s.utilityColors[role].color = castDraft(color);
         }),
       toggleUtilityLock: (role) =>
         set((s) => {
@@ -429,7 +503,7 @@ export const useChromaStore = create<ChromaStore>()(
         }),
       regenUtilityColors: () =>
         set((s) => {
-          s.utilityColors = regenerateUtilityColors(s.slots, s.utilityColors);
+          s.utilityColors = castDraft(regenerateUtilityColors(s.slots, s.utilityColors));
         }),
 
       // ── Brand colors ─────────────────────────────────────────────────────────
@@ -452,6 +526,8 @@ export const useChromaStore = create<ChromaStore>()(
       name: 'chroma-v4',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
+        paletteSpace: state.paletteSpace,
+        displayGamut: state.displayGamut,
         mode: state.mode,
         count: state.count,
         seeds: state.seeds,
@@ -476,13 +552,23 @@ export const useChromaStore = create<ChromaStore>()(
         if (decodeUrl()) return current;
         const p = persisted as Partial<ChromaStore>;
         const slots = p.slots ? sanitizeSlots(p.slots as unknown[]) : current.slots;
-        const utilityColors =
-          slots !== current.slots
-            ? mergeUtilityColors(current.utilityColors, generateUtilityColors(slots))
-            : current.utilityColors;
-        return { ...current, ...p, slots, utilityColors };
+        const utilityColors = generateUtilityColors(slots);
+        for (const role of Object.keys(utilityColors) as Array<keyof typeof utilityColors>) {
+          const stored = p.utilityColors?.[role];
+          if (!stored) continue;
+          try {
+            utilityColors[role] = { ...stored, color: colorToStop(stopToColor(stored.color)) };
+          } catch {
+            continue;
+          }
+        }
+        const seeds = sanitizeSlots((p.seeds ?? current.seeds).map((color) => ({ color }))).map(
+          (slot) => slot.color,
+        );
+        return { ...current, ...p, slots, seeds, utilityColors };
       },
-      version: 3,
+      migrate: (persisted) => persisted as Partial<ChromaStore>,
+      version: 4,
       skipHydration: true,
     },
   ),

@@ -4,6 +4,8 @@ import { existsSync } from 'fs';
 import { cp, rm } from 'fs/promises';
 import path from 'path';
 
+import lcmsBrowserPlugin from './lcms-browser.plugin';
+
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log(`
 🏗️  Bun Build Script
@@ -132,7 +134,7 @@ if (entrypoints.length === 0) {
 const result = await Bun.build({
   entrypoints,
   outdir,
-  plugins: [plugin],
+  plugins: [plugin, lcmsBrowserPlugin],
   minify: true,
   target: 'browser',
   sourcemap: 'linked',
@@ -150,6 +152,25 @@ if (!result.success) {
 }
 
 await cp(path.join(import.meta.dir, 'public'), outdir, { recursive: true });
+await cp(
+  path.join(import.meta.dir, 'node_modules/lcms-wasm/dist/lcms.wasm'),
+  path.join(outdir, 'lcms.wasm'),
+);
+const worker = await Bun.build({
+  entrypoints: [path.join(import.meta.dir, 'src/lib/engine/runtime/palette.worker.ts')],
+  target: 'browser',
+  outdir,
+  naming: 'palette-worker.js',
+  minify: true,
+});
+if (!worker.success) {
+  for (const log of worker.logs) console.error(log);
+  process.exit(1);
+}
+await cp(
+  path.join(import.meta.dir, 'src/lib/engine/data/optimal-solid.bin'),
+  path.join(outdir, 'optimal-solid.bin'),
+);
 
 const end = performance.now();
 

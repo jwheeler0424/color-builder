@@ -7,6 +7,57 @@ declare module '*.html' {
 
 declare module '*.css' {}
 
+declare module '*.sqlite' {
+  const path: string;
+  export default path;
+}
+
+declare module '*.wasm' {
+  const path: string;
+  export default path;
+}
+
+declare module 'lcms-wasm' {
+  export interface Lcms {
+    cmsOpenProfileFromMem(bytes: Uint8Array, length: number): number;
+    cmsGetColorSpaceASCII(profile: number): string;
+    cmsCloseProfile(profile: number): void;
+    cmsCreateLab4Profile(white: null): number;
+    cmsCreateTransform(
+      input: number,
+      inputFormat: number,
+      output: number,
+      outputFormat: number,
+      intent: number,
+      flags: number,
+    ): number;
+    cmsDeleteTransform(transform: number): void;
+    cmsDoTransform(transform: number, values: Float32Array, count: number): number[];
+    cmsGetProfileInfoASCII(
+      profile: number,
+      info: number,
+      language: string,
+      country: string,
+    ): string;
+  }
+  export function instantiate(options?: { locateFile?: (file: string) => string }): Promise<Lcms>;
+}
+
+declare module 'lcms-wasm/lib/constants.js' {
+  export const INTENT_PERCEPTUAL: number;
+  export const INTENT_RELATIVE_COLORIMETRIC: number;
+  export const INTENT_SATURATION: number;
+  export const INTENT_ABSOLUTE_COLORIMETRIC: number;
+  export const PT_Lab: number;
+  export const PT_CMYK: number;
+  export const cmsFLAGS_BLACKPOINTCOMPENSATION: number;
+  export const cmsInfoDescription: number;
+  export function FLOAT_SH(value: number): number;
+  export function COLORSPACE_SH(value: number): number;
+  export function CHANNELS_SH(value: number): number;
+  export function BYTES_SH(value: number): number;
+}
+
 declare module '*.svg' {
   /**
    * A path to the SVG file

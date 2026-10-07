@@ -167,7 +167,7 @@ export function SlotCard({
   const rgb = useMemo(() => hexToRgb(slot.color.hex), [slot.color.hex]);
   const hsl = useMemo(() => rgbToHsl(rgb), [rgb]);
   const tc = useMemo(() => textColor(rgb), [rgb]);
-  const autoName = useMemo(() => nearestName(rgb), [rgb]);
+  const autoName = nearestName(slot.color);
   const displayName = slot.name || autoName;
 
   const bg =

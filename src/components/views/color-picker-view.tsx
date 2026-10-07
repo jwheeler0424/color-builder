@@ -5,6 +5,7 @@ import type { RGB, HSL, HSV, OKLCH } from '@/types';
 
 import { Button } from '@/components/ui/button';
 import { useChromaStore } from '@/hooks/use-chroma-store';
+import { useCmykProfile } from '@/hooks/use-cmyk-profile';
 import {
   hexToRgb,
   rgbToHex,
@@ -102,7 +103,8 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
   const hsv = useMemo(() => rgbToHsv(rgb), [rgb]);
   const oklch = useMemo(() => rgbToOklch(rgb), [rgb]);
   const oklab = useMemo(() => rgbToOklab(rgb), [rgb]);
-  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb]);
+  const profile = useCmykProfile();
+  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb, profile.converter]);
   const name = useMemo(() => nearestName(rgb), [rgb]);
 
   const displayHex = toHexAlpha(pickerHex, pickerAlpha);
@@ -376,7 +378,10 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
           <InfoRow label='HSV' value={toCssHsv(hsv, pickerAlpha)} mono />
           <InfoRow label='OKLCH' value={toCssOklch(oklch, pickerAlpha)} mono />
           <InfoRow label='OKLab' value={toCssOklab(oklab, pickerAlpha)} mono />
-          <InfoRow label='CMYK' value={`${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%`} />
+          <InfoRow
+            label='CMYK'
+            value={cmyk ? `${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%` : 'ICC profile required'}
+          />
           <InfoRow label='Lum.' value={`${(luminance(rgb) * 100).toFixed(1)}%`} />
         </div>
       </PanelSection>

@@ -11,6 +11,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 
 import ColorPickerModal from '@/components/modals/color-picker.modal';
 import { useChromaStore } from '@/hooks/use-chroma-store';
+import { useCmykProfile } from '@/hooks/use-cmyk-profile';
 import {
   rgbToHex,
   parseAny,
@@ -21,7 +22,6 @@ import {
   oklabToLch,
   nearestName,
   extractColors,
-  hexToStop,
 } from '@/lib/utils';
 
 import { ToolButton as Button, ToolTabs, TYPE, ViewHeader } from './view-ui';
@@ -86,15 +86,15 @@ function ImageTab() {
   }
 
   const useOne = (index: number) => {
-    const rgb = extractedColors[index];
-    if (!rgb) return;
-    setSeeds([hexToStop(rgbToHex(rgb))]);
+    const color = extractedColors[index];
+    if (!color) return;
+    setSeeds([color]);
     generate();
     void navigate({ to: '/palette' });
   };
 
   const useAll = () => {
-    setSeeds(extractedColors.slice(0, 5).map((rgb) => hexToStop(rgbToHex(rgb))));
+    setSeeds(extractedColors.slice(0, 5));
     generate();
     void navigate({ to: '/palette' });
   };
@@ -172,8 +172,8 @@ function ImageTab() {
             <span className={TYPE.mono}>{extractedColors.length}</span>
           </div>
           <div className='grid flex-1 auto-rows-fr'>
-            {extractedColors.map((rgb, i) => {
-              const hex = rgbToHex(rgb);
+            {extractedColors.map((color, i) => {
+              const hex = color.hex;
               return (
                 <div
                   key={i}
@@ -181,13 +181,13 @@ function ImageTab() {
                   <div
                     className='size-9 shrink-0 rounded-md border border-border'
                     style={{
-                      background: hex,
+                      background: color.css ?? hex,
                     }}
                   />
                   <div className='flex min-w-0 flex-1 flex-col gap-1'>
                     <div className={TYPE.mono}>{hex.toUpperCase()}</div>
-                    <div className={`truncate ${TYPE.title}`} title={nearestName(rgb)}>
-                      {nearestName(rgb)}
+                    <div className={`truncate ${TYPE.title}`} title={nearestName(color)}>
+                      {nearestName(color)}
                     </div>
                   </div>
                   <Button
@@ -276,7 +276,8 @@ function ConvertTab() {
   const hex = useMemo(() => rgbToHex(rgb), [rgb]);
   const hsl = useMemo(() => rgbToHsl(rgb), [rgb]);
   const hsv = useMemo(() => rgbToHsv(rgb), [rgb]);
-  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb]);
+  const profile = useCmykProfile();
+  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb, profile.converter]);
   const oklab = useMemo(() => rgbToOklab(rgb), [rgb]);
   const lch = useMemo(() => oklabToLch(oklab), [oklab]);
   const name = useMemo(() => nearestName(rgb), [rgb]);
@@ -354,8 +355,12 @@ function ConvertTab() {
             <ConvCard
               disabled={!valid}
               label='CMYK'
-              value={`cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)`}
-              sub={`C:${cmyk.c} M:${cmyk.m} Y:${cmyk.y} K:${cmyk.k}`}
+              value={
+                cmyk
+                  ? `cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)`
+                  : 'ICC profile required'
+              }
+              sub={cmyk ? `C:${cmyk.c} M:${cmyk.m} Y:${cmyk.y} K:${cmyk.k}` : 'Unavailable'}
             />
             <ConvCard
               disabled={!valid}

@@ -2,25 +2,41 @@ import { useNavigate } from '@tanstack/react-router';
 import { ArrowLeftRight, Check, Plus, Sprout } from 'lucide-react';
 import { useState, useMemo } from 'react';
 
+import type { ColorValue } from '@/lib/engine/color';
 import type { MixSpace } from '@/types';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { MAX_SLOTS } from '@/lib/constants/chroma';
-import {
-  parseHex,
-  hexToRgb,
-  rgbToHex,
-  rgbToHsl,
-  mixOklab,
-  mixHsl,
-  mixRgb,
-  textColor,
-  nearestName,
-} from '@/lib/utils';
+import { mixColor, parseColor, renderColor } from '@/lib/engine/browser';
+import { textColor, nearestName } from '@/lib/utils';
+import { colorToStop, stopToColor } from '@/lib/utils/color-stop.utils';
 
 import { ToolButton as Button, ToolSegments, TYPE, ViewHeader } from './view-ui';
 
 const STEPS = 7;
+
+interface MixerInput {
+  text: string;
+  color: ColorValue;
+  valid: boolean;
+}
+
+function updateMixerInput(current: MixerInput, text: string): MixerInput {
+  try {
+    return { text, color: parseColor(text), valid: true };
+  } catch {
+    return { ...current, text, valid: false };
+  }
+}
+
+function createMixerInput(color: ColorValue): MixerInput {
+  const rendition = renderColor(color);
+  return {
+    text: color.display === 'srgb' && color.alpha === 1 ? rendition.hex : rendition.css,
+    color,
+    valid: true,
+  };
+}
 const MIX_SPACES: { id: MixSpace; label: string; desc: string }[] = [
   {
     id: 'oklch',
@@ -34,8 +50,8 @@ const MIX_SPACES: { id: MixSpace; label: string; desc: string }[] = [
 export default function ColorMixer() {
   const { slots, setSeeds, addSlot, generate } = useChromaStore();
   const navigate = useNavigate();
-  const [colorA, setColorA] = useState('#e63946');
-  const [colorB, setColorB] = useState('#457b9d');
+  const [colorA, setColorA] = useState(() => createMixerInput(parseColor('#e63946')));
+  const [colorB, setColorB] = useState(() => createMixerInput(parseColor('#457b9d')));
   const [mixSpace, setMixSpace] = useState<MixSpace>('oklch');
   const [copiedHex, setCopiedHex] = useState<string | null>(null);
   const copyColor = async (hex: string) => {
@@ -48,53 +64,42 @@ export default function ColorMixer() {
     }
   };
 
-  const rgbA = useMemo(
-    () => (parseHex(colorA) ? hexToRgb(parseHex(colorA)!) : { r: 230, g: 57, b: 70 }),
-    [colorA],
-  );
-  const rgbB = useMemo(
-    () => (parseHex(colorB) ? hexToRgb(parseHex(colorB)!) : { r: 69, g: 123, b: 157 }),
-    [colorB],
-  );
-
   const blendRow = useMemo(() => {
-    const mixFn = mixSpace === 'oklch' ? mixOklab : mixSpace === 'hsl' ? mixHsl : mixRgb;
     return Array.from({ length: STEPS }, (_, i) => {
       const t = i / (STEPS - 1);
-      const rgb = mixFn(rgbA, rgbB, t);
-      return { rgb, hex: rgbToHex(rgb), t };
+      return {
+        ...colorToStop(
+          mixColor(colorA.color, colorB.color, t, mixSpace === 'oklch' ? 'oklab' : mixSpace),
+        ),
+        t,
+      };
     });
-  }, [rgbA, rgbB, mixSpace]);
+  }, [colorA.color, colorB.color, mixSpace]);
 
   // All three spaces side-by-side for comparison
   const allSpaces = useMemo(() => {
     return MIX_SPACES.map((space) => {
-      const fn = space.id === 'oklch' ? mixOklab : space.id === 'hsl' ? mixHsl : mixRgb;
       return {
         ...space,
         steps: Array.from({ length: STEPS }, (_, i) => {
           const t = i / (STEPS - 1);
-          const rgb = fn(rgbA, rgbB, t);
-          return { rgb, hex: rgbToHex(rgb) };
+          return colorToStop(
+            mixColor(colorA.color, colorB.color, t, space.id === 'oklch' ? 'oklab' : space.id),
+          );
         }),
       };
     });
-  }, [rgbA, rgbB]);
+  }, [colorA.color, colorB.color]);
 
   const useMixAsSeeds = () => {
-    const seeds = blendRow.map(({ rgb, hex }) => ({
-      hex,
-      rgb,
-      hsl: rgbToHsl(rgb),
-    }));
-    setSeeds(seeds);
+    setSeeds(blendRow.map((color) => colorToStop(stopToColor(color))));
     generate();
     void navigate({ to: '/palette' });
   };
 
   const addMidpoint = () => {
     const mid = blendRow[Math.floor(STEPS / 2)];
-    addSlot({ hex: mid.hex, rgb: mid.rgb, hsl: rgbToHsl(mid.rgb) });
+    addSlot(colorToStop(stopToColor(mid)));
   };
 
   return (
@@ -106,9 +111,9 @@ export default function ColorMixer() {
       <div className='flex min-h-0 flex-1 flex-col overflow-auto border-t border-border'>
         <div className='grid shrink-0 grid-cols-1 items-center gap-4 border-b border-border p-4 @xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'>
           {[
-            { label: 'Color A', value: colorA, set: setColorA, rgb: rgbA },
-            { label: 'Color B', value: colorB, set: setColorB, rgb: rgbB },
-          ].map(({ label, value, set, rgb }, index) => (
+            { label: 'Color A', value: colorA, set: setColorA },
+            { label: 'Color B', value: colorB, set: setColorB },
+          ].map(({ label, value, set }, index) => (
             <div
               key={label}
               className={`flex min-w-0 flex-col gap-3 ${index === 1 ? '@xl:col-start-3 @xl:row-start-1' : ''}`}>
@@ -118,21 +123,25 @@ export default function ColorMixer() {
                   type='color'
                   aria-label={`Pick ${label}`}
                   title={`Pick ${label}`}
-                  value={rgbToHex(rgb)}
-                  onChange={(event) => set(event.target.value)}
+                  value={renderColor(value.color).hex}
+                  onChange={(event) =>
+                    set((current) => updateMixerInput(current, event.target.value))
+                  }
                   className='size-12 shrink-0 cursor-pointer overflow-hidden rounded-md border border-border bg-transparent p-0 [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch-wrapper]:p-0'
                 />
                 <div className='flex min-w-0 flex-1 flex-col gap-1.5'>
                   <input
                     aria-label={`${label} hex`}
-                    value={value}
-                    onChange={(event) => set(event.target.value)}
-                    aria-invalid={!parseHex(value)}
-                    maxLength={7}
+                    value={value.text}
+                    onChange={(event) =>
+                      set((current) => updateMixerInput(current, event.target.value))
+                    }
+                    aria-invalid={!value.valid}
+                    maxLength={200}
                     spellCheck={false}
                     className='h-8 w-full min-w-0 rounded border border-border bg-muted px-2 font-mono text-xs outline-none focus:border-ring'
                   />
-                  <span className={`truncate ${TYPE.meta}`}>{nearestName(rgb)}</span>
+                  <span className={`truncate ${TYPE.meta}`}>{nearestName(value.color)}</span>
                 </div>
               </div>
               <div className='flex min-h-6 flex-wrap gap-1'>
@@ -142,9 +151,9 @@ export default function ColorMixer() {
                     type='button'
                     title={`Use ${slot.color.hex.toUpperCase()} for ${label}`}
                     aria-label={`Use ${slot.color.hex.toUpperCase()} for ${label}`}
-                    onClick={() => set(slot.color.hex)}
+                    onClick={() => set(createMixerInput(stopToColor(slot.color)))}
                     className='size-6 shrink-0 cursor-pointer rounded-sm border border-border outline-none focus-visible:ring-2 focus-visible:ring-ring'
-                    style={{ background: slot.color.hex }}
+                    style={{ background: slot.color.css ?? slot.color.hex }}
                   />
                 ))}
               </div>
@@ -175,32 +184,39 @@ export default function ColorMixer() {
               />
             </div>
             <div className='grid min-h-40 grid-cols-7 gap-1 @4xl:min-h-24 @4xl:flex-1'>
-              {blendRow.map(({ hex, rgb, t }) => (
-                <button
-                  key={t}
-                  type='button'
-                  aria-label={`Copy blend ${Math.round(t * 100)}% ${hex}`}
-                  title={`${nearestName(rgb)} ${hex.toUpperCase()}`}
-                  onClick={() => {
-                    void copyColor(hex);
-                  }}
-                  className='flex min-w-0 cursor-pointer flex-col justify-between rounded-md border border-foreground/10 px-1 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring'
-                  style={{ background: hex, color: textColor(rgb) }}>
-                  <span className='font-mono text-[10px]'>{Math.round(t * 100)}%</span>
-                  <span className='flex min-h-4 items-center justify-center font-mono text-[9px]'>
-                    {copiedHex === hex ? <Check className='size-3' /> : hex.toUpperCase()}
-                  </span>
-                </button>
-              ))}
+              {blendRow.map((color) => {
+                const { hex, rgb, t } = color;
+                const paint =
+                  color.value?.display === 'srgb' && color.value.alpha === 1
+                    ? hex
+                    : (color.css ?? hex);
+                return (
+                  <button
+                    key={t}
+                    type='button'
+                    aria-label={`Copy blend ${Math.round(t * 100)}% ${hex}`}
+                    title={`${nearestName(color)} ${hex.toUpperCase()}`}
+                    onClick={() => {
+                      void copyColor(paint);
+                    }}
+                    className='flex min-w-0 cursor-pointer flex-col justify-between rounded-md border border-foreground/10 px-1 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                    style={{ background: paint, color: textColor(rgb) }}>
+                    <span className='font-mono text-[10px]'>{Math.round(t * 100)}%</span>
+                    <span className='flex min-h-4 items-center justify-center font-mono text-[9px]'>
+                      {copiedHex === paint ? <Check className='size-3' /> : hex.toUpperCase()}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
             <div className='flex shrink-0 items-center gap-3 border-t border-border pt-3'>
               <span
                 className='size-10 shrink-0 rounded-md border border-border'
-                style={{ background: blendRow[3].hex }}
+                style={{ background: blendRow[3].css ?? blendRow[3].hex }}
               />
               <div className='flex min-w-0 flex-1 flex-col gap-1'>
                 <span className={TYPE.label}>Midpoint</span>
-                <span className={`truncate ${TYPE.title}`}>{nearestName(blendRow[3].rgb)}</span>
+                <span className={`truncate ${TYPE.title}`}>{nearestName(blendRow[3])}</span>
               </div>
               <span className={TYPE.mono}>{blendRow[3].hex.toUpperCase()}</span>
             </div>
@@ -222,8 +238,12 @@ export default function ColorMixer() {
                     {mixSpace === space.id && <Check className='size-3 text-primary' />}
                   </span>
                   <span className='flex min-h-10 flex-1 overflow-hidden rounded-md border border-border'>
-                    {space.steps.map(({ hex }, index) => (
-                      <span key={index} className='min-w-0 flex-1' style={{ background: hex }} />
+                    {space.steps.map(({ hex, css }, index) => (
+                      <span
+                        key={index}
+                        className='min-w-0 flex-1'
+                        style={{ background: css ?? hex }}
+                      />
                     ))}
                   </span>
                   <span className={TYPE.mono}>{space.steps[3].hex.toUpperCase()}</span>

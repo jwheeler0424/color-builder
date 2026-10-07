@@ -5,9 +5,10 @@
  * Used by both the Export modal (download) and the REST API (/api/export/svg).
  */
 
-import type { PaletteSlot } from "@/types";
-import { hexToRgb, rgbToHsl, textColor } from "./color-math.utils";
-import { nearestName } from "./palette.utils";
+import type { PaletteSlot } from '@/types';
+
+import { hexToRgb, rgbToHsl, textColor } from './color-math.utils';
+import { nearestName } from './palette.utils';
 
 export interface SvgExportOptions {
   /** Pixel width of each swatch (default 180) */
@@ -24,10 +25,10 @@ export interface SvgExportOptions {
 
 function esc(s: string): string {
   return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 export function generateSvgSwatch(slots: PaletteSlot[], options: SvgExportOptions = {}): string {
@@ -54,7 +55,7 @@ export function generateSvgSwatch(slots: PaletteSlot[], options: SvgExportOption
       const rgb = hexToRgb(slot.color.hex);
       const hsl = rgbToHsl(rgb);
       const tc = textColor(rgb);
-      const tokenName = slot.name || nearestName(rgb);
+      const tokenName = slot.name || nearestName(slot.color);
 
       // APCA-lite: simple relative luminance for the contrast badge
       const lum = 0.2126 * (rgb.r / 255) + 0.7152 * (rgb.g / 255) + 0.0722 * (rgb.b / 255);
@@ -65,17 +66,17 @@ export function generateSvgSwatch(slots: PaletteSlot[], options: SvgExportOption
 
       const lockIcon = slot.locked
         ? `<text x="${x + swatchW - 12}" y="${y + 16}" fill="${esc(tc)}" opacity=".5" font-size="11">🔒</text>`
-        : "";
+        : '';
 
       const contrastBadge = showContrast
         ? `
       <rect x="${x + 8}" y="${y + swatchH - 30}" width="56" height="18" rx="3"
-        fill="${wcagAA ? "#00c853" : "#ff1744"}" opacity=".85"/>
+        fill="${wcagAA ? '#00c853' : '#ff1744'}" opacity=".85"/>
       <text x="${x + 36}" y="${y + swatchH - 17}" text-anchor="middle"
         fill="white" font-size="9" font-family="monospace" font-weight="bold">
-        ${ratio}:1 ${wcagAA ? "AA" : "Fail"}
+        ${ratio}:1 ${wcagAA ? 'AA' : 'Fail'}
       </text>`
-        : "";
+        : '';
 
       return `
     <g>
@@ -99,14 +100,14 @@ export function generateSvgSwatch(slots: PaletteSlot[], options: SvgExportOption
         fill="none" stroke="rgba(0,0,0,.08)" stroke-width="1"/>
     </g>`;
     })
-    .join("\n");
+    .join('\n');
 
   const titleEl = title
     ? `<text x="${totalW / 2}" y="32" text-anchor="middle"
         fill="#1a1a1a" font-size="18" font-family="system-ui,sans-serif" font-weight="700">
         ${esc(title)}
       </text>`
-    : "";
+    : '';
 
   return `<svg xmlns="http://www.w3.org/2000/svg"
   width="${totalW}" height="${totalH}"
@@ -118,10 +119,10 @@ export function generateSvgSwatch(slots: PaletteSlot[], options: SvgExportOption
 }
 
 /** Triggers a browser download of the SVG */
-export function downloadSvg(svg: string, filename = "palette.svg"): void {
-  const blob = new Blob([svg], { type: "image/svg+xml" });
+export function downloadSvg(svg: string, filename = 'palette.svg'): void {
+  const blob = new Blob([svg], { type: 'image/svg+xml' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   a.click();

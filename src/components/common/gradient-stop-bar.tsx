@@ -2,6 +2,7 @@ import React, { useRef, useCallback } from 'react';
 
 import type { GradientStop } from '@/types';
 
+import { renderColor } from '@/lib/engine/color';
 import { cn, clamp } from '@/lib/utils';
 
 interface GradientStopBarProps {
@@ -119,7 +120,10 @@ export default function GradientStopBar({
           <div
             key={i}
             className={cn('grad-stop-handle', i === selectedStop && 'selected')}
-            style={{ left: `${stop.pos}%`, background: stop.hex }}
+            style={{
+              left: `${stop.pos}%`,
+              background: stop.value ? renderColor(stop.value).css : stop.hex,
+            }}
             onMouseDown={(e) => startDrag(e, i)}
             onTouchStart={(e) => startDrag(e, i)}
             onFocus={() => onSelectStop(i)}
