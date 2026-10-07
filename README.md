@@ -177,6 +177,65 @@ Set `COLOR_REVIEW_MODEL` to select a CLI-supported model; otherwise the CLI defa
 
 ### CSV duplicate-name cleanup
 
+Audit the current catalog before renaming:
+
+```bash
+bun scripts/audit-color-names.ts
+```
+
+Use `bun scripts/audit-color-names.ts --check` for a read-only review without writing a queue.
+
+The source is `src/lib/engine/colors/colors.csv`, not the outdated CSV under `scripts/`.
+Before writing the queue, the audit opens `src/lib/engine/colors/colors.sqlite` read-only,
+checks SQLite integrity, and requires every CSV name and hex to match both the `colors` and
+`color_oklab` tables, independent of row order. Any mismatch stops the audit before publication.
+This writes `src/lib/engine/colors/color-name-renames.csv` without changing either catalog.
+Each queued row includes its one-based data-row index, hex, current name, reasons, an optional
+CSS-name suggestion, duplicate keeper, and an empty `New Name` field for manual review.
+The audit checks codes/numeric labels, parentheses, names over three whitespace-separated
+words, and normalized duplicates. Formulaic naming structures and suspected misspellings
+are not flagged. Unflagged names are not a guarantee of semantic fit.
+Individually reviewed numeric references (such as `Windows 95 Desktop`, `French 75`, and
+scientific names) are recorded by exact hex and current name in the audit script's `reviewedNames`
+map, independent of the removed legacy review directory. These approvals suppress only the
+code/numeric-label flag, not duplicates, CSS ownership, parentheses, or the three-word limit.
+Changed names or different hexes require fresh review; digits alone do not prove a name is a code.
+The audit also detects letter-only hex labels and Unicode numeric characters.
+Standard CSS names are reserved for their exact RGB hex
+values. Capitalization and spaces are ignored when matching CSS names, so `Light Blue` is
+accepted for `#ADD8E6`; the three-word limit still applies.
+Equivalent CSS aliases (such as aqua/cyan and gray/grey) are accepted, and a correctly
+matched CSS row takes priority over an earlier duplicate. Colors absent from the catalog are
+not added. The rename CSV is a review queue, not an input to the duplicate-only override builder.
+
+The `New Name` column contains the proposed replacements. Verify it without changing any files:
+
+```bash
+bun scripts/fill-color-name-renames.ts
+```
+
+Verification requires every queued row to have a name, at most three words, no codes or parentheses,
+and no collision with any current catalog name or another proposal. Comparisons normalize Unicode,
+case, spaces, and hyphens. CSV names must match both SQLite name tables, and SQLite integrity must
+pass. The live CSV and database are never updated by this command.
+Individually authored names are stored in `color-name-replacements.json`, bound to the queue's
+row/name/hex fingerprint and ordered by lightness within hue groups. Use `--write` to republish the
+complete authored list; `--write --partial` supports completed groups while authoring. Existing
+nonmatching proposals are never overwritten. The audit refuses to clear a queue with populated
+replacement names.
+
+Apply the reviewed `New Name` column to the engine CSV and both SQLite name tables:
+
+```bash
+bun scripts/fill-color-name-renames.ts --apply
+```
+
+This validates staged copies, checks that all non-name CSV fields and SQLite data/schema remain
+unchanged, and updates the live SQLite names in a transaction without replacing the open database
+file. CSV publication failures roll back the transaction. Originals are retained alongside the
+datasets as `colors.csv.before-renames` and `colors.sqlite.before-renames`; existing backup or
+staging files are never overwritten. The reviewed queue remains the record of old and new names.
+
 The direct CSV workflow copies all rows and all 17 columns from
 `scripts/color-db/names/combined-color-queue.csv` into `colors.csv` in the same directory:
 
