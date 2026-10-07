@@ -11,14 +11,16 @@ import { useState, useMemo } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
-  cn,
-  hexToRgb,
-  parseHex,
   apcaContrast,
   contrastRatio,
-  rgbToOklch,
-  nearestName,
-} from '@/lib/utils';
+  isHex,
+  normalizeHex,
+  OKLAB,
+  parseColor,
+  xyzToLch,
+} from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
+import { cn } from '@/lib/utils';
 import { useRegisterHotkey } from '@/providers/hotkey.provider';
 
 import { ToolButton as Button, TYPE, ViewHeader } from './view-ui';
@@ -33,12 +35,12 @@ function contrastBadge(ratio: number) {
 }
 
 function oklchDist(hexA: string, hexB: string): number {
-  const a = rgbToOklch(hexToRgb(hexA));
-  const b = rgbToOklch(hexToRgb(hexB));
+  const a = xyzToLch(OKLAB, parseColor(hexA).xyz);
+  const b = xyzToLch(OKLAB, parseColor(hexB).xyz);
   // Weighted OKLCH distance: L difference counts less than chroma/hue
-  const dL = (a.L - b.L) * 50;
-  const dC = (a.C - b.C) * 100;
-  const dH = (Math.min(Math.abs(a.H - b.H), 360 - Math.abs(a.H - b.H)) / 360) * 100;
+  const dL = (a.l - b.l) * 50;
+  const dC = (a.c - b.c) * 100;
+  const dH = (Math.min(Math.abs(a.h - b.h), 360 - Math.abs(a.h - b.h)) / 360) * 100;
   return Math.sqrt(dL * dL + dC * dC + dH * dH);
 }
 
@@ -67,12 +69,12 @@ export default function BrandComplianceView() {
   });
 
   const handleAdd = () => {
-    const hex = parseHex(hexInput);
+    const hex = isHex(hexInput) ? normalizeHex(hexInput) : null;
     if (!hex) {
       setInputErr(true);
       return;
     }
-    addBrand(hex, labelInput.trim() || nearestName(hexToRgb(hex)));
+    addBrand(hex, labelInput.trim() || lookupColorName(parseColor(hex), hex));
     setSelectedId(useChromaStore.getState().brandColors.at(-1)?.id ?? null);
     setHexInput('');
     setLabelInput('');
@@ -84,8 +86,10 @@ export default function BrandComplianceView() {
     return brandColors.map((brand) => ({
       brand,
       pairs: slots.map((slot) => {
-        const ratio = contrastRatio(hexToRgb(brand.hex), hexToRgb(slot.color.hex));
-        const apcaVal = Math.abs(apcaContrast(hexToRgb(brand.hex), hexToRgb(slot.color.hex)));
+        const brandXyz = parseColor(brand.hex).xyz;
+        const slotXyz = (slot.color.value ?? parseColor(slot.color.hex)).xyz;
+        const ratio = contrastRatio(brandXyz, slotXyz);
+        const apcaVal = Math.abs(apcaContrast(brandXyz, slotXyz));
         const dist = oklchDist(brand.hex, slot.color.hex);
         const badge = contrastBadge(ratio);
         const harmonious = dist < 25; // within perceptual harmony zone
@@ -124,7 +128,7 @@ export default function BrandComplianceView() {
                 type='color'
                 aria-label='Brand color swatch'
                 title='Choose brand color'
-                value={parseHex(hexInput) ?? '#0057b8'}
+                value={isHex(hexInput) ? normalizeHex(hexInput) : '#0057b8'}
                 onChange={(event) => {
                   setHexInput(event.target.value);
                   setInputErr(false);
@@ -286,7 +290,11 @@ export default function BrandComplianceView() {
                     <div className='flex min-w-0 flex-col gap-2'>
                       <span className={TYPE.label}>Best contrast</span>
                       <span className={TYPE.title}>
-                        {bestPair?.slot.name || nearestName(bestPair!.slot.color)}
+                        {bestPair?.slot.name ||
+                          lookupColorName(
+                            bestPair!.slot.color.value ?? parseColor(bestPair!.slot.color.hex),
+                            bestPair!.slot.color.hex,
+                          )}
                       </span>
                       <span className={TYPE.mono}>{bestPair?.ratio.toFixed(2)}:1</span>
                     </div>
@@ -307,7 +315,12 @@ export default function BrandComplianceView() {
                     <div className='grid auto-rows-[minmax(2.5rem,1fr)] @3xl:min-h-0 @3xl:flex-1 @3xl:auto-rows-fr'>
                       {pairs.map(
                         ({ slot, ratio, apcaVal, dist, badge, harmonious, complementary }) => {
-                          const name = slot.name || nearestName(slot.color);
+                          const name =
+                            slot.name ||
+                            lookupColorName(
+                              slot.color.value ?? parseColor(slot.color.hex),
+                              slot.color.hex,
+                            );
                           return (
                             <div
                               key={slot.id}

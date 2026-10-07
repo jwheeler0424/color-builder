@@ -13,16 +13,13 @@ import ColorPickerModal from '@/components/modals/color-picker.modal';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCmykProfile } from '@/hooks/use-cmyk-profile';
 import {
-  rgbToHex,
-  parseAny,
-  rgbToHsl,
-  rgbToHsv,
-  rgbToCmyk,
-  rgbToOklab,
-  oklabToLch,
-  nearestName,
-  extractColors,
-} from '@/lib/utils';
+  extractImageColors,
+  formatColor,
+  parseColor,
+  pickerReadings,
+  renderColor,
+} from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
 
 import { ToolButton as Button, ToolTabs, TYPE, ViewHeader } from './view-ui';
 
@@ -73,7 +70,7 @@ function ImageTab() {
     setLoading(true);
     setError(null);
     try {
-      const colors = await extractColors(file, 8);
+      const colors = await extractImageColors(file, 8);
       if (request !== requestRef.current) return;
       const objectUrl = URL.createObjectURL(file);
       setExtracted(colors, objectUrl);
@@ -186,8 +183,10 @@ function ImageTab() {
                   />
                   <div className='flex min-w-0 flex-1 flex-col gap-1'>
                     <div className={TYPE.mono}>{hex.toUpperCase()}</div>
-                    <div className={`truncate ${TYPE.title}`} title={nearestName(color)}>
-                      {nearestName(color)}
+                    <div
+                      className={`truncate ${TYPE.title}`}
+                      title={lookupColorName(color.value ?? parseColor(hex), hex)}>
+                      {lookupColorName(color.value ?? parseColor(hex), hex)}
                     </div>
                   </div>
                   <Button
@@ -270,17 +269,23 @@ function ConvertTab() {
   const convInput = useChromaStore((s) => s.convInput);
   const setConvInput = useChromaStore((s) => s.setConvInput);
   const slots = useChromaStore((s) => s.slots);
-  const valid = !!parseAny(convInput);
-
-  const rgb = useMemo(() => parseAny(convInput) ?? { r: 224, g: 122, b: 95 }, [convInput]);
-  const hex = useMemo(() => rgbToHex(rgb), [rgb]);
-  const hsl = useMemo(() => rgbToHsl(rgb), [rgb]);
-  const hsv = useMemo(() => rgbToHsv(rgb), [rgb]);
   const profile = useCmykProfile();
-  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb, profile.converter]);
-  const oklab = useMemo(() => rgbToOklab(rgb), [rgb]);
-  const lch = useMemo(() => oklabToLch(oklab), [oklab]);
-  const name = useMemo(() => nearestName(rgb), [rgb]);
+  const parsed = useMemo(() => {
+    try {
+      return parseColor(convInput);
+    } catch {
+      return null;
+    }
+  }, [convInput]);
+  const valid = parsed !== null;
+  const color = parsed ?? parseColor('#e07a5f');
+  const readings = useMemo(
+    () => pickerReadings(color, profile.converter ?? undefined),
+    [color, profile.converter],
+  );
+  const { rgb, hsl, hsv, cmyk, oklab, oklch } = readings;
+  const hex = renderColor(color).hex;
+  const name = lookupColorName(color, hex);
 
   return (
     <>
@@ -337,19 +342,19 @@ function ConvertTab() {
             <ConvCard
               disabled={!valid}
               label='CSS RGB'
-              value={`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`}
+              value={formatColor(color, 'rgb')}
               sub={`R:${rgb.r} G:${rgb.g} B:${rgb.b}`}
             />
             <ConvCard
               disabled={!valid}
               label='CSS HSL'
-              value={`hsl(${Math.round(hsl.h)}, ${Math.round(hsl.s)}%, ${Math.round(hsl.l)}%)`}
+              value={formatColor(color, 'hsl')}
               sub={`H:${Math.round(hsl.h)}° S:${Math.round(hsl.s)}% L:${Math.round(hsl.l)}%`}
             />
             <ConvCard
               disabled={!valid}
               label='HSV / HSB'
-              value={`hsv(${Math.round(hsv.h)}, ${Math.round(hsv.s)}%, ${Math.round(hsv.v)}%)`}
+              value={formatColor(color, 'hsv')}
               sub={`H:${Math.round(hsv.h)}° S:${Math.round(hsv.s)}% V:${Math.round(hsv.v)}%`}
             />
             <ConvCard
@@ -357,21 +362,17 @@ function ConvertTab() {
               label='CMYK'
               value={
                 cmyk
-                  ? `cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)`
+                  ? formatColor(color, 'cmyk', { cmyk: profile.converter ?? undefined })
                   : 'ICC profile required'
               }
               sub={cmyk ? `C:${cmyk.c} M:${cmyk.m} Y:${cmyk.y} K:${cmyk.k}` : 'Unavailable'}
             />
-            <ConvCard
-              disabled={!valid}
-              label='OKLab'
-              value={`oklab(${oklab.L.toFixed(3)} ${oklab.a.toFixed(3)} ${oklab.b.toFixed(3)})`}
-            />
+            <ConvCard disabled={!valid} label='OKLab' value={formatColor(color, 'oklab')} />
             <ConvCard
               disabled={!valid}
               label='OKLCH'
-              value={`oklch(${lch.L.toFixed(1)}% ${(lch.C / 100).toFixed(3)} ${Math.round(lch.H)})`}
-              sub={`L:${lch.L.toFixed(1)} C:${(lch.C / 100).toFixed(3)} H:${Math.round(lch.H)}°`}
+              value={formatColor(color, 'oklch')}
+              sub={`L:${(oklch.L * 100).toFixed(1)} C:${oklch.C.toFixed(3)} H:${Math.round(oklch.H)}°`}
             />
             <ConvCard disabled={!valid} label='Nearest Name' value={name} />
           </section>

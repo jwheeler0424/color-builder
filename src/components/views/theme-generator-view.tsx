@@ -3,14 +3,15 @@ import { useMemo, useState } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
-  deriveThemeTokens,
-  buildThemeCss,
   buildFigmaTokens,
-  buildTailwindConfig,
   buildStyleDictionary,
+  buildTailwindV3,
   buildTailwindV4,
+  buildThemeCss,
+  deriveThemeTokens,
+  parseColor,
   semanticSlotNames,
-} from '@/lib/utils';
+} from '@/lib/engine/browser';
 
 import HexInput from '../common/hex-input';
 import {
@@ -47,8 +48,12 @@ export default function ThemeGeneratorView() {
   const [query, setQuery] = useState('');
   const [inspectorMode, setInspectorMode] = useState<PreviewMode>('light');
 
-  const tokens = useMemo(() => deriveThemeTokens(slots, utilityColors), [slots, utilityColors]);
-  const slotNames = useMemo(() => semanticSlotNames(slots), [slots]);
+  const palette = useMemo(
+    () => slots.map((slot) => slot.color.value ?? parseColor(slot.color.hex)),
+    [slots],
+  );
+  const tokens = useMemo(() => deriveThemeTokens(palette, utilityColors), [palette, utilityColors]);
+  const slotNames = useMemo(() => semanticSlotNames(palette), [palette]);
   const [tokenOverrides, setTokenOverrides] = useState<
     Record<string, { light: string; dark: string }>
   >({});
@@ -96,9 +101,9 @@ export default function ThemeGeneratorView() {
       case 'figma':
         return buildFigmaTokens(mergedTokens, utilityColors);
       case 'tailwind':
-        return buildTailwindConfig(mergedTokens, utilityColors);
+        return buildTailwindV3(mergedTokens);
       case 'tailwind4':
-        return buildTailwindV4(mergedTokens, utilityColors);
+        return buildTailwindV4(mergedTokens);
       case 'styledictionary':
         return buildStyleDictionary(mergedTokens, utilityColors);
       default:

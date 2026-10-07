@@ -1,6 +1,11 @@
 import type { ColorValue } from '@/lib/engine/color';
+import type { ColorStop, PaletteSlot } from '@/lib/engine/color-stop';
 import type { DisplayGamutId } from '@/lib/engine/gamuts/types';
 import type { SpaceId } from '@/lib/engine/palette';
+import type {
+  UtilityColor as EngineUtilityColor,
+  UtilityRole as EngineUtilityRole,
+} from '@/lib/engine/theme';
 
 // ─── Primitives ───────────────────────────────────────────────────────────────
 
@@ -38,23 +43,7 @@ export interface OKLCH {
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
 
-export interface ColorStop {
-  value?: ColorValue;
-  css?: string;
-  hex: string;
-  readonly rgb: RGB;
-  readonly hsl: HSL;
-  a?: number;
-}
-
-export interface PaletteSlot {
-  /** Stable UUID – used as React key and for drag-reorder identity */
-  id: string;
-  color: ColorStop;
-  locked: boolean;
-  /** User-assigned token name. Undefined = auto-named from nearestName() */
-  name?: string;
-}
+export type { ColorStop, PaletteSlot } from '@/lib/engine/color-stop';
 
 export type HarmonyMode =
   | 'analogous'
@@ -107,15 +96,6 @@ export interface GradientPreset {
   stops: GradientStop[];
 }
 
-// ─── Color Blindness ─────────────────────────────────────────────────────────
-
-export interface CBType {
-  id: string;
-  name: string;
-  desc: string;
-  matrix: number[];
-}
-
 // ─── Scale ────────────────────────────────────────────────────────────────────
 
 export interface ScaleEntry {
@@ -151,15 +131,8 @@ export interface PaletteSnapshot {
 
 // ─── Utility Colors ───────────────────────────────────────────────────────────
 
-export type UtilityRole = 'info' | 'success' | 'warning' | 'error' | 'neutral' | 'focus';
-export interface UtilityColor {
-  role: UtilityRole;
-  label: string;
-  description: string;
-  anchorHue: number;
-  color: ColorStop;
-  locked: boolean;
-}
+export type UtilityRole = EngineUtilityRole;
+export type UtilityColor = EngineUtilityColor;
 export type UtilityColorSet = Record<UtilityRole, UtilityColor>;
 
 // ─── Theme Tokens ─────────────────────────────────────────────────────────────
@@ -234,6 +207,7 @@ export interface ChromaState {
   extractedColors: ColorStop[];
   imgSrc: string | null;
   utilityColors: UtilityColorSet;
+  utilityLocks: Record<UtilityRole, boolean>;
   brandColors: BrandColor[];
 }
 
@@ -275,7 +249,7 @@ export interface ChromaActions {
   closeModal: () => void;
   setSaveName: (name: string) => void;
   setExtracted: (colors: ColorStop[], imgSrc: string) => void;
-  setUtilityColor: (role: UtilityRole, color: ColorStop) => void;
+  setUtilityColor: (role: UtilityRole, color: ColorValue) => void;
   toggleUtilityLock: (role: UtilityRole) => void;
   regenUtilityColors: () => void;
   addBrandColor: (hex: string, label: string) => void;

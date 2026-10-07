@@ -12,7 +12,8 @@ import { useState, useCallback, useRef } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { HARMONIES, MAX_SLOTS, THEMES } from '@/lib/constants/chroma';
-import { cn, parseHex, hexToStop } from '@/lib/utils';
+import { hexToStop, parseHexInput } from '@/lib/engine/browser';
+import { cn } from '@/lib/utils';
 
 import { AccordionSection } from './accordion-section';
 
@@ -53,13 +54,13 @@ export function GenerateControlsAccordion({
   }, [generate]);
 
   const handleAddSeed = useCallback(() => {
-    const hex = parseHex(seedInp);
-    if (!hex) {
+    const parsed = parseHexInput(seedInp);
+    if (!parsed) {
       setSeedErr(true);
       setTimeout(() => setSeedErr(false), 600);
       return;
     }
-    addSeed(hexToStop(hex));
+    addSeed(hexToStop(parsed.hex));
     setSeedInp('');
   }, [seedInp, addSeed]);
 

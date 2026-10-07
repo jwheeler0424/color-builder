@@ -19,14 +19,16 @@ import type { UtilityRole, UtilityColorSet } from '@/types';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
-  parseHex,
-  textColor,
+  BLACK_XYZ,
+  WHITE_XYZ,
   contrastRatio,
-  wcagLevel,
-  hexToRgb,
-  hexToStop,
   deriveThemeTokens,
-} from '@/lib/utils';
+  isHex,
+  normalizeHex,
+  parseColor,
+  textColor,
+  wcagLevel,
+} from '@/lib/engine/browser';
 
 import { ToolButton as Button, ToolSegments, TYPE, ViewHeader } from './view-ui';
 
@@ -46,7 +48,7 @@ export function buildUtilityCss(
   format: 'base' | 'themed',
 ) {
   if (format === 'base')
-    return `:root {\n${ROLES.map((role) => `  --${role}: ${colors[role].color.hex};`).join('\n')}\n}`;
+    return `:root {\n${ROLES.map((role) => `  --${role}: ${colors[role].hex};`).join('\n')}\n}`;
   const values = (mode: 'light' | 'dark') =>
     ROLES.map(
       (role) =>
@@ -56,21 +58,32 @@ export function buildUtilityCss(
 }
 
 export default function UtilityColorsView() {
-  const { utilityColors, slots, setUtilityColor, toggleUtilityLock, regenUtilityColors } =
-    useChromaStore();
+  const {
+    utilityColors,
+    utilityLocks,
+    slots,
+    setUtilityColor,
+    toggleUtilityLock,
+    regenUtilityColors,
+  } = useChromaStore();
   const [selectedRole, setSelectedRole] = useState<UtilityRole>('info');
   const [draft, setDraft] = useState<string | null>(null);
   const [format, setFormat] = useState<'base' | 'themed'>('base');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [focusedMode, setFocusedMode] = useState<'light' | 'dark' | null>(null);
-  const theme = useMemo(() => deriveThemeTokens(slots, utilityColors), [slots, utilityColors]);
+  const palette = useMemo(
+    () => slots.map((slot) => slot.color.value ?? parseColor(slot.color.hex)),
+    [slots],
+  );
+  const theme = useMemo(() => deriveThemeTokens(palette, utilityColors), [palette, utilityColors]);
   const utility = utilityColors[selectedRole];
   const Icon = ROLE_SYMBOLS[selectedRole];
-  const inputHex = draft ?? utility.color.hex;
-  const validHex = parseHex(inputHex);
-  const lockedCount = ROLES.filter((role) => utilityColors[role].locked).length;
-  const onWhite = contrastRatio(hexToRgb(utility.color.hex), { r: 255, g: 255, b: 255 });
-  const onBlack = contrastRatio(hexToRgb(utility.color.hex), { r: 0, g: 0, b: 0 });
+  const inputHex = draft ?? utility.hex;
+  const validHex = isHex(inputHex);
+  const lockedCount = ROLES.filter((role) => utilityLocks[role]).length;
+  const utilityXyz = parseColor(utility.hex).xyz;
+  const onWhite = contrastRatio(utilityXyz, WHITE_XYZ);
+  const onBlack = contrastRatio(utilityXyz, BLACK_XYZ);
   const css = buildUtilityCss(utilityColors, theme.utility, format);
   const copyValue = async (key: string, value: string) => {
     try {
@@ -83,10 +96,10 @@ export default function UtilityColorsView() {
   };
   const editColor = (value: string) => {
     setCopiedKey(null);
-    const hex = parseHex(value);
+    const hex = isHex(value) ? normalizeHex(value) : null;
     setDraft(value);
     if (hex) {
-      setUtilityColor(selectedRole, hexToStop(hex));
+      setUtilityColor(selectedRole, parseColor(hex));
       setDraft(null);
     }
   };
@@ -149,18 +162,18 @@ export default function UtilityColorsView() {
                   <span
                     className='grid size-7 shrink-0 place-items-center rounded-sm border border-foreground/10'
                     style={{
-                      background: current.color.hex,
-                      color: textColor(hexToRgb(current.color.hex)),
+                      background: current.hex,
+                      color: textColor(parseColor(current.hex).xyz),
                     }}>
                     <RoleIcon className='size-3.5' />
                   </span>
                   <span className='flex min-w-0 flex-1 flex-col gap-1'>
                     <span className='text-[11px] font-semibold'>{current.label}</span>
                     <span className='hidden font-mono text-[9px] text-muted-foreground @4xl/utilities:block'>
-                      {current.color.hex.toUpperCase()}
+                      {current.hex.toUpperCase()}
                     </span>
                   </span>
-                  {current.locked && (
+                  {utilityLocks[role] && (
                     <Lock className='size-3 shrink-0 text-muted-foreground' aria-label='Locked' />
                   )}
                 </button>
@@ -175,8 +188,8 @@ export default function UtilityColorsView() {
               <span
                 className='grid size-12 shrink-0 place-items-center rounded-md border border-foreground/10'
                 style={{
-                  background: utility.color.hex,
-                  color: textColor(hexToRgb(utility.color.hex)),
+                  background: utility.hex,
+                  color: textColor(utilityXyz),
                 }}>
                 <Icon className='size-5' />
               </span>
@@ -188,11 +201,17 @@ export default function UtilityColorsView() {
             <Button
               variant='ghost'
               size='icon-sm'
-              aria-label={`${utility.locked ? 'Unlock' : 'Lock'} ${utility.label}`}
-              aria-pressed={utility.locked}
-              title={utility.locked ? 'Unlock color' : 'Protect color during regeneration'}
+              aria-label={`${utilityLocks[selectedRole] ? 'Unlock' : 'Lock'} ${utility.label}`}
+              aria-pressed={utilityLocks[selectedRole]}
+              title={
+                utilityLocks[selectedRole] ? 'Unlock color' : 'Protect color during regeneration'
+              }
               onClick={() => toggleUtilityLock(selectedRole)}>
-              {utility.locked ? <Lock className='size-4' /> : <Unlock className='size-4' />}
+              {utilityLocks[selectedRole] ? (
+                <Lock className='size-4' />
+              ) : (
+                <Unlock className='size-4' />
+              )}
             </Button>
           </div>
           <div className='grid shrink-0 grid-cols-1 gap-3 border-b border-border pb-4 @sm/editor:grid-cols-[minmax(0,1fr)_auto]'>
@@ -204,7 +223,7 @@ export default function UtilityColorsView() {
                 <input
                   type='color'
                   aria-label={`Pick ${utility.label} color`}
-                  value={utility.color.hex}
+                  value={utility.hex}
                   onChange={(event) => editColor(event.target.value)}
                   className='size-8 shrink-0 cursor-pointer overflow-hidden rounded-sm border border-border bg-transparent p-0 [&::-webkit-color-swatch]:border-0 [&::-webkit-color-swatch-wrapper]:p-0'
                 />
@@ -226,7 +245,7 @@ export default function UtilityColorsView() {
                   aria-label={`Copy ${utility.label} base color`}
                   title='Copy base color'
                   onClick={() => {
-                    void copyValue('base', utility.color.hex);
+                    void copyValue('base', utility.hex);
                   }}>
                   {copiedKey === 'base' ? (
                     <Check className='size-3.5' />
@@ -262,7 +281,9 @@ export default function UtilityColorsView() {
           </div>
           <div className='flex shrink-0 items-center justify-between gap-2'>
             <span className={TYPE.label}>Theme usage</span>
-            <span className={TYPE.mono}>{utility.locked ? 'Locked base' : 'Editable base'}</span>
+            <span className={TYPE.mono}>
+              {utilityLocks[selectedRole] ? 'Locked base' : 'Editable base'}
+            </span>
           </div>
           <div className='grid auto-rows-[minmax(19rem,1fr)] grid-cols-1 gap-4 @sm/editor:grid-cols-2 @4xl/utilities:min-h-0 @4xl/utilities:flex-1'>
             {(['light', 'dark'] as const).map((mode) => {
@@ -325,7 +346,7 @@ export default function UtilityColorsView() {
                     <div className='flex flex-wrap items-center gap-2'>
                       <span
                         className='inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-[10px] font-semibold'
-                        style={{ background: accent, color: textColor(hexToRgb(accent)) }}>
+                        style={{ background: accent, color: textColor(parseColor(accent).xyz) }}>
                         <Icon className='size-3' />
                         {utility.label}
                       </span>

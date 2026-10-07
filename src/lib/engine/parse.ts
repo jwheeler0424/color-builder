@@ -4,7 +4,7 @@ import type { FormatId } from './formats.ts';
 import type { CmykConverter } from './icc.ts';
 import type { Vec3 } from './math/matrix.ts';
 
-import { colorValue, type ColorValue } from './color.ts';
+import { colorValue, renderColor, type ColorValue } from './color.ts';
 import { hslToRgb, hsvToRgb } from './device.ts';
 import { DISPLAY_GAMUTS, SRGB, encodedToXyz } from './gamuts/rgb.ts';
 import { mulVec } from './math/matrix.ts';
@@ -21,6 +21,28 @@ export interface ParsedColor extends ColorValue {
 export interface ParseOptions {
   /** Required to read `cmyk(...)`: ink only has a color through an output profile. */
   cmyk?: CmykConverter;
+}
+
+export interface ParsedHexInput {
+  color: ParsedColor;
+  hex: string;
+  alphaPercent: number;
+  hasAlpha: boolean;
+}
+
+export function parseHexInput(input: string): ParsedHexInput | null {
+  if (!/^#?(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(input.trim())) return null;
+  try {
+    const color = parseColor(input);
+    return {
+      color,
+      hex: renderColor(color).hex,
+      alphaPercent: Math.round(color.alpha * 100),
+      hasAlpha: /^#?(?:[0-9a-f]{8})$/i.test(input.trim()),
+    };
+  } catch {
+    return null;
+  }
 }
 
 interface Arg {

@@ -17,24 +17,22 @@ import { Button } from '@/components/ui/button';
 import useChromaStore from '@/hooks/use-chroma-store';
 import { useCmykProfile } from '@/hooks/use-cmyk-profile';
 import {
-  hexToRgb,
-  rgbToHex,
-  rgbToHsl,
-  hslToRgb,
-  rgbToHsv,
-  rgbToOklch,
-  oklchToRgb,
-  rgbToOklab,
-  oklabToRgb,
-  nearestName,
-  parseHex,
-  rgbToCmyk,
-  toHexAlpha,
-  hsvToRgb,
-  cssString,
-  parseHexAlpha,
-  cmykToRgb,
-} from '@/lib/utils';
+  OKLAB,
+  cmykToColor,
+  colorValue,
+  fitHex,
+  formatColor,
+  formatPickerColor,
+  hslPercentToRgb8,
+  hsvPercentToRgb8,
+  labToLch,
+  parseColor,
+  parseHexInput,
+  pickerReadings,
+  renderColor,
+  rgb8ToHex,
+} from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
 
 import HexInput from '../common/hex-input';
 import { CmykSliders } from '../common/sliders/cmyk-sliders';
@@ -75,37 +73,45 @@ export function InlineColorPicker({
     generate,
   } = useChromaStore();
 
-  // All derived values from canonical hex
-  const rgb = useMemo(() => hexToRgb(pickerHex), [pickerHex]);
-  const hsl = useMemo(() => rgbToHsl(rgb), [rgb]);
-  const hsv = useMemo(() => rgbToHsv(rgb), [rgb]);
-  const oklch = useMemo(() => rgbToOklch(rgb), [rgb]);
-  const oklab = useMemo(() => rgbToOklab(rgb), [rgb]);
   const profile = useCmykProfile();
-  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb, profile.converter]);
-  const name = useMemo(() => nearestName(rgb), [rgb]);
+  const pickerColor = useMemo(() => {
+    const parsed = parseColor(pickerHex);
+    return colorValue(parsed.xyz, pickerAlpha / 100, parsed.display);
+  }, [pickerHex, pickerAlpha]);
+  const { rgb, hsl, hsv, oklch, oklab, cmyk } = useMemo(
+    () => pickerReadings(pickerColor, profile.converter ?? undefined),
+    [pickerColor, profile.converter],
+  );
+  const name = lookupColorName(pickerColor, renderColor(pickerColor).hex);
 
-  const displayHex = toHexAlpha(pickerHex, pickerAlpha);
-  const cssOut = cssString(pickerMode, rgb, hsl, hsv, oklch, oklab, cmyk, pickerAlpha);
-  const previewStyle =
-    pickerAlpha < 100
-      ? {
-          background: `rgba(${rgb.r},${rgb.g},${rgb.b},${(pickerAlpha / 100).toFixed(2)})`,
-        }
-      : { background: pickerHex };
+  const displayHex = formatColor(pickerColor, 'hex');
+  const cssOut = formatPickerColor(pickerColor, pickerMode, profile.converter ?? undefined);
+  const previewStyle = { background: renderColor(pickerColor).css };
 
   // Setters — each converts its space back to hex as canonical
-  const setRgb = useCallback((r: RGB) => setPickerHex(rgbToHex(r)), [setPickerHex]);
-  const setHsl = useCallback((h: HSL) => setPickerHex(rgbToHex(hslToRgb(h))), [setPickerHex]);
-  const setHsv = useCallback((h: HSV) => setPickerHex(rgbToHex(hsvToRgb(h))), [setPickerHex]);
-  const setOklch = useCallback((o: OKLCH) => setPickerHex(rgbToHex(oklchToRgb(o))), [setPickerHex]);
+  const setRgb = useCallback((r: RGB) => setPickerHex(rgb8ToHex(r)), [setPickerHex]);
+  const setHsl = useCallback(
+    (h: HSL) => setPickerHex(rgb8ToHex(hslPercentToRgb8(h))),
+    [setPickerHex],
+  );
+  const setHsv = useCallback(
+    (h: HSV) => setPickerHex(rgb8ToHex(hsvPercentToRgb8(h))),
+    [setPickerHex],
+  );
+  const setOklch = useCallback(
+    (o: OKLCH) => setPickerHex(fitHex(OKLAB, { l: o.L, c: o.C, h: o.H })),
+    [setPickerHex],
+  );
   const setOklab = useCallback(
-    (o: { L: number; a: number; b: number }) => setPickerHex(rgbToHex(oklabToRgb(o))),
+    (o: { L: number; a: number; b: number }) => setPickerHex(fitHex(OKLAB, labToLch(OKLAB, o))),
     [setPickerHex],
   );
   const setCmyk = useCallback(
-    (c: { c: number; m: number; y: number; k: number }) => setPickerHex(rgbToHex(cmykToRgb(c))),
-    [setPickerHex],
+    (c: { c: number; m: number; y: number; k: number }) => {
+      if (!profile.converter) return;
+      setPickerHex(renderColor(cmykToColor([c.c, c.m, c.y, c.k], profile.converter)).hex);
+    },
+    [setPickerHex, profile.converter],
   );
 
   // ColorWheel speaks HSL
@@ -118,11 +124,10 @@ export function InlineColorPicker({
 
   const handleHexInput = useCallback(
     (v: string) => {
-      const base = parseHex(v); // handles 3, 6, and 8-char (strips alpha bytes)
-      if (!base) return;
-      setPickerHex(base);
-      const alpha = parseHexAlpha(v); // null if not 8-char
-      if (alpha !== null) setPickerAlpha(alpha);
+      const parsed = parseHexInput(v);
+      if (!parsed) return;
+      setPickerHex(parsed.hex);
+      if (parsed.hasAlpha) setPickerAlpha(parsed.alphaPercent);
     },
     [setPickerHex, setPickerAlpha],
   );
@@ -158,8 +163,8 @@ export function InlineColorPicker({
       try {
         const dropper = new (window as any).EyeDropper();
         const { sRGBHex } = await dropper.open();
-        const h = parseHex(sRGBHex);
-        if (h) updateColor(h);
+        const parsed = parseHexInput(sRGBHex);
+        if (parsed) updateColor(parsed.hex);
       } catch (e) {
         /* cancelled */
       }
@@ -360,7 +365,7 @@ export function InlineColorPicker({
         <div className='flex justify-between px-0.5'>
           {Array.from({ length: 10 }, (_, i) => {
             const h = (i / 10) * 360;
-            const sugHex = rgbToHex(hslToRgb({ h, s: hsl.s, l: hsl.l }));
+            const sugHex = rgb8ToHex(hslPercentToRgb8({ h, s: hsl.s, l: hsl.l }));
             return (
               <button
                 key={i}

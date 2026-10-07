@@ -14,24 +14,41 @@ import type {
 } from '@/types';
 
 import { MAX_SLOTS } from '@/lib/constants/chroma';
-import { OKLAB } from '@/lib/engine/browser';
-import { computeColorPalette } from '@/lib/engine/runtime/palette-runtime';
 import {
-  generateUtilityColors,
-  mergeUtilityColors,
-  regenerateUtilityColors,
-} from '@/lib/utils/color-math.utils';
-import {
-  generatePalette,
-  stopToColor,
+  OKLAB,
+  UTILITY_ROLES,
+  composePalette,
+  colorValue,
   colorToStop,
   cloneSlot,
   hexToStop,
-  decodeUrl,
-  savePrefs,
-} from '@/lib/utils/palette.utils';
+  generateUtilityColors,
+  mergeUtilityColors,
+  parseColor,
+  regenerateUtilityColors,
+  renderColor,
+  stopToColor,
+} from '@/lib/engine/browser';
+import { computeColorPalette } from '@/lib/engine/runtime/palette-runtime';
+import { decodeUrl, savePrefs } from '@/lib/utils/palette.utils';
 
 let generationController: AbortController | undefined;
+
+function paletteValues(slots: readonly PaletteSlot[]) {
+  return slots.map((slot) => slot.color.value ?? parseColor(slot.color.hex));
+}
+
+function mergeUtilityLocks(
+  slots: readonly PaletteSlot[],
+  colors: ChromaState['utilityColors'],
+  locks: ChromaState['utilityLocks'],
+) {
+  return mergeUtilityColors(
+    colors,
+    generateUtilityColors(paletteValues(slots)),
+    new Set(UTILITY_ROLES.filter((role) => locks[role])),
+  );
+}
 
 function generationSignature(state: ChromaState): string {
   return JSON.stringify([
@@ -158,7 +175,10 @@ function makeInitialState(): ChromaState {
     slots,
     seedMode: 'influence' as const,
     temperature: 0,
-    utilityColors: generateUtilityColors(slots),
+    utilityColors: generateUtilityColors(paletteValues(slots)),
+    utilityLocks: Object.fromEntries(
+      UTILITY_ROLES.map((role) => [role, false]),
+    ) as ChromaState['utilityLocks'],
     brandColors: [],
   };
 }
@@ -211,13 +231,13 @@ export const useChromaStore = create<ChromaStore>()(
 
           const { mode, temperature } = state;
 
-          const palette = generatePalette({
+          const palette = composePalette({
             harmony: mode,
             count: MAX_SLOTS,
             seeds: slots.map((slot) => stopToColor(slot.color)),
             seedMode: 'influence',
             temperature,
-          });
+          }).map(colorToStop);
 
           // Project slots onto palette
           const paletteIndexes = slots.map((slot) => findClosestPaletteIndex(slot.color, palette));
@@ -309,7 +329,7 @@ export const useChromaStore = create<ChromaStore>()(
                 ),
               );
               state.utilityColors = castDraft(
-                mergeUtilityColors(state.utilityColors, generateUtilityColors(state.slots)),
+                mergeUtilityLocks(state.slots, state.utilityColors, state.utilityLocks),
               );
               state.generationPending = false;
               savePrefs(state.mode, state.count);
@@ -385,9 +405,7 @@ export const useChromaStore = create<ChromaStore>()(
           s.slots = castDraft(slots);
           s.mode = mode;
           s.count = count;
-          s.utilityColors = castDraft(
-            mergeUtilityColors(s.utilityColors, generateUtilityColors(slots)),
-          );
+          s.utilityColors = castDraft(mergeUtilityLocks(slots, s.utilityColors, s.utilityLocks));
         }),
 
       restoreSnapshot: (snap) =>
@@ -495,15 +513,26 @@ export const useChromaStore = create<ChromaStore>()(
 
       setUtilityColor: (role, color) =>
         set((s) => {
-          s.utilityColors[role].color = castDraft(color);
+          const rendition = renderColor(color);
+          s.utilityColors[role] = castDraft({
+            ...s.utilityColors[role],
+            hex: rendition.hex,
+            value: color,
+          });
         }),
       toggleUtilityLock: (role) =>
         set((s) => {
-          s.utilityColors[role].locked = !s.utilityColors[role].locked;
+          s.utilityLocks[role] = !s.utilityLocks[role];
         }),
       regenUtilityColors: () =>
         set((s) => {
-          s.utilityColors = castDraft(regenerateUtilityColors(s.slots, s.utilityColors));
+          s.utilityColors = castDraft(
+            regenerateUtilityColors(
+              paletteValues(s.slots),
+              s.utilityColors,
+              new Set(UTILITY_ROLES.filter((role) => s.utilityLocks[role])),
+            ),
+          );
         }),
 
       // ── Brand colors ─────────────────────────────────────────────────────────
@@ -545,6 +574,7 @@ export const useChromaStore = create<ChromaStore>()(
         convInput: state.convInput,
         exportTab: state.exportTab,
         utilityColors: state.utilityColors,
+        utilityLocks: state.utilityLocks,
         paletteSnapshots: state.paletteSnapshots,
         brandColors: state.brandColors,
       }),
@@ -552,12 +582,25 @@ export const useChromaStore = create<ChromaStore>()(
         if (decodeUrl()) return current;
         const p = persisted as Partial<ChromaStore>;
         const slots = p.slots ? sanitizeSlots(p.slots as unknown[]) : current.slots;
-        const utilityColors = generateUtilityColors(slots);
+        const utilityColors = generateUtilityColors(paletteValues(slots));
+        const utilityLocks = Object.fromEntries(
+          UTILITY_ROLES.map((role) => [role, false]),
+        ) as ChromaState['utilityLocks'];
         for (const role of Object.keys(utilityColors) as Array<keyof typeof utilityColors>) {
-          const stored = p.utilityColors?.[role];
+          const stored = p.utilityColors?.[role] as
+            | (ChromaState['utilityColors'][typeof role] & {
+                locked?: boolean;
+                color?: ColorStop;
+              })
+            | undefined;
           if (!stored) continue;
           try {
-            utilityColors[role] = { ...stored, color: colorToStop(stopToColor(stored.color)) };
+            const rawValue = stored.value ?? stored.color?.value;
+            const value = rawValue
+              ? colorValue(rawValue.xyz, rawValue.alpha, rawValue.display)
+              : parseColor(stored.hex ?? stored.color?.hex ?? utilityColors[role].hex);
+            utilityColors[role] = { ...utilityColors[role], value, hex: renderColor(value).hex };
+            utilityLocks[role] = !!stored.locked;
           } catch {
             continue;
           }
@@ -565,7 +608,7 @@ export const useChromaStore = create<ChromaStore>()(
         const seeds = sanitizeSlots((p.seeds ?? current.seeds).map((color) => ({ color }))).map(
           (slot) => slot.color,
         );
-        return { ...current, ...p, slots, seeds, utilityColors };
+        return { ...current, ...p, slots, seeds, utilityColors, utilityLocks };
       },
       migrate: (persisted) => persisted as Partial<ChromaStore>,
       version: 4,

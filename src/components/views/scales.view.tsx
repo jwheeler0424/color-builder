@@ -12,15 +12,19 @@ import React, { useState, useMemo } from 'react';
 import ColorPickerModal from '@/components/modals/color-picker.modal';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
-  generateScale,
-  textColor,
-  parseHex,
-  hexToRgb,
-  semanticSlotNames,
-  hexToStop,
-  nearestName,
+  BLACK_XYZ,
+  SCALE_STEPS,
   contrastRatio,
-} from '@/lib/utils';
+  generateScale,
+  hexToStop,
+  isHex,
+  normalizeHex,
+  parseColor,
+  semanticSlotNames,
+  textColor,
+  WHITE_XYZ,
+} from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
 
 import { ToolButton as Button, ToolSegments, ToolTabs, TYPE, ViewHeader } from './view-ui';
 
@@ -55,15 +59,15 @@ function buildSingleTokens(
 ): string {
   switch (tab) {
     case 'css':
-      return `:root {\n${scale.map(({ step, hex }) => `  --${name}-${step}: ${hex};`).join('\n')}\n}`;
+      return `:root {\n${scale.map(({ step, color }) => `  --${name}-${step}: ${color.hex};`).join('\n')}\n}`;
     case 'js':
-      return `export const ${name} = {\n${scale.map(({ step, hex }) => `  '${step}': '${hex}',`).join('\n')}\n};`;
+      return `export const ${name} = {\n${scale.map(({ step, color }) => `  '${step}': '${color.hex}',`).join('\n')}\n};`;
     case 'tailwind':
-      return `// tailwind.config.js\ncolors: {\n  ${name}: {\n${scale.map(({ step, hex }) => `    '${step}': '${hex}',`).join('\n')}\n  }\n}`;
+      return `// tailwind.config.js\ncolors: {\n  ${name}: {\n${scale.map(({ step, color }) => `    '${step}': '${color.hex}',`).join('\n')}\n  }\n}`;
     case 'json':
       return JSON.stringify(
         {
-          [name]: Object.fromEntries(scale.map(({ step, hex }) => [step, hex])),
+          [name]: Object.fromEntries(scale.map(({ step, color }) => [step, color.hex])),
         },
         null,
         2,
@@ -96,7 +100,7 @@ function SingleColorTab() {
     setInputVal(scaleHex);
   }, [scaleHex]);
 
-  const scale = useMemo(() => generateScale(scaleHex), [scaleHex]);
+  const scale = useMemo(() => generateScale({ baseColor: scaleHex }), [scaleHex]);
   const tokens = useMemo(
     () => buildSingleTokens(scale, scaleName, scaleTokenTab),
     [scale, scaleName, scaleTokenTab],
@@ -115,12 +119,11 @@ function SingleColorTab() {
 
   const handleInput = (v: string) => {
     setInputVal(v);
-    const h = parseHex(v);
-    if (h) setScaleHex(h);
+    if (isHex(v)) setScaleHex(normalizeHex(v));
   };
 
   const handleGenerate = () => {
-    const h = parseHex(inputVal);
+    const h = isHex(inputVal) ? normalizeHex(inputVal) : null;
     if (h) setScaleHex(h);
     else if (slots.length) {
       const h2 = slots[0].color.hex;
@@ -131,7 +134,7 @@ function SingleColorTab() {
 
   const useAsSeeds = () => {
     const picks = [1, 3, 5, 7, 9].map((i) => scale[i]).filter(Boolean);
-    setSeeds(picks.map(({ hex }) => hexToStop(hex)));
+    setSeeds(picks.map(({ color }) => hexToStop(color.hex)));
     generate();
     void navigate({ to: '/palette' });
   };
@@ -154,14 +157,14 @@ function SingleColorTab() {
                 <div className='flex min-w-0 flex-col gap-1'>
                   <span className={TYPE.label}>Base color</span>
                   <span className={`truncate ${TYPE.title}`}>
-                    {nearestName(hexToRgb(scaleHex))}
+                    {lookupColorName(parseColor(scaleHex), scaleHex)}
                   </span>
                 </div>
               </div>
               <div className='flex items-center gap-2'>
                 <input
                   aria-label='Scale base hex'
-                  aria-invalid={!parseHex(inputVal)}
+                  aria-invalid={!isHex(inputVal)}
                   className='h-8 w-28 min-w-0 rounded border border-border bg-muted px-2 font-mono text-xs outline-none focus:border-ring aria-invalid:border-destructive'
                   value={inputVal}
                   onChange={(event) => handleInput(event.target.value)}
@@ -196,26 +199,26 @@ function SingleColorTab() {
               <span className={TYPE.mono}>11 shades / 50-950</span>
             </div>
             <div className='grid grid-cols-3 gap-3 @sm/shades:grid-cols-4 @xl/shades:grid-cols-6 @2xl/shades:grid-cols-11 @4xl/scales:min-h-0 @4xl/scales:flex-1'>
-              {scale.map(({ step, hex, rgb }) => (
+              {scale.map(({ step, color }) => (
                 <button
                   key={step}
                   type='button'
-                  aria-label={`Copy scale ${step}: ${hex}`}
+                  aria-label={`Copy scale ${step}: ${color.hex}`}
                   data-scale-step={step}
-                  title={`${scaleName}-${step}: ${hex.toUpperCase()}`}
+                  title={`${scaleName}-${step}: ${color.hex.toUpperCase()}`}
                   onFocus={() => setSelectedStep(step)}
                   onClick={() => {
-                    void copyShade(hex, step);
+                    void copyShade(color.hex, step);
                   }}
                   className='group flex min-w-0 cursor-pointer flex-col gap-2 text-left outline-none'>
                   <span
                     className={`flex min-h-24 w-full flex-1 items-start justify-between rounded-md border border-foreground/10 p-2 transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-ring ${selectedStep === step ? 'ring-1 ring-foreground/30' : ''}`}
-                    style={{ background: hex, color: textColor(rgb) }}>
+                    style={{ background: color.hex, color: textColor(color.xyz) }}>
                     <span className='font-mono text-[11px] font-bold'>{step}</span>
-                    {copiedHex === hex && <Check className='size-3 shrink-0' />}
+                    {copiedHex === color.hex && <Check className='size-3 shrink-0' />}
                   </span>
                   <span className='font-mono text-[10px] leading-none text-muted-foreground'>
-                    {hex.toUpperCase()}
+                    {color.hex.toUpperCase()}
                   </span>
                 </button>
               ))}
@@ -224,25 +227,25 @@ function SingleColorTab() {
               <div className='col-span-2 flex items-center gap-3 @xl/shades:col-span-1'>
                 <span
                   className='size-9 shrink-0 rounded-md border border-border'
-                  style={{ background: selectedShade.hex }}
+                  style={{ background: selectedShade.color.hex }}
                 />
                 <div className='flex min-w-0 flex-col gap-1'>
                   <span className={TYPE.label}>
                     {scaleName}-{selectedShade.step}
                   </span>
-                  <span className={TYPE.mono}>{selectedShade.hex.toUpperCase()}</span>
+                  <span className={TYPE.mono}>{selectedShade.color.hex.toUpperCase()}</span>
                 </div>
               </div>
               <div className='flex flex-col gap-1'>
                 <span className={TYPE.label}>On white</span>
                 <span className={TYPE.mono}>
-                  {contrastRatio(selectedShade.rgb, { r: 255, g: 255, b: 255 }).toFixed(2)}:1
+                  {contrastRatio(selectedShade.color.xyz, WHITE_XYZ).toFixed(2)}:1
                 </span>
               </div>
               <div className='flex flex-col gap-1'>
                 <span className={TYPE.label}>On black</span>
                 <span className={TYPE.mono}>
-                  {contrastRatio(selectedShade.rgb, { r: 0, g: 0, b: 0 }).toFixed(2)}:1
+                  {contrastRatio(selectedShade.color.xyz, BLACK_XYZ).toFixed(2)}:1
                 </span>
               </div>
             </div>
@@ -317,7 +320,7 @@ function SingleColorTab() {
 // FULL PALETTE TAB (was MultiScaleView)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+const STEPS = SCALE_STEPS;
 type ExportFmt = 'css' | 'tailwind' | 'json';
 
 function buildMultiScaleTokens(
@@ -326,15 +329,15 @@ function buildMultiScaleTokens(
 ): string {
   switch (fmt) {
     case 'css':
-      return `:root {\n${scales.flatMap(({ name, steps }) => steps.map(({ step, hex }) => `  --${name}-${step}: ${hex};`)).join('\n')}\n}`;
+      return `:root {\n${scales.flatMap(({ name, steps }) => steps.map(({ step, color }) => `  --${name}-${step}: ${color.hex};`)).join('\n')}\n}`;
     case 'tailwind':
-      return `// tailwind.config.js\ncolors: {\n${scales.map(({ name, steps }) => `  ${name}: {\n${steps.map(({ step, hex }) => `    '${step}': '${hex}',`).join('\n')}\n  },`).join('\n')}\n}`;
+      return `// tailwind.config.js\ncolors: {\n${scales.map(({ name, steps }) => `  ${name}: {\n${steps.map(({ step, color }) => `    '${step}': '${color.hex}',`).join('\n')}\n  },`).join('\n')}\n}`;
     case 'json':
       return JSON.stringify(
         Object.fromEntries(
           scales.map(({ name, steps }) => [
             name,
-            Object.fromEntries(steps.map(({ step, hex }) => [step, hex])),
+            Object.fromEntries(steps.map(({ step, color }) => [step, color.hex])),
           ]),
         ),
         null,
@@ -353,13 +356,17 @@ function FullPaletteTab() {
   }>({ slot: 0, step: 500 });
   const [copiedHex, setCopiedHex] = useState<string | null>(null);
 
-  const slotNames = useMemo(() => semanticSlotNames(slots), [slots]);
+  const palette = useMemo(
+    () => slots.map((slot) => slot.color.value ?? parseColor(slot.color.hex)),
+    [slots],
+  );
+  const slotNames = useMemo(() => semanticSlotNames(palette), [palette]);
   const scales = useMemo(
     () =>
       slots.map((slot, i) => ({
         name: slotNames[i] ?? `color-${i + 1}`,
         hex: slot.color.hex,
-        steps: generateScale(slot.color.hex),
+        steps: generateScale({ baseColor: slot.color.value ?? parseColor(slot.color.hex) }),
       })),
     [slots, slotNames],
   );
@@ -450,20 +457,20 @@ function FullPaletteTab() {
                         </div>
                       </div>
                     </th>
-                    {scale.steps.map(({ step, hex, rgb }) => (
+                    {scale.steps.map(({ step, color }) => (
                       <td key={step} className='h-10 p-1'>
                         <button
                           type='button'
                           data-scale-cell={`${slotIndex}-${step}`}
-                          aria-label={`Copy ${scale.name}-${step}: ${hex}`}
-                          title={`${scale.name}-${step}: ${hex.toUpperCase()}`}
+                          aria-label={`Copy ${scale.name}-${step}: ${color.hex}`}
+                          title={`${scale.name}-${step}: ${color.hex.toUpperCase()}`}
                           onFocus={() => setSelectedCell({ slot: slotIndex, step })}
                           onClick={() => {
-                            void copyShade(hex, slotIndex, step);
+                            void copyShade(color.hex, slotIndex, step);
                           }}
                           className={`flex h-full min-h-8 w-full cursor-pointer items-center justify-center rounded-sm border border-foreground/10 transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedCell.slot === slotIndex && selectedCell.step === step ? 'ring-1 ring-foreground/50' : ''}`}
-                          style={{ background: hex, color: textColor(rgb) }}>
-                          {copiedHex === hex && <Check className='size-3' />}
+                          style={{ background: color.hex, color: textColor(color.xyz) }}>
+                          {copiedHex === color.hex && <Check className='size-3' />}
                         </button>
                       </td>
                     ))}
@@ -477,25 +484,25 @@ function FullPaletteTab() {
               <div className='col-span-2 flex min-w-0 items-center gap-3 @3xl:col-span-1'>
                 <span
                   className='size-9 shrink-0 rounded-md border border-border'
-                  style={{ background: selectedShade.hex }}
+                  style={{ background: selectedShade.color.hex }}
                 />
                 <div className='flex min-w-0 flex-col gap-1'>
                   <span className={TYPE.label}>
                     {selectedScale.name}-{selectedShade.step}
                   </span>
-                  <span className={TYPE.mono}>{selectedShade.hex.toUpperCase()}</span>
+                  <span className={TYPE.mono}>{selectedShade.color.hex.toUpperCase()}</span>
                 </div>
               </div>
               <div className='flex flex-col gap-1'>
                 <span className={TYPE.label}>On white</span>
                 <span className={TYPE.mono}>
-                  {contrastRatio(selectedShade.rgb, { r: 255, g: 255, b: 255 }).toFixed(2)}:1
+                  {contrastRatio(selectedShade.color.xyz, WHITE_XYZ).toFixed(2)}:1
                 </span>
               </div>
               <div className='flex flex-col gap-1'>
                 <span className={TYPE.label}>On black</span>
                 <span className={TYPE.mono}>
-                  {contrastRatio(selectedShade.rgb, { r: 0, g: 0, b: 0 }).toFixed(2)}:1
+                  {contrastRatio(selectedShade.color.xyz, BLACK_XYZ).toFixed(2)}:1
                 </span>
               </div>
             </div>

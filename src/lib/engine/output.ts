@@ -1,3 +1,4 @@
+import type { RGB8 } from './device.ts';
 import type { Vec3 } from './math/matrix.ts';
 
 import { optimalSolid } from './gamuts/optimal.ts';
@@ -22,6 +23,19 @@ export function normalizeHex(input: string): string {
 export function hexToEncoded(hex: string): Vec3 {
   const n = parseInt(normalizeHex(hex).slice(1), 16);
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+}
+
+export function hexToRgb8(hex: string): RGB8 {
+  const [r, g, b] = hexToEncoded(hex).map((value) => Math.round(value * 255));
+  return { r, g, b };
+}
+
+export function rgb8ToHex({ r, g, b }: RGB8): string {
+  const channels = [r, g, b];
+  if (!channels.every((value) => Number.isInteger(value) && value >= 0 && value <= 255)) {
+    throw new Error('8-bit RGB channels must be integers between 0 and 255.');
+  }
+  return `#${channels.map((value) => value.toString(16).padStart(2, '0')).join('')}`;
 }
 
 export const hexToXyz = (hex: string): Vec3 => encodedToXyz(SRGB, hexToEncoded(hex));

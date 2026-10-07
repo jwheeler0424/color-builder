@@ -2,7 +2,8 @@ import { CheckIcon, CopyIcon, LockIcon, LockOpenIcon, Trash2Icon } from 'lucide-
 import { useState } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
-import { cn, hexToStop } from '@/lib/utils';
+import { hexToStop } from '@/lib/engine/browser';
+import { cn } from '@/lib/utils';
 
 import { InlineColorPicker } from '../common/inline-color-picker';
 import { Button } from '../ui/button';

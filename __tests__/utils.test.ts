@@ -10,46 +10,48 @@ import {
 } from '@/components/views/gradient-view';
 import { NAMED } from '@/lib/constants/chroma';
 import {
-  generateSvgSwatch,
   generateUtilityColors,
-  regenerateUtilityColors,
-  hexToRgb,
+  generateSvgSwatch,
+  colorValue,
   hexToStop,
-  nearestName,
-  rgbToHsl,
-} from '@/lib/utils';
+  hexToRgb8,
+  parseColor,
+  regenerateUtilityColors,
+  rgb8ToXyz,
+  rgb8ToHex,
+  rgb8ToHslPercent,
+  UTILITY_ROLES,
+} from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
 
 test('explicit utility regeneration varies every unlocked role and preserves locked objects', () => {
-  const slots = ['#6366f1', '#ec4899', '#10b981'].map((hex) => ({ color: hexToStop(hex) }));
-  const initial = generateUtilityColors(slots);
-  initial.info = { ...initial.info, locked: true, color: hexToStop('#123456') };
-  initial.focus = { ...initial.focus, locked: true };
-  const changed = regenerateUtilityColors(slots, initial, () => 0.5);
+  const palette = ['#6366f1', '#ec4899', '#10b981'].map((hex) => parseColor(hex));
+  const initial = generateUtilityColors(palette);
+  const keep = new Set(['info', 'focus'] as const);
+  const changed = regenerateUtilityColors(palette, initial, keep, () => 0.5);
   expect(changed.info).toBe(initial.info);
   expect(changed.focus).toBe(initial.focus);
   for (const role of ['success', 'warning', 'error', 'neutral'] as const) {
-    expect(changed[role].color.hex).not.toBe(initial[role].color.hex);
-    expect(changed[role].locked).toBe(false);
+    expect(changed[role].hex).not.toBe(initial[role].hex);
   }
-  const repeated = regenerateUtilityColors(slots, changed, () => 0.5);
+  const repeated = regenerateUtilityColors(palette, changed, keep, () => 0.5);
   for (const role of ['success', 'warning', 'error', 'neutral'] as const)
-    expect(repeated[role].color.hex).not.toBe(changed[role].color.hex);
-  expect(generateUtilityColors(slots)).toEqual(generateUtilityColors(slots));
+    expect(repeated[role].hex).not.toBe(changed[role].hex);
+  expect(generateUtilityColors(palette)).toEqual(generateUtilityColors(palette));
 });
 
 test('all-locked utility regeneration is a no-op and empty palettes still regenerate', () => {
   const initial = generateUtilityColors([]);
-  for (const role of Object.keys(initial) as (keyof typeof initial)[]) initial[role].locked = true;
   expect(
-    regenerateUtilityColors([], initial, () => {
+    regenerateUtilityColors([], initial, new Set(UTILITY_ROLES), () => {
       throw new Error('Locked colors must not consume randomness');
     }),
   ).toBe(initial);
   const unlocked = generateUtilityColors([]);
-  const changed = regenerateUtilityColors([], unlocked, () => 0.25);
+  const changed = regenerateUtilityColors([], unlocked, new Set(), () => 0.25);
   for (const role of Object.keys(unlocked) as (keyof typeof unlocked)[]) {
-    expect(changed[role].color.hex).not.toBe(unlocked[role].color.hex);
-    expect(changed[role].color.hex).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(changed[role].hex).not.toBe(unlocked[role].hex);
+    expect(changed[role].hex).toMatch(/^#[0-9a-f]{6}$/i);
   }
 });
 
@@ -130,28 +132,32 @@ test('color vision updates preview colors without changing exported stops', () =
   expect(gradient.stops.map((stop) => stop.hex)).toEqual(['#ff0000', '#00ff00']);
 });
 
-test('nearestName is callable after loading constants through the utility barrel', () => {
+test('engine-backed color naming accepts canonical colors and RGB8 input', () => {
   const color = NAMED[0];
-  expect(typeof nearestName).toBe('function');
-  expect(nearestName(hexToRgb(color.hex))).toBeString();
-  expect(nearestName({ r: 123, g: 45, b: 67 })).toBeString();
+  expect(lookupColorName(parseColor(color.hex), color.hex)).toBeString();
+  const rgb = { r: 123, g: 45, b: 67 };
+  expect(lookupColorName(colorValue(rgb8ToXyz(rgb)), rgb8ToHex(rgb))).toBeString();
 });
 
 test('SVG export can resolve automatic color names without a barrel cycle', () => {
-  const rgb = hexToRgb('#ff0000');
-  const svg = generateSvgSwatch([
-    {
-      id: 'regression',
-      color: { hex: '#ff0000', rgb, hsl: rgbToHsl(rgb) },
-      locked: false,
-    },
-  ]);
-  expect(svg).toContain(nearestName(rgb));
+  const rgb = hexToRgb8('#ff0000');
+  const name = lookupColorName(colorValue(rgb8ToXyz(rgb)), rgb8ToHex(rgb));
+  const svg = generateSvgSwatch(
+    [
+      {
+        id: 'regression',
+        color: { hex: '#ff0000', rgb, hsl: rgb8ToHslPercent(rgb) },
+        locked: false,
+      },
+    ],
+    { names: [name] },
+  );
+  expect(svg).toContain(name);
 });
 
-test('browser-bundled utilities expose a callable nearestName', async () => {
+test('browser-bundled engine exposes standalone color, conversion and theme APIs', async () => {
   const result = await Bun.build({
-    entrypoints: [join(import.meta.dir, '../src/lib/utils/index.ts')],
+    entrypoints: [join(import.meta.dir, '../src/lib/engine/browser.ts')],
     target: 'browser',
   });
   expect(result.success).toBe(true);
@@ -159,6 +165,26 @@ test('browser-bundled utilities expose a callable nearestName', async () => {
   const bundled = await import(
     `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`
   );
-  expect(typeof bundled.nearestName).toBe('function');
-  expect(bundled.nearestName({ r: 255, g: 0, b: 0 })).toBe(nearestName({ r: 255, g: 0, b: 0 }));
+  expect(typeof bundled.parseColor).toBe('function');
+  expect(typeof bundled.generateEnginePalette).toBe('function');
+  expect(typeof bundled.generateUtilityColors).toBe('function');
+  expect(typeof bundled.buildThemeCss).toBe('function');
+  expect(typeof bundled.extractImageColors).toBe('function');
+  expect(typeof bundled.generateSvgSwatch).toBe('function');
+  const color = bundled.parseColor('color(display-p3 1 0 0 / 0.5)');
+  expect(bundled.renderColor(color).displayLimited).toBe(false);
+  const utility = bundled.generateUtilityColors([color]);
+  expect(bundled.buildThemeCss(bundled.deriveThemeTokens([color], utility))).toContain(
+    '--background:',
+  );
+  expect(bundled.rgb8ToHex(bundled.hslPercentToRgb8({ h: 210, s: 50, l: 40 }))).toMatch(
+    /^#[\da-f]{6}$/i,
+  );
+  const stop = bundled.colorToStop(color);
+  const svg = bundled.generateSvgSwatch([{ id: 'engine', color: stop, locked: false }], {
+    title: 'Engine export',
+    names: ['P3 red'],
+  });
+  expect(svg).toContain('Engine export');
+  expect(svg).toContain('P3 red');
 });

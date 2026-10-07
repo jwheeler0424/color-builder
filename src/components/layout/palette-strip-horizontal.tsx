@@ -24,7 +24,9 @@ import React, { useRef, useState, useCallback, useMemo } from 'react';
 import type { ColorStop } from '@/types';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
-import { textColor, hexToRgb, rgbToHsl, nearestName, cn } from '@/lib/utils';
+import { parseColor, renderColor, rgbToHsl, textColor } from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
+import { cn } from '@/lib/utils';
 
 // ─── Horizontal Slot Card ─────────────────────────────────────────────────────
 
@@ -42,10 +44,14 @@ interface HSlotCardProps {
 }
 
 function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
-  const rgb = useMemo(() => hexToRgb(slot.color.hex), [slot.color.hex]);
-  const hsl = useMemo(() => rgbToHsl(rgb), [rgb]);
-  const tc = useMemo(() => textColor(rgb), [rgb]);
-  const autoName = nearestName(slot.color);
+  const color = useMemo(
+    () => slot.color.value ?? parseColor(slot.color.hex),
+    [slot.color.value, slot.color.hex],
+  );
+  const rendition = useMemo(() => renderColor(color), [color]);
+  const hsl = useMemo(() => rgbToHsl(rendition.srgb), [rendition.srgb]);
+  const tc = useMemo(() => textColor(color.xyz), [color.xyz]);
+  const autoName = lookupColorName(color, rendition.hex);
 
   const [lastTap, setLastTap] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -66,10 +72,7 @@ function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
     setTimeout(() => setCopied(false), 1400);
   };
 
-  const bg =
-    slot.color.a !== undefined && slot.color.a < 100
-      ? `rgba(${rgb.r},${rgb.g},${rgb.b},${(slot.color.a / 100).toFixed(2)})`
-      : slot.color.hex;
+  const bg = rendition.css;
 
   return (
     <div
@@ -109,7 +112,7 @@ function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
 
         {/* HSL */}
         <div className='font-mono text-[9px] leading-none opacity-45' style={{ color: tc }}>
-          {Math.round(hsl.h)}° {Math.round(hsl.l)}%
+          {Math.round(hsl.h)}° {Math.round(hsl.l * 100)}%
         </div>
 
         {/* Edit button */}

@@ -13,16 +13,19 @@ import type { SavedPalette } from '@/types';
 
 import { Chart } from '@/components/ui/chart';
 import { useChromaStore } from '@/hooks/use-chroma-store';
-import { createCompareChart, createScoreChart, scoreLevelColor } from '@/lib/tools/palette-charts';
 import {
-  scorePalette,
-  hexToRgb,
+  BLACK_XYZ,
+  OKLAB,
+  WHITE_XYZ,
   contrastRatio,
-  rgbToOklch,
-  loadSaved,
   hexToStop,
+  parseColor,
+  scorePalette,
   textColor,
-} from '@/lib/utils';
+  xyzToLch,
+} from '@/lib/engine/browser';
+import { createCompareChart, createScoreChart, scoreLevelColor } from '@/lib/tools/palette-charts';
+import { loadSaved } from '@/lib/utils';
 
 import { ToolButton as Button, ToolTabs, SECTION_LABEL, TYPE, ViewHeader } from './view-ui';
 
@@ -139,7 +142,10 @@ function ScaleMeter({ value }: { value: number }) {
 }
 function ScoreTab() {
   const slots = useChromaStore((s) => s.slots);
-  const score = useMemo(() => scorePalette(slots), [slots]);
+  const score = useMemo(
+    () => scorePalette(slots.map((slot) => (slot.color.value ?? parseColor(slot.color.hex)).xyz)),
+    [slots],
+  );
 
   if (!slots.length) return <EmptyState />;
 
@@ -285,8 +291,11 @@ function hueDist(a: number, b: number) {
 }
 
 function paletteStats(hexes: string[]) {
-  const rgbs = hexes.map(hexToRgb);
-  const oklchs = hexes.map((h) => rgbToOklch(hexToRgb(h)));
+  const colors = hexes.map((hex) => parseColor(hex).xyz);
+  const oklchs = colors.map((xyz) => {
+    const { l, c, h } = xyzToLch(OKLAB, xyz);
+    return { L: l, C: c, H: h };
+  });
   const avgChroma = oklchs.reduce((s, c) => s + c.C, 0) / oklchs.length;
   const avgLight = oklchs.reduce((s, c) => s + c.L, 0) / oklchs.length;
   const hueSpread =
@@ -299,10 +308,8 @@ function paletteStats(hexes: string[]) {
               max = Math.max(max, hueDist(oklchs[i].H, oklchs[j].H));
           return max;
         })();
-  const WHITE = { r: 255, g: 255, b: 255 },
-    BLACK = { r: 0, g: 0, b: 0 };
-  const aaAny = rgbs.filter(
-    (r) => Math.max(contrastRatio(r, WHITE), contrastRatio(r, BLACK)) >= 4.5,
+  const aaAny = colors.filter(
+    (xyz) => Math.max(contrastRatio(xyz, WHITE_XYZ), contrastRatio(xyz, BLACK_XYZ)) >= 4.5,
   ).length;
   return { avgChroma, avgLight, hueSpread, aaAny, total: hexes.length };
 }
@@ -368,7 +375,9 @@ function PaletteCard({
               setTimeout(() => setCopiedIdx(null), 900);
             }}>
             {copiedIdx === i && (
-              <span className='text-[10px] font-bold' style={{ color: textColor(hexToRgb(hex)) }}>
+              <span
+                className='text-[10px] font-bold'
+                style={{ color: textColor(parseColor(hex).xyz) }}>
                 ✓
               </span>
             )}
@@ -458,11 +467,11 @@ function CompareTab() {
   const statsA = useMemo(() => (palA ? paletteStats(palA.hexes) : null), [palA]);
   const statsB = useMemo(() => (palB ? paletteStats(palB.hexes) : null), [palB]);
   const scoreA = useMemo(
-    () => scorePalette((palA?.hexes ?? []).map((hex) => ({ color: { hex } }))),
+    () => scorePalette((palA?.hexes ?? []).map((hex) => parseColor(hex).xyz)),
     [palA],
   );
   const scoreB = useMemo(
-    () => scorePalette((palB?.hexes ?? []).map((hex) => ({ color: { hex } }))),
+    () => scorePalette((palB?.hexes ?? []).map((hex) => parseColor(hex).xyz)),
     [palB],
   );
 

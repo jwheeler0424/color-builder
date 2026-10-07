@@ -1,5 +1,6 @@
+import { colorValue, renderColor } from './color.ts';
 import { contrastRatio, textColor, wcagLevel, BLACK_XYZ, WHITE_XYZ } from './contrast.ts';
-import { hexToXyz, normalizeHex } from './output.ts';
+import { parseColor } from './parse.ts';
 import { OKLAB } from './spaces/oklab.ts';
 import { xyzToLch } from './spaces/types.ts';
 import {
@@ -7,6 +8,7 @@ import {
   deriveThemeTokens,
   semanticSlotNames,
   type ThemeTokenSet,
+  type ThemeColorInput,
   type UtilityColorSet,
 } from './theme.ts';
 
@@ -117,6 +119,33 @@ export function buildTailwindV4(tokens: ThemeTokenSet): string {
   );
 }
 
+/** Tailwind v3 JavaScript config with CSS-variable-backed semantic and utility colors. */
+export function buildTailwindV3(tokens: ThemeTokenSet): string {
+  const colors = Object.fromEntries([
+    ...tokens.palette.map(({ name, hex }) => [name, hex]),
+    ...tokens.semantic.map((token) => [token.name.replace(/^--/, ''), `var(${token.name})`]),
+    ...Object.entries(tokens.utility).map(([role, value]) => [
+      role,
+      {
+        DEFAULT: `var(--${role})`,
+        light: value.light,
+        dark: value.dark,
+        subtle: value.subtle,
+      },
+    ]),
+  ]);
+  return [
+    '/** @type {import("tailwindcss").Config} */',
+    'module.exports = {',
+    '  theme: {',
+    '    extend: {',
+    `      colors: ${JSON.stringify(colors, null, 6).replaceAll('\n', '\n      ')},`,
+    '    },',
+    '  },',
+    '};',
+  ].join('\n');
+}
+
 /** W3C design-tokens (Style Dictionary) JSON. */
 export function buildStyleDictionary(tokens: ThemeTokenSet, utility: UtilityColorSet): string {
   const semantic = (mode: 'light' | 'dark') =>
@@ -167,22 +196,28 @@ const BADGE: Record<ReturnType<typeof wcagLevel>, string> = {
 
 /** A standalone HTML page presenting the palette, its utility colors and the theme CSS. */
 export function buildColorStoryHtml(
-  palette: readonly string[],
+  palette: readonly ThemeColorInput[],
   title: string,
   utility: UtilityColorSet,
   names: readonly string[] = semanticSlotNames(palette),
 ): string {
-  const hexes = palette.map(normalizeHex);
+  const colors = palette.map((input) =>
+    typeof input === 'string'
+      ? parseColor(input)
+      : colorValue(input.xyz, input.alpha, input.display),
+  );
+  const hexes = colors.map((color) => renderColor(color).hex);
   const swatches = hexes
     .map((hex, i) => {
-      const xyz = hexToXyz(hex);
+      const xyz = colors[i]!.xyz;
+      const background = renderColor(colors[i]!).css;
       const { l, c, h } = xyzToLch(OKLAB, xyz);
       const level = wcagLevel(
         Math.max(contrastRatio(xyz, WHITE_XYZ), contrastRatio(xyz, BLACK_XYZ)),
       );
       return `
       <div class="swatch">
-        <div class="swatch-color" style="background:${hex}">
+        <div class="swatch-color" style="background:${background}">
           <span class="swatch-hex" style="color:${textColor(xyz)}">${hex.toUpperCase()}</span>
         </div>
         <div class="swatch-info">
@@ -194,12 +229,12 @@ export function buildColorStoryHtml(
     })
     .join('');
   const utilities = UTILITY_ROLES.map((role) => {
-    const hex = normalizeHex(utility[role].hex);
+    const rendered = renderColor(utility[role].value ?? parseColor(utility[role].hex));
     return `
     <div class="util-swatch">
-      <div class="util-color" style="background:${hex}"></div>
+      <div class="util-color" style="background:${rendered.css}"></div>
       <span>${role}</span>
-      <code>${hex}</code>
+      <code>${rendered.hex}</code>
     </div>`;
   }).join('');
   const safeTitle = escapeHtml(title);
@@ -244,7 +279,7 @@ export function buildColorStoryHtml(
 <div class="util-swatches">${utilities}</div>
 
 <h2>CSS Variables</h2>
-<pre>${escapeHtml(buildThemeCss(deriveThemeTokens(hexes, utility)))}</pre>
+<pre>${escapeHtml(buildThemeCss(deriveThemeTokens(colors, utility)))}</pre>
 </body>
 </html>`;
 }

@@ -34,7 +34,8 @@ import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useState, useCallback, useEffect, Suspense } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
-import { cn, hexToStop } from '@/lib/utils';
+import { hexToStop } from '@/lib/engine/browser';
+import { cn } from '@/lib/utils';
 import { ShellProvider } from '@/providers/shell.provider';
 
 import { InlineColorPicker } from '../common/inline-color-picker';

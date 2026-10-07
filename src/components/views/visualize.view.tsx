@@ -8,15 +8,30 @@
 import { Check, Copy, Lock, RotateCcw } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
 
+import type { ColorValue } from '@/lib/engine/color';
+
 import { Chart } from '@/components/ui/chart';
 import { useChromaStore } from '@/hooks/use-chroma-store';
+import {
+  DISPLAY_P3,
+  OKLAB,
+  SRGB,
+  clamp,
+  containsXyz,
+  colorValue,
+  formatColor,
+  parseColor,
+  renderColor,
+  textColor,
+  xyzToLch,
+} from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
 import {
   createChromaChart,
   createHueChart,
   MAX_CHROMA,
   type PaletteChartPoint,
 } from '@/lib/tools/palette-charts';
-import { hexToRgb, rgbToOklch, textColor, clamp, nearestName } from '@/lib/utils';
 import { useRegisterHotkey } from '@/providers/hotkey.provider';
 
 import { ToolButton as Button, ToolSegments, ToolTabs, TYPE, ViewHeader } from './view-ui';
@@ -135,9 +150,10 @@ function OklchTab() {
   const points = useMemo(
     () =>
       slots.map((slot) => {
-        const rgb = hexToRgb(slot.color.hex);
-        const lch = rgbToOklch(rgb);
-        const name = slot.name || nearestName(slot.color);
+        const color = slot.color.value ?? parseColor(slot.color.hex);
+        const coordinates = xyzToLch(OKLAB, color.xyz);
+        const lch = { L: coordinates.l, C: coordinates.c, H: coordinates.h };
+        const name = slot.name || lookupColorName(color, renderColor(color).hex);
         return {
           slot,
           lch,
@@ -330,42 +346,21 @@ function OklchTab() {
 // P3 GAMUT TAB
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const SRGB_TO_P3 = [0.8225, 0.1774, 0.0, 0.0332, 0.9669, 0.0, 0.0171, 0.0724, 0.9108];
-
-function srgbLinear(c: number) {
-  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+function isWideGamut(value: ColorValue): boolean {
+  return !containsXyz(SRGB, value.xyz);
 }
-function p3Gamma(c: number) {
-  return c <= 0.0030186 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
-}
-function srgbToP3(r: number, g: number, b: number): [number, number, number] {
-  const rL = srgbLinear(r / 255),
-    gL = srgbLinear(g / 255),
-    bL = srgbLinear(b / 255);
-  const M = SRGB_TO_P3;
-  return [
-    p3Gamma(clamp(M[0] * rL + M[1] * gL + M[2] * bL, 0, 1)),
-    p3Gamma(clamp(M[3] * rL + M[4] * gL + M[5] * bL, 0, 1)),
-    p3Gamma(clamp(M[6] * rL + M[7] * gL + M[8] * bL, 0, 1)),
-  ];
+function p3CssColor(value: ColorValue): string {
+  return renderColor(colorValue(value.xyz, value.alpha, 'p3')).css;
 }
 
-function isWideGamut(hex: string): boolean {
-  return rgbToOklch(hexToRgb(hex)).C > 0.25;
-}
-function p3CssColor(hex: string): string {
-  const { r, g, b } = hexToRgb(hex);
-  const [rP3, gP3, bP3] = srgbToP3(r, g, b);
-  return `color(display-p3 ${rP3.toFixed(4)} ${gP3.toFixed(4)} ${bP3.toFixed(4)})`;
-}
-
-function P3SwatchCard({ hex, showP3 }: { hex: string; showP3: boolean }) {
-  const rgb = hexToRgb(hex);
-  const lch = rgbToOklch(rgb);
-  const wide = isWideGamut(hex);
-  const p3Css = p3CssColor(hex);
-  const name = nearestName(rgb);
-  const tc = textColor(rgb);
+function P3SwatchCard({ value, showP3 }: { value: ColorValue; showP3: boolean }) {
+  const hex = renderColor(value).hex;
+  const coordinates = xyzToLch(OKLAB, value.xyz);
+  const lch = { L: coordinates.l, C: coordinates.c, H: coordinates.h };
+  const wide = isWideGamut(value);
+  const p3Css = p3CssColor(value);
+  const name = lookupColorName(value, hex);
+  const tc = textColor(value.xyz);
 
   return (
     <div className='flex min-h-0 min-w-0 flex-col gap-2'>
@@ -410,15 +405,19 @@ function P3Tab() {
   const [showP3, setShowP3] = useState(true);
   const [copiedCss, setCopiedCss] = useState(false);
   const [cssFormat, setCssFormat] = useState<'srgb' | 'p3'>('p3');
-  const wideCount = useMemo(() => slots.filter((s) => isWideGamut(s.color.hex)).length, [slots]);
+  const colors = useMemo(
+    () => slots.map((slot) => slot.color.value ?? parseColor(slot.color.hex)),
+    [slots],
+  );
+  const wideCount = useMemo(() => colors.filter(isWideGamut).length, [colors]);
   const p3Css = useMemo(() => {
     if (!slots.length) return '';
-    return `:root {\n${slots.map((s, i) => `  --palette-${i + 1}: ${s.color.hex};\n  --palette-${i + 1}-srgb: ${s.color.hex};\n  --palette-${i + 1}-p3: ${p3CssColor(s.color.hex)};`).join('\n')}\n}\n\n/* P3 variant for supporting displays */\n@supports (color: color(display-p3 0 0 0)) {\n  :root {\n${slots.map((s, i) => `    --palette-${i + 1}: ${p3CssColor(s.color.hex)};`).join('\n')}\n  }\n}`;
-  }, [slots]);
+    return `:root {\n${colors.map((color, i) => `  --palette-${i + 1}: ${formatColor(color, 'hex')};\n  --palette-${i + 1}-srgb: ${formatColor(color, 'hex')};\n  --palette-${i + 1}-p3: ${p3CssColor(color)};`).join('\n')}\n}\n\n/* P3 variant for supporting displays */\n@supports (color: color(display-p3 0 0 0)) {\n  :root {\n${colors.map((color, i) => `    --palette-${i + 1}: ${p3CssColor(color)};`).join('\n')}\n  }\n}`;
+  }, [slots.length, colors]);
   const cssPreview =
     cssFormat === 'srgb'
-      ? `:root {\n${slots.map((slot, index) => `  --palette-${index + 1}: ${slot.color.hex};`).join('\n')}\n}`
-      : `@supports (color: color(display-p3 0 0 0)) {\n  :root {\n${slots.map((slot, index) => `    --palette-${index + 1}: ${p3CssColor(slot.color.hex)};`).join('\n')}\n  }\n}`;
+      ? `:root {\n${colors.map((color, index) => `  --palette-${index + 1}: ${formatColor(color, 'hex')};`).join('\n')}\n}`
+      : `@supports (color: color(display-p3 0 0 0)) {\n  :root {\n${colors.map((color, index) => `    --palette-${index + 1}: ${p3CssColor(color)};`).join('\n')}\n  }\n}`;
 
   if (!slots.length) return <EmptyState title='P3 Gamut viewer' />;
 
@@ -468,7 +467,11 @@ function P3Tab() {
           </div>
           <div className='grid grid-cols-2 gap-8 lg:min-h-0 lg:flex-1 lg:auto-rows-fr'>
             {slots.map((slot) => (
-              <P3SwatchCard key={slot.id} hex={slot.color.hex} showP3={showP3} />
+              <P3SwatchCard
+                key={slot.id}
+                value={slot.color.value ?? parseColor(slot.color.hex)}
+                showP3={showP3}
+              />
             ))}
           </div>
         </section>

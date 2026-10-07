@@ -22,20 +22,21 @@ import type { GradientStop, GradientState, GradientType } from '@/types';
 
 import { Chart } from '@/components/ui/chart';
 import { useChromaStore } from '@/hooks/use-chroma-store';
-import { GRAD_PRESETS, CB_TYPES } from '@/lib/constants/chroma';
+import { GRAD_PRESETS } from '@/lib/constants/chroma';
 import {
   applyEasing,
   redistributeGradientStops,
   buildGradientCss,
+  clamp,
+  colorToStop,
   sampleGradient,
+  stopToColor,
   parseColor,
   VISION_TYPES,
   type ColorGradient,
   type VisionType,
 } from '@/lib/engine/browser';
 import { renderColor } from '@/lib/engine/color';
-import { clamp } from '@/lib/utils';
-import { colorToStop, stopToColor } from '@/lib/utils/color-stop.utils';
 export { applyEasing, redistributeGradientStops } from '@/lib/engine/gradient';
 
 import GradientStopBar from '../common/gradient-stop-bar';
@@ -286,7 +287,7 @@ export default function GradientView() {
 
           <div
             className={`grid shrink-0 auto-rows-[minmax(6rem,1fr)] gap-x-6 gap-y-6 ${showCvd ? 'grid-cols-1 @sm:grid-cols-2 @3xl:grid-cols-3 @4xl:flex-1' : 'min-h-40 flex-1 grid-cols-1'}`}>
-            {CB_TYPES.filter((type) => showCvd || type.id === 'normal').map((type) => (
+            {VISION_TYPES.filter((type) => showCvd || type.id === 'normal').map((type) => (
               <div key={type.id} className='flex min-h-20 min-w-0 flex-col gap-2'>
                 {showCvd && (
                   <span className={TYPE.meta}>{type.id === 'normal' ? 'Original' : type.name}</span>

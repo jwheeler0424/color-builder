@@ -1,6 +1,8 @@
-import React, { useRef, useEffect, useCallback } from "react";
-import type { HSL } from "@/types";
-import { hslToRgb, clamp } from "@/lib/utils";
+import React, { useRef, useEffect, useCallback } from 'react';
+
+import type { HSL } from '@/types';
+
+import { clamp, hslPercentToRgb8 } from '@/lib/engine/browser';
 
 interface ColorWheelProps {
   hsl: HSL;
@@ -8,11 +10,7 @@ interface ColorWheelProps {
   onChange: (hsl: Partial<HSL>) => void;
 }
 
-export default function ColorWheel({
-  hsl,
-  size = 260,
-  onChange,
-}: ColorWheelProps) {
+export default function ColorWheel({ hsl, size = 260, onChange }: ColorWheelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const draggingRef = useRef(false);
   const rectRef = useRef<DOMRect | null>(null);
@@ -21,14 +19,13 @@ export default function ColorWheel({
   const drawWheel = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d", {
+    const ctx = canvas.getContext('2d', {
       alpha: true,
       willReadFrequently: true,
     })!;
 
     // Scale for high DPI displays to prevent blurry/pixelated rendering
-    const dpr =
-      typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
     const actualSize = Math.floor(size * dpr);
 
     canvas.width = actualSize;
@@ -53,7 +50,7 @@ export default function ColorWheel({
 
         const h = ((Math.atan2(dy, dx) * 180) / Math.PI + 90 + 360) % 360;
         const s = clamp((dist / radius) * 100, 0, 100);
-        const rgb = hslToRgb({ h, s, l: hsl.l });
+        const rgb = hslPercentToRgb8({ h, s, l: hsl.l });
 
         const idx = (y * actualSize + x) * 4;
 
@@ -134,15 +131,15 @@ export default function ColorWheel({
       draggingRef.current = false;
       rectRef.current = null;
     };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("touchmove", onTMove, { passive: false });
-    document.addEventListener("mouseup", onUp);
-    document.addEventListener("touchend", onUp);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchmove', onTMove, { passive: false });
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchend', onUp);
     return () => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("touchmove", onTMove);
-      document.removeEventListener("mouseup", onUp);
-      document.removeEventListener("touchend", onUp);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('touchmove', onTMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchend', onUp);
     };
   }, [hitWheel]);
 
@@ -158,25 +155,24 @@ export default function ColorWheel({
 
   return (
     <div
-      className="relative shrink-0 rounded-full shadow-inner ring-1 ring-black/5"
-      style={{ width: size, height: size }}
-    >
+      className='relative shrink-0 rounded-full shadow-inner ring-1 ring-black/5'
+      style={{ width: size, height: size }}>
       <canvas
         ref={canvasRef}
-        className="block cursor-crosshair touch-none rounded-full"
+        className='block cursor-crosshair touch-none rounded-full'
         style={{ width: size, height: size }} // Force CSS dimensions
         onMouseDown={onMouseDown}
         onTouchStart={onTouchStart}
       />
       {/* Sleek, interactive cursor */}
       <div
-        className="pointer-events-none absolute z-10 rounded-full border-[2.5px] border-white shadow-[0_0_0_1px_rgba(0,0,0,0.1),0_4px_8px_rgba(0,0,0,0.3)] transition-transform duration-75 hover:scale-110 active:scale-95"
+        className='pointer-events-none absolute z-10 rounded-full border-[2.5px] border-white shadow-[0_0_0_1px_rgba(0,0,0,0.1),0_4px_8px_rgba(0,0,0,0.3)] transition-transform duration-75 hover:scale-110 active:scale-95'
         style={{
           width: 20,
           height: 20,
           left: cx,
           top: cy,
-          transform: "translate(-50%, -50%)",
+          transform: 'translate(-50%, -50%)',
           backgroundColor: cursorColor,
         }}
       />

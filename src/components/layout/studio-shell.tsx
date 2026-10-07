@@ -24,20 +24,23 @@
  *   - On slot double-click: panel shows ColorPickerModal for that slot.
  */
 
-import { useState, useCallback, useEffect } from "react";
-import { Outlet, useRouterState } from "@tanstack/react-router";
-import { NavDesktop, SECTIONS } from "./nav-desktop";
-import { LeftRail } from "./left-rail";
-import { PaletteStrip } from "./palette-strip";
-import { GenerateFab } from "./generate-fab";
-import { Panel } from "../panel";
-import { useChromaStore } from "@/hooks/use-chroma-store";
-import { cn, hexToStop } from "@/lib/utils";
-import { InlineColorPicker } from "../common/inline-color-picker";
-import { ShellProvider } from "@/providers/shell.provider";
+import { Outlet, useRouterState } from '@tanstack/react-router';
+import { useState, useCallback, useEffect } from 'react';
+
+import { useChromaStore } from '@/hooks/use-chroma-store';
+import { hexToStop } from '@/lib/engine/browser';
+import { cn } from '@/lib/utils';
+import { ShellProvider } from '@/providers/shell.provider';
+
+import { InlineColorPicker } from '../common/inline-color-picker';
+import { Panel } from '../panel';
+import { GenerateFab } from './generate-fab';
+import { LeftRail } from './left-rail';
+import { NavDesktop, SECTIONS } from './nav-desktop';
+import { PaletteStrip } from './palette-strip';
 
 // Routes where the right panel is closed by default (strip fills full width)
-const STRIP_ONLY_ROUTES = new Set(["/palette"]);
+const STRIP_ONLY_ROUTES = new Set(['/palette']);
 
 export function StudioShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -47,9 +50,7 @@ export function StudioShell() {
   const [prevRoute, setPrevRoute] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
 
-  const activeSection = SECTIONS.find((s) =>
-    s.routes.some((r) => pathname.startsWith(r)),
-  );
+  const activeSection = SECTIONS.find((s) => s.routes.some((r) => pathname.startsWith(r)));
   const isStripOnly = STRIP_ONLY_ROUTES.has(pathname);
   const isPicking = editingSlotIndex !== null;
 
@@ -79,30 +80,27 @@ export function StudioShell() {
 
   const handlePickerApply = useCallback(
     (hex: string) => {
-      if (editingSlotIndex !== null)
-        editSlotColor(editingSlotIndex, hexToStop(hex));
+      if (editingSlotIndex !== null) editSlotColor(editingSlotIndex, hexToStop(hex));
       handlePickerBack();
     },
     [editingSlotIndex, editSlotColor, handlePickerBack],
   );
 
-  const panelTitle = isPicking
-    ? undefined
-    : (activeSection?.label.toUpperCase() ?? "Tools");
+  const panelTitle = isPicking ? undefined : (activeSection?.label.toUpperCase() ?? 'Tools');
 
   return (
-    <ShellProvider shell="studio">
-      <main className="h-full overflow-hidden desktop-main" data-studio-shell>
+    <ShellProvider shell='studio'>
+      <main className='desktop-main h-full overflow-hidden' data-studio-shell>
         {/* ── Top nav ── */}
-        <NavDesktop className="desktop-main-nav" />
+        <NavDesktop className='desktop-main-nav' />
 
         {/* ── 3-column body ── */}
 
         {/* Left rail */}
-        <LeftRail className="desktop-left" onEditSeed={handleEditSlot} />
+        <LeftRail className='desktop-left' onEditSeed={handleEditSlot} />
 
         {/* Center: palette strip + FAB */}
-        <div className="flex-1 h-full overflow-hidden relative flex desktop-main">
+        <div className='desktop-main relative flex h-full flex-1 overflow-hidden'>
           <PaletteStrip onEditSlot={handleEditSlot} />
           <GenerateFab />
         </div>
@@ -117,25 +115,21 @@ export function StudioShell() {
               setEditingSlotIndex(null);
               setPanelOpen(false);
             }}
-            className="desktop-right"
-          >
-            {isPicking &&
-            editingSlotIndex !== null &&
-            slots[editingSlotIndex] ? (
+            className='desktop-right'>
+            {isPicking && editingSlotIndex !== null && slots[editingSlotIndex] ? (
               /* Picker mode */
-              <div className="flex flex-col h-full overflow-hidden">
-                <div className="px-4 py-2.5 border-b border-border flex items-center gap-3 shrink-0">
+              <div className='flex h-full flex-col overflow-hidden'>
+                <div className='flex shrink-0 items-center gap-3 border-b border-border px-4 py-2.5'>
                   <button
                     onClick={handlePickerBack}
-                    className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors cursor-pointer bg-transparent border-0 p-0"
-                  >
+                    className='inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[11px] text-muted-foreground transition-colors hover:text-foreground'>
                     ← Back
                   </button>
-                  <span className="text-[11px] font-bold text-foreground">
+                  <span className='text-[11px] font-bold text-foreground'>
                     Slot {editingSlotIndex + 1} — Edit Color
                   </span>
                 </div>
-                <div className="flex-1 overflow-auto p-4">
+                <div className='flex-1 overflow-auto p-4'>
                   <InlineColorPicker
                     initialHex={slots[editingSlotIndex].color.hex}
                     title={`Slot ${editingSlotIndex + 1}`}
@@ -146,7 +140,7 @@ export function StudioShell() {
               </div>
             ) : (
               /* Tool view */
-              <div className="flex flex-col h-full overflow-hidden">
+              <div className='flex h-full flex-col overflow-hidden'>
                 <Outlet />
               </div>
             )}
@@ -158,15 +152,14 @@ export function StudioShell() {
           <button
             onClick={() => setPanelOpen(true)}
             className={cn(
-              "absolute right-0 top-1/2 -translate-y-1/2 z-10",
-              "w-6 h-16 flex items-center justify-center",
-              "bg-card border border-border border-r-0 rounded-l-md",
-              "text-muted-foreground hover:text-foreground text-xs cursor-pointer",
-              "transition-colors shadow-sm",
+              'absolute top-1/2 right-0 z-10 -translate-y-1/2',
+              'flex h-16 w-6 items-center justify-center',
+              'rounded-l-md border border-r-0 border-border bg-card',
+              'cursor-pointer text-xs text-muted-foreground hover:text-foreground',
+              'shadow-sm transition-colors',
             )}
-            title="Open panel"
-            aria-label="Open tool panel"
-          >
+            title='Open panel'
+            aria-label='Open tool panel'>
             ‹
           </button>
         )}

@@ -8,26 +8,32 @@
 import { ArrowLeftRight } from 'lucide-react';
 import { Fragment, useMemo, useState } from 'react';
 
+import type { ColorValue } from '@/lib/engine/color';
+
 import ColorPickerModal from '@/components/modals/color-picker.modal';
 import { useChromaStore } from '@/hooks/use-chroma-store';
-import { CB_TYPES } from '@/lib/constants/chroma';
 import {
-  contrastRatio,
-  wcagLevel,
-  hexToRgb,
+  BLACK_XYZ,
+  OKLAB,
+  VISION_TYPES,
+  WHITE_XYZ,
   apcaContrast,
   apcaLevel,
-  suggestContrastFix,
-  parseHex,
-  rgbToHex,
-  rgbToOklab,
-  applySimMatrix,
+  colorValue,
+  contrastRatio,
+  contrastFix,
+  formatColor,
+  isHex,
+  parseColor,
+  renderColor,
+  simulateVision,
   textColor,
-  cn,
+  wcagLevel,
   type WcagLevel,
   type ApcaLevel,
-  nearestName,
-} from '@/lib/utils';
+} from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
+import { cn } from '@/lib/utils';
 
 import { ToolButton as Button, ToolSegments, ToolTabs } from './view-ui';
 
@@ -135,9 +141,6 @@ function ApcaNote() {
 
 // ─── Sub-tab: WCAG Slots ──────────────────────────────────────────────────────
 
-const WHITE = { r: 255, g: 255, b: 255 };
-const BLACK = { r: 0, g: 0, b: 0 };
-
 function BackgroundResult({
   hex,
   against,
@@ -147,12 +150,12 @@ function BackgroundResult({
   against: 'white' | 'black';
   useApca: boolean;
 }) {
-  const rgb = hexToRgb(hex);
-  const bgRgb = against === 'white' ? WHITE : BLACK;
+  const xyz = parseColor(hex).xyz;
+  const bgXyz = against === 'white' ? WHITE_XYZ : BLACK_XYZ;
   const bgHex = against === 'white' ? '#ffffff' : '#000000';
-  const ratio = contrastRatio(rgb, bgRgb);
-  const lc = apcaContrast(rgb, bgRgb);
-  const fix = !useApca && ratio < 4.5 ? suggestContrastFix(hex, bgRgb) : null;
+  const ratio = contrastRatio(xyz, bgXyz);
+  const lc = apcaContrast(xyz, bgXyz);
+  const fix = !useApca && ratio < 4.5 ? contrastFix(xyz, bgXyz) : null;
 
   return (
     <div className='flex min-w-0 items-center gap-3'>
@@ -196,14 +199,14 @@ function BackgroundResult({
   );
 }
 
-const ROW_GRID = 'md:grid-cols-[minmax(12rem,0.8fr)_minmax(0,1fr)_minmax(0,1fr)]';
+const ROW_GRID = '@2xl/accessibility:grid-cols-[minmax(12rem,0.8fr)_minmax(0,1fr)_minmax(0,1fr)]';
 
 function ColorRow({ hex, index, useApca }: { hex: string; index: number; useApca: boolean }) {
-  const name = nearestName(hexToRgb(hex));
+  const name = lookupColorName(parseColor(hex), hex);
   return (
     <div
       className={cn(
-        'grid grid-cols-1 items-center gap-3 rounded-md border border-muted bg-card px-3 py-2.5',
+        'grid flex-1 grid-cols-1 items-center gap-3 rounded-md border border-muted bg-card px-3 py-2.5',
         ROW_GRID,
       )}>
       <div className='flex min-w-0 items-center gap-3'>
@@ -226,8 +229,8 @@ function ColorRow({ hex, index, useApca }: { hex: string; index: number; useApca
 function PairMatrix({ hexes, useApca }: { hexes: string[]; useApca: boolean }) {
   const passes = (fg: string, bg: string) =>
     useApca
-      ? Math.abs(apcaContrast(hexToRgb(fg), hexToRgb(bg))) >= 45
-      : contrastRatio(hexToRgb(fg), hexToRgb(bg)) >= 4.5;
+      ? Math.abs(apcaContrast(parseColor(fg).xyz, parseColor(bg).xyz)) >= 45
+      : contrastRatio(parseColor(fg).xyz, parseColor(bg).xyz) >= 4.5;
   let total = 0;
   let passing = 0;
   for (let i = 0; i < hexes.length; i++)
@@ -238,7 +241,7 @@ function PairMatrix({ hexes, useApca }: { hexes: string[]; useApca: boolean }) {
       }
 
   return (
-    <section className='flex flex-col gap-3'>
+    <section className='flex shrink-0 flex-col gap-3'>
       <div className='flex flex-wrap items-baseline justify-between gap-2'>
         <div className={SECTION_LABEL}>Palette color pairs</div>
         <div className='text-[10.5px] text-muted-foreground'>
@@ -284,11 +287,11 @@ function PairMatrix({ hexes, useApca }: { hexes: string[]; useApca: boolean }) {
                         —
                       </td>
                     );
-                  const rgbFg = hexToRgb(fg);
-                  const rgbBg = hexToRgb(bg);
+                  const xyzFg = parseColor(fg).xyz;
+                  const xyzBg = parseColor(bg).xyz;
                   const label = useApca
-                    ? `Lc${Math.abs(apcaContrast(rgbFg, rgbBg))}`
-                    : `${contrastRatio(rgbFg, rgbBg).toFixed(1)}:1`;
+                    ? `Lc${Math.abs(apcaContrast(xyzFg, xyzBg))}`
+                    : `${contrastRatio(xyzFg, xyzBg).toFixed(1)}:1`;
                   const ok = passes(fg, bg);
                   return (
                     <td
@@ -325,27 +328,27 @@ function WcagSlotsTab() {
   const [useApca, setUseApca] = useState(false);
   const hexes = useMemo(() => slots.map((s) => s.color.hex), [slots]);
   const stats = useMemo(() => {
-    const rgbs = hexes.map(hexToRgb);
-    const aaOnWhite = rgbs.filter((r) => contrastRatio(r, WHITE) >= 4.5).length;
-    const aaOnBlack = rgbs.filter((r) => contrastRatio(r, BLACK) >= 4.5).length;
-    const aaaAny = rgbs.filter(
-      (r) => Math.max(contrastRatio(r, WHITE), contrastRatio(r, BLACK)) >= 7,
+    const colors = hexes.map((hex) => parseColor(hex).xyz);
+    const aaOnWhite = colors.filter((xyz) => contrastRatio(xyz, WHITE_XYZ) >= 4.5).length;
+    const aaOnBlack = colors.filter((xyz) => contrastRatio(xyz, BLACK_XYZ) >= 4.5).length;
+    const aaaAny = colors.filter(
+      (xyz) => Math.max(contrastRatio(xyz, WHITE_XYZ), contrastRatio(xyz, BLACK_XYZ)) >= 7,
     ).length;
-    const aaAny = rgbs.filter(
-      (r) => Math.max(contrastRatio(r, WHITE), contrastRatio(r, BLACK)) >= 4.5,
+    const aaAny = colors.filter(
+      (xyz) => Math.max(contrastRatio(xyz, WHITE_XYZ), contrastRatio(xyz, BLACK_XYZ)) >= 4.5,
     ).length;
     const pairsTotal = (hexes.length * (hexes.length - 1)) / 2;
     let pairsAA = 0;
     for (let i = 0; i < hexes.length; i++)
       for (let j = i + 1; j < hexes.length; j++)
-        if (contrastRatio(rgbs[i], rgbs[j]) >= 4.5) pairsAA++;
+        if (contrastRatio(colors[i]!, colors[j]!) >= 4.5) pairsAA++;
     return { aaOnWhite, aaOnBlack, aaAny, aaaAny, pairsAA, pairsTotal };
   }, [hexes]);
 
   if (!slots.length) return <EmptyState title='Accessibility' />;
 
   return (
-    <div className='flex min-h-0 flex-1 flex-col gap-6 overflow-auto p-6'>
+    <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4'>
       <div className='flex flex-wrap items-center justify-between gap-2.5'>
         <p className='max-w-3xl text-[11px] text-muted-foreground'>
           How each palette color performs as text or UI against white and black backgrounds.
@@ -354,7 +357,7 @@ function WcagSlotsTab() {
       </div>
       {useApca && <ApcaNote />}
 
-      <div className='grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5'>
+      <div className='grid grid-cols-2 gap-2 @xl/accessibility:grid-cols-3 @4xl/accessibility:grid-cols-5'>
         {[
           {
             label: 'AA on white',
@@ -398,18 +401,20 @@ function WcagSlotsTab() {
         ))}
       </div>
 
-      <section className='flex flex-col gap-2'>
-        <div className={cn('hidden gap-3 px-3 md:grid', ROW_GRID)}>
-          <div className={SECTION_LABEL}>Color</div>
-          <div className={SECTION_LABEL}>Against white</div>
-          <div className={SECTION_LABEL}>Against black</div>
-        </div>
-        {slots.map((s, i) => (
-          <ColorRow key={s.id} hex={s.color.hex} index={i} useApca={useApca} />
-        ))}
-      </section>
+      <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-auto'>
+        <section className='flex flex-1 flex-col gap-2'>
+          <div className={cn('hidden shrink-0 gap-3 px-3 md:grid', ROW_GRID)}>
+            <div className={SECTION_LABEL}>Color</div>
+            <div className={SECTION_LABEL}>Against white</div>
+            <div className={SECTION_LABEL}>Against black</div>
+          </div>
+          {slots.map((s, i) => (
+            <ColorRow key={s.id} hex={s.color.hex} index={i} useApca={useApca} />
+          ))}
+        </section>
 
-      {hexes.length > 1 && <PairMatrix hexes={hexes} useApca={useApca} />}
+        {hexes.length > 1 && <PairMatrix hexes={hexes} useApca={useApca} />}
+      </div>
     </div>
   );
 }
@@ -419,19 +424,20 @@ function WcagSlotsTab() {
 function ColorField({
   label,
   value,
-  rgb,
+  color,
   onChange,
   onOpenPicker,
   palette,
 }: {
   label: string;
   value: string;
-  rgb: { r: number; g: number; b: number };
+  color: ColorValue;
   onChange: (hex: string) => void;
   onOpenPicker: () => void;
   palette: string[];
 }) {
-  const current = rgbToHex(rgb).toLowerCase();
+  const current = formatColor(color, 'hex').toLowerCase();
+  const rendition = renderColor(color);
   return (
     <div className='flex min-w-0 flex-col gap-3 rounded-md border border-muted bg-card p-4'>
       <div className={SECTION_LABEL}>{label}</div>
@@ -439,7 +445,7 @@ function ColorField({
         <button
           type='button'
           className='h-10 w-10 shrink-0 cursor-pointer rounded border-2 border-input'
-          style={{ background: rgbToHex(rgb) }}
+          style={{ background: rendition.css }}
           onClick={onOpenPicker}
           title={`Pick ${label.toLowerCase()} color`}
           aria-label={`Pick ${label.toLowerCase()} color`}
@@ -454,7 +460,9 @@ function ColorField({
           aria-label={`${label} hex`}
         />
       </div>
-      <div className='text-[10px] text-muted-foreground'>{nearestName(rgb)}</div>
+      <div className='text-[10px] text-muted-foreground'>
+        {lookupColorName(color, rendition.hex)}
+      </div>
       {palette.length > 0 && (
         <div className='flex flex-wrap gap-1' aria-label={`Use a palette color as ${label}`}>
           {palette.map((hex, i) => (
@@ -491,7 +499,7 @@ function PassPill({ pass }: { pass: boolean }) {
 
 function CheckRow({ label, detail, pass }: { label: string; detail: string; pass: boolean }) {
   return (
-    <div className='flex items-center justify-between gap-3 border-b border-muted py-2 last:border-b-0'>
+    <div className='flex items-center justify-between gap-3 border-b border-muted py-1.5 last:border-b-0'>
       <div className='min-w-0'>
         <div className='text-sm text-secondary-foreground'>{label}</div>
         <div className='text-[10px] text-muted-foreground'>{detail}</div>
@@ -508,16 +516,16 @@ function ContrastCheckerTab() {
   const [useApca, setUseApca] = useState(false);
   const [editingColor, setEditingColor] = useState<'fg' | 'bg' | null>(null);
 
-  const fgRgb = parseHex(fg) ? hexToRgb(parseHex(fg)!) : { r: 255, g: 255, b: 255 };
-  const bgRgb = parseHex(bg) ? hexToRgb(parseHex(bg)!) : { r: 26, g: 26, b: 46 };
-  const fgHex = rgbToHex(fgRgb);
-  const bgHex = rgbToHex(bgRgb);
-  const ratio = contrastRatio(fgRgb, bgRgb);
+  const fgColor = useMemo(() => (isHex(fg) ? parseColor(fg) : parseColor('#ffffff')), [fg]);
+  const bgColor = useMemo(() => (isHex(bg) ? parseColor(bg) : parseColor('#1a1a2e')), [bg]);
+  const fgHex = formatColor(fgColor, 'hex');
+  const bgHex = formatColor(bgColor, 'hex');
+  const ratio = contrastRatio(fgColor.xyz, bgColor.xyz);
   const level = wcagLevel(ratio);
-  const lc = Math.abs(apcaContrast(fgRgb, bgRgb));
+  const lc = Math.abs(apcaContrast(fgColor.xyz, bgColor.xyz));
   const palette = slots.map((s) => s.color.hex);
-  const fixFg = !useApca && ratio < 4.5 ? suggestContrastFix(fgHex, bgRgb) : null;
-  const fixBg = !useApca && ratio < 4.5 ? suggestContrastFix(bgHex, fgRgb) : null;
+  const fixFg = !useApca && ratio < 4.5 ? contrastFix(fgColor.xyz, bgColor.xyz) : null;
+  const fixBg = !useApca && ratio < 4.5 ? contrastFix(bgColor.xyz, fgColor.xyz) : null;
 
   const swap = () => {
     const t = fg;
@@ -540,15 +548,22 @@ function ContrastCheckerTab() {
         { label: 'UI components & graphics', detail: '3:1 · SC 1.4.11', pass: ratio >= 3 },
       ];
 
+  const previewRows = [
+    { id: 'large', label: 'Large text', detail: '24 px' },
+    { id: 'body', label: 'Body text', detail: '13 px' },
+    { id: 'muted', label: 'Muted text', detail: '70% opacity' },
+    { id: 'controls', label: 'UI controls', detail: 'Non-text contrast' },
+  ] as const;
+
   return (
     <>
-      <div className='flex min-h-0 flex-1 flex-col gap-6 overflow-auto p-6'>
+      <div className='flex min-h-0 flex-1 flex-col items-center gap-4 overflow-auto p-4'>
         {/* Colors: identical cards either side of the swap control, so they line up */}
-        <div className='grid grid-cols-1 items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'>
+        <div className='grid w-full max-w-360 grid-cols-1 items-stretch gap-3 @2xl/accessibility:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'>
           <ColorField
             label='Foreground'
             value={fg}
-            rgb={fgRgb}
+            color={fgColor}
             onChange={setFg}
             onOpenPicker={() => setEditingColor('fg')}
             palette={palette}
@@ -566,49 +581,92 @@ function ContrastCheckerTab() {
           <ColorField
             label='Background'
             value={bg}
-            rgb={bgRgb}
+            color={bgColor}
             onChange={setBg}
             onOpenPicker={() => setEditingColor('bg')}
             palette={palette}
           />
         </div>
 
-        <div className='grid min-h-0 flex-1 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(20rem,1fr)]'>
-          {/* Live preview */}
-          <div
-            className='flex min-h-72 flex-col justify-center gap-4 rounded-lg border border-white/10 p-8'
-            style={{ background: bgHex, color: fgHex }}>
-            <div className='font-display text-[26px] font-black'>Aa Large text sample</div>
-            <div className='text-sm leading-relaxed'>
-              The quick brown fox jumps over the lazy dog
+        <div className='grid max-h-168 min-h-0 w-full flex-none grid-cols-1 gap-4 @4xl/accessibility:flex-1 @4xl/accessibility:grid-cols-[minmax(0,1.5fr)_minmax(20rem,1fr)] @7xl/accessibility:max-h-192'>
+          <section
+            role='table'
+            aria-label='Contrast preview examples'
+            className='flex min-h-80 min-w-0 flex-col overflow-hidden rounded-md border border-muted'>
+            <div
+              role='row'
+              className='grid shrink-0 grid-cols-[5.5rem_minmax(0,1fr)_minmax(0,1fr)] bg-card px-3 py-2'>
+              <div role='columnheader' className={SECTION_LABEL}>
+                Sample
+              </div>
+              <div role='columnheader' className={SECTION_LABEL}>
+                Foreground on background
+              </div>
+              <div role='columnheader' className={SECTION_LABEL}>
+                Background on foreground
+              </div>
             </div>
-            <div className='text-sm leading-relaxed opacity-70'>
-              Secondary / muted text at 70% opacity
+            <div role='rowgroup' className='flex min-h-0 flex-1 flex-col'>
+              {previewRows.map(({ id, label, detail }) => (
+                <div
+                  key={id}
+                  role='row'
+                  className='grid min-h-0 flex-1 grid-cols-[5.5rem_minmax(0,1fr)_minmax(0,1fr)] border-t border-muted'>
+                  <div role='rowheader' className='flex min-w-0 flex-col justify-center gap-1 px-3'>
+                    <span className='text-[11px] font-semibold text-foreground'>{label}</span>
+                    <span className='text-[10px] text-muted-foreground'>{detail}</span>
+                  </div>
+                  {(['forward', 'reverse'] as const).map((direction) => {
+                    const reversed = direction === 'reverse';
+                    const sampleBackground = reversed ? fgHex : bgHex;
+                    const sampleColor = reversed ? bgHex : fgHex;
+                    const controlBackground = reversed ? bgHex : fgHex;
+                    const controlColor = reversed ? fgHex : bgHex;
+                    return (
+                      <div
+                        key={direction}
+                        role='cell'
+                        className='flex min-w-0 items-center overflow-hidden border-l border-border/30 px-3 py-2'
+                        style={{ background: sampleBackground, color: sampleColor }}>
+                        {id === 'large' && (
+                          <span className='font-display text-2xl leading-tight font-black'>
+                            Aa Large sample
+                          </span>
+                        )}
+                        {id === 'body' && (
+                          <span className='text-[13px] leading-relaxed'>
+                            The quick brown fox jumps over the lazy dog
+                          </span>
+                        )}
+                        {id === 'muted' && (
+                          <span className='text-[13px] leading-relaxed opacity-70'>
+                            Secondary copy at 70% opacity
+                          </span>
+                        )}
+                        {id === 'controls' && (
+                          <div className='flex flex-wrap items-center gap-2'>
+                            <span
+                              className='rounded px-2.5 py-1.5 text-[10px] font-bold'
+                              style={{ background: controlBackground, color: controlColor }}>
+                              Solid
+                            </span>
+                            <span
+                              className='rounded border px-2.5 py-1.5 text-[10px] font-bold'
+                              style={{ borderColor: controlColor }}>
+                              Outline
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
-            <div className='text-[12px] leading-relaxed'>
-              Small print at 12px — captions and labels
-            </div>
-            <div className='flex flex-wrap items-center gap-3'>
-              <span
-                className='rounded-md px-4 py-2 text-sm font-bold'
-                style={{ background: fgHex, color: bgHex }}>
-                Solid button
-              </span>
-              <span
-                className='rounded-md border-2 px-4 py-2 text-sm font-bold'
-                style={{ borderColor: fgHex }}>
-                Outline button
-              </span>
-              <span
-                className='h-6 w-6 rounded-full border-2'
-                style={{ borderColor: fgHex }}
-                aria-hidden
-              />
-            </div>
-          </div>
+          </section>
 
           {/* Result */}
-          <div className='flex min-w-0 flex-col gap-4 rounded-md border border-muted bg-card p-5'>
+          <div className='flex max-h-136 min-w-0 flex-col gap-3 rounded-md border border-muted bg-card p-4 @7xl/accessibility:max-h-168'>
             <div className='flex flex-wrap items-center justify-between gap-2'>
               <div className={SECTION_LABEL}>Result</div>
               <ModeToggle useApca={useApca} setUseApca={setUseApca} />
@@ -624,7 +682,7 @@ function ContrastCheckerTab() {
               )}
             </div>
             {useApca && <ApcaNote />}
-            <div>
+            <div className='flex max-h-96 min-h-0 flex-1 flex-col justify-between @7xl/accessibility:max-h-128'>
               {checks.map((c) => (
                 <CheckRow key={c.label} {...c} />
               ))}
@@ -695,9 +753,7 @@ const CB_ORDER = Object.keys(CB_GROUP);
 const CONFUSION_THRESHOLD = 0.04;
 
 function oklabDistance(a: string, b: string) {
-  const p = rgbToOklab(hexToRgb(a));
-  const q = rgbToOklab(hexToRgb(b));
-  return Math.hypot(p.L - q.L, p.a - q.a, p.b - q.b);
+  return OKLAB.distance(OKLAB.xyzToLab(parseColor(a).xyz), OKLAB.xyzToLab(parseColor(b).xyz));
 }
 
 function ColorBlindTab() {
@@ -705,15 +761,15 @@ function ColorBlindTab() {
   const [showHex, setShowHex] = useState(true);
 
   const rows = useMemo(() => {
-    const original = slots.map((s) => s.color.hex);
-    const types = [...CB_TYPES].sort(
+    const original = slots.map((slot) => slot.color.value ?? parseColor(slot.color.hex));
+    const originalHex = original.map((color) => renderColor(color).hex);
+    const types = [...VISION_TYPES].sort(
       (a, b) => (CB_ORDER.indexOf(a.id) + 1 || 99) - (CB_ORDER.indexOf(b.id) + 1 || 99),
     );
     return types.map((cbType) => {
-      const sim =
-        cbType.id === 'normal'
-          ? original
-          : original.map((hex) => rgbToHex(applySimMatrix(hexToRgb(hex), cbType.matrix)));
+      const sim = original.map(
+        (color) => renderColor(colorValue(simulateVision(color.xyz, cbType.id), color.alpha)).hex,
+      );
       // Only flag pairs that were distinct to begin with
       const confused: [number, number][] = [];
       for (let i = 0; i < sim.length; i++)
@@ -721,7 +777,7 @@ function ColorBlindTab() {
           if (
             oklabDistance(sim[i], sim[j]) < CONFUSION_THRESHOLD &&
             (cbType.id === 'normal' ||
-              oklabDistance(original[i], original[j]) >= CONFUSION_THRESHOLD)
+              oklabDistance(originalHex[i]!, originalHex[j]!) >= CONFUSION_THRESHOLD)
           )
             confused.push([i, j]);
       return { cbType, sim, confused };
@@ -731,7 +787,7 @@ function ColorBlindTab() {
   if (!slots.length) return <EmptyState title='Color Blindness Simulator' />;
 
   return (
-    <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-6'>
+    <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4'>
       <div className='flex shrink-0 flex-wrap items-center justify-between gap-2.5'>
         <p className='max-w-3xl text-[11px] text-muted-foreground'>
           How your palette appears under each type of color vision deficiency. Colors stay in the
@@ -750,11 +806,11 @@ function ColorBlindTab() {
         </Button>
       </div>
 
-      <div className='overflow-x-auto rounded-md border border-muted bg-card p-2'>
-        <table className='w-full min-w-max table-fixed border-separate border-spacing-1'>
+      <div className='flex min-h-0 flex-1 flex-col overflow-auto rounded-md border border-muted bg-card p-2'>
+        <table className='h-full w-full min-w-max table-fixed border-separate border-spacing-0.75'>
           <thead>
             <tr>
-              <th className='w-64 px-2 text-left font-normal'>
+              <th className='w-40 px-2 text-left font-normal @4xl/accessibility:w-64'>
                 <span className={SECTION_LABEL}>Vision type</span>
               </th>
               {slots.map((s, i) => (
@@ -789,15 +845,15 @@ function ColorBlindTab() {
                         colSpan={sim.length + 1}
                         scope='colgroup'
                         className={cn(
-                          'px-2 pb-0.5 text-left text-[9.5px] font-semibold tracking-widest text-muted-foreground uppercase',
-                          r > 0 && 'pt-3',
+                          'h-6 px-2 text-left text-[9.5px] font-semibold tracking-widest text-muted-foreground uppercase',
+                          r > 0 && 'pt-1',
                         )}>
                         {group}
                       </th>
                     </tr>
                   )}
                   <tr>
-                    <th scope='row' className='px-2 py-1 text-left align-middle font-normal'>
+                    <th scope='row' className='px-2 py-0.5 text-left align-middle font-normal'>
                       <div className='font-display text-sm font-bold'>{cbType.name}</div>
                       <div className='text-[10px] text-muted-foreground'>{cbType.desc}</div>
                       <span
@@ -815,18 +871,18 @@ function ColorBlindTab() {
                     </th>
                     {sim.map((hex, i) => {
                       const isConfused = confused.some(([a, b]) => a === i || b === i);
-                      const tc = textColor(hexToRgb(hex));
+                      const tc = textColor(parseColor(hex).xyz);
                       return (
                         <td
                           key={i}
                           aria-label={`Color ${i + 1} appears as ${hex.toUpperCase()}${isConfused ? ', may be confused' : ''}`}>
                           <div
-                            className='flex h-12 min-w-16 items-center justify-center gap-1 rounded'
+                            className='flex h-full min-h-12 min-w-16 items-center justify-center gap-1 rounded'
                             style={{ background: hex }}
                             title={`Color ${i + 1}: ${slots[i].color.hex.toUpperCase()} → ${hex.toUpperCase()}`}>
                             {isConfused && (
                               <span
-                                className='font-mono text-[11px] font-bold'
+                                className='font-sans text-sm leading-none font-bold'
                                 style={{ color: tc }}
                                 aria-hidden>
                                 ≈
@@ -834,7 +890,7 @@ function ColorBlindTab() {
                             )}
                             {showHex && (
                               <span
-                                className='font-mono text-[9px] opacity-70'
+                                className='font-sans text-[13px] leading-none font-bold'
                                 style={{ color: tc }}>
                                 {hex.toUpperCase()}
                               </span>
@@ -882,8 +938,8 @@ function TabBar({ active, setActive }: { active: Tab; setActive: (t: Tab) => voi
 export default function AccessibilityView() {
   const [activeTab, setActiveTab] = useState<Tab>('wcag');
   return (
-    <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
-      <div className='shrink-0 px-6 pt-5 pb-0'>
+    <div className='@container/accessibility flex min-h-0 flex-1 flex-col overflow-hidden'>
+      <div className='shrink-0 px-4 pt-5 pb-0'>
         <h2 className='mb-1'>Accessibility</h2>
       </div>
       <TabBar active={activeTab} setActive={setActiveTab} />

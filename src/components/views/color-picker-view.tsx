@@ -7,32 +7,24 @@ import { Button } from '@/components/ui/button';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCmykProfile } from '@/hooks/use-cmyk-profile';
 import {
-  hexToRgb,
-  rgbToHex,
-  rgbToHsl,
-  hslToRgb,
-  rgbToHsv,
-  rgbToCmyk,
-  rgbToOklab,
-  rgbToOklch,
-  oklchToRgb,
-  oklabToRgb,
-  luminance,
-  parseHex,
-  parseHexAlpha,
-  opaqueHex,
-  toCssRgb,
-  toCssHsl,
-  toCssHsv,
-  toCssOklch,
-  toCssOklab,
-  toHexAlpha,
-  nearestName,
+  OKLAB,
+  cmykToColor,
+  colorValue,
+  fitHex,
+  formatColor,
+  formatPickerColor,
   hexToStop,
-  hsvToRgb,
-  cmykToRgb,
-  cssString,
-} from '@/lib/utils';
+  hslPercentToRgb8,
+  hsvPercentToRgb8,
+  labToLch,
+  luminance,
+  parseColor,
+  parseHexInput,
+  pickerReadings,
+  renderColor,
+  rgb8ToHex,
+} from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
 
 import ColorWheel from '../common/color-wheel';
 import HexInput from '../common/hex-input';
@@ -97,37 +89,45 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
   } = useChromaStore();
   const navigate = useNavigate();
 
-  // All derived values from canonical hex
-  const rgb = useMemo(() => hexToRgb(pickerHex), [pickerHex]);
-  const hsl = useMemo(() => rgbToHsl(rgb), [rgb]);
-  const hsv = useMemo(() => rgbToHsv(rgb), [rgb]);
-  const oklch = useMemo(() => rgbToOklch(rgb), [rgb]);
-  const oklab = useMemo(() => rgbToOklab(rgb), [rgb]);
   const profile = useCmykProfile();
-  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb, profile.converter]);
-  const name = useMemo(() => nearestName(rgb), [rgb]);
+  const pickerColor = useMemo(() => {
+    const parsed = parseColor(pickerHex);
+    return colorValue(parsed.xyz, pickerAlpha / 100, parsed.display);
+  }, [pickerHex, pickerAlpha]);
+  const { rgb, hsl, hsv, oklch, oklab, cmyk } = useMemo(
+    () => pickerReadings(pickerColor, profile.converter ?? undefined),
+    [pickerColor, profile.converter],
+  );
+  const name = lookupColorName(pickerColor, renderColor(pickerColor).hex);
 
-  const displayHex = toHexAlpha(pickerHex, pickerAlpha);
-  const cssOut = cssString(pickerMode, rgb, hsl, hsv, oklch, oklab, cmyk, pickerAlpha);
-  const previewStyle =
-    pickerAlpha < 100
-      ? {
-          background: `rgba(${rgb.r},${rgb.g},${rgb.b},${(pickerAlpha / 100).toFixed(2)})`,
-        }
-      : { background: pickerHex };
+  const displayHex = formatColor(pickerColor, 'hex');
+  const cssOut = formatPickerColor(pickerColor, pickerMode, profile.converter ?? undefined);
+  const previewStyle = { background: renderColor(pickerColor).css };
 
   // Setters — each converts its space back to hex as canonical
-  const setRgb = useCallback((r: RGB) => setPickerHex(rgbToHex(r)), [setPickerHex]);
-  const setHsl = useCallback((h: HSL) => setPickerHex(rgbToHex(hslToRgb(h))), [setPickerHex]);
-  const setHsv = useCallback((h: HSV) => setPickerHex(rgbToHex(hsvToRgb(h))), [setPickerHex]);
-  const setOklch = useCallback((o: OKLCH) => setPickerHex(rgbToHex(oklchToRgb(o))), [setPickerHex]);
+  const setRgb = useCallback((r: RGB) => setPickerHex(rgb8ToHex(r)), [setPickerHex]);
+  const setHsl = useCallback(
+    (h: HSL) => setPickerHex(rgb8ToHex(hslPercentToRgb8(h))),
+    [setPickerHex],
+  );
+  const setHsv = useCallback(
+    (h: HSV) => setPickerHex(rgb8ToHex(hsvPercentToRgb8(h))),
+    [setPickerHex],
+  );
+  const setOklch = useCallback(
+    (o: OKLCH) => setPickerHex(fitHex(OKLAB, { l: o.L, c: o.C, h: o.H })),
+    [setPickerHex],
+  );
   const setOklab = useCallback(
-    (o: { L: number; a: number; b: number }) => setPickerHex(rgbToHex(oklabToRgb(o))),
+    (o: { L: number; a: number; b: number }) => setPickerHex(fitHex(OKLAB, labToLch(OKLAB, o))),
     [setPickerHex],
   );
   const setCmyk = useCallback(
-    (c: { c: number; m: number; y: number; k: number }) => setPickerHex(rgbToHex(cmykToRgb(c))),
-    [setPickerHex],
+    (c: { c: number; m: number; y: number; k: number }) => {
+      if (!profile.converter) return;
+      setPickerHex(renderColor(cmykToColor([c.c, c.m, c.y, c.k], profile.converter)).hex);
+    },
+    [setPickerHex, profile.converter],
   );
 
   // ColorWheel speaks HSL
@@ -140,11 +140,10 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
 
   const handleHexInput = useCallback(
     (v: string) => {
-      const base = parseHex(v); // handles 3, 6, and 8-char (strips alpha bytes)
-      if (!base) return;
-      setPickerHex(base);
-      const alpha = parseHexAlpha(v); // null if not 8-char
-      if (alpha !== null) setPickerAlpha(alpha);
+      const parsed = parseHexInput(v);
+      if (!parsed) return;
+      setPickerHex(parsed.hex);
+      if (parsed.hasAlpha) setPickerAlpha(parsed.alphaPercent);
     },
     [setPickerHex, setPickerAlpha],
   );
@@ -178,8 +177,8 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
       try {
         const dropper = new (window as any).EyeDropper();
         const { sRGBHex } = await dropper.open();
-        const h = parseHex(sRGBHex);
-        if (h) updateColor(h);
+        const parsed = parseHexInput(sRGBHex);
+        if (parsed) updateColor(parsed.hex);
       } catch (e) {
         /* cancelled */
       }
@@ -357,9 +356,10 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
                 style={{ background: rh }}
                 title={rh}
                 onClick={() => {
-                  const alpha = parseHexAlpha(rh);
-                  setPickerHex(opaqueHex(rh));
-                  if (alpha !== null) setPickerAlpha(alpha);
+                  const parsed = parseHexInput(rh);
+                  if (!parsed) return;
+                  setPickerHex(parsed.hex);
+                  if (parsed.hasAlpha) setPickerAlpha(parsed.alphaPercent);
                 }}
               />
             ))}
@@ -371,18 +371,18 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
       <PanelSection>
         <PanelSectionLabel>COLOR VALUES</PanelSectionLabel>
         <div className='pb-2 text-[11px] leading-[2.1] text-muted-foreground'>
-          <InfoRow label='Name' value={nearestName(rgb)} />
+          <InfoRow label='Name' value={name} />
           <InfoRow label='HEX' value={displayHex.toUpperCase()} mono />
-          <InfoRow label='RGB' value={toCssRgb(rgb, pickerAlpha)} mono />
-          <InfoRow label='HSL' value={toCssHsl(hsl, pickerAlpha)} mono />
-          <InfoRow label='HSV' value={toCssHsv(hsv, pickerAlpha)} mono />
-          <InfoRow label='OKLCH' value={toCssOklch(oklch, pickerAlpha)} mono />
-          <InfoRow label='OKLab' value={toCssOklab(oklab, pickerAlpha)} mono />
+          <InfoRow label='RGB' value={formatPickerColor(pickerColor, 'rgb')} mono />
+          <InfoRow label='HSL' value={formatPickerColor(pickerColor, 'hsl')} mono />
+          <InfoRow label='HSV' value={formatPickerColor(pickerColor, 'hsv')} mono />
+          <InfoRow label='OKLCH' value={formatPickerColor(pickerColor, 'oklch')} mono />
+          <InfoRow label='OKLab' value={formatPickerColor(pickerColor, 'oklab')} mono />
           <InfoRow
             label='CMYK'
             value={cmyk ? `${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%` : 'ICC profile required'}
           />
-          <InfoRow label='Lum.' value={`${(luminance(rgb) * 100).toFixed(1)}%`} />
+          <InfoRow label='Lum.' value={`${(luminance(pickerColor.xyz) * 100).toFixed(1)}%`} />
         </div>
       </PanelSection>
 

@@ -123,17 +123,22 @@ src/
         color-names.js                          // named-color data consumable in JS runtime
         color-names.json                        // structured named-color lookup data
         color-names.scss                        // SCSS variables/map for named colors
+    engine/
+      browser.ts                                // standalone browser-safe public engine API
+      index.ts                                  // full public engine API, including runtime/server modules
+      color.ts, parse.ts, formats.ts             // canonical color values, parsers and formatters
+      color-stop.ts, extract-image.ts            // stop serialization and browser image extraction
+      palette.ts, harmony.ts, compose.ts         // palette generation and harmony logic
+      theme.ts, theme-export.ts                 // utility colors, tokens and export formats
+      contrast.ts, simulate.ts, gradient.ts     // accessibility, vision simulation, and gradients
+      svg-export.ts                             // standalone labelled SVG generation
     tools/
       palette-charts.ts                         // radar, OKLCH scatter and hue/chroma chart definitions
       .gitkeep                                  // keeps tools folder committed until populated
     utils/
-      color-math-export.utils.ts                // color math helpers used during exports
-      color-math-scale.utils.ts                 // scale/tint shade computation utilities
-      color-math.utils.ts                       // core color conversion/math helper functions
-      index.ts                                  // barrel exports for utility modules
-      palette.utils.ts                          // palette creation/transformation helper functions
+      index.ts                                  // app-only utility barrel; no color-math exports
+      palette.utils.ts                          // app palette persistence and share URLs
       seo.ts                                    // SEO metadata helper utilities
-      svg-export.ts                             // SVG generation/export helper functions
       tw.ts                                     // Tailwind-focused utility helpers
   providers/
     hotkey.provider.tsx                         // global keyboard shortcut provider

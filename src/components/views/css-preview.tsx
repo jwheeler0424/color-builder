@@ -14,7 +14,7 @@ import {
 import { useMemo, useState } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
-import { buildThemeCss, deriveThemeTokens, textColor, hexToRgb } from '@/lib/utils';
+import { buildThemeCss, deriveThemeTokens, parseColor, textColor } from '@/lib/engine/browser';
 
 import { TOKEN_GROUPS, WorkspacePreview, type PreviewPage } from './design-system-view';
 import { ToolButton as Button, ToolSegments, ToolTabs, TYPE } from './view-ui';
@@ -143,7 +143,7 @@ function UtilityPanel({
                   className='min-w-0 cursor-pointer text-left outline-none focus-visible:ring-2 focus-visible:ring-ring'
                   style={{
                     background: subtle,
-                    color: textColor(hexToRgb(subtle)),
+                    color: textColor(parseColor(subtle).xyz),
                     border: `1px solid ${color}`,
                     borderRadius: 6,
                     padding: '6px 10px',
@@ -154,7 +154,7 @@ function UtilityPanel({
                   <div
                     className='flex shrink-0 items-center justify-center rounded-full text-[10px]'
                     style={{ width: 20, height: 20, background: color }}>
-                    <Icon className='size-3' style={{ color: textColor(hexToRgb(color)) }} />
+                    <Icon className='size-3' style={{ color: textColor(parseColor(color).xyz) }} />
                   </div>
                   <span className='flex-1 text-[10px] font-bold capitalize'>{role}</span>
                   <div className='flex items-center gap-1'>
@@ -200,7 +200,11 @@ export default function CssPreview() {
   const [query, setQuery] = useState('');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const tokens = useMemo(() => deriveThemeTokens(slots, utilityColors), [slots, utilityColors]);
+  const palette = useMemo(
+    () => slots.map((slot) => slot.color.value ?? parseColor(slot.color.hex)),
+    [slots],
+  );
+  const tokens = useMemo(() => deriveThemeTokens(palette, utilityColors), [palette, utilityColors]);
   const css = buildThemeCss(tokens);
   const copyValue = async (key: string, value: string) => {
     try {

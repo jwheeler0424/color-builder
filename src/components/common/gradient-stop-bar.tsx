@@ -2,8 +2,8 @@ import React, { useRef, useCallback } from 'react';
 
 import type { GradientStop } from '@/types';
 
-import { renderColor } from '@/lib/engine/color';
-import { cn, clamp } from '@/lib/utils';
+import { clamp, renderColor } from '@/lib/engine/browser';
+import { cn } from '@/lib/utils';
 
 interface GradientStopBarProps {
   stops: GradientStop[];

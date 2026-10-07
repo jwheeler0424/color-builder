@@ -1,13 +1,25 @@
-import type { ColorStop, PaletteSlot } from '@/types';
+import type { ColorValue } from './color.ts';
+import type { HSLPercent, RGB8 } from './device.ts';
 
-import {
-  colorValue,
-  hexToEncoded,
-  parseColor,
-  renderColor,
-  rgbToHsl,
-  type ColorValue,
-} from '@/lib/engine/browser';
+import { colorValue, renderColor } from './color.ts';
+import { rgb8ToHslPercent } from './device.ts';
+import { parseColor } from './parse.ts';
+
+export interface ColorStop {
+  value?: ColorValue;
+  css?: string;
+  hex: string;
+  readonly rgb: RGB8;
+  readonly hsl: HSLPercent;
+  a?: number;
+}
+
+export interface PaletteSlot {
+  id: string;
+  color: ColorStop;
+  locked: boolean;
+  name?: string;
+}
 
 export function stopToColor(stop: ColorStop): ColorValue {
   return stop.value
@@ -32,18 +44,12 @@ function parseStopInput(input: string, alpha?: number): ColorValue {
 export function colorToStop(value: ColorValue): ColorStop {
   const canonical = colorValue(value.xyz, value.alpha, value.display);
   const rendition = renderColor(canonical);
-  const channels = hexToEncoded(rendition.hex);
-  const hsl = rgbToHsl(channels);
   return {
     value: canonical,
     css: rendition.css,
     hex: rendition.hex,
-    rgb: {
-      r: Math.round(channels[0] * 255),
-      g: Math.round(channels[1] * 255),
-      b: Math.round(channels[2] * 255),
-    },
-    hsl: { h: hsl.h, s: hsl.s * 100, l: hsl.l * 100 },
+    rgb: rendition.rgb8,
+    hsl: rgb8ToHslPercent(rendition.rgb8),
     ...(canonical.alpha < 1 ? { a: canonical.alpha * 100 } : {}),
   };
 }

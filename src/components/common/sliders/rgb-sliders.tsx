@@ -1,19 +1,16 @@
-import { RGB } from "@/types";
-import { SliderRow } from "../slider-row";
-import { rgbToHex } from "@/lib/utils";
-import { channelGrad } from "./channel-grad";
-import { AlphaSlider } from "./alpha-slider";
+import { rgb8ToHex } from '@/lib/engine/browser';
+import { RGB } from '@/types';
 
-function rgbChannelGrad(channel: "r" | "g" | "b", rgb: RGB) {
+import { SliderRow } from '../slider-row';
+import { AlphaSlider } from './alpha-slider';
+import { channelGrad } from './channel-grad';
+
+function rgbChannelGrad(channel: 'r' | 'g' | 'b', rgb: RGB) {
   return channelGrad(6, (t) => {
     const v = Math.round(t * 255);
     const c =
-      channel === "r"
-        ? { ...rgb, r: v }
-        : channel === "g"
-          ? { ...rgb, g: v }
-          : { ...rgb, b: v };
-    return rgbToHex(c);
+      channel === 'r' ? { ...rgb, r: v } : channel === 'g' ? { ...rgb, g: v } : { ...rgb, b: v };
+    return rgb8ToHex(c);
   });
 }
 
@@ -31,32 +28,32 @@ export function RgbSliders({
   onAlpha: (a: number) => void;
 }) {
   return (
-    <div className="w-full max-w-100 flex flex-col gap-3.5">
+    <div className='flex w-full max-w-100 flex-col gap-3.5'>
       <SliderRow
-        label="Red"
+        label='Red'
         display={String(rgb.r)}
         value={rgb.r}
         min={0}
         max={255}
-        trackBg={rgbChannelGrad("r", rgb)}
+        trackBg={rgbChannelGrad('r', rgb)}
         onChange={(v) => onRgb({ ...rgb, r: v })}
       />
       <SliderRow
-        label="Green"
+        label='Green'
         display={String(rgb.g)}
         value={rgb.g}
         min={0}
         max={255}
-        trackBg={rgbChannelGrad("g", rgb)}
+        trackBg={rgbChannelGrad('g', rgb)}
         onChange={(v) => onRgb({ ...rgb, g: v })}
       />
       <SliderRow
-        label="Blue"
+        label='Blue'
         display={String(rgb.b)}
         value={rgb.b}
         min={0}
         max={255}
-        trackBg={rgbChannelGrad("b", rgb)}
+        trackBg={rgbChannelGrad('b', rgb)}
         onChange={(v) => onRgb({ ...rgb, b: v })}
       />
       <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} />

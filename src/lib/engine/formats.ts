@@ -1,6 +1,7 @@
 import type { CmykConverter } from './icc.ts';
 import type { Vec3 } from './math/matrix.ts';
 
+import { renderColor, type ColorValue } from './color.ts';
 import { rgbToHsl, rgbToHsv } from './device.ts';
 import { hexToEncoded } from './output.ts';
 import { CAM16_UCS } from './spaces/cam16.ts';
@@ -103,10 +104,12 @@ function formatOpaqueColor(
 }
 
 export function formatColor(
-  color: FormattableColor,
+  input: FormattableColor | ColorValue,
   format: FormatId,
   options: FormatOptions = {},
 ): string {
+  const color: FormattableColor =
+    'hex' in input ? input : { ...renderColor(input), alpha: input.alpha };
   const alpha = color.alpha ?? 1;
   if (!Number.isFinite(alpha) || alpha < 0 || alpha > 1)
     throw new Error('Color alpha must be between 0 and 1.');

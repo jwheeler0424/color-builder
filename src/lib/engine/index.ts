@@ -5,9 +5,32 @@ export {
   type ColorValue,
   type ColorRendition,
 } from './color.ts';
+export {
+  cloneSlot,
+  colorToStop,
+  hexToStop,
+  stopToColor,
+  type ColorStop,
+  type PaletteSlot,
+} from './color-stop.ts';
 export { composePalette, seededRandom, type PaletteCompositionConfig } from './compose.ts';
 export { CIELAB, deltaE2000 } from './spaces/cielab.ts';
-export { hslToRgb, hsvToRgb, rgbToHsl, rgbToHsv, type Hsx } from './device.ts';
+export {
+  hslToRgb,
+  hsvToRgb,
+  rgbToHsl,
+  rgbToHsv,
+  hslPercentToRgb8,
+  hsvPercentToRgb8,
+  rgb8ToHslPercent,
+  rgb8ToHsvPercent,
+  rgb8ToXyz,
+  xyzToRgb8,
+  type Hsx,
+  type HSLPercent,
+  type HSVPercent,
+  type RGB8,
+} from './device.ts';
 export {
   FORMATS,
   formatColor,
@@ -73,6 +96,8 @@ export {
   fitHex,
   gamutReport,
   hexToEncoded,
+  hexToRgb8,
+  rgb8ToHex,
   hexToXyz,
   isHex,
   normalizeHex,
@@ -103,7 +128,13 @@ export {
 } from './palette.ts';
 export { minCostAssignment } from './math/assignment.ts';
 export type { Vec3 } from './math/matrix.ts';
-export { parseColor, type ParseOptions, type ParsedColor } from './parse.ts';
+export {
+  parseColor,
+  parseHexInput,
+  type ParseOptions,
+  type ParsedColor,
+  type ParsedHexInput,
+} from './parse.ts';
 export {
   BLACK_XYZ,
   WHITE_XYZ,
@@ -137,6 +168,7 @@ export {
   type ScaleConfig,
   type ScaleStep,
 } from './scale.ts';
+export { cmykToColor, formatPickerColor, pickerReadings, type PickerReadings } from './picker.ts';
 export {
   UTILITY_ROLES,
   deriveThemeTokens,
@@ -156,9 +188,11 @@ export {
   buildColorStoryHtml,
   buildFigmaTokens,
   buildStyleDictionary,
+  buildTailwindV3,
   buildTailwindV4,
   buildThemeCss,
 } from './theme-export.ts';
+export { generateSvgSwatch, type SvgExportOptions } from './svg-export.ts';
 export {
   extractColors,
   extractHarmonies,
@@ -166,4 +200,5 @@ export {
   type ExtractedColor,
   type ImageHarmony,
 } from './extract.ts';
+export { extractImageColors } from './extract-image.ts';
 export { GRADIENT_PRESETS, THEMES, type GradientPreset, type ThemePreset } from './presets.ts';

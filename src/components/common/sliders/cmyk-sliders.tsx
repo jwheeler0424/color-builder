@@ -1,5 +1,5 @@
 import { useCmykProfile } from '@/hooks/use-cmyk-profile';
-import { cmykToRgb, rgbToHex } from '@/lib/utils';
+import { cmykToColor, renderColor } from '@/lib/engine/browser';
 import { CMYK } from '@/types';
 
 import { CmykProfileControl } from '../cmyk-profile-control';
@@ -7,7 +7,11 @@ import { SliderRow } from '../slider-row';
 import { AlphaSlider } from './alpha-slider';
 import { channelGrad } from './channel-grad';
 
-function cmykChannelGrad(channel: 'c' | 'm' | 'y' | 'k', cmyk: CMYK) {
+function cmykChannelGrad(
+  channel: 'c' | 'm' | 'y' | 'k',
+  cmyk: CMYK,
+  converter: NonNullable<ReturnType<typeof useCmykProfile>['converter']>,
+) {
   return channelGrad(8, (t) => {
     const c: CMYK =
       channel === 'c'
@@ -17,7 +21,7 @@ function cmykChannelGrad(channel: 'c' | 'm' | 'y' | 'k', cmyk: CMYK) {
           : channel === 'y'
             ? { ...cmyk, y: t * 100 }
             : { ...cmyk, k: t * 100 };
-    return rgbToHex(cmykToRgb(c));
+    return renderColor(cmykToColor([c.c, c.m, c.y, c.k], converter)).hex;
   });
 }
 
@@ -45,7 +49,7 @@ export function CmykSliders({
         value={Math.round(cmyk.c * 10)}
         min={0}
         max={1000}
-        trackBg={cmykChannelGrad('c', cmyk)}
+        trackBg={cmykChannelGrad('c', cmyk, profile.converter)}
         onChange={(v) => onCmyk({ ...cmyk, c: v / 10 })}
       />
       <SliderRow
@@ -54,7 +58,7 @@ export function CmykSliders({
         value={Math.round(cmyk.m * 10)}
         min={0}
         max={1000}
-        trackBg={cmykChannelGrad('m', cmyk)}
+        trackBg={cmykChannelGrad('m', cmyk, profile.converter)}
         onChange={(v) => onCmyk({ ...cmyk, m: v / 10 })}
       />
       <SliderRow
@@ -63,7 +67,7 @@ export function CmykSliders({
         value={Math.round(cmyk.y * 10)}
         min={0}
         max={1000}
-        trackBg={cmykChannelGrad('y', cmyk)}
+        trackBg={cmykChannelGrad('y', cmyk, profile.converter)}
         onChange={(v) => onCmyk({ ...cmyk, y: v / 10 })}
       />
       <SliderRow
@@ -72,7 +76,7 @@ export function CmykSliders({
         value={Math.round(cmyk.k * 10)}
         min={0}
         max={1000}
-        trackBg={cmykChannelGrad('k', cmyk)}
+        trackBg={cmykChannelGrad('k', cmyk, profile.converter)}
         onChange={(v) => onCmyk({ ...cmyk, k: v / 10 })}
       />
       <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} />

@@ -22,7 +22,17 @@ import React, { useState, useRef, useMemo } from 'react';
 import type { PaletteSlot } from '@/types';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
-import { textColor, hexToRgb, rgbToHsl, nearestName, cn } from '@/lib/utils';
+import {
+  BLACK_XYZ,
+  WHITE_XYZ,
+  contrastRatio,
+  parseColor,
+  renderColor,
+  rgbToHsl,
+  textColor,
+} from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
+import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
 
@@ -164,20 +174,22 @@ export function SlotCard({
   const [nameInput, setNameInput] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
 
-  const rgb = useMemo(() => hexToRgb(slot.color.hex), [slot.color.hex]);
-  const hsl = useMemo(() => rgbToHsl(rgb), [rgb]);
-  const tc = useMemo(() => textColor(rgb), [rgb]);
-  const autoName = nearestName(slot.color);
+  const color = useMemo(
+    () => slot.color.value ?? parseColor(slot.color.hex),
+    [slot.color.value, slot.color.hex],
+  );
+  const rendition = useMemo(() => renderColor(color), [color]);
+  const hsl = useMemo(() => rgbToHsl(rendition.srgb), [rendition.srgb]);
+  const tc = useMemo(() => textColor(color.xyz), [color.xyz]);
+  const autoName = lookupColorName(color, rendition.hex);
   const displayName = slot.name || autoName;
 
-  const bg =
-    slot.color.a !== undefined && slot.color.a < 100
-      ? `rgba(${rgb.r},${rgb.g},${rgb.b},${(slot.color.a / 100).toFixed(2)})`
-      : slot.color.hex;
+  const bg = rendition.css;
 
-  // Approximate contrast ratio (fast, for display only)
-  const relLum = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
-  const contrastVsWhite = relLum > 0.5 ? (relLum + 0.05) / 0.05 : 1.05 / (relLum + 0.05);
+  const contrastVsWhite = Math.max(
+    contrastRatio(color.xyz, WHITE_XYZ),
+    contrastRatio(color.xyz, BLACK_XYZ),
+  );
 
   const style: React.CSSProperties = {
     background: bg,
@@ -294,7 +306,7 @@ export function SlotCard({
             </span>
             {/* HSL */}
             <span className='font-mono text-[10px] leading-none font-medium text-white opacity-95'>
-              HSL {Math.round(hsl.h)}° {Math.round(hsl.s)}% {Math.round(hsl.l)}%
+              HSL {Math.round(hsl.h)}° {Math.round(hsl.s * 100)}% {Math.round(hsl.l * 100)}%
               {slot.color.a !== undefined && slot.color.a < 100 && (
                 <span className='ml-1'>· {slot.color.a}%</span>
               )}

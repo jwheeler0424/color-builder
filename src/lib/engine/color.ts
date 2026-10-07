@@ -1,9 +1,10 @@
+import type { RGB8 } from './device.ts';
 import type { DisplayGamutId } from './gamuts/types.ts';
 import type { Vec3 } from './math/matrix.ts';
 
 import { DISPLAY_GAMUTS, SRGB, xyzToEncoded } from './gamuts/rgb.ts';
 import { containsXyz } from './gamuts/types.ts';
-import { cssColor, fitHex } from './output.ts';
+import { cssColor, fitHex, hexToRgb8 } from './output.ts';
 import { fitToGamut } from './solver.ts';
 import { OKLAB } from './spaces/oklab.ts';
 import { lchToXyz, xyzToLch } from './spaces/types.ts';
@@ -16,6 +17,7 @@ export interface ColorValue {
 
 export interface ColorRendition {
   hex: string;
+  rgb8: RGB8;
   srgb: Vec3;
   xyz: Vec3;
   css: string;
@@ -44,8 +46,10 @@ export function renderColor(input: ColorValue): ColorRendition {
   const xyz = displayLimited ? lchToXyz(OKLAB, fitToGamut(OKLAB, gamut, lch)) : color.xyz;
   const srgbLimited = !containsXyz(SRGB, color.xyz, 1e-9);
   const srgbXyz = srgbLimited ? lchToXyz(OKLAB, fitToGamut(OKLAB, SRGB, lch)) : color.xyz;
+  const hex = fitHex(OKLAB, lch);
   return {
-    hex: fitHex(OKLAB, lch),
+    hex,
+    rgb8: hexToRgb8(hex),
     srgb: xyzToEncoded(SRGB, srgbXyz),
     xyz,
     css: cssColor(gamut, xyz, color.alpha),

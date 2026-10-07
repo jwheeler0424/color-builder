@@ -103,7 +103,12 @@ export function ChromaShell() {
           utilityColors: Object.fromEntries(
             Object.entries(state.utilityColors).map(([role, entry]) => [
               role,
-              { ...entry, color: { ...entry.color, rgb: { ...entry.color.rgb } } },
+              {
+                ...entry,
+                value: entry.value
+                  ? { ...entry.value, xyz: [...entry.value.xyz] as typeof entry.value.xyz }
+                  : undefined,
+              },
             ]),
           ) as typeof state.utilityColors,
         }));

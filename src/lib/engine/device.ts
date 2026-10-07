@@ -4,7 +4,26 @@
  */
 import type { Vec3 } from './math/matrix.ts';
 
+import { SRGB, encodedToXyz, xyzToEncoded } from './gamuts/rgb.ts';
 import { mod360 } from './spaces/types.ts';
+
+export interface RGB8 {
+  r: number;
+  g: number;
+  b: number;
+}
+
+export interface HSLPercent {
+  h: number;
+  s: number;
+  l: number;
+}
+
+export interface HSVPercent {
+  h: number;
+  s: number;
+  v: number;
+}
 
 export interface Hsx {
   h: number;
@@ -62,4 +81,64 @@ export function hslToRgb({ h, s, l }: Hsx): Vec3 {
 export function hsvToRgb({ h, s, l: v }: Hsx): Vec3 {
   const c = v * s;
   return fromChroma(h, c, v - c);
+}
+
+function validateRgb8({ r, g, b }: RGB8): Vec3 {
+  const channels = [r, g, b];
+  if (!channels.every((value) => Number.isInteger(value) && value >= 0 && value <= 255)) {
+    throw new Error('8-bit RGB channels must be integers between 0 and 255.');
+  }
+  return [r / 255, g / 255, b / 255];
+}
+
+function byteChannels(rgb: Vec3): RGB8 {
+  return {
+    r: Math.round(Math.min(1, Math.max(0, rgb[0])) * 255),
+    g: Math.round(Math.min(1, Math.max(0, rgb[1])) * 255),
+    b: Math.round(Math.min(1, Math.max(0, rgb[2])) * 255),
+  };
+}
+
+export function rgb8ToXyz(rgb: RGB8): Vec3 {
+  return encodedToXyz(SRGB, validateRgb8(rgb));
+}
+
+export function xyzToRgb8(xyz: Vec3): RGB8 {
+  return byteChannels(xyzToEncoded(SRGB, xyz));
+}
+
+export function rgb8ToHslPercent(rgb: RGB8): HSLPercent {
+  const { h, s, l } = rgbToHsl(validateRgb8(rgb));
+  return { h, s: s * 100, l: l * 100 };
+}
+
+export function hslPercentToRgb8(hsl: HSLPercent): RGB8 {
+  if (
+    ![hsl.h, hsl.s, hsl.l].every(Number.isFinite) ||
+    hsl.s < 0 ||
+    hsl.s > 100 ||
+    hsl.l < 0 ||
+    hsl.l > 100
+  ) {
+    throw new Error('HSL saturation and lightness must be percentages between 0 and 100.');
+  }
+  return byteChannels(hslToRgb({ h: hsl.h, s: hsl.s / 100, l: hsl.l / 100 }));
+}
+
+export function rgb8ToHsvPercent(rgb: RGB8): HSVPercent {
+  const { h, s, l } = rgbToHsv(validateRgb8(rgb));
+  return { h, s: s * 100, v: l * 100 };
+}
+
+export function hsvPercentToRgb8(hsv: HSVPercent): RGB8 {
+  if (
+    ![hsv.h, hsv.s, hsv.v].every(Number.isFinite) ||
+    hsv.s < 0 ||
+    hsv.s > 100 ||
+    hsv.v < 0 ||
+    hsv.v > 100
+  ) {
+    throw new Error('HSV saturation and value must be percentages between 0 and 100.');
+  }
+  return byteChannels(hsvToRgb({ h: hsv.h, s: hsv.s / 100, l: hsv.v / 100 }));
 }

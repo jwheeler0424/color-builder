@@ -29,9 +29,9 @@ import type { HarmonyMode, ColorStop } from '@/types';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { HARMONIES, MAX_SLOTS, THEMES } from '@/lib/constants/chroma';
-import { renderColor } from '@/lib/engine/browser';
+import { hexToStop, renderColor, stopToColor } from '@/lib/engine/browser';
 import { computeColorPalette } from '@/lib/engine/runtime/palette-runtime';
-import { cn, hexToStop, stopToColor } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 // ─── Section helpers ────────────────────────────────────────────────────────────────
 

@@ -337,22 +337,13 @@ chroma-v4/
 │   │   └── [legacy redirects]    # Old flat URLs preserved for bookmarks
 │
 └── src/
-    └── chroma/
-        ├── chroma-shell.tsx      # Root responsive layout dispatcher
-        ├── color-math.ts         # Core color science (OKLCH, APCA, WCAG…)
-        ├── color-math-scale.ts   # Scale/token generation functions
-        ├── color-math-export.ts  # Export format helpers
-        ├── color-math.ts         # Central re-export
-        ├── palette-utils.ts      # Harmony algorithms, image extraction
-        ├── use-chroma-store.ts   # Zustand store (global state)
-        ├── types.ts              # TypeScript types
-        ├── constants.ts          # Color constants, CVD matrices
-        ├── hotkey-context.tsx    # Keyboard shortcut registration
-        ├── shell-context.tsx     # Shell type context (studio/tablet/mobile)
-        ├── svg-export.ts         # SVG swatch generation
-        ├── lib/utils.ts          # Tailwind cn() utility
-        ├── index.ts              # Public exports
-        │
+  └── lib/engine/
+    ├── browser.ts            # Standalone browser-safe engine API
+    ├── index.ts              # Full engine API, including runtime/server modules
+    ├── color.ts, parse.ts    # Canonical XYZ colors, parsing and rendering
+    ├── palette.ts, harmony.ts, compose.ts # Palette generation and harmony logic
+    ├── theme.ts, theme-export.ts          # Utility colors, tokens and export formats
+    ├── contrast.ts, simulate.ts, gradient.ts # Accessibility, vision and gradients
         ├── components/
         │   ├── palette-view.tsx              # Palette workspace view
         │   ├── color-picker-view.tsx         # Standalone color picker page
@@ -513,14 +504,14 @@ User interaction
       ↓
   React components read state via selectors
       ↓
-  color-math.ts / palette-utils.ts  (pure functions, no side effects)
+  src/lib/engine/browser.ts  (pure color calculations, no app utility adapters)
       ↓
   Derived display values / tokens / exports
 ```
 
-The store is the single source of truth. Components never derive color data themselves — they call
-store actions or pass to utility functions. Palette state is persisted to `localStorage` under the
-key `chroma-v4`.
+The store is the single source of truth for application state. Color calculations and format
+conversion are performed by the engine APIs; app utilities are limited to persistence, image
+decoding, and UI concerns. Palette state is persisted to `localStorage` under the key `chroma-v4`.
 
 ### Key Design Decisions
 
@@ -539,41 +530,15 @@ context visible together.
 
 ## Color Science
 
-All color math lives in `src/chroma/color-math.ts` (re-exported from `color-math-scale.ts` and
-`color-math-export.ts`).
+Color-domain logic is owned by `src/lib/engine`. Application views import the browser-safe API
+from `src/lib/engine/browser`; it bundles without app utility adapters. The full API is available
+from `src/lib/engine/index.ts` for server and runtime use.
 
-### Conversions
-
-| Function          | Description                               |
-| ----------------- | ----------------------------------------- |
-| `hexToRgb(hex)`   | Hex string → `{r,g,b}`                    |
-| `rgbToHex(rgb)`   | `{r,g,b}` → hex string                    |
-| `rgbToHsl(rgb)`   | → `{h,s,l}` (0–360, 0–100, 0–100)         |
-| `rgbToHsv(rgb)`   | → `{h,s,v}`                               |
-| `rgbToOklch(rgb)` | → `{L,C,H}` (perceptual)                  |
-| `rgbToOklab(rgb)` | → `{L,a,b}`                               |
-| `oklchToRgb(lch)` | Gamut-mapped back to sRGB                 |
-| `rgbToCmyk(rgb)`  | → `{c,m,y,k}` (0–100)                     |
-| `parseAny(input)` | Parse any color string format → `{r,g,b}` |
-
-### Contrast
-
-| Function                     | Description                                            |
-| ---------------------------- | ------------------------------------------------------ |
-| `contrastRatio(fg, bg)`      | WCAG 2.1 contrast ratio (1–21)                         |
-| `wcagLevel(ratio, large?)`   | → `'AAA' \| 'AA' \| 'AA Large' \| 'Fail'`              |
-| `apcaContrast(fg, bg)`       | APCA Lc value (perceptual lightness contrast)          |
-| `apcaLevel(lc)`              | → `'Preferred' \| 'Body' \| 'Large' \| 'UI' \| 'Fail'` |
-| `suggestContrastFix(fg, bg)` | Returns adjusted hex that passes WCAG AA               |
-
-### Palette Generation
-
-| Function                                            | Description                                 |
-| --------------------------------------------------- | ------------------------------------------- |
-| `generatePalette(mode, count, base?, seeds?, temp)` | Generate palette using harmony algorithm    |
-| `generateScale(hex, steps)`                         | Tint/shade scale from 50 to 950             |
-| `scorePalette(slots)`                               | Four radar dimensions plus overall score    |
-| `semanticSlotNames(hexes)`                          | Assign semantic names (primary, secondary…) |
+The canonical `ColorValue` stores D65 XYZ, alpha, and display gamut. `parseColor` accepts CSS color
+syntax and hex; `renderColor` returns CSS, best sRGB hex/RGB8, and gamut-limit information. The
+engine also owns RGB8/XYZ and percentage HSL/HSV boundary conversions, ICC-profile CMYK, palette
+composition, scales/scoring, WCAG/APCA, color-vision simulation, gradients, theme tokens, and
+Figma, Tailwind v3/v4, Style Dictionary, CSS, and HTML exports.
 
 ### Harmony Modes
 

@@ -1,17 +1,22 @@
-import { useState, useMemo } from "react";
-import { useChromaStore } from "@/stores/chroma.store";
+import { ExternalLinkIcon } from 'lucide-react';
+import { useState, useMemo } from 'react';
+
+import type { ExportTab } from '@/types';
+
 import {
-  deriveThemeTokens,
-  buildFigmaTokens,
-  buildTailwindConfig,
   buildColorStoryHtml,
+  buildFigmaTokens,
+  buildTailwindV3,
+  deriveThemeTokens,
+  formatColor,
+  generateSvgSwatch,
+  parseColor,
   semanticSlotNames,
-  toHexAlpha,
-  toCssRgb,
-} from "@/lib/utils";
-import type { ExportTab } from "@/types";
-import { generateSvgSwatch, downloadSvg } from "@/lib/utils/svg-export";
-import { Button } from "../ui/button";
+} from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
+import { useChromaStore } from '@/stores/chroma.store';
+
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogClose,
@@ -20,19 +25,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
-import { ExternalLinkIcon } from "lucide-react";
+} from '../ui/dialog';
 
 // ─── Export Modal ─────────────────────────────────────────────────────────────
 
 const EXPORT_TABS: { id: ExportTab; label: string }[] = [
-  { id: "hex", label: "HEX" },
-  { id: "css", label: "CSS" },
-  { id: "array", label: "JS Array" },
-  { id: "scss", label: "SCSS" },
-  { id: "figma", label: "Figma" },
-  { id: "tailwind", label: "Tailwind" },
-  { id: "svg", label: "SVG" },
+  { id: 'hex', label: 'HEX' },
+  { id: 'css', label: 'CSS' },
+  { id: 'array', label: 'JS Array' },
+  { id: 'scss', label: 'SCSS' },
+  { id: 'figma', label: 'Figma' },
+  { id: 'tailwind', label: 'Tailwind' },
+  { id: 'svg', label: 'SVG' },
 ];
 
 export function ExportModal() {
@@ -45,62 +49,58 @@ export function ExportModal() {
   const closeModal = useChromaStore((s) => s.closeModal);
   const openModal = useChromaStore((s) => s.openModal);
 
-  const hexes = useMemo(
-    () =>
-      slots.map((s) =>
-        s.color.a !== undefined && s.color.a < 100
-          ? toHexAlpha(s.color.hex, s.color.a)
-          : s.color.hex,
-      ),
+  const palette = useMemo(
+    () => slots.map((slot) => slot.color.value ?? parseColor(slot.color.hex)),
     [slots],
   );
+  const hexes = useMemo(() => palette.map((color) => formatColor(color, 'hex')), [palette]);
 
   const [copied, setCopied] = useState(false);
 
-  const tokens = useMemo(
-    () => deriveThemeTokens(slots, utilityColors),
-    [slots, utilityColors],
-  );
+  const tokens = useMemo(() => deriveThemeTokens(palette, utilityColors), [palette, utilityColors]);
 
   const svgContent = useMemo(
     () =>
-      exportTab === "svg" ? generateSvgSwatch(slots, { title: "Palette" }) : "",
-    [exportTab, slots],
+      exportTab === 'svg'
+        ? generateSvgSwatch(slots, {
+            title: 'Palette',
+            names: slots.map(
+              (slot, index) =>
+                slot.name || lookupColorName(palette[index]!, formatColor(palette[index]!, 'hex')),
+            ),
+          })
+        : '',
+    [exportTab, slots, palette],
   );
 
   const content = useMemo((): string => {
     switch (exportTab) {
-      case "hex":
-        return hexes.join("\n");
-      case "css": {
+      case 'hex':
+        return hexes.join('\n');
+      case 'css': {
         const cssVars = slots
           .map((s, i) => {
             const name = s.name || `color-${i + 1}`;
-            const val =
-              s.color.a !== undefined && s.color.a < 100
-                ? toCssRgb(s.color.rgb, s.color.a)
-                : s.color.hex;
+            const val = formatColor(palette[i]!, 'rgb');
             return `  --${name}: ${val};`;
           })
-          .join("\n");
+          .join('\n');
         return `:root {\n${cssVars}\n}`;
       }
-      case "array":
-        return `const palette = [\n${hexes.map((h) => `  '${h}'`).join(",\n")}\n];`;
-      case "scss":
-        return slots
-          .map((s, i) => `$${s.name || `color-${i + 1}`}: ${hexes[i]};`)
-          .join("\n");
-      case "figma":
+      case 'array':
+        return `const palette = [\n${hexes.map((h) => `  '${h}'`).join(',\n')}\n];`;
+      case 'scss':
+        return slots.map((s, i) => `$${s.name || `color-${i + 1}`}: ${hexes[i]};`).join('\n');
+      case 'figma':
         return buildFigmaTokens(tokens, utilityColors);
-      case "tailwind":
-        return buildTailwindConfig(tokens, utilityColors);
-      case "svg":
+      case 'tailwind':
+        return buildTailwindV3(tokens);
+      case 'svg':
         return svgContent;
       default:
-        return "";
+        return '';
     }
-  }, [exportTab, hexes, slots, tokens, utilityColors, svgContent]);
+  }, [exportTab, hexes, slots, palette, tokens, utilityColors, svgContent]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(content).catch(() => {});
@@ -108,65 +108,63 @@ export function ExportModal() {
     setTimeout(() => setCopied(false), 1400);
   };
 
-  const handleDownloadSvg = () => downloadSvg(svgContent, "palette.svg");
+  const handleDownloadSvg = () => {
+    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'palette.svg';
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
 
   const downloadStory = () => {
-    const names = semanticSlotNames(slots);
-    const html = buildColorStoryHtml(
-      slots,
-      useChromaStore.getState().mode,
-      utilityColors,
-      names,
-    );
-    const blob = new Blob([html], { type: "text/html" });
+    const names = semanticSlotNames(palette);
+    const html = buildColorStoryHtml(palette, useChromaStore.getState().mode, utilityColors, names);
+    const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = "color-story.html";
+    a.download = 'color-story.html';
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <Dialog
-      open={modal === "export"}
-      onOpenChange={(open) => !open && closeModal()}
-    >
+    <Dialog open={modal === 'export'} onOpenChange={(open) => !open && closeModal()}>
       <DialogTrigger
         render={
           <Button
-            variant="ghost"
-            size="icon-lg"
-            title="Export"
-            onClick={() => openModal("export")}
-            className="text-muted-foreground"
-          >
-            <ExternalLinkIcon className="size-5" />
+            variant='ghost'
+            size='icon-lg'
+            title='Export'
+            onClick={() => openModal('export')}
+            className='text-muted-foreground'>
+            <ExternalLinkIcon className='size-5' />
           </Button>
         }
       />
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className='sm:max-w-sm'>
         <DialogHeader>
           <DialogTitle>Export Palette</DialogTitle>
         </DialogHeader>
         {/* Tab bar */}
-        <div className="flex gap-1 flex-wrap">
+        <div className='flex flex-wrap gap-1'>
           {EXPORT_TABS.map(({ id, label }) => (
             <Button
               key={id}
-              variant={exportTab === id ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setExportTab(id)}
-            >
+              variant={exportTab === id ? 'default' : 'ghost'}
+              size='sm'
+              onClick={() => setExportTab(id)}>
               {label}
             </Button>
           ))}
         </div>
 
         {/* SVG preview */}
-        {exportTab === "svg" ? (
+        {exportTab === 'svg' ? (
           <div
-            className="w-full border border-border rounded overflow-auto bg-muted"
+            className='w-full overflow-auto rounded border border-border bg-muted'
             style={{ maxHeight: 220 }}
             dangerouslySetInnerHTML={{ __html: svgContent }}
           />
@@ -176,33 +174,29 @@ export function ExportModal() {
             value={content}
             rows={10}
             onFocus={(e) => e.target.select()}
-            className="w-full bg-muted border border-border rounded px-3 py-2.5 text-[11px] text-foreground font-mono leading-relaxed resize-none outline-none focus:border-ring transition-colors"
+            className='w-full resize-none rounded border border-border bg-muted px-3 py-2.5 font-mono text-[11px] leading-relaxed text-foreground transition-colors outline-none focus:border-ring'
           />
         )}
 
         {/* Palette preview strip */}
-        <div className="flex h-5 rounded overflow-hidden gap-px">
+        <div className='flex h-5 gap-px overflow-hidden rounded'>
           {slots.map((s) => (
-            <div
-              key={s.id}
-              className="flex-1"
-              style={{ background: s.color.hex }}
-            />
+            <div key={s.id} className='flex-1' style={{ background: s.color.hex }} />
           ))}
         </div>
         <DialogFooter>
-          {exportTab === "svg" ? (
-            <Button variant="ghost" onClick={handleDownloadSvg}>
+          {exportTab === 'svg' ? (
+            <Button variant='ghost' onClick={handleDownloadSvg}>
               ↓ Download SVG
             </Button>
           ) : (
-            <Button variant="ghost" onClick={downloadStory}>
+            <Button variant='ghost' onClick={downloadStory}>
               ↓ Color Story
             </Button>
           )}
-          <DialogClose render={<Button variant="ghost">Close</Button>} />
-          <Button variant="default" onClick={handleCopy}>
-            {copied ? "✓ Copied" : "Copy"}
+          <DialogClose render={<Button variant='ghost'>Close</Button>} />
+          <Button variant='default' onClick={handleCopy}>
+            {copied ? '✓ Copied' : 'Copy'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -7,9 +7,15 @@ import type { MixSpace } from '@/types';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { MAX_SLOTS } from '@/lib/constants/chroma';
-import { mixColor, parseColor, renderColor } from '@/lib/engine/browser';
-import { textColor, nearestName } from '@/lib/utils';
-import { colorToStop, stopToColor } from '@/lib/utils/color-stop.utils';
+import {
+  colorToStop,
+  mixColor,
+  parseColor,
+  renderColor,
+  stopToColor,
+  textColor,
+} from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
 
 import { ToolButton as Button, ToolSegments, TYPE, ViewHeader } from './view-ui';
 
@@ -141,7 +147,9 @@ export default function ColorMixer() {
                     spellCheck={false}
                     className='h-8 w-full min-w-0 rounded border border-border bg-muted px-2 font-mono text-xs outline-none focus:border-ring'
                   />
-                  <span className={`truncate ${TYPE.meta}`}>{nearestName(value.color)}</span>
+                  <span className={`truncate ${TYPE.meta}`}>
+                    {lookupColorName(value.color, renderColor(value.color).hex)}
+                  </span>
                 </div>
               </div>
               <div className='flex min-h-6 flex-wrap gap-1'>
@@ -185,22 +193,21 @@ export default function ColorMixer() {
             </div>
             <div className='grid min-h-40 grid-cols-7 gap-1 @4xl:min-h-24 @4xl:flex-1'>
               {blendRow.map((color) => {
-                const { hex, rgb, t } = color;
+                const { hex, t } = color;
+                const value = color.value ?? parseColor(hex);
                 const paint =
-                  color.value?.display === 'srgb' && color.value.alpha === 1
-                    ? hex
-                    : (color.css ?? hex);
+                  value.display === 'srgb' && value.alpha === 1 ? hex : (color.css ?? hex);
                 return (
                   <button
                     key={t}
                     type='button'
                     aria-label={`Copy blend ${Math.round(t * 100)}% ${hex}`}
-                    title={`${nearestName(color)} ${hex.toUpperCase()}`}
+                    title={`${lookupColorName(value, hex)} ${hex.toUpperCase()}`}
                     onClick={() => {
                       void copyColor(paint);
                     }}
                     className='flex min-w-0 cursor-pointer flex-col justify-between rounded-md border border-foreground/10 px-1 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring'
-                    style={{ background: paint, color: textColor(rgb) }}>
+                    style={{ background: paint, color: textColor(value.xyz) }}>
                     <span className='font-mono text-[10px]'>{Math.round(t * 100)}%</span>
                     <span className='flex min-h-4 items-center justify-center font-mono text-[9px]'>
                       {copiedHex === paint ? <Check className='size-3' /> : hex.toUpperCase()}
@@ -216,7 +223,12 @@ export default function ColorMixer() {
               />
               <div className='flex min-w-0 flex-1 flex-col gap-1'>
                 <span className={TYPE.label}>Midpoint</span>
-                <span className={`truncate ${TYPE.title}`}>{nearestName(blendRow[3])}</span>
+                <span className={`truncate ${TYPE.title}`}>
+                  {lookupColorName(
+                    blendRow[3].value ?? parseColor(blendRow[3].hex),
+                    blendRow[3].hex,
+                  )}
+                </span>
               </div>
               <span className={TYPE.mono}>{blendRow[3].hex.toUpperCase()}</span>
             </div>

@@ -20,19 +20,21 @@ import type { PaletteSlot, SemanticToken, UtilityColorSet, UtilityRole } from '@
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
-  deriveThemeTokens,
-  buildThemeCss,
   buildFigmaTokens,
-  buildTailwindConfig,
   buildStyleDictionary,
+  buildTailwindV3,
   buildTailwindV4,
-  semanticSlotNames,
+  buildThemeCss,
+  BLACK_XYZ,
+  deriveThemeTokens,
   contrastRatio,
-  wcagLevel,
   apcaContrast,
+  parseColor,
+  semanticSlotNames,
   textColor,
-  hexToRgb,
-} from '@/lib/utils';
+  wcagLevel,
+  WHITE_XYZ,
+} from '@/lib/engine/browser';
 
 import HexInput from '../common/hex-input';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
@@ -926,9 +928,9 @@ export function WorkspacePreview({
                               background:
                                 slots[index % slots.length]?.color.hex ?? get('--primary'),
                               color: textColor(
-                                hexToRgb(
+                                parseColor(
                                   slots[index % slots.length]?.color.hex ?? get('--primary'),
-                                ),
+                                ).xyz,
                               ),
                             }}>
                             {project.owner}
@@ -1116,9 +1118,9 @@ function TokenRow({
   const otherMode: Mode = mode === 'light' ? 'dark' : 'light';
   const otherVal = overrides[token.name]?.[otherMode] ?? token[otherMode];
 
-  const rgb = hexToRgb(val);
-  const onW = contrastRatio(rgb, { r: 255, g: 255, b: 255 });
-  const onB = contrastRatio(rgb, { r: 0, g: 0, b: 0 });
+  const xyz = parseColor(val).xyz;
+  const onW = contrastRatio(xyz, WHITE_XYZ);
+  const onB = contrastRatio(xyz, BLACK_XYZ);
   const bestRatio = Math.max(onW, onB);
   const passes = bestRatio >= 4.5;
 
@@ -1193,7 +1195,7 @@ export function UtilityThemeCard({
 }) {
   const u = utility[role];
   const color = mode === 'light' ? u.light : u.dark;
-  const tc = textColor(hexToRgb(color));
+  const tc = textColor(parseColor(color).xyz);
   const [copied, setCopied] = useState<string | null>(null);
   const copyColor = async (hex: string, key: string) => {
     try {
@@ -1255,7 +1257,7 @@ export function UtilityThemeCard({
                 style={{ background: surface, color: accent }}>
                 <span
                   className='rounded-sm px-2 py-1 text-[10px] font-semibold capitalize'
-                  style={{ background: accent, color: textColor(hexToRgb(accent)) }}>
+                  style={{ background: accent, color: textColor(parseColor(accent).xyz) }}>
                   {role}
                 </span>
                 <span className='font-display text-base font-semibold'>Aa</span>
@@ -1334,11 +1336,11 @@ export function AccessibilityPanel({ tokens, mode }: { tokens: SemanticToken[]; 
   const results = pairs.map(({ fg, bg, label }) => {
     const fgHex = get(fg),
       bgHex = get(bg);
-    const fgRgb = hexToRgb(fgHex),
-      bgRgb = hexToRgb(bgHex);
-    const ratio = contrastRatio(fgRgb, bgRgb);
+    const fgXyz = parseColor(fgHex).xyz,
+      bgXyz = parseColor(bgHex).xyz;
+    const ratio = contrastRatio(fgXyz, bgXyz);
     const level = wcagLevel(ratio);
-    const lc = Math.abs(apcaContrast(fgRgb, bgRgb));
+    const lc = Math.abs(apcaContrast(fgXyz, bgXyz));
     return { label, fgHex, bgHex, ratio, level, lc };
   });
 
@@ -1361,7 +1363,7 @@ export function AccessibilityPanel({ tokens, mode }: { tokens: SemanticToken[]; 
   ];
   const columns = 'grid-cols-[minmax(0,1fr)_3.25rem_2rem_3.75rem]';
   const surface = get('--background');
-  const inspectorText = textColor(hexToRgb(surface));
+  const inspectorText = textColor(parseColor(surface).xyz);
   const inspectorBorder = `color-mix(in oklch, ${inspectorText} 16%, transparent)`;
   const ModeIcon = mode === 'light' ? Sun : Moon;
 
@@ -1501,9 +1503,9 @@ function ExportPanel({
       case 'css':
         return buildThemeCss(tokens);
       case 'tailwind3':
-        return buildTailwindConfig(tokens, utilityColors);
+        return buildTailwindV3(tokens);
       case 'tailwind4':
-        return buildTailwindV4(tokens, utilityColors);
+        return buildTailwindV4(tokens);
       case 'figma':
         return buildFigmaTokens(tokens, utilityColors);
       case 'styledictionary':
@@ -1571,9 +1573,16 @@ export default function DesignSystemView() {
     'tokens' | 'utility' | 'preview' | 'accessibility' | 'export'
   >('tokens');
 
-  const baseTokens = useMemo(() => deriveThemeTokens(slots, utilityColors), [slots, utilityColors]);
+  const palette = useMemo(
+    () => slots.map((slot) => slot.color.value ?? parseColor(slot.color.hex)),
+    [slots],
+  );
+  const baseTokens = useMemo(
+    () => deriveThemeTokens(palette, utilityColors),
+    [palette, utilityColors],
+  );
 
-  const slotNames = useMemo(() => semanticSlotNames(slots), [slots]);
+  const slotNames = useMemo(() => semanticSlotNames(palette), [palette]);
 
   // Tokens with overrides applied
   const tokens = useMemo(

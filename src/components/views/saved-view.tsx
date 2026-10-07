@@ -5,7 +5,8 @@ import type { SavedPalette } from '@/types';
 
 import { Button } from '@/components/ui/button';
 import { useChromaStore } from '@/hooks/use-chroma-store';
-import { hexToStop, loadSaved, deleteSaved, clearSaved, encodeUrl } from '@/lib/utils';
+import { hexToStop } from '@/lib/engine/browser';
+import { loadSaved, deleteSaved, clearSaved, encodeUrl } from '@/lib/utils';
 
 export default function SavedView() {
   const loadPalette = useChromaStore((s) => s.loadPalette);

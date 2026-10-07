@@ -3,24 +3,15 @@ import React, { useMemo } from 'react';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCmykProfile } from '@/hooks/use-cmyk-profile';
 import {
-  hexToRgb,
-  rgbToHsl,
-  rgbToHsv,
-  rgbToCmyk,
-  rgbToOklab,
-  rgbToOklch,
-  oklabToLch,
-  nearestName,
+  colorValue,
+  formatColor,
   luminance,
-  parseHexAlpha,
-  opaqueHex,
-  toCssRgb,
-  toCssHsl,
-  toCssHsv,
-  toCssOklch,
-  toCssOklab,
-  toHexAlpha,
-} from '@/lib/utils';
+  parseColor,
+  parseHexInput,
+  pickerReadings,
+  renderColor,
+} from '@/lib/engine/browser';
+import { lookupColorName } from '@/lib/tools/color-names';
 
 import { Button } from '../ui/button';
 import { CmykProfileControl } from './cmyk-profile-control';
@@ -73,17 +64,16 @@ export function ColorPickerPanel() {
   const { pickerHex, pickerAlpha, setPickerHex, setPickerAlpha, recentColors, slots } =
     useChromaStore();
 
-  // All derived values from canonical hex
-  const rgb = useMemo(() => hexToRgb(pickerHex), [pickerHex]);
-  const hsl = useMemo(() => rgbToHsl(rgb), [rgb]);
-  const hsv = useMemo(() => rgbToHsv(rgb), [rgb]);
-  const oklch = useMemo(() => rgbToOklch(rgb), [rgb]);
-  const oklab = useMemo(() => rgbToOklab(rgb), [rgb]);
   const profile = useCmykProfile();
-  const cmyk = useMemo(() => rgbToCmyk(rgb), [rgb, profile.converter]);
-  const lch = useMemo(() => oklabToLch(oklab), [oklab]); // for display only
-
-  const displayHex = toHexAlpha(pickerHex, pickerAlpha);
+  const color = useMemo(() => {
+    const parsed = parseColor(pickerHex);
+    return colorValue(parsed.xyz, pickerAlpha / 100, parsed.display);
+  }, [pickerHex, pickerAlpha]);
+  const { rgb, hsl, hsv, oklch, oklab, cmyk } = useMemo(
+    () => pickerReadings(color, profile.converter ?? undefined),
+    [color, profile.converter],
+  );
+  const displayHex = formatColor(color, 'hex');
 
   return (
     <aside className='flex h-full w-[320px] shrink-0 flex-col border-l border-border bg-card'>
@@ -99,9 +89,10 @@ export function ColorPickerPanel() {
                 style={{ background: rh }}
                 title={rh}
                 onClick={() => {
-                  const alpha = parseHexAlpha(rh);
-                  setPickerHex(opaqueHex(rh));
-                  if (alpha !== null) setPickerAlpha(alpha);
+                  const parsed = parseHexInput(rh);
+                  if (!parsed) return;
+                  setPickerHex(parsed.hex);
+                  if (parsed.hasAlpha) setPickerAlpha(parsed.alphaPercent);
                 }}
               />
             ))}
@@ -113,18 +104,18 @@ export function ColorPickerPanel() {
       <Section>
         <SectionLabel>Color Values</SectionLabel>
         <div className='text-[11px] leading-[2.1] text-muted-foreground'>
-          <InfoRow label='Name' value={nearestName(rgb)} />
+          <InfoRow label='Name' value={lookupColorName(color, renderColor(color).hex)} />
           <InfoRow label='HEX' value={displayHex.toUpperCase()} mono />
-          <InfoRow label='RGB' value={toCssRgb(rgb, pickerAlpha)} mono />
-          <InfoRow label='HSL' value={toCssHsl(hsl, pickerAlpha)} mono />
-          <InfoRow label='HSV' value={toCssHsv(hsv, pickerAlpha)} mono />
-          <InfoRow label='OKLCH' value={toCssOklch(oklch, pickerAlpha)} mono />
-          <InfoRow label='OKLab' value={toCssOklab(oklab, pickerAlpha)} mono />
+          <InfoRow label='RGB' value={formatColor(color, 'rgb')} mono />
+          <InfoRow label='HSL' value={formatColor(color, 'hsl')} mono />
+          <InfoRow label='HSV' value={formatColor(color, 'hsv')} mono />
+          <InfoRow label='OKLCH' value={formatColor(color, 'oklch')} mono />
+          <InfoRow label='OKLab' value={formatColor(color, 'oklab')} mono />
           <InfoRow
             label='CMYK'
             value={cmyk ? `${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%` : 'ICC profile required'}
           />
-          <InfoRow label='Lum.' value={`${(luminance(rgb) * 100).toFixed(1)}%`} />
+          <InfoRow label='Lum.' value={`${(luminance(color.xyz) * 100).toFixed(1)}%`} />
         </div>
       </Section>
 

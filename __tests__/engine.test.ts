@@ -13,16 +13,41 @@ import { extractColors as extractPixels } from '../src/lib/engine/extract';
 import { sampleGradient, buildGradientCss } from '../src/lib/engine/gradient';
 import {
   colorValue,
+  cloneSlot,
+  colorToStop,
   compositeColor,
+  buildColorStoryHtml,
+  buildFigmaTokens,
+  buildStyleDictionary,
+  buildTailwindV3,
+  buildTailwindV4,
+  buildThemeCss,
+  cmykToColor,
   cssColor,
+  deriveThemeTokens,
   DISPLAY_P3,
+  extractImageColors,
   formatColor,
+  generateUtilityColors,
+  hexToRgb8,
+  hexToStop,
+  hslPercentToRgb8,
+  hsvPercentToRgb8,
+  rgb8ToHex,
+  rgb8ToHslPercent,
+  rgb8ToHsvPercent,
+  rgb8ToXyz,
   hexToXyz,
   parseColor,
+  parseHexInput,
+  pickerReadings,
+  formatPickerColor,
   renderColor,
   simulateVision,
   SRGB,
+  stopToColor,
   VISION_TYPES,
+  xyzToRgb8,
 } from '../src/lib/engine/index';
 import {
   computeColorPalette,
@@ -33,11 +58,7 @@ import {
   regenerateUtilityColors as engineReroll,
   deriveThemeTokens as engineTokens,
 } from '../src/lib/engine/theme';
-import { getCmykConverter, setCmykConverter } from '../src/lib/tools/cmyk-profile';
 import { handleColorNames } from '../src/lib/tools/color-names.server';
-import { rgbToCmyk, cmykToRgb } from '../src/lib/utils/color-math.utils';
-import { hexToRgb, rgbToXyz, xyzToRgb } from '../src/lib/utils/color-math.utils';
-import { cloneSlot, colorToStop, hexToStop, stopToColor } from '../src/lib/utils/palette.utils';
 import { useChromaStore } from '../src/stores/chroma.store';
 
 test('engine parses and round-trips wide gamut and alpha without converting through hex', () => {
@@ -66,6 +87,8 @@ test('engine accepts alpha hex, CSS keywords, legacy rgba, angles and D50', () =
   expect(d50.xyz[1]).toBeCloseTo(1, 6);
   expect(parseColor('lch(50% 20 1rad)').xyz.every(Number.isFinite)).toBe(true);
   expect(parseColor(cssColor(DISPLAY_P3, turned.xyz, turned.alpha)).alpha).toBe(0.25);
+  expect(parseHexInput('#12345680')).toMatchObject({ hex: '#123456', alphaPercent: 50 });
+  expect(parseHexInput('bad input')).toBeNull();
 });
 
 test('engine validates colors and composites linear XYZ with explicit alpha', () => {
@@ -92,10 +115,44 @@ test('engine formats alpha and preserves source XYZ in normal vision', () => {
   const restored = parseColor(formatted);
   expect(restored.alpha).toBe(color.alpha);
   color.xyz.forEach((value, index) => expect(restored.xyz[index]).toBeCloseTo(value, 8));
+  const direct = parseColor(formatColor(color, 'oklab', { precise: true }));
+  expect(direct.alpha).toBe(color.alpha);
+  color.xyz.forEach((value, index) => expect(direct.xyz[index]).toBeCloseTo(value, 12));
   expect(simulateVision(color.xyz, 'normal')).toEqual(color.xyz);
   expect(VISION_TYPES).toHaveLength(9);
   for (const vision of VISION_TYPES)
     expect(simulateVision(color.xyz, vision.id).every(Number.isFinite)).toBe(true);
+});
+
+test('engine byte and percentage conversions round-trip at the UI boundary', () => {
+  for (let channel = 0; channel <= 255; channel++) {
+    const rgb = { r: channel, g: 255 - channel, b: (channel * 73) % 256 };
+    expect(xyzToRgb8(rgb8ToXyz(rgb))).toEqual(rgb);
+    expect(hexToRgb8(rgb8ToHex(rgb))).toEqual(rgb);
+    const hsl = hslPercentToRgb8(rgb8ToHslPercent(rgb));
+    const hsv = hsvPercentToRgb8(rgb8ToHsvPercent(rgb));
+    for (const reconstructed of [hsl, hsv]) {
+      expect(Math.abs(reconstructed.r - rgb.r)).toBeLessThanOrEqual(1);
+      expect(Math.abs(reconstructed.g - rgb.g)).toBeLessThanOrEqual(1);
+      expect(Math.abs(reconstructed.b - rgb.b)).toBeLessThanOrEqual(1);
+    }
+  }
+  expect(() => rgb8ToXyz({ r: 256, g: 0, b: 0 })).toThrow();
+  expect(() => hslPercentToRgb8({ h: 0, s: 101, l: 50 })).toThrow();
+  expect(() => hsvPercentToRgb8({ h: 0, s: 50, v: NaN })).toThrow();
+});
+
+test('engine picker readings derive display values from canonical wide-gamut color', () => {
+  const color = parseColor('color(display-p3 0.9 0.25 0.1 / 0.4)');
+  const readings = pickerReadings(color);
+  expect(readings.rgb).toEqual(renderColor(color).rgb8);
+  expect(readings.hsl.s).toBeGreaterThanOrEqual(0);
+  expect(readings.hsl.s).toBeLessThanOrEqual(100);
+  expect(readings.hsv.v).toBeGreaterThanOrEqual(0);
+  expect(readings.hsv.v).toBeLessThanOrEqual(100);
+  expect(readings.oklab).toEqual(OKLAB.xyzToLab(color.xyz));
+  expect(readings.cmyk).toBeNull();
+  expect(formatPickerColor(color, 'oklch')).toStartWith('oklch(');
 });
 
 test('composition preserves wide-gamut pins and locks across every harmony', () => {
@@ -163,6 +220,24 @@ test('engine utilities and tokens keep wide gamut and utility reroll respects ro
   expect(changed.focus).toBe(utilities.focus);
   expect(changed.info.hex).not.toBe(utilities.info.hex);
   expect(engineTokens(palette, changed).semantic[0]?.light).toStartWith('color(display-p3');
+});
+
+test('engine theme exports cover CSS, Figma, Tailwind, Style Dictionary and HTML', () => {
+  const palette = ['#123456', '#dc143c'];
+  const utility = generateUtilityColors(palette);
+  const tokens = deriveThemeTokens(palette, utility);
+  expect(tokens.palette).toHaveLength(2);
+  expect(buildThemeCss(tokens)).toContain('--background:');
+  expect(buildTailwindV3(tokens)).toContain('module.exports =');
+  expect(buildTailwindV4(tokens)).toContain('@theme {');
+  expect(buildFigmaTokens(tokens, utility)).toContain('"semantic"');
+  expect(buildStyleDictionary(tokens, utility)).toContain('"$type": "color"');
+  const story = buildColorStoryHtml(palette, 'Test <palette>', utility);
+  expect(story).toContain('Test &lt;palette&gt;');
+  expect(story).toContain('--background:');
+  const p3 = parseColor('color(display-p3 1 0 0)');
+  const p3Story = buildColorStoryHtml([p3], 'P3', generateUtilityColors([p3]));
+  expect(p3Story).toContain('color(display-p3');
 });
 
 test('palette runtime bounds concurrent workers and cancels queued computations', async () => {
@@ -239,9 +314,9 @@ test('server naming uses original XYZ and validates bounded batches', async () =
 });
 
 test('RGB stays a plain channel object and canonical color metadata stays on the stop', () => {
-  const rgb = hexToRgb('#123456');
+  const rgb = hexToRgb8('#123456');
   expect(rgb).toEqual({ r: 18, g: 52, b: 86 });
-  expect(Object.keys(xyzToRgb(rgbToXyz(rgb))).sort()).toEqual(['b', 'g', 'r']);
+  expect(Object.keys(xyzToRgb8(rgb8ToXyz(rgb))).sort()).toEqual(['b', 'g', 'r']);
   const source = parseColor('color(display-p3 1 0 0 / 0.37)');
   const stop = colorToStop(source);
   expect(Object.keys(stop.rgb).sort()).toEqual(['b', 'g', 'r']);
@@ -326,6 +401,54 @@ test('engine extraction retains the declared pixel gamut and unrounded means', (
   expect(() => extractPixels(pixels, { count: Infinity })).toThrow();
 });
 
+test('engine image extraction decodes browser images and preserves P3 stops', async () => {
+  const originalImage = globalThis.Image;
+  const originalCreateElement = document.createElement;
+  const originalCreateObjectURL = URL.createObjectURL;
+  const originalRevokeObjectURL = URL.revokeObjectURL;
+  let revoked = false;
+  class ImageStub {
+    width = 2;
+    height = 1;
+    onload: ((event: Event) => unknown) | null = null;
+    onerror: ((event: Event | string) => unknown) | null = null;
+    set src(_value: string) {
+      queueMicrotask(() => this.onload?.(new Event('load')));
+    }
+  }
+  const context = {
+    drawImage() {},
+    getContextAttributes: () => ({ colorSpace: 'display-p3' as const }),
+    getImageData: () =>
+      ({
+        data: new Uint8ClampedArray([255, 0, 0, 255, 0, 0, 255, 255]),
+        colorSpace: 'display-p3',
+      }) as ImageData,
+  };
+  const canvas = { getContext: () => context as unknown as CanvasRenderingContext2D };
+  try {
+    globalThis.Image = ImageStub as unknown as typeof Image;
+    URL.createObjectURL = (() => 'blob:image-test') as typeof URL.createObjectURL;
+    URL.revokeObjectURL = (() => {
+      revoked = true;
+    }) as typeof URL.revokeObjectURL;
+    document.createElement = ((name: string) =>
+      name === 'canvas'
+        ? canvas
+        : originalCreateElement.call(document, name)) as Document['createElement'];
+    const colors = await extractImageColors(new File([], 'palette.png'), 2);
+    expect(colors).toHaveLength(2);
+    expect(colors.every((stop) => stop.value?.display === 'p3')).toBe(true);
+    expect(colors.every((stop) => stop.value?.xyz.every(Number.isFinite))).toBe(true);
+    expect(revoked).toBe(true);
+  } finally {
+    globalThis.Image = originalImage;
+    document.createElement = originalCreateElement;
+    URL.createObjectURL = originalCreateObjectURL;
+    URL.revokeObjectURL = originalRevokeObjectURL;
+  }
+});
+
 test('adding a canonical midpoint mutates the palette without returning an Immer value', () => {
   const previous = useChromaStore.getState().slots;
   const color = colorToStop(parseColor('color(display-p3 1 0 0 / 0.75)'));
@@ -339,20 +462,18 @@ test('adding a canonical midpoint mutates the palette without returning an Immer
   }
 });
 
-test('CMYK adapters require and delegate to an ICC converter rather than approximate ink', () => {
-  const previous = getCmykConverter();
-  try {
-    setCmykConverter(null);
-    expect(rgbToCmyk({ r: 255, g: 0, b: 0 })).toBeNull();
-    expect(() => cmykToRgb({ c: 0, m: 100, y: 100, k: 0 })).toThrow('ICC profile');
-    setCmykConverter({
-      name: 'Fixture',
-      toCmyk: () => [12, 34, 56, 78],
-      toLab: () => ({ L: 50, a: 0, b: 0 }),
-    });
-    expect(rgbToCmyk({ r: 255, g: 0, b: 0 })).toEqual({ c: 12, m: 34, y: 56, k: 78 });
-    expect(Object.keys(cmykToRgb({ c: 12, m: 34, y: 56, k: 78 })).sort()).toEqual(['b', 'g', 'r']);
-  } finally {
-    setCmykConverter(previous);
-  }
+test('engine CMYK conversion requires and delegates to an ICC converter', () => {
+  const color = parseColor('#ff0000');
+  expect(pickerReadings(color).cmyk).toBeNull();
+  const converter = {
+    name: 'Fixture',
+    toCmyk: () => [12, 34, 56, 78] as [number, number, number, number],
+    toLab: () => ({ L: 50, a: 0, b: 0 }),
+  };
+  expect(pickerReadings(color, converter).cmyk).toEqual({ c: 12, m: 34, y: 56, k: 78 });
+  expect(renderColor(cmykToColor([12, 34, 56, 78], converter)).rgb8).toMatchObject({
+    r: expect.any(Number),
+    g: expect.any(Number),
+    b: expect.any(Number),
+  });
 });

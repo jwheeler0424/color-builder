@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 
-import { parseHex, cn } from '@/lib/utils';
+import { formatColor, parseHexInput } from '@/lib/engine/browser';
+import { cn } from '@/lib/utils';
 
 interface HexInputProps {
   value: string;
@@ -30,13 +31,9 @@ export default function HexInput({
 
   const validate = useCallback(
     (s: string): string | null => {
-      const h = parseHex(s);
-      if (h) return h;
-      if (allowAlpha) {
-        const c = s.trim().replace(/^#/, '');
-        if (/^[0-9a-fA-F]{8}$/.test(c)) return '#' + c;
-      }
-      return null;
+      const parsed = parseHexInput(s);
+      if (!parsed) return null;
+      return allowAlpha ? formatColor(parsed.color, 'hex') : parsed.hex;
     },
     [allowAlpha],
   );

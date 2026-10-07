@@ -2,6 +2,8 @@ import { act, fireEvent, render, within } from '@testing-library/react';
 import { describe, expect, mock, test } from 'bun:test';
 import { useState } from 'react';
 
+import type { ColorValue } from '@/lib/engine/color';
+
 import HexInput from '@/components/common/hex-input';
 import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -46,10 +48,19 @@ import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
   deriveThemeTokens,
   generateUtilityColors,
-  hexToRgb,
   hexToStop,
+  parseColor,
   textColor,
-} from '@/lib/utils';
+} from '@/lib/engine/browser';
+
+function colorValues(slots: { color: { hex: string; value?: ColorValue } }[]): ColorValue[] {
+  return slots.map((slot) => slot.color.value ?? parseColor(slot.color.hex));
+}
+
+function themeForSlots(slots: { color: { hex: string; value?: ColorValue } }[]) {
+  const palette = colorValues(slots);
+  return deriveThemeTokens(palette, generateUtilityColors(palette));
+}
 
 test('tool controls expose selected tabs and support arrow, Home and End navigation', () => {
   function Controls() {
@@ -126,7 +137,7 @@ test('workspace preview uses semantic and utility colors in both theme modes', (
     color: hexToStop(hex),
     locked: false,
   }));
-  const tokens = deriveThemeTokens(slots, generateUtilityColors(slots));
+  const tokens = themeForSlots(slots);
   for (const mode of ['light', 'dark'] as const) {
     const view = render(
       <WorkspacePreview
@@ -155,7 +166,7 @@ test('workspace preview supports search, filters, creation, selection and activi
     color: hexToStop(hex),
     locked: false,
   }));
-  const tokens = deriveThemeTokens(slots, generateUtilityColors(slots));
+  const tokens = themeForSlots(slots);
   const view = render(
     <WorkspacePreview
       tokens={tokens.semantic}
@@ -192,7 +203,7 @@ test('workspace preview landing and settings pages retain working theme controls
     color: hexToStop(hex),
     locked: false,
   }));
-  const tokens = deriveThemeTokens(slots, generateUtilityColors(slots));
+  const tokens = themeForSlots(slots);
   const view = render(
     <WorkspacePreview
       tokens={tokens.semantic}
@@ -229,7 +240,7 @@ test('design token utility card displays matching light and dark accent/surface 
     color: hexToStop(hex),
     locked: false,
   }));
-  const tokens = deriveThemeTokens(slots, generateUtilityColors(slots));
+  const tokens = themeForSlots(slots);
   const view = render(<UtilityThemeCard role='info' utility={tokens.utility} mode='dark' />);
   expect(view.container.querySelector('[data-utility-preview="light"]')).toHaveStyle({
     background: tokens.utility.info.subtle,
@@ -253,7 +264,7 @@ test('design token accessibility separates normal/large AA and uses the matching
     color: hexToStop(hex),
     locked: false,
   }));
-  const tokens = deriveThemeTokens(slots, generateUtilityColors(slots)).semantic.map((token) => ({
+  const tokens = themeForSlots(slots).semantic.map((token) => ({
     ...token,
     light:
       token.name === '--primary-foreground'
@@ -283,15 +294,15 @@ test('design token accessibility uses distinct theme surfaces and readable inspe
     color: hexToStop(hex),
     locked: false,
   }));
-  const tokens = deriveThemeTokens(slots, generateUtilityColors(slots)).semantic.map((token) =>
+  const tokens = themeForSlots(slots).semantic.map((token) =>
     token.name === '--foreground' ? { ...token, light: '#ffffff', dark: '#000000' } : token,
   );
   for (const mode of ['light', 'dark'] as const) {
     const view = render(<AccessibilityPanel tokens={tokens} mode={mode} />);
     const surface = tokens.find((token) => token.name === '--background')![mode];
     const panel = view.container.querySelector<HTMLElement>('[data-accessibility-mode]')!;
-    expect(panel).toHaveStyle({ background: surface, color: textColor(hexToRgb(surface)) });
-    expect(panel.style.getPropertyValue('--foreground')).toBe(textColor(hexToRgb(surface)));
+    expect(panel).toHaveStyle({ background: surface, color: textColor(parseColor(surface).xyz) });
+    expect(panel.style.getPropertyValue('--foreground')).toBe(textColor(parseColor(surface).xyz));
     expect(
       view.getByRole('heading', { name: mode === 'light' ? 'Light theme' : 'Dark theme' }),
     ).toBeInTheDocument();
@@ -306,7 +317,7 @@ test('CSS preview keeps realistic sample-page navigation synchronized across the
     color: hexToStop(hex),
     locked: false,
   }));
-  const tokens = deriveThemeTokens(slots, generateUtilityColors(slots));
+  const tokens = themeForSlots(slots);
   function Comparison() {
     const [page, setPage] = useState<'landing' | 'projects' | 'activity' | 'settings'>('projects');
     return (
@@ -338,7 +349,7 @@ test('CSS token inspector covers all semantic roles, filters and copies selected
     color: hexToStop(hex),
     locked: false,
   }));
-  const tokens = deriveThemeTokens(slots, generateUtilityColors(slots));
+  const tokens = themeForSlots(slots);
   const copy = mock();
   const view = render(<TokenLegend tokens={tokens} mode='dark' onCopy={copy} />);
   expect(view.container.querySelectorAll('[data-token-role]')).toHaveLength(tokens.semantic.length);
@@ -394,35 +405,36 @@ test('theme workspace token edits update the live preview and can be reverted', 
 
 test('export utility workspace edits roles, rejects invalid hex and preserves locks during regeneration', () => {
   const previous = useChromaStore.getState().utilityColors;
+  const previousLocks = useChromaStore.getState().utilityLocks;
   const view = render(<UtilityColorsView />);
   try {
     const input = view.getByRole('textbox', { name: 'Info base hex', exact: true });
     fireEvent.change(input, { target: { value: '#e63946' } });
-    expect(useChromaStore.getState().utilityColors.info.color.hex).toBe('#e63946');
+    expect(useChromaStore.getState().utilityColors.info.hex).toBe('#e63946');
     fireEvent.change(input, { target: { value: '#zzzzzz' } });
     expect(input).toHaveAttribute('aria-invalid', 'true');
-    expect(useChromaStore.getState().utilityColors.info.color.hex).toBe('#e63946');
+    expect(useChromaStore.getState().utilityColors.info.hex).toBe('#e63946');
     fireEvent.blur(input);
     expect(input).toHaveValue('#e63946');
-    if (useChromaStore.getState().utilityColors.info.locked)
+    if (useChromaStore.getState().utilityLocks.info)
       fireEvent.click(view.getByRole('button', { name: 'Unlock Info', exact: true }));
     fireEvent.click(view.getByRole('button', { name: 'Lock Info', exact: true }));
     const beforeRegeneration = useChromaStore.getState().utilityColors;
     fireEvent.click(view.getByRole('button', { name: 'Regenerate all', exact: true }));
     const regenerated = useChromaStore.getState().utilityColors;
     for (const role of Object.keys(beforeRegeneration) as (keyof typeof beforeRegeneration)[]) {
-      if (beforeRegeneration[role].locked)
+      if (useChromaStore.getState().utilityLocks[role])
         expect(regenerated[role]).toEqual(beforeRegeneration[role]);
-      else expect(regenerated[role].color.hex).not.toBe(beforeRegeneration[role].color.hex);
+      else expect(regenerated[role].hex).not.toBe(beforeRegeneration[role].hex);
     }
-    expect(useChromaStore.getState().utilityColors.info.color.hex).toBe('#e63946');
-    expect(useChromaStore.getState().utilityColors.info.locked).toBe(true);
+    expect(useChromaStore.getState().utilityColors.info.hex).toBe('#e63946');
+    expect(useChromaStore.getState().utilityLocks.info).toBe(true);
     fireEvent.click(view.getByRole('button', { name: 'Select Focus', exact: true }));
     expect(view.getByRole('textbox', { name: 'Focus base hex', exact: true })).toBeInTheDocument();
     expect(view.container.querySelectorAll('[data-utility-theme]')).toHaveLength(2);
   } finally {
     view.unmount();
-    act(() => useChromaStore.setState({ utilityColors: previous }));
+    act(() => useChromaStore.setState({ utilityColors: previous, utilityLocks: previousLocks }));
   }
 });
 
@@ -432,10 +444,11 @@ test('utility CSS exports preserve base variables and include both themed accent
     color: hexToStop(hex),
     locked: false,
   }));
-  const colors = generateUtilityColors(slots);
-  const tokens = deriveThemeTokens(slots, colors);
+  const palette = colorValues(slots);
+  const colors = generateUtilityColors(palette);
+  const tokens = deriveThemeTokens(palette, colors);
   const base = buildUtilityCss(colors, tokens.utility, 'base');
-  expect(base).toContain(`--info: ${colors.info.color.hex};`);
+  expect(base).toContain(`--info: ${colors.info.hex};`);
   expect(base.match(/--[a-z]+:/g)).toHaveLength(6);
   const themed = buildUtilityCss(colors, tokens.utility, 'themed');
   expect(themed).toContain(`--info: ${tokens.utility.info.light};`);
