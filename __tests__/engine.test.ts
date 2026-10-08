@@ -6,6 +6,8 @@ import {
   mix,
   mixColor,
   OKLAB,
+  paletteContrastPairs,
+  paletteVisionPairs,
   xyzToLch,
 } from '../src/lib/engine/browser';
 import { findNearestNamedColorXyz } from '../src/lib/engine/colors/named-color-lookup';
@@ -122,6 +124,33 @@ test('engine formats alpha and preserves source XYZ in normal vision', () => {
   expect(VISION_TYPES).toHaveLength(9);
   for (const vision of VISION_TYPES)
     expect(simulateVision(color.xyz, vision.id).every(Number.isFinite)).toBe(true);
+});
+
+test('palette diagnostics report WCAG levels for every unique color pair', () => {
+  const colors = ['#000000', '#ffffff', '#777777'].map((hex) => hexToXyz(hex));
+  const pairs = paletteContrastPairs(colors);
+
+  expect(pairs).toHaveLength(3);
+  expect(pairs[0]).toMatchObject({ firstIndex: 0, secondIndex: 1, level: 'AAA' });
+  expect(pairs[0]?.ratio).toBeCloseTo(21, 10);
+  expect(pairs[1]?.level).toBe('AA');
+  expect(pairs[2]?.level).toBe('AA Large');
+  expect(paletteContrastPairs(colors.slice(0, 1))).toEqual([]);
+});
+
+test('palette vision diagnostics report nearest pairs without claiming a pass threshold', () => {
+  const colors = ['#ff0000', '#00ff00', '#0000ff'].map((hex) => hexToXyz(hex));
+  const pairs = paletteVisionPairs(colors);
+
+  expect(pairs.map((pair) => pair.vision)).toEqual([
+    'normal',
+    'protanopia',
+    'deuteranopia',
+    'tritanopia',
+  ]);
+  expect(pairs.every((pair) => pair.firstIndex !== null && pair.secondIndex !== null)).toBe(true);
+  expect(pairs.every((pair) => Number.isFinite(pair.deltaE))).toBe(true);
+  expect(paletteVisionPairs(colors.slice(0, 1)).every((pair) => pair.deltaE === null)).toBe(true);
 });
 
 test('engine byte and percentage conversions round-trip at the UI boundary', () => {

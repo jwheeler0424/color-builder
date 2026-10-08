@@ -20,9 +20,12 @@ import {
   contrastRatio,
   hexToStop,
   parseColor,
+  paletteContrastPairs,
+  paletteVisionPairs,
   scorePalette,
   textColor,
   xyzToLch,
+  wcagLevel,
 } from '@/lib/engine/browser';
 import { createCompareChart, createScoreChart, scoreLevelColor } from '@/lib/tools/palette-charts';
 import { loadSaved } from '@/lib/utils';
@@ -59,22 +62,23 @@ function verdict(v: number) {
 
 function ScoreRing({ value, size = 'lg' }: { value: number; size?: 'lg' | 'md' | 'sm' }) {
   const color = scoreLevelColor(value);
-  const outer = { lg: 'h-36 w-36', md: 'h-24 w-24', sm: 'h-14 w-14' }[size];
-  const inner = { lg: 'h-28 w-28', md: 'h-19 w-19', sm: 'h-10 w-10' }[size];
+  const outer = { lg: 'h-20 w-20', md: 'h-24 w-24', sm: 'h-14 w-14' }[size];
+  const inner = { lg: 'h-17 w-17', md: 'h-19 w-19', sm: 'h-10 w-10' }[size];
+  const tabletOuter = size === 'lg' ? '@xl:h-20 @xl:w-20 @5xl:h-28 @5xl:w-28' : '';
+  const tabletInner = size === 'lg' ? '@xl:h-17 @xl:w-17 @5xl:h-24 @5xl:w-24' : '';
   return (
     <div
-      className={`grid shrink-0 place-items-center rounded-full ${outer}`}
+      className={`grid shrink-0 place-items-center rounded-full ${outer} ${tabletOuter}`}
       style={{ background: `conic-gradient(${color} ${value * 3.6}deg, var(--muted) 0deg)` }}
       role='img'
       aria-label={`Overall score ${value} out of 100`}>
-      <div className={`grid place-items-center rounded-full bg-card ${inner}`}>
+      <div className={`grid place-items-center rounded-full bg-card ${inner} ${tabletInner}`}>
         {size === 'lg' ? (
           <div className='text-center'>
-            <div className='font-display text-[36px] leading-none font-extrabold' style={{ color }}>
+            <div
+              className='font-display text-[24px] leading-none font-extrabold @xl:text-[24px] @5xl:text-[28px]'
+              style={{ color }}>
               {value}
-            </div>
-            <div className='mt-1 text-[10px] tracking-widest text-muted-foreground uppercase'>
-              Overall
             </div>
           </div>
         ) : (
@@ -122,7 +126,11 @@ function ScaleMeter({ value }: { value: number }) {
           <div
             key={b.label}
             className='h-full rounded-full'
-            style={{ width: `${b.to - b.from}%`, background: b.color, opacity: 0.25 }}
+            style={{
+              width: `${b.to - b.from}%`,
+              background: b.color,
+              opacity: v >= b.from ? 1 : 0.25,
+            }}
           />
         ))}
         <div
@@ -131,21 +139,32 @@ function ScaleMeter({ value }: { value: number }) {
         />
       </div>
       <div className={`flex ${TYPE.meta}`}>
-        {SCALE_BANDS.map((b) => (
-          <span key={b.label} style={{ width: `${b.to - b.from}%` }}>
-            {b.label}
-          </span>
-        ))}
+        {SCALE_BANDS.map((b) => {
+          const active = v >= b.from && (v < b.to || b.to === 100);
+          return (
+            <span
+              key={b.label}
+              style={{
+                width: `${b.to - b.from}%`,
+                color: active ? 'var(--foreground)' : 'var(--muted-foreground)',
+              }}>
+              {b.label}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
 }
 function ScoreTab() {
   const slots = useChromaStore((s) => s.slots);
-  const score = useMemo(
-    () => scorePalette(slots.map((slot) => (slot.color.value ?? parseColor(slot.color.hex)).xyz)),
+  const colors = useMemo(
+    () => slots.map((slot) => (slot.color.value ?? parseColor(slot.color.hex)).xyz),
     [slots],
   );
+  const score = useMemo(() => scorePalette(colors), [colors]);
+  const contrastPairs = useMemo(() => paletteContrastPairs(colors), [colors]);
+  const visionPairs = useMemo(() => paletteVisionPairs(colors), [colors]);
 
   if (!slots.length) return <EmptyState />;
 
@@ -201,82 +220,496 @@ function ScoreTab() {
   const levelName = (v: number) => (v >= 75 ? 'Strong' : v >= 50 ? 'Fair' : 'Weak');
 
   return (
-    <div className='@container flex min-h-0 flex-1 [scrollbar-gutter:stable] flex-col overflow-auto'>
-      {/* Wide: overall + profile stacked left, dimensions right. Narrow: one column.
-          The palette itself is already previewed in the side panel, so it isn't repeated here. */}
-      <div className='grid grid-cols-1 @4xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]'>
-        <section className='grid grid-cols-1 items-center gap-6 border-b border-border p-4 @xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @xl:p-6 @4xl:col-span-2'>
-          <div className='flex flex-col gap-3'>
-            <div className={TYPE.label}>Overall score</div>
-            <div className='flex items-baseline gap-2'>
-              <span
-                className='font-display text-4xl leading-none font-extrabold tabular-nums'
-                style={{ color: scoreLevelColor(overall) }}>
-                {overall}
-              </span>
-              <span className={TYPE.meta}>/ 100</span>
+    <div className='@container flex min-h-0 flex-1 scrollbar-gutter-stable flex-col overflow-auto'>
+      {/* The palette itself is already previewed in the side panel, so it isn't repeated here. */}
+      <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]! @min-[35rem]:grid-cols-[minmax(0,1fr)_minmax(17rem,1fr)] @min-[48rem]:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] @7xl:grid-cols-3! @7xl:gap-x-6'>
+        <section className='grid grid-cols-1 gap-x-4 gap-y-8 p-6 @min-[35rem]:p-4 @min-[48rem]:col-span-2 @min-[48rem]:grid-cols-[minmax(0,4fr)_minmax(0,6fr)] @min-[48rem]:items-stretch @min-[48rem]:gap-x-6 @min-[48rem]:gap-y-4 @min-[48rem]:border-b @min-[48rem]:border-border @min-[48rem]:p-8 @5xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] @5xl:items-center @5xl:gap-8 @7xl:col-span-1 @7xl:grid-cols-1 @7xl:items-start @7xl:gap-y-6 @7xl:border-b-0 @7xl:pt-6'>
+          <div className='flex min-w-0 items-center gap-4 @5xl:justify-center @5xl:gap-6'>
+            <ScoreRing value={overall} size='lg' />
+            <div className='flex min-w-0 flex-col gap-2 @5xl:self-center @7xl:self-start'>
+              <div className={TYPE.label}>Overall score</div>
+              <div className={`${TYPE.title} xl:text-[16px] @5xl:text-[18px]`}>
+                {verdict(overall)}
+              </div>
+              <div className={TYPE.meta}>Equal-weight average across 4 dimensions</div>
             </div>
-            <div className={TYPE.title}>{verdict(overall)}</div>
           </div>
-          <div className='flex flex-col gap-4'>
-            <ScaleMeter value={overall} />
-            <div className='grid grid-cols-2 gap-4'>
-              <div className='flex flex-col gap-1.5'>
-                <span className={TYPE.label}>Strongest</span>
-                <span className={TYPE.title}>{ranked[0].label}</span>
+
+          <div className='flex min-w-0 flex-col justify-center gap-4 @xl:grid @xl:grid-cols-1 @xl:content-start @min-[48rem]:self-stretch @5xl:gap-6 @7xl:flex @7xl:flex-col @7xl:justify-start @7xl:gap-6'>
+            <div className='flex min-w-0 flex-col gap-4 @7xl:mx-0 @7xl:w-full @7xl:max-w-none @7xl:border-l-0 @7xl:pl-0'>
+              <div className='flex items-baseline justify-between gap-3'>
+                <div className={TYPE.label}>Score range</div>
+                <div className={`${TYPE.title} min-w-0 truncate`}>0 – 100</div>
               </div>
-              <div className='flex flex-col gap-1.5'>
-                <span className={TYPE.label}>Needs attention</span>
-                <span className={TYPE.title}>{ranked[ranked.length - 1].label}</span>
-              </div>
+              <ScaleMeter value={overall} />
+            </div>
+
+            <div className='grid min-w-0 grid-cols-2 gap-4 @5xl:grid-cols-2 @5xl:gap-4 @7xl:mx-0 @7xl:w-full @7xl:max-w-none @7xl:border-l-0 @7xl:pl-0'>
+              {[
+                { label: 'Strongest', dimension: ranked[0] },
+                { label: 'Needs attention', dimension: ranked[ranked.length - 1] },
+              ].map(({ label, dimension }) => (
+                <div key={label} className='flex min-w-0 flex-col gap-1'>
+                  <span className={TYPE.label}>{label}</span>
+                  <span className={`${TYPE.title} min-w-0 truncate`}>{dimension.label}</span>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className='flex min-w-0 flex-col gap-4 border-b border-border p-4 @xl:p-6 @4xl:border-r @4xl:border-b-0'>
+        <section className='flex min-w-0 flex-col gap-3 p-4 xl:col-start-2 xl:row-start-2 @xl:p-6 @min-[48rem]:self-start @7xl:col-start-3 @7xl:row-start-1 @7xl:border-l @7xl:border-border @7xl:pl-6'>
           <div className='flex flex-wrap items-baseline justify-between gap-2'>
             <div className={TYPE.label}>Score profile</div>
             <div className={TYPE.mono}>0 – 100</div>
           </div>
-          <div className='flex flex-1 items-center'>
-            <Chart
-              className='w-full font-display'
-              definition={createScoreChart({ balance, accessibility, harmony, uniqueness })}
-              ariaLabel={`Palette scores: balance ${balance}, accessibility ${accessibility}, harmony ${harmony}, uniqueness ${uniqueness} out of 100`}
-              height={360}
-            />
+          <div className='flex min-w-0 flex-1 items-center justify-center'>
+            <div className='aspect-square w-full max-w-64 lg:max-w-72! xl:max-w-96! @min-[35rem]:max-w-56 @min-[40rem]:max-w-64 @min-[48rem]:max-w-80'>
+              <Chart
+                initialWidth={320}
+                height={320}
+                className='h-full w-full font-display'
+                definition={createScoreChart({ balance, accessibility, harmony, uniqueness })}
+                ariaLabel={`Palette scores: balance ${balance}, accessibility ${accessibility}, harmony ${harmony}, uniqueness ${uniqueness} out of 100`}
+                style={{ height: '100%' }}
+              />
+            </div>
           </div>
         </section>
 
-        <section className='flex min-w-0 flex-col px-4 pt-4 pb-2 @xl:px-6 @xl:pt-6'>
+        <section className='flex min-w-0 flex-col border-t border-border p-4 xl:col-span-1 xl:col-start-1 xl:row-start-2 @min-[35rem]:col-span-2 @xl:p-6 @min-[48rem]:col-span-1 @min-[48rem]:border-t-0 @7xl:col-span-1 @7xl:col-start-2 @7xl:row-start-1 @7xl:border-l @7xl:border-border @7xl:pl-6'>
           <div className='flex flex-wrap items-baseline justify-between gap-2'>
             <div className={TYPE.label}>Dimensions</div>
             <div className={TYPE.meta}>4 dimensions</div>
           </div>
-          {feedback.map(({ label, measures, value, note }) => (
-            <div
-              key={label}
-              className='grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-3 border-b border-border py-5 last:border-b-0 @xl:gap-4'>
-              <span className={TYPE.metric} style={{ color: scoreLevelColor(value) }}>
-                {value}
-              </span>
-              <div className='flex min-w-0 flex-col gap-2'>
-                <div className='flex flex-wrap items-baseline justify-between gap-2'>
-                  <div className='flex min-w-0 flex-col gap-0.5'>
-                    <div className={TYPE.title}>{label}</div>
-                    <div className={TYPE.meta}>{measures}</div>
-                  </div>
+          <div className='grid grid-cols-1 gap-x-6 gap-y-3 @min-[35rem]:grid-cols-2'>
+            {feedback.map(({ label, measures, value, note }) => (
+              <div
+                key={label}
+                className='flex min-w-0 flex-col gap-2 border-b border-border py-3 last:border-b-0 @min-[35rem]:gap-1 @min-[35rem]:border-0 @min-[35rem]:py-2 @xl:gap-4 @xl:py-5 @min-[48rem]:py-1.5'>
+                <div className='flex min-w-0 flex-col gap-1'>
+                  <div className={TYPE.title}>{label}</div>
+                  <div className={TYPE.meta}>{measures}</div>
+                </div>
+                <div className='flex min-w-0 items-center justify-between gap-3'>
                   <span
                     className={`shrink-0 ${TYPE.label}`}
                     style={{ color: scoreLevelColor(value) }}>
                     {levelName(value)}
                   </span>
+                  <span
+                    className={`${TYPE.label} shrink-0 tabular-nums`}
+                    style={{ color: scoreLevelColor(value) }}>
+                    {value}
+                  </span>
                 </div>
                 <ScoreBar value={value} color={scoreLevelColor(value)} />
                 <p className={TYPE.body}>{note}</p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        </section>
+      </div>
+      <div className='grid min-w-0 grid-cols-1 gap-y-5 xl:grid-cols-2 xl:items-start xl:gap-x-6 xl:gap-y-6 xl:border-t xl:border-border xl:pt-6 @7xl:mt-6 @7xl:grid-cols-3 @7xl:items-stretch'>
+        <section className='@container/color-detail col-span-full flex min-w-0 flex-col gap-5 border-t border-border p-4 xl:col-span-1 xl:col-start-1 xl:row-start-1 xl:self-start xl:border-t-0 @xl:gap-6 @xl:p-6 @7xl:self-stretch'>
+          <div className='flex flex-wrap items-baseline justify-between gap-2'>
+            <div className={TYPE.label}>Color detail</div>
+            <div className={TYPE.meta}>OKLCH and text contrast on white / black</div>
+          </div>
+          <div className='grid grid-cols-1 gap-x-6 gap-y-3 xl:hidden @min-[32rem]/color-detail:hidden'>
+            {slots.map((slot, index) => {
+              const xyz = colors[index]!;
+              const { l, c, h } = xyzToLch(OKLAB, xyz);
+              const onWhite = contrastRatio(xyz, WHITE_XYZ);
+              const onBlack = contrastRatio(xyz, BLACK_XYZ);
+              return (
+                <div
+                  key={slot.id}
+                  className='grid grid-cols-[4.5rem_minmax(0,1fr)] items-stretch gap-x-6 gap-y-1 border-b border-border py-2'>
+                  <div className='flex min-w-0 flex-col items-center justify-between'>
+                    <span
+                      aria-hidden='true'
+                      className='block size-16.5 shrink-0 rounded-sm border border-border'
+                      style={{ background: slot.color.hex }}
+                    />
+                    <span className={`${TYPE.title} font-mono whitespace-nowrap`}>
+                      {slot.color.hex.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className='flex min-w-0 flex-col gap-2'>
+                    <div className='grid grid-cols-3 gap-2'>
+                      {[
+                        { label: 'L', value: `${(l * 100).toFixed(1)}%` },
+                        { label: 'C', value: c.toFixed(3) },
+                        { label: 'H', value: `${Math.round(h)}°` },
+                      ].map(({ label, value }) => (
+                        <div key={label} className='flex min-w-0 flex-col gap-0.5'>
+                          <span className={TYPE.meta}>{label}</span>
+                          <span
+                            className={`${TYPE.title} font-mono whitespace-nowrap tabular-nums`}>
+                            {value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className='grid grid-cols-2 gap-6 border-t border-muted pt-2'>
+                      {[
+                        { label: 'On white', ratio: onWhite },
+                        { label: 'On black', ratio: onBlack },
+                      ].map(({ label, ratio }) => (
+                        <div key={label} className='flex min-w-0 flex-col gap-1'>
+                          <span className={TYPE.meta}>{label}</span>
+                          <div className='flex min-w-0 flex-wrap items-baseline justify-between gap-x-1'>
+                            <span className={`${TYPE.title} font-mono whitespace-nowrap`}>
+                              {ratio.toFixed(2)}:1
+                            </span>
+                            <span className={TYPE.meta}>{wcagLevel(ratio)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className='hidden overflow-x-auto xl:block @min-[32rem]/color-detail:block'>
+            <table className='w-full min-w-0 table-fixed border-collapse text-left text-[11px]'>
+              <thead>
+                <tr className='border-b border-border text-muted-foreground'>
+                  <th scope='col' className='w-[24%] py-2 pr-2 font-medium'>
+                    Color
+                  </th>
+                  <th scope='col' className='w-[10%] px-1 py-2 text-right font-medium'>
+                    L
+                  </th>
+                  <th scope='col' className='w-[10%] px-1 py-2 text-right font-medium'>
+                    C
+                  </th>
+                  <th scope='col' className='w-[10%] px-1 py-2 text-right font-medium'>
+                    H
+                  </th>
+                  <th scope='col' className='w-[23%] px-1 py-2 text-right font-medium'>
+                    On white
+                  </th>
+                  <th scope='col' className='w-[23%] py-2 pl-1 text-right font-medium'>
+                    On black
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {slots.map((slot, index) => {
+                  const xyz = colors[index]!;
+                  const { l, c, h } = xyzToLch(OKLAB, xyz);
+                  const onWhite = contrastRatio(xyz, WHITE_XYZ);
+                  const onBlack = contrastRatio(xyz, BLACK_XYZ);
+                  return (
+                    <tr key={slot.id} className='border-b border-muted last:border-0'>
+                      <th
+                        scope='row'
+                        aria-label={`Color ${index + 1}: ${slot.color.hex.toUpperCase()}`}
+                        className='py-2 pr-2 font-normal'>
+                        <span className='inline-flex items-center gap-1.5'>
+                          <span
+                            aria-hidden='true'
+                            className='size-4 shrink-0 rounded-sm border border-border'
+                            style={{ background: slot.color.hex }}
+                          />
+                          <span className={`${TYPE.mono} whitespace-nowrap`}>
+                            {slot.color.hex.toUpperCase()}
+                          </span>
+                        </span>
+                      </th>
+                      <td
+                        className={`${TYPE.mono} px-1 py-2 text-right whitespace-nowrap tabular-nums`}>
+                        {(l * 100).toFixed(1)}%
+                      </td>
+                      <td
+                        className={`${TYPE.mono} px-1 py-2 text-right whitespace-nowrap tabular-nums`}>
+                        {c.toFixed(3)}
+                      </td>
+                      <td
+                        className={`${TYPE.mono} px-1 py-2 text-right whitespace-nowrap tabular-nums`}>
+                        {Math.round(h)}°
+                      </td>
+                      {[
+                        { side: 'white', ratio: onWhite, label: wcagLevel(onWhite) },
+                        { side: 'black', ratio: onBlack, label: wcagLevel(onBlack) },
+                      ].map(({ side, ratio, label }) => (
+                        <td key={side} className='px-1 py-2 text-right'>
+                          <div className='flex flex-col items-end gap-0.5'>
+                            <span className={`${TYPE.mono} whitespace-nowrap`}>
+                              {ratio.toFixed(2)}:1
+                            </span>
+                            <span className={`${TYPE.meta} whitespace-nowrap`}>{label}</span>
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className='flex min-w-0 flex-col gap-5 border-t border-border p-4 xl:col-span-2 xl:row-start-2 xl:border-t-0 @xl:gap-6 @xl:p-6 @7xl:col-span-1 @7xl:col-start-3 @7xl:row-start-1 @7xl:border-l @7xl:border-border @7xl:pl-6'>
+          <div className='flex flex-wrap items-baseline justify-between gap-2'>
+            <div className={TYPE.label}>Pair contrast</div>
+            <div className={TYPE.meta}>WCAG text contrast ratios · opaque color pairs</div>
+          </div>
+          {slots.length < 2 ? (
+            <p className={TYPE.body}>Add at least two colors to compare contrast.</p>
+          ) : (
+            <>
+              <div className='@min-[35rem]:hidden'>
+                <ul className='divide-y divide-border'>
+                  {contrastPairs.map(({ firstIndex, secondIndex, ratio, level }) => {
+                    const first = slots[firstIndex]!;
+                    const second = slots[secondIndex]!;
+                    return (
+                      <li
+                        key={`${first.id}-${second.id}`}
+                        className='grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-2.5'>
+                        <div className='flex min-w-0 items-center gap-1'>
+                          <span className='inline-flex min-w-0 items-center gap-1'>
+                            <span
+                              aria-hidden='true'
+                              className='size-3.5 shrink-0 rounded-sm border border-border'
+                              style={{ background: first.color.hex }}
+                            />
+                            <span className={`${TYPE.mono} truncate`}>
+                              {first.color.hex.toUpperCase()}
+                            </span>
+                          </span>
+                          <ArrowLeftRight
+                            aria-hidden='true'
+                            className='mx-0.5 size-3.5 shrink-0 text-muted-foreground'
+                          />
+                          <span className='sr-only'>and</span>
+                          <span className='inline-flex min-w-0 items-center gap-1'>
+                            <span
+                              aria-hidden='true'
+                              className='size-3.5 shrink-0 rounded-sm border border-border'
+                              style={{ background: second.color.hex }}
+                            />
+                            <span className={`${TYPE.mono} truncate`}>
+                              {second.color.hex.toUpperCase()}
+                            </span>
+                          </span>
+                        </div>
+                        <span className='shrink-0 text-right'>
+                          <span className={TYPE.mono}>{ratio.toFixed(2)}:1</span>{' '}
+                          <span className={TYPE.meta}>{level}</span>
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+              <div className='hidden overflow-x-auto @min-[35rem]:block'>
+                <table className='w-full min-w-0 border-collapse text-center text-[11px]'>
+                  <caption className='sr-only'>
+                    WCAG contrast ratio for each palette color pair
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope='col' className='w-12 p-1 text-muted-foreground'>
+                        #
+                      </th>
+                      {slots.map((slot, index) => (
+                        <th
+                          key={slot.id}
+                          scope='col'
+                          aria-label={`Color ${index + 1}: ${slot.color.hex.toUpperCase()}`}
+                          className='min-w-12 p-1 font-normal'>
+                          <span className='flex flex-col items-center gap-1'>
+                            <span
+                              aria-hidden='true'
+                              className='size-5 rounded-sm border border-border'
+                              style={{ background: slot.color.hex }}
+                            />
+                            <span className={TYPE.mono}>{index + 1}</span>
+                          </span>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {slots.map((row, rowIndex) => (
+                      <tr key={row.id}>
+                        <th
+                          scope='row'
+                          aria-label={`Color ${rowIndex + 1}: ${row.color.hex.toUpperCase()}`}
+                          className='p-1 text-left font-normal'>
+                          <span className='inline-flex items-center gap-1.5'>
+                            <span
+                              aria-hidden='true'
+                              className='size-4 rounded-sm border border-border'
+                              style={{ background: row.color.hex }}
+                            />
+                            <span className={TYPE.mono}>{rowIndex + 1}</span>
+                          </span>
+                        </th>
+                        {slots.map((column, columnIndex) => {
+                          if (rowIndex === columnIndex)
+                            return (
+                              <td key={column.id} className='p-1 text-muted-foreground'>
+                                –
+                              </td>
+                            );
+                          const pair = contrastPairs.find(
+                            (item) =>
+                              item.firstIndex === Math.min(rowIndex, columnIndex) &&
+                              item.secondIndex === Math.max(rowIndex, columnIndex),
+                          );
+                          return (
+                            <td
+                              key={column.id}
+                              aria-label={`${row.color.hex.toUpperCase()} and ${column.color.hex.toUpperCase()}: ${pair?.ratio.toFixed(2)} to 1, ${pair?.level}`}
+                              className='p-1'>
+                              <span className='block rounded-sm bg-muted px-1.5 py-1'>
+                                <span className={`${TYPE.mono} block`}>
+                                  {pair?.ratio.toFixed(2)}:1
+                                </span>
+                                <span className={TYPE.meta}>{pair?.level}</span>
+                              </span>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+          <p className={TYPE.meta}>
+            Normal text needs 4.5:1; large text and meaningful non-text graphics need 3:1. Check the
+            actual text size, background, transparency, and UI state before relying on a result.
+          </p>
+        </section>
+
+        <section className='@container/vision flex min-w-0 flex-col gap-5 border-t border-border p-4 xl:col-start-2 xl:row-start-1 xl:self-start xl:border-t-0 @xl:gap-6 @xl:p-6 @7xl:col-span-1 @7xl:col-start-2 @7xl:row-start-1 @7xl:self-stretch @7xl:border-l @7xl:border-border @7xl:pl-6'>
+          <div className='flex flex-wrap items-baseline justify-between gap-2'>
+            <div className={TYPE.label}>Color-vision distinction</div>
+            <div className={TYPE.meta}>Closest pair · simulated appearance · ΔE00</div>
+          </div>
+          <div className='@xl/vision:hidden'>
+            <ul className='divide-y divide-border'>
+              {visionPairs.map((pair) => {
+                const name =
+                  pair.vision === 'normal'
+                    ? 'Typical vision'
+                    : `${pair.vision[0]!.toUpperCase()}${pair.vision.slice(1)}`;
+                const first = pair.firstIndex === null ? null : slots[pair.firstIndex];
+                const second = pair.secondIndex === null ? null : slots[pair.secondIndex];
+                return (
+                  <li key={pair.vision} className='py-4'>
+                    <div className='flex items-baseline justify-between gap-2'>
+                      <span className={TYPE.title}>{name}</span>
+                      <span className={TYPE.mono}>
+                        {pair.deltaE === null ? '—' : `ΔE00 ${pair.deltaE.toFixed(2)}`}
+                      </span>
+                    </div>
+                    {first && second ? (
+                      <div className='mt-3 flex flex-wrap items-center gap-x-2 gap-y-2'>
+                        <span className='inline-flex items-center gap-1'>
+                          <span
+                            aria-hidden='true'
+                            className='size-3.5 rounded-sm border border-border'
+                            style={{ background: first.color.hex }}
+                          />
+                          <span className={TYPE.mono}>{first.color.hex.toUpperCase()}</span>
+                        </span>
+                        <ArrowLeftRight
+                          aria-hidden='true'
+                          className='mx-0.5 size-3.5 shrink-0 text-muted-foreground'
+                        />
+                        <span className='sr-only'>and</span>
+                        <span className='inline-flex items-center gap-1'>
+                          <span
+                            aria-hidden='true'
+                            className='size-3.5 rounded-sm border border-border'
+                            style={{ background: second.color.hex }}
+                          />
+                          <span className={TYPE.mono}>{second.color.hex.toUpperCase()}</span>
+                        </span>
+                      </div>
+                    ) : (
+                      <span className={TYPE.meta}>Add another color</span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+          <div className='hidden overflow-x-auto @xl/vision:block'>
+            <table className='w-full min-w-120 border-collapse text-left text-[11px]'>
+              <thead>
+                <tr className='border-b border-border text-muted-foreground'>
+                  <th scope='col' className='py-3 pr-3 font-medium'>
+                    Vision model
+                  </th>
+                  <th scope='col' className='px-3 py-3 font-medium'>
+                    Closest colors
+                  </th>
+                  <th scope='col' className='py-3 pl-3 text-right font-medium'>
+                    ΔE00
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {visionPairs.map((pair) => {
+                  const name =
+                    pair.vision === 'normal'
+                      ? 'Typical vision'
+                      : `${pair.vision[0]!.toUpperCase()}${pair.vision.slice(1)}`;
+                  const first = pair.firstIndex === null ? null : slots[pair.firstIndex];
+                  const second = pair.secondIndex === null ? null : slots[pair.secondIndex];
+                  return (
+                    <tr key={pair.vision} className='border-b border-muted last:border-0'>
+                      <th scope='row' className='py-3 pr-3 font-medium'>
+                        {name}
+                      </th>
+                      <td className='px-3 py-3'>
+                        {first && second ? (
+                          <span className='inline-flex items-center gap-2'>
+                            <span
+                              aria-hidden='true'
+                              className='size-4 rounded-sm border border-border'
+                              style={{ background: first.color.hex }}
+                            />
+                            <span className={TYPE.mono}>{first.color.hex.toUpperCase()}</span>
+                            <ArrowLeftRight
+                              aria-hidden='true'
+                              className='mx-1 size-3.5 shrink-0 text-muted-foreground'
+                            />
+                            <span className='sr-only'>and</span>
+                            <span
+                              aria-hidden='true'
+                              className='size-4 rounded-sm border border-border'
+                              style={{ background: second.color.hex }}
+                            />
+                            <span className={TYPE.mono}>{second.color.hex.toUpperCase()}</span>
+                          </span>
+                        ) : (
+                          <span className={TYPE.meta}>Add another color</span>
+                        )}
+                      </td>
+                      <td className={`${TYPE.mono} py-3 pl-3 text-right`}>
+                        {pair.deltaE === null ? '—' : pair.deltaE.toFixed(2)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className={TYPE.meta}>
+            Lower ΔE00 means a smaller modeled difference. Simulations are estimates; there is no
+            universal pass threshold, so use this to find pairs that may need a second visual cue.
+          </p>
         </section>
       </div>
     </div>
@@ -500,7 +933,7 @@ function CompareTab() {
   const pct = (v: number) => `${Math.round(v)}`;
 
   return (
-    <div className='@container flex min-h-0 flex-1 [scrollbar-gutter:stable] flex-col overflow-auto'>
+    <div className='@container flex min-h-0 flex-1 scrollbar-gutter-stable flex-col overflow-auto'>
       {palA && palB && statsA && statsB && (
         <>
           <div className='grid grid-cols-1 items-stretch gap-4 border-b border-border p-4 @xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] @xl:p-6'>
@@ -556,6 +989,7 @@ function CompareTab() {
                   className='w-full font-display'
                   definition={createCompareChart(scoreA, scoreB, { a: palA.name, b: palB.name })}
                   ariaLabel={`Score comparison: ${palA.name} versus ${palB.name}`}
+                  initialWidth={380}
                   height={380}
                 />
               </div>

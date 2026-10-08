@@ -1,20 +1,16 @@
-import type { QueryClient } from "@tanstack/react-query";
+import type { QueryClient } from '@tanstack/react-query';
 
-import { TanStackDevtools } from "@tanstack/react-devtools";
-import { PacerDevtoolsPanel } from "@tanstack/react-pacer-devtools";
-import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
-import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import * as React from "react";
+import { HeadContent, Outlet, createRootRouteWithContext } from '@tanstack/react-router';
+import * as React from 'react';
 
-import { DefaultCatchBoundary } from "@/components/default-catch-boundary";
-import { NotFound } from "@/components/not-found";
-import { ToasterGlobal } from "@/components/ui/toast";
-import { CommandPaletteProvider } from "@/components/views/command-palette";
-import { getTheme, type Theme } from "@/lib/theme";
-import { seo } from "@/lib/utils/seo";
-import { HotkeyProvider } from "@/providers/hotkey.provider";
-import { ThemeProvider } from "@/providers/theme.provider";
+import { DefaultCatchBoundary } from '@/components/default-catch-boundary';
+import { NotFound } from '@/components/not-found';
+import { ToasterGlobal } from '@/components/ui/toast';
+import { CommandPaletteProvider } from '@/components/views/command-palette';
+import { getTheme, type Theme } from '@/lib/theme';
+import { seo } from '@/lib/utils/seo';
+import { HotkeyProvider } from '@/providers/hotkey.provider';
+import { ThemeProvider } from '@/providers/theme.provider';
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -22,19 +18,19 @@ export const Route = createRootRouteWithContext<{
   head: () => ({
     meta: [
       {
-        charSet: "utf-8",
+        charSet: 'utf-8',
       },
       {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
+        name: 'viewport',
+        content: 'width=device-width, initial-scale=1',
       },
       ...seo({
         title:
-          "Chroma ELITE - A powerful color palette generator and editor built with TanStack Router",
+          'Chroma ELITE - A powerful color palette generator and editor built with TanStack Router',
         description: `Chroma ELITE is a type-safe, client-first, color palette generator and editor built with TanStack Router. `,
       }),
     ],
-    links: [{ rel: "manifest", href: "/site.webmanifest", color: "#282828" }],
+    links: [{ rel: 'manifest', href: '/site.webmanifest', color: '#282828' }],
   }),
   errorComponent: (props) => (
     <RootLayout theme={getTheme()}>
@@ -65,30 +61,6 @@ function RootLayout({ children, theme }: { children: React.ReactNode; theme: The
         </CommandPaletteProvider>
       </HotkeyProvider>
       <ToasterGlobal />
-      {process.env.NODE_ENV !== "production" && (
-        <TanStackDevtools
-          config={{
-            position: "bottom-right",
-          }}
-          plugins={[
-            {
-              name: "TanStack Query",
-              render: <ReactQueryDevtoolsPanel />,
-              defaultOpen: true,
-            },
-            {
-              name: "TanStack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-              defaultOpen: false,
-            },
-            {
-              name: "TanStack Pacer",
-              render: <PacerDevtoolsPanel />,
-              defaultOpen: false,
-            },
-          ]}
-        />
-      )}
     </>
   );
 }

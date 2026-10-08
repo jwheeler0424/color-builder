@@ -11,10 +11,12 @@
  * Touch target: minimum 44×44px per Apple HIG (stricter than Material's 48px).
  */
 
-import { Link, useRouterState } from "@tanstack/react-router";
-import { useChromaStore } from "@/hooks/use-chroma-store";
-import { SECTIONS } from "./nav-desktop";
-import { cn } from "@/lib/utils";
+import { Link, useRouterState } from '@tanstack/react-router';
+
+import { useChromaStore } from '@/hooks/use-chroma-store';
+import { cn } from '@/lib/utils';
+
+import { SECTIONS } from './nav-desktop';
 
 interface NavMobileProps {
   className?: string;
@@ -31,63 +33,54 @@ export function NavMobile({ className }: NavMobileProps) {
   return (
     <nav
       className={cn(
-        "flex items-end justify-around bg-card border-t border-border shrink-0",
-        "px-2",
+        'relative z-100 flex w-full shrink-0 items-end justify-around border-t border-border bg-transparent px-2',
         className,
       )}
-      style={{ paddingBottom: "max(env(safe-area-inset-bottom, 8px), 8px)" }}
-      aria-label="Main navigation"
-    >
+      style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 8px), 8px)' }}
+      aria-label='Main navigation'
+      data-mobile-footer=''>
       {/* Left sections */}
       {leftSections.map((section) => {
         const isActive = section.routes.some((r) => pathname.startsWith(r));
         return (
           <Link
             key={section.id}
-            to={section.primary as Parameters<typeof Link>[0]["to"]}
+            to={section.primary as Parameters<typeof Link>[0]['to']}
             className={cn(
-              "flex flex-col items-center justify-center",
-              "min-w-12 min-h-12 pt-2 pb-1",
-              "no-underline transition-colors",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-              isActive
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground",
+              'flex flex-col items-center justify-center',
+              'min-h-12 min-w-12 pt-2 pb-1',
+              'no-underline transition-colors',
+              'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset',
+              isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
             )}
-            aria-current={isActive ? "page" : undefined}
-          >
-            <span className="text-[20px] leading-none mb-1">
-              {section.icon}
-            </span>
-            <span className="text-[9px] font-bold tracking-[.04em]">
-              {section.label}
-            </span>
+            aria-current={isActive ? 'page' : undefined}>
+            <span className='mb-1 text-[20px] leading-none'>{section.icon}</span>
+            <span className='text-[9px] font-bold tracking-[.04em]'>{section.label}</span>
           </Link>
         );
       })}
 
       {/* Center Generate FAB */}
-      <div className="flex flex-col items-center justify-end -mt-4 pb-1">
+      <div className='relative flex h-12 w-14 shrink-0 items-end justify-center'>
         <button
           onClick={generate}
           className={cn(
-            "w-14 h-14 rounded-full",
-            "bg-primary text-primary-foreground",
-            "flex items-center justify-center",
-            "text-[22px] font-bold leading-none",
-            "shadow-lg shadow-primary/40",
-            "active:scale-95 transition-all cursor-pointer border-0",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+            'absolute top-0 left-1/2 z-101 h-14 w-14 -translate-x-1/2 -translate-y-7 rounded-full',
+            'bg-primary text-primary-foreground',
+            'flex items-center justify-center',
+            'text-[22px] leading-none font-bold',
+            'shadow-lg shadow-primary/40',
+            'cursor-pointer border-0 transition-all active:scale-95',
+            'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none',
           )}
-          title="Generate palette (Space)"
-          aria-label="Generate new palette"
-        >
+          title='Generate palette (Space)'
+          aria-label='Generate new palette'>
           ⟳
         </button>
-        <span className="text-[8px] text-muted-foreground mt-1 font-bold tracking-[.04em]">
-          GEN
-        </span>
       </div>
+      <span className='absolute bottom-2 left-1/2 -translate-x-1/2 text-[9px] leading-3 font-bold tracking-[.04em] text-foreground'>
+        GEN
+      </span>
 
       {/* Right sections */}
       {rightSections.map((section) => {
@@ -95,24 +88,17 @@ export function NavMobile({ className }: NavMobileProps) {
         return (
           <Link
             key={section.id}
-            to={section.primary as Parameters<typeof Link>[0]["to"]}
+            to={section.primary as Parameters<typeof Link>[0]['to']}
             className={cn(
-              "flex flex-col items-center justify-center",
-              "min-w-12 min-h-12 pt-2 pb-1",
-              "no-underline transition-colors",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-              isActive
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground",
+              'flex flex-col items-center justify-center',
+              'min-h-12 min-w-12 pt-2 pb-1',
+              'no-underline transition-colors',
+              'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset',
+              isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
             )}
-            aria-current={isActive ? "page" : undefined}
-          >
-            <span className="text-[20px] leading-none mb-1">
-              {section.icon}
-            </span>
-            <span className="text-[9px] font-bold tracking-[.04em]">
-              {section.label}
-            </span>
+            aria-current={isActive ? 'page' : undefined}>
+            <span className='mb-1 text-[20px] leading-none'>{section.icon}</span>
+            <span className='text-[9px] font-bold tracking-[.04em]'>{section.label}</span>
           </Link>
         );
       })}

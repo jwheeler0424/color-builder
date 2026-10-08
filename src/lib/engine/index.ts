@@ -6,6 +6,12 @@ export {
   type ColorRendition,
 } from './color.ts';
 export {
+  paletteContrastPairs,
+  paletteVisionPairs,
+  type PaletteContrastPair,
+  type PaletteVisionPair,
+} from './analysis.ts';
+export {
   cloneSlot,
   colorToStop,
   hexToStop,

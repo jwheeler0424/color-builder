@@ -9,7 +9,7 @@ export function PaletteBar({ onOpen }: { onOpen: () => void }) {
   const slots = useChromaStore((s) => s.slots);
 
   return (
-    <div className='shrink-0 border-b border-border bg-card px-4 py-2'>
+    <div className='shrink-0 border-b border-border bg-card px-4 py-3'>
       <button
         type='button'
         onClick={onOpen}
@@ -37,7 +37,7 @@ export function PaletteSheetBody({
   showFooter: boolean;
 }) {
   return (
-    <div className='flex-1 [scrollbar-width:thin] overflow-y-auto'>
+    <div className='flex-1 scrollbar-thin overflow-y-auto'>
       <PaletteStudioPanel onEditSlot={onEditSlot} />
       <PaletteStripHorizontal onEditSlot={onEditSlot} height={140} slotWidth={100} />
       <GenerateControlsAccordion onEditSeed={onEditSlot} showFooter={showFooter} />

@@ -46,15 +46,17 @@ describe('palette radar', () => {
     }
   });
 
-  test('keeps an explicit zero tooltip value', () => {
+  test('keeps score values in the chart scene without hover tooltips', () => {
     const definition = createScoreChart({
       balance: 0,
       accessibility: 0,
       harmony: 0,
       uniqueness: 0,
     });
-    const scene = createChartScene(definition, { width: 280, height: 260 });
-    expect(definition.tooltip.format(scene.points[0])).toBe('Balance: 0/100');
+    const scene = createChartScene(definition, { width: 320, height: 320 });
+    const values = scene.points.filter((point) => point.markId.includes('score-points'));
+    expect(values.map((point) => point.datum.value)).toEqual([0, 0, 0, 0]);
+    expect('tooltip' in definition).toBe(false);
   });
 
   test('renders an accessible SVG and updates scores', () => {
@@ -89,8 +91,8 @@ describe('palette radar', () => {
     expect(view.container.innerHTML).not.toContain('NaN');
   });
 
-  test('cleans up responsive observers under StrictMode', () => {
-    const disconnect = spyOn(ResizeObserver.prototype, 'disconnect');
+  test('does not install responsive observers under StrictMode', () => {
+    const observe = spyOn(ResizeObserver.prototype, 'observe');
     try {
       const view = render(
         <StrictMode>
@@ -108,9 +110,9 @@ describe('palette radar', () => {
       );
       expect(view.getByLabelText('Responsive palette radar')).toBeInTheDocument();
       view.unmount();
-      expect(disconnect).toHaveBeenCalled();
+      expect(observe).not.toHaveBeenCalled();
     } finally {
-      disconnect.mockRestore();
+      observe.mockRestore();
     }
   });
 });
@@ -210,14 +212,15 @@ describe('OKLCH charts', () => {
     expect(wrapped.points[0].y).toBeCloseTo(top.y);
   });
 
-  test('coincident colors retain distinct keys and lock status in tooltips', () => {
+  test('coincident colors retain distinct keys and lock status without tooltips', () => {
     const definition = createChromaChart([colors[1], { ...colors[1], id: 'duplicate' }]);
     const scene = createChartScene(definition, { width: 280, height: 300 });
     expect(new Set(scene.points.map((point) => point.key)).size).toBe(2);
-    expect(definition.tooltip.format(scene.points[0])).toContain('Locked');
+    expect(scene.points.map((point) => point.datum.id)).toEqual(['green', 'duplicate']);
+    expect(scene.points.every((point) => point.datum.locked)).toBe(true);
     const zero = createChromaChart([colors[0]]);
     const zeroScene = createChartScene(zero, { width: 280, height: 300 });
-    expect(zero.tooltip.format(zeroScene.points[0])).toContain('L 0.00 | C 0.000');
+    expect(zeroScene.points[0].datum).toMatchObject({ lightness: 0, chroma: 0, hue: 0 });
   });
 
   test('empty palettes and plot boundaries produce finite scenes', () => {

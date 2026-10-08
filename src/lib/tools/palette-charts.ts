@@ -13,7 +13,6 @@ import {
 import { scaleLinear } from '@tanstack/charts/scales/linear';
 import { scalePoint } from '@tanstack/charts/scales/point';
 import { defineChart } from '@tanstack/charts/scene';
-import { tooltip } from '@tanstack/charts/tooltip';
 import { curveLinearClosed } from 'd3-shape';
 
 export type ScoreDimension = 'balance' | 'accessibility' | 'harmony' | 'uniqueness';
@@ -46,10 +45,6 @@ export interface PaletteChartPoint {
   lightness: number;
   chroma: number;
   hue: number;
-}
-
-function palettePointLabel(point: PaletteChartPoint): string {
-  return `${point.name} ${point.hex.toUpperCase()} | L ${point.lightness.toFixed(2)} | C ${point.chroma.toFixed(3)} | H ${point.hue.toFixed(0)} degrees${point.locked ? ' | Locked' : ''}`;
 }
 
 export function createChromaChart(points: readonly PaletteChartPoint[], activeId?: string | null) {
@@ -91,7 +86,6 @@ export function createChromaChart(points: readonly PaletteChartPoint[], activeId
       },
     },
     color: { domain: points.map((point) => point.id), range: points.map((point) => point.hex) },
-    tooltip: { use: tooltip, format: (point) => palettePointLabel(point.datum) },
   });
 }
 
@@ -146,7 +140,6 @@ export function createHueChart(points: readonly PaletteChartPoint[], activeId?: 
     ],
     scales: { x: null, y: null },
     color: { domain: points.map((point) => point.id), range: points.map((point) => point.hex) },
-    tooltip: { use: tooltip, format: (point) => palettePointLabel(point.datum) },
   });
 }
 
@@ -278,7 +271,6 @@ export function createScoreChart(scores: RadarScores) {
     ],
     scales: { x: null, y: null },
     focus: focusGroupAngle,
-    tooltip: { use: tooltip, format: (point) => `${point.datum.label}: ${point.datum.value}/100` },
   });
 }
 
@@ -349,9 +341,5 @@ export function createCompareChart(
     ],
     scales: { x: null, y: null },
     focus: focusGroupAngle,
-    tooltip: {
-      use: tooltip,
-      format: (point) => `${point.datum.series} · ${point.datum.label}: ${point.datum.value}/100`,
-    },
   });
 }

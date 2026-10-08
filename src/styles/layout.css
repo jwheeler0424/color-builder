@@ -2,8 +2,8 @@
 .desktop-main {
   display: grid;
   grid-template-areas:
-    "desktop-left desktop-main-nav desktop-main-nav"
-    "desktop-left desktop-main desktop-right";
+    'desktop-left desktop-main-nav desktop-main-nav'
+    'desktop-left desktop-main desktop-right';
   grid-template-columns: auto 1fr auto;
 }
 
@@ -21,4 +21,12 @@
 
 .desktop-right {
   grid-area: desktop-right;
+}
+
+@media (max-width: 39.99rem) {
+  #root:has([data-mobile-footer])
+    :is([class~='flex-1'][class~='overflow-auto'], [class~='flex-1'][class~='overflow-y-auto']) {
+    padding-block-end: 2rem;
+    scroll-padding-block-end: 2rem;
+  }
 }

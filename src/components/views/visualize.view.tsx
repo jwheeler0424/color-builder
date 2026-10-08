@@ -6,14 +6,13 @@
  */
 
 import { Check, Copy, Lock, RotateCcw } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState, type ComponentProps } from 'react';
+import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 
 import type { ColorValue } from '@/lib/engine/color';
 
 import { Chart } from '@/components/ui/chart';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
-  DISPLAY_P3,
   OKLAB,
   SRGB,
   clamp,
@@ -63,25 +62,16 @@ function EmptyState({ title }: { title: string }) {
 }
 
 function FittedChart(props: ComponentProps<typeof Chart<PaletteChartPoint, number, number>>) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState(240);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const observer = new ResizeObserver(([entry]) => {
-      const nextHeight = Math.floor(entry.contentRect.height);
-      if (nextHeight > 0) setHeight(nextHeight);
-    });
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, []);
-
+  const { className, style, ...chartProps } = props;
   return (
-    <div
-      ref={containerRef}
-      className='h-60 min-h-0 w-full max-w-88 self-center lg:h-auto lg:max-h-60 lg:flex-1'>
-      <Chart {...props} height={height} />
+    <div className='h-60 min-h-0 w-full max-w-88 self-center lg:h-auto lg:max-h-60 lg:flex-1'>
+      <Chart
+        {...chartProps}
+        className={`${className ?? ''} h-full`}
+        initialWidth={320}
+        height={240}
+        style={{ ...style, height: '100%' }}
+      />
     </div>
   );
 }

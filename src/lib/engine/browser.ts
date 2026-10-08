@@ -1,5 +1,6 @@
 export * from './color.ts';
 export * from './color-stop.ts';
+export * from './analysis.ts';
 export * from './compose.ts';
 export * from './device.ts';
 export * from './formats.ts';

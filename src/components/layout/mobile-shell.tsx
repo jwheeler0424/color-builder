@@ -163,8 +163,8 @@ export function MobileShell() {
 
         {isPalettePage ? (
           /* Palette page: full swatch strip (all slot actions), generate bar, controls */
-          <div className='min-h-0 flex-1 [scrollbar-width:thin] overflow-y-auto'>
-            <div className='flex h-[60dvh] min-h-108 [scrollbar-width:thin] overflow-x-auto [&>.slot-item]:min-w-44'>
+          <div className='min-h-0 flex-1 scrollbar-thin overflow-y-auto'>
+            <div className='flex h-[60dvh] min-h-108 scrollbar-thin overflow-x-auto [&>.slot-item]:min-w-44'>
               <PaletteStrip onEditSlot={handleEditSlot} />
             </div>
 
