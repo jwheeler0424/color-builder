@@ -111,10 +111,13 @@ export default function BrandComplianceView() {
         title='Brand Compliance'
         description='Palette contrast and perceptual pairing against your brand colors.'
       />
-      <div className='grid min-h-0 flex-1 grid-cols-1 overflow-auto border-t border-border @3xl:grid-cols-[15rem_minmax(0,1fr)] @3xl:overflow-hidden'>
+      <div
+        data-brand-layout
+        className='grid min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start overflow-auto border-t border-border @3xl:grid-cols-[15rem_minmax(0,1fr)] @3xl:grid-rows-[minmax(0,1fr)] @3xl:content-stretch @3xl:overflow-hidden'>
         <aside className='flex min-h-0 min-w-0 flex-col border-b border-border @3xl:border-r @3xl:border-b-0'>
           <form
-            className='flex shrink-0 flex-col gap-3 border-b border-border p-4'
+            data-brand-form
+            className='tool-panel-space flex shrink-0 flex-col gap-2 border-b border-border @min-[56rem]:gap-3'
             onSubmit={(event) => {
               event.preventDefault();
               handleAdd();
@@ -173,17 +176,22 @@ export default function BrandComplianceView() {
               Add color
             </Button>
           </form>
-          <div className='flex shrink-0 items-center justify-between px-4 pt-4 pb-2'>
+          <div
+            data-brand-colors-heading
+            className='tool-inline-space flex shrink-0 items-center justify-between pt-3 pb-2 @min-[56rem]:pt-4'>
             <span className={TYPE.label}>Brand colors</span>
             <span className={TYPE.mono}>{brandColors.length}</span>
           </div>
-          <div className='min-h-0 flex-1 overflow-auto px-2 pb-2'>
+          <div
+            data-brand-color-list
+            className='px-2 pb-2 @3xl:min-h-0 @3xl:flex-1 @3xl:overflow-auto'>
             {brandColors.length === 0 && (
               <p className={`px-2 py-3 ${TYPE.meta}`}>No brand colors yet.</p>
             )}
             {brandColors.map((brand) => (
               <div
                 key={brand.id}
+                data-brand-color-item
                 className={`flex min-w-0 items-center gap-2 rounded-sm px-2 py-3 ${selected?.brand.id === brand.id ? 'bg-accent/50' : ''}`}>
                 <span
                   className='size-7 shrink-0 rounded-sm border border-border'
@@ -242,13 +250,15 @@ export default function BrandComplianceView() {
         </aside>
         <section className='@container/results flex min-h-0 min-w-0 flex-col'>
           {!selected ? (
-            <div className='flex min-h-64 flex-1 flex-col items-center justify-center gap-3 p-6 text-muted-foreground'>
+            <div className='tool-panel-space flex min-h-64 flex-1 flex-col items-center justify-center gap-3 text-muted-foreground'>
               <SwatchBook className='size-8' strokeWidth={1.25} />
               <p className={TYPE.title}>No brand colors</p>
             </div>
           ) : (
             <>
-              <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border p-4'>
+              <div
+                data-brand-details-header
+                className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border'>
                 <div className='flex min-w-0 items-center gap-3'>
                   <span
                     className='size-10 shrink-0 rounded-md border border-border'
@@ -267,7 +277,9 @@ export default function BrandComplianceView() {
                 </div>
               ) : (
                 <>
-                  <div className='grid shrink-0 grid-cols-2 gap-x-6 gap-y-4 border-b border-border p-4 @2xl/results:grid-cols-4'>
+                  <div
+                    data-brand-score-summary
+                    className='tool-panel-space grid shrink-0 grid-cols-2 gap-x-6 gap-y-4 border-b border-border @2xl/results:grid-cols-4'>
                     {[
                       {
                         label: 'WCAG AA',
@@ -299,8 +311,11 @@ export default function BrandComplianceView() {
                       <span className={TYPE.mono}>{bestPair?.ratio.toFixed(2)}:1</span>
                     </div>
                   </div>
-                  <div className='flex min-h-0 flex-1 flex-col px-4 py-3'>
+                  <div
+                    data-brand-results-panel
+                    className='tool-panel-space flex min-h-0 flex-1 flex-col'>
                     <div
+                      data-brand-result-header
                       className={`grid shrink-0 ${pairColumns} items-center gap-2 border-b border-border pb-3 ${TYPE.label}`}>
                       <span>Palette color</span>
                       <span className='text-right'>Contrast</span>
@@ -312,7 +327,9 @@ export default function BrandComplianceView() {
                       </span>
                       <span className='hidden text-right @2xl/results:block'>Pairing</span>
                     </div>
-                    <div className='grid auto-rows-[minmax(2.5rem,1fr)] @3xl:min-h-0 @3xl:flex-1 @3xl:auto-rows-fr'>
+                    <div
+                      data-brand-result-list
+                      className='grid auto-rows-[minmax(2.5rem,1fr)] @3xl:min-h-0 @3xl:flex-1 @3xl:auto-rows-fr'>
                       {pairs.map(
                         ({ slot, ratio, apcaVal, dist, badge, harmonious, complementary }) => {
                           const name =
@@ -324,6 +341,7 @@ export default function BrandComplianceView() {
                           return (
                             <div
                               key={slot.id}
+                              data-brand-result-row
                               className={`grid ${pairColumns} min-w-0 items-center gap-2 border-b border-border last:border-b-0`}>
                               <div className='flex min-w-0 items-center gap-2'>
                                 <div className='flex h-7 w-14 shrink-0 gap-1' aria-hidden='true'>

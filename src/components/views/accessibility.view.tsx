@@ -348,7 +348,7 @@ function WcagSlotsTab() {
   if (!slots.length) return <EmptyState title='Accessibility' />;
 
   return (
-    <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4'>
+    <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col overflow-hidden'>
       <div className='flex flex-wrap items-center justify-between gap-2.5'>
         <p className='max-w-3xl text-[11px] text-muted-foreground'>
           How each palette color performs as text or UI against white and black backgrounds.
@@ -401,7 +401,7 @@ function WcagSlotsTab() {
         ))}
       </div>
 
-      <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-auto'>
+      <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col overflow-auto'>
         <section className='flex flex-1 flex-col gap-2'>
           <div className={cn('hidden shrink-0 gap-3 px-3 md:grid', ROW_GRID)}>
             <div className={SECTION_LABEL}>Color</div>
@@ -557,7 +557,7 @@ function ContrastCheckerTab() {
 
   return (
     <>
-      <div className='flex min-h-0 flex-1 flex-col items-center gap-4 overflow-auto p-4'>
+      <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col items-center overflow-auto'>
         {/* Colors: identical cards either side of the swap control, so they line up */}
         <div className='grid w-full max-w-360 grid-cols-1 items-stretch gap-3 @2xl/accessibility:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'>
           <ColorField

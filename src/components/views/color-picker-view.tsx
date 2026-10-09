@@ -195,7 +195,7 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
   ];
 
   return (
-    <div className='flex min-h-0 flex-1 flex-col overflow-y-auto'>
+    <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col overflow-y-auto'>
       <PanelSection>
         <PanelSectionLabel>COLOR PICKER</PanelSectionLabel>
         {/* Color wheel — always visible, speaks HSL */}

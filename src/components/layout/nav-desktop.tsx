@@ -2,13 +2,13 @@
  * nav-desktop.tsx  — Phase 3 layout component
  *
  * The 4-section top navigation bar for the Desktop Studio layout (≥1024px).
- * Sections: CREATE · ANALYZE · BUILD · EXPORT
+ * Sections: PALETTE · ANALYZE · BUILD · EXPORT
  *
  * Each section routes to its primary tool and lights up active for all tools
  * within that section (via prefix matching).
  *
  * Sections map to the 14 consolidated tools from Phase 1:
- *   CREATE  → /palette, /picker, /saved
+ *   PALETTE → /palette
  *   ANALYZE → /accessibility, /scoring, /oklch-scatter
  *   BUILD   → /mixer, /gradient, /extract
  *   EXPORT  → /scale, /designsystem, /theme, /utility, /brand
@@ -35,10 +35,10 @@ interface SectionDef {
 export const SECTIONS: SectionDef[] = [
   {
     id: 'create',
-    label: 'Create',
+    label: 'Palette',
     icon: '✦',
     primary: '/palette',
-    routes: ['/palette', '/picker', '/saved'],
+    routes: ['/palette', '/picker'],
   },
   {
     id: 'analyze',
@@ -73,11 +73,7 @@ export function isPaletteRoute(pathname: string) {
 // ─── Section tools (for the dropdown sub-nav inside each section) ─────────────
 
 export const SECTION_TOOLS: Record<string, { to: string; label: string }[]> = {
-  create: [
-    { to: '/palette', label: 'Palette' },
-    { to: '/picker', label: 'Color Picker' },
-    { to: '/saved', label: 'Saved' },
-  ],
+  create: [{ to: '/palette', label: 'Palette' }],
   analyze: [
     { to: '/analyze/accessibility', label: 'Accessibility' },
     { to: '/analyze/scoring', label: 'Score & Compare' },
@@ -143,7 +139,7 @@ function useActiveSection() {
   return { pathname, section };
 }
 
-/** Create · Analyze · Build · Export section links */
+/** Palette · Analyze · Build · Export section links */
 export function SectionTabs({ className }: { className?: string }) {
   const { section: activeSection } = useActiveSection();
 
@@ -176,7 +172,7 @@ export function SectionTabs({ className }: { className?: string }) {
 export function SectionToolTabs({ className }: { className?: string }) {
   const { pathname, section: activeSection } = useActiveSection();
   const tools = activeSection ? SECTION_TOOLS[activeSection.id] : undefined;
-  if (!tools) return null;
+  if (!tools || tools.length < 2) return null;
 
   return (
     <nav

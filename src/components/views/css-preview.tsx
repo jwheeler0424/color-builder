@@ -218,7 +218,7 @@ export default function CssPreview() {
 
   if (!slots.length) {
     return (
-      <div className='min-h-0 flex-1 overflow-auto p-6'>
+      <div className='tool-panel-space min-h-0 flex-1 overflow-auto'>
         <div className='mb-5'>
           <h2>Live CSS Preview</h2>
         </div>
@@ -235,7 +235,7 @@ export default function CssPreview() {
 
   return (
     <div className='@container/css flex min-h-0 flex-1 flex-col overflow-auto @4xl/tokens:overflow-hidden'>
-      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border p-4'>
+      <div className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border'>
         <div className='flex flex-col gap-1'>
           <span className={TYPE.label}>Live theme comparison</span>
           <span className={TYPE.meta}>
@@ -253,7 +253,7 @@ export default function CssPreview() {
           ]}
         />
       </div>
-      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3'>
+      <div className='tool-inline-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border py-3'>
         <ToolSegments
           value={page}
           onValueChange={setPage}
@@ -274,7 +274,7 @@ export default function CssPreview() {
         </span>
       </div>
       <div className='grid auto-rows-max grid-cols-1 @4xl/css:min-h-0 @4xl/css:flex-1 @4xl/css:grid-cols-[minmax(0,1fr)_16rem] @4xl/css:grid-rows-[minmax(0,1fr)]'>
-        <section className='@container/previews flex min-h-0 min-w-0 flex-col p-4 @4xl/tokens:overflow-auto @4xl/tokens:border-r @4xl/tokens:border-border'>
+        <section className='tool-panel-space @container/previews flex min-h-0 min-w-0 flex-col @4xl/tokens:overflow-auto @4xl/tokens:border-r @4xl/tokens:border-border'>
           <div
             className={`grid min-w-0 grid-cols-1 gap-4 @4xl/tokens:min-h-0 @4xl/tokens:flex-1 ${showLight && showDark ? '@min-[45rem]/previews:grid-cols-2' : ''}`}>
             {(['light', 'dark'] as const)
@@ -317,7 +317,7 @@ export default function CssPreview() {
               ))}
           </div>
         </section>
-        <aside className='flex min-h-0 min-w-0 flex-col gap-4 border-t border-border p-4 @4xl/css:border-t-0'>
+        <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col border-t border-border @4xl/css:border-t-0'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
             <span className={TYPE.label}>Token inspector</span>
             {previewMode === 'split' && (

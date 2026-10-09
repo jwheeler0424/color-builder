@@ -298,7 +298,7 @@ export function WorkspacePreview({
           </span>
         </nav>
       </header>
-      <main className='flex min-h-0 flex-1 flex-col gap-3 overflow-auto p-3'>
+      <main className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col overflow-auto'>
         {view === 'landing' && (
           <div className='flex shrink-0 flex-col gap-5'>
             <section
@@ -1627,7 +1627,7 @@ export default function DesignSystemView() {
 
   if (!slots.length) {
     return (
-      <div className='min-h-0 flex-1 overflow-auto p-6'>
+      <div className='tool-panel-space min-h-0 flex-1 overflow-auto'>
         <div className='mb-5'>
           <h2>Design System Studio</h2>
         </div>
@@ -1655,7 +1655,7 @@ export default function DesignSystemView() {
 
   return (
     <div className='@container/design flex min-h-0 flex-1 flex-col overflow-hidden'>
-      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border p-4'>
+      <div className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border'>
         <div className='flex min-w-0 flex-wrap items-center gap-3'>
           <div className='flex flex-col gap-1'>
             <span className={TYPE.label}>Source palette</span>
@@ -1705,7 +1705,7 @@ export default function DesignSystemView() {
       <div
         key={activePanel}
         data-design-panel={activePanel}
-        className={`min-h-0 min-w-0 flex-1 ${activePanel === 'tokens' || activePanel === 'export' ? 'flex flex-col overflow-hidden' : activePanel === 'utility' || activePanel === 'accessibility' ? 'flex flex-col overflow-auto @4xl/design:overflow-hidden' : activePanel === 'preview' ? 'flex flex-col overflow-auto p-4 @4xl/design:overflow-hidden' : 'overflow-auto p-4'}`}>
+        className={`min-h-0 min-w-0 flex-1 ${activePanel === 'tokens' || activePanel === 'export' ? 'flex flex-col overflow-hidden' : activePanel === 'utility' || activePanel === 'accessibility' ? 'flex flex-col overflow-auto @4xl/design:overflow-hidden' : activePanel === 'preview' ? 'tool-panel-space flex flex-col overflow-auto @4xl/design:overflow-hidden' : 'overflow-auto p-4'}`}>
         {/* ── Preview panel ── */}
         {activePanel === 'preview' && (
           <div className='grid grid-cols-1 gap-4 @4xl/design:min-h-0 @4xl/design:flex-1 @4xl/design:grid-cols-2'>
@@ -1732,8 +1732,8 @@ export default function DesignSystemView() {
 
         {/* ── Token editor panel ── */}
         {activePanel === 'tokens' && (
-          <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto @3xl/design:grid-cols-[10rem_minmax(0,1fr)] @3xl/design:grid-rows-[minmax(0,1fr)] @3xl/design:overflow-hidden'>
-            <aside className='flex min-h-0 min-w-0 flex-col gap-3 border-b border-border p-3 @3xl/design:border-r @3xl/design:border-b-0'>
+          <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto @3xl/design:grid-cols-[14rem_minmax(0,1fr)] @3xl/design:grid-rows-[minmax(0,1fr)] @3xl/design:overflow-hidden @min-[56rem]/design:grid-cols-[16rem_minmax(0,1fr)] @min-[100rem]/design:grid-cols-[20rem_minmax(0,1fr)]'>
+            <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col border-b border-border @3xl/design:border-r @3xl/design:border-b-0'>
               <span className={`hidden ${TYPE.label} @3xl/design:block`}>Token groups</span>
               <div
                 role='group'
@@ -1757,7 +1757,7 @@ export default function DesignSystemView() {
                 ))}
               </div>
             </aside>
-            <section className='flex min-h-0 min-w-0 flex-col gap-4 p-4'>
+            <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col'>
               <div className='flex shrink-0 flex-wrap items-start justify-between gap-3'>
                 <div className='flex min-w-0 flex-col gap-1'>
                   <h3 className={TYPE.title}>{activeGroup?.label}</h3>

@@ -222,7 +222,8 @@ export interface ChromaActions {
   addSeed: (seed: ColorStop) => void;
   removeSeed: (index: number) => void;
   setSeeds: (seeds: ColorStop[]) => void;
-  generate: () => void;
+  generate: (options?: { ignoreLocks?: boolean; beforeSnapshot?: PaletteSnapshot }) => void;
+  generateFromExtractedColor: (seed: ColorStop, harmony: HarmonyMode) => void;
   undo: () => void;
   toggleLock: (index: number) => void;
   editSlotColor: (index: number, color: ColorStop) => void;

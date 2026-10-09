@@ -123,7 +123,7 @@ export default function ThemeGeneratorView() {
 
   if (!slots.length) {
     return (
-      <div className='min-h-0 flex-1 overflow-auto p-6'>
+      <div className='tool-panel-space min-h-0 flex-1 overflow-auto'>
         <div className='mb-5'>
           <h2>Theme Generator</h2>
         </div>
@@ -150,7 +150,7 @@ export default function ThemeGeneratorView() {
         title='Theme Generator'
         description='Palette-derived surfaces, semantic colors and light/dark theme exports.'
       />
-      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border p-4'>
+      <div className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border'>
         <div className='flex min-w-0 flex-wrap items-center gap-3'>
           <div className='flex flex-col gap-1'>
             <span className={TYPE.label}>Source palette</span>
@@ -193,7 +193,7 @@ export default function ThemeGeneratorView() {
         </div>
       </div>
       <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto @4xl/theme:grid-cols-[minmax(0,1fr)_22rem] @4xl/theme:grid-rows-[minmax(0,1fr)] @4xl/theme:overflow-hidden @7xl/theme:grid-cols-[minmax(0,1fr)_32rem]'>
-        <section className='@container/stage flex min-h-0 min-w-0 flex-col gap-4 p-4 @4xl/theme:overflow-auto @4xl/theme:border-r @4xl/theme:border-border'>
+        <section className='tool-panel-space tool-panel-stack @container/stage flex min-h-0 min-w-0 flex-col @4xl/theme:overflow-auto @4xl/theme:border-r @4xl/theme:border-border'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-3'>
             <span className={TYPE.label}>Live preview</span>
             <ToolSegments
@@ -242,7 +242,7 @@ export default function ThemeGeneratorView() {
             ))}
           </div>
         </section>
-        <aside className='flex min-h-0 min-w-0 flex-col gap-4 border-t border-border p-4 @4xl/theme:border-t-0'>
+        <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col border-t border-border @4xl/theme:border-t-0'>
           <div className='flex shrink-0 items-center justify-between gap-2'>
             <span className={TYPE.label}>Theme inspector</span>
             <span className={TYPE.mono}>

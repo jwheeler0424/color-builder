@@ -273,15 +273,19 @@ export const useChromaStore = create<ChromaStore>()(
           return { slots: next };
         });
       },
-      generate: () => {
+      generate: (options) => {
         generationController?.abort();
         const controller = new AbortController();
         generationController = controller;
         const current = get();
         const signature = generationSignature(current);
-        const locked = current.slots.flatMap((slot, index) =>
-          slot.locked && index < current.count ? [{ index, color: stopToColor(slot.color) }] : [],
-        );
+        const locked = options?.ignoreLocks
+          ? []
+          : current.slots.flatMap((slot, index) =>
+              slot.locked && index < current.count
+                ? [{ index, color: stopToColor(slot.color) }]
+                : [],
+            );
         set((state) => {
           state.generationPending = true;
           state.generationError = null;
@@ -311,22 +315,23 @@ export const useChromaStore = create<ChromaStore>()(
               state.history = castDraft([...state.history, state.slots.map(cloneSlot)].slice(-25));
               state.paletteSnapshots = castDraft(
                 [
-                  makeSnapshot(state.slots, state.mode, 'Before generate'),
+                  options?.beforeSnapshot ??
+                    makeSnapshot(state.slots, state.mode, 'Before generate'),
                   ...state.paletteSnapshots,
                 ].slice(0, 50),
               );
               const seedCount = state.seedMode === 'pin' ? state.seeds.length : 0;
               let pinned = 0;
               state.slots = castDraft(
-                values.map((value, index) =>
-                  state.slots[index]?.locked
-                    ? cloneSlot(state.slots[index])
-                    : {
-                        id: state.slots[index]?.id ?? crypto.randomUUID(),
-                        color: colorToStop(value),
-                        locked: pinned++ < seedCount,
-                      },
-                ),
+                values.map((value, index) => {
+                  if (!options?.ignoreLocks && state.slots[index]?.locked)
+                    return cloneSlot(state.slots[index]);
+                  return {
+                    id: state.slots[index]?.id ?? crypto.randomUUID(),
+                    color: colorToStop(value),
+                    locked: pinned++ < seedCount,
+                  };
+                }),
               );
               state.utilityColors = castDraft(
                 mergeUtilityLocks(state.slots, state.utilityColors, state.utilityLocks),
@@ -343,6 +348,16 @@ export const useChromaStore = create<ChromaStore>()(
                 error instanceof Error ? error.message : 'Palette generation failed.';
             });
           });
+      },
+      generateFromExtractedColor: (seed, harmony) => {
+        const current = get();
+        const beforeSnapshot = makeSnapshot(current.slots, current.mode, 'Before image harmony');
+        set((state) => {
+          state.mode = harmony;
+          state.seedMode = 'pin';
+          state.seeds = [castDraft(seed)];
+        });
+        get().generate({ ignoreLocks: true, beforeSnapshot });
       },
 
       undo: () =>

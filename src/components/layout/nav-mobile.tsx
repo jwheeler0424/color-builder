@@ -4,7 +4,7 @@
  * Mobile bottom tab bar with center Generate FAB.
  * Follows iOS Human Interface Guidelines and Material Design 3 bottom nav spec.
  *
- * 5 items: Create · Analyze · [⟳ FAB] · Build · Export
+ * 5 items: Palette · Analyze · [⟳ FAB] · Build · Export
  * The center Generate FAB is elevated (shadow, primary color).
  *
  * Safe area: padding-bottom uses env(safe-area-inset-bottom) for iPhone home bar.

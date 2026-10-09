@@ -122,7 +122,7 @@ export function ToolSegments<Value extends string>({
 
 export function ViewHeader({ title, description }: { title: string; description: string }) {
   return (
-    <div className='shrink-0 px-6 pt-5 pb-3'>
+    <div className='tool-page-header shrink-0'>
       <h2 className='font-display text-xl font-bold'>{title}</h2>
       <p className={`mt-0.5 ${TYPE.meta}`}>{description}</p>
     </div>

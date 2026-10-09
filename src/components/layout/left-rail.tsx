@@ -5,25 +5,25 @@
  * Contains:
  *   - Brand + collapse toggle
  *   - GenerateControls (count, harmony, seeds, temperature)
- *   - Saved palettes shortcut
  *   - Generate FAB / button
  *
  * Collapse state persists in localStorage.
  * At 240px expanded, 48px collapsed (icon-only mode).
  */
 
-import { useState, useEffect } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
-import { GenerateControls, GenerateFooter } from "./generate-controls";
-import { useChromaStore } from "@/hooks/use-chroma-store";
-import { cn } from "@/lib/utils";
-import { LogoIcon } from "../logo-icon";
+import { useState, useEffect } from 'react';
 
-const COLLAPSE_KEY = "chroma:rail-collapsed";
+import { useChromaStore } from '@/hooks/use-chroma-store';
+import { cn } from '@/lib/utils';
+
+import { LogoIcon } from '../logo-icon';
+import { GenerateControls, GenerateFooter } from './generate-controls';
+
+const COLLAPSE_KEY = 'chroma:rail-collapsed';
 
 function loadCollapsed(): boolean {
   try {
-    return localStorage.getItem(COLLAPSE_KEY) === "true";
+    return localStorage.getItem(COLLAPSE_KEY) === 'true';
   } catch {
     return false;
   }
@@ -42,7 +42,6 @@ interface LeftRailProps {
 
 export function LeftRail({ onEditSeed, className }: LeftRailProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const generate = useChromaStore((s) => s.generate);
 
   // Load persisted state after mount (avoids SSR mismatch)
@@ -60,28 +59,26 @@ export function LeftRail({ onEditSeed, className }: LeftRailProps) {
   return (
     <aside
       className={cn(
-        "flex flex-col bg-card border-0 shrink-0",
-        "transition-all duration-200 overflow-hidden",
-        collapsed ? "w-12" : "w-60",
+        'flex shrink-0 flex-col border-0 bg-card',
+        'overflow-hidden transition-all duration-200',
+        collapsed ? 'w-12' : 'w-60',
         className,
-      )}
-    >
+      )}>
       {/* ── Rail header ── */}
       <div
         className={cn(
-          "flex flex-wrap items-center border-b border-border shrink-0 h-12",
-          collapsed ? "justify-center px-0" : "justify-between px-4",
-        )}
-      >
+          'flex h-12 shrink-0 flex-wrap items-center border-b border-border',
+          collapsed ? 'justify-center px-0' : 'justify-between px-4',
+        )}>
         {/* Brand */}
         {!collapsed && (
-          <div className="flex items-center gap-3">
-            <LogoIcon className="size-5" />
-            <div className="flex gap-0.5">
-              <span className="font-display text-lg font-black tracking-tight text-foreground shrink-0">
+          <div className='flex items-center gap-3'>
+            <LogoIcon className='size-5' />
+            <div className='flex gap-0.5'>
+              <span className='shrink-0 font-display text-lg font-black tracking-tight text-foreground'>
                 Chroma
               </span>
-              <span className="text-lg font-display font-normal tracking-tight text-muted-foreground">
+              <span className='font-display text-lg font-normal tracking-tight text-muted-foreground'>
                 ELITE
               </span>
             </div>
@@ -89,66 +86,31 @@ export function LeftRail({ onEditSeed, className }: LeftRailProps) {
         )}
         <button
           onClick={toggle}
-          className="w-7 h-7 flex items-center justify-center rounded border border-transparent text-muted-foreground hover:text-foreground hover:border-border transition-colors cursor-pointer bg-transparent text-sm shrink-0"
-          title={collapsed ? "Expand rail" : "Collapse rail"}
-          aria-label={collapsed ? "Expand rail" : "Collapse rail"}
-        >
-          {collapsed ? "›" : "‹"}
+          className='flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded border border-transparent bg-transparent text-sm text-muted-foreground transition-colors hover:border-border hover:text-foreground'
+          title={collapsed ? 'Expand rail' : 'Collapse rail'}
+          aria-label={collapsed ? 'Expand rail' : 'Collapse rail'}>
+          {collapsed ? '›' : '‹'}
         </button>
       </div>
 
       {/* ── Collapsed icon rail ── */}
       {collapsed && (
-        <div className="flex flex-col items-center gap-1 py-3 flex-1">
+        <div className='flex flex-1 flex-col items-center gap-1 py-3'>
           {/* Generate shortcut */}
           <button
             onClick={generate}
-            className="w-8 h-8 flex items-center justify-center rounded border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors cursor-pointer bg-transparent text-base"
-            title="Generate (Space)"
-          >
+            className='flex h-8 w-8 cursor-pointer items-center justify-center rounded border border-border bg-transparent text-base text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
+            title='Generate (Space)'>
             ⟳
           </button>
-
-          {/* Navigate to saved */}
-          <Link
-            to="/saved"
-            className={cn(
-              "w-8 h-8 flex items-center justify-center rounded border text-sm no-underline transition-colors",
-              pathname === "/saved"
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground hover:border-border",
-            )}
-            title="Saved palettes"
-          >
-            🗂
-          </Link>
         </div>
       )}
 
       {/* ── Expanded controls ── */}
       {!collapsed && (
         <>
-          <div className="flex-1 overflow-y-auto [scrollbar-width:thin] border-r border-border">
+          <div className='flex-1 [scrollbar-width:thin] overflow-y-auto border-r border-border'>
             <GenerateControls onEditSeed={onEditSeed} />
-
-            {/* Saved palettes link */}
-            <div className="px-4 py-3 border-b border-border">
-              <p className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2 font-semibold">
-                Saved Palettes
-              </p>
-              <Link
-                to="/saved"
-                className={cn(
-                  "inline-flex items-center gap-2 w-full px-2 py-1.5 rounded border text-[11px] font-mono",
-                  "no-underline transition-colors",
-                  pathname === "/saved"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground hover:text-foreground hover:border-input",
-                )}
-              >
-                <span>🗂</span> Saved & History
-              </Link>
-            </div>
           </div>
 
           <GenerateFooter />

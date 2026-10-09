@@ -5,13 +5,16 @@
  * Sub-tabs:  [From Image] [Convert]
  */
 
-import { useNavigate } from '@tanstack/react-router';
 import { Check, Copy, Image as ImageIcon, LoaderCircle, Sprout, Upload } from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 
+import type { HarmonyMode } from '@/types';
+
 import ColorPickerModal from '@/components/modals/color-picker.modal';
+import { NativeSelect } from '@/components/ui/select';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCmykProfile } from '@/hooks/use-cmyk-profile';
+import { HARMONIES, MAX_SLOTS } from '@/lib/constants/chroma';
 import {
   extractImageColors,
   formatColor,
@@ -46,11 +49,23 @@ function TabBar({ active, setActive }: { active: Tab; setActive: (t: Tab) => voi
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function ImageTab() {
-  const { extractedColors, imgSrc, setExtracted, setSeeds, generate } = useChromaStore();
-  const navigate = useNavigate();
+  const {
+    extractedColors,
+    imgSrc,
+    mode,
+    count,
+    slots,
+    generationError,
+    generationPending,
+    setMode,
+    setCount,
+    setExtracted,
+    generateFromExtractedColor,
+  } = useChromaStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [primaryIndex, setPrimaryIndex] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const requestRef = useRef(0);
   useEffect(
@@ -74,6 +89,8 @@ function ImageTab() {
       if (request !== requestRef.current) return;
       const objectUrl = URL.createObjectURL(file);
       setExtracted(colors, objectUrl);
+      setPrimaryIndex(0);
+      if (colors[0]) generateFromExtractedColor(colors[0], mode);
       if (imgSrc?.startsWith('blob:')) URL.revokeObjectURL(imgSrc);
     } catch {
       if (request === requestRef.current) setError('Extraction failed. Try another image.');
@@ -82,24 +99,21 @@ function ImageTab() {
     }
   }
 
-  const useOne = (index: number) => {
-    const color = extractedColors[index];
-    if (!color) return;
-    setSeeds([color]);
-    generate();
-    void navigate({ to: '/palette' });
-  };
-
-  const useAll = () => {
-    setSeeds(extractedColors.slice(0, 5));
-    generate();
-    void navigate({ to: '/palette' });
+  const primaryColor = extractedColors[primaryIndex] ?? extractedColors[0];
+  const selectedHarmony = HARMONIES.find((harmony) => harmony.id === mode) ?? HARMONIES[0]!;
+  const generateHarmonyPalette = () => {
+    if (!primaryColor) return;
+    generateFromExtractedColor(primaryColor, mode);
   };
 
   return (
-    <div className='@container flex min-h-0 flex-1 flex-col overflow-auto'>
-      <div className='grid min-h-0 flex-1 grid-cols-1 @3xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]'>
-        <section className='flex min-h-0 min-w-0 flex-col gap-4 border-b border-border p-4 @3xl:border-r @3xl:border-b-0'>
+    <div className='@container/extract-view flex min-h-0 flex-1 flex-col overflow-auto'>
+      <div
+        data-extract-layout-grid
+        className='grid min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start'>
+        <section
+          data-extract-source
+          className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
             <span className={TYPE.label}>Source image</span>
             <Button variant='outline' size='xs' onClick={() => fileRef.current?.click()}>
@@ -121,7 +135,7 @@ function ImageTab() {
           />
           <div
             aria-label='Image drop zone'
-            className={`relative flex min-h-64 flex-1 items-center justify-center overflow-hidden rounded-md border bg-secondary transition-colors @3xl:min-h-40 ${dragOver ? 'border-primary ring-2 ring-primary/30' : 'border-border'}`}
+            className={`relative flex min-h-32 flex-1 items-center justify-center overflow-hidden rounded-md border bg-secondary transition-colors @min-[40rem]:min-h-40 @3xl:min-h-40 ${dragOver ? 'border-primary ring-2 ring-primary/30' : 'border-border'}`}
             onDragOver={(e) => {
               e.preventDefault();
               setDragOver(true);
@@ -136,7 +150,7 @@ function ImageTab() {
               <img
                 src={imgSrc}
                 alt='Source image'
-                className='absolute inset-0 h-full w-full object-contain'
+                className='relative max-h-32 max-w-full object-contain @min-[40rem]:max-h-full'
               />
             ) : (
               <div className='flex flex-col items-center gap-3 text-muted-foreground'>
@@ -163,57 +177,148 @@ function ImageTab() {
             </p>
           )}
         </section>
-        <section className='flex min-h-0 min-w-0 flex-col gap-3 p-4'>
+        <section className='tool-panel-space tool-panel-stack @container/extracted-colors flex min-h-0 min-w-0 flex-col'>
           <div className='flex shrink-0 items-center justify-between gap-2'>
             <span className={TYPE.label}>Extracted colors</span>
             <span className={TYPE.mono}>{extractedColors.length}</span>
           </div>
-          <div className='grid flex-1 auto-rows-fr'>
+          <div
+            data-extracted-colors-list
+            className='grid min-w-0 grid-cols-2 gap-2 @min-[32rem]/extracted-colors:grid-cols-3 @min-[32rem]/extracted-colors:gap-3'>
             {extractedColors.map((color, i) => {
               const hex = color.hex;
+              const value = color.value ?? parseColor(hex);
+              const name = lookupColorName(value, hex);
+              const isPrimary = primaryIndex === i;
               return (
-                <div
+                <button
                   key={i}
-                  className='flex min-h-12 min-w-0 items-center gap-3 border-b border-border py-1.5 last:border-b-0'>
-                  <div
-                    className='size-9 shrink-0 rounded-md border border-border'
-                    style={{
-                      background: color.css ?? hex,
-                    }}
-                  />
-                  <div className='flex min-w-0 flex-1 flex-col gap-1'>
-                    <div className={TYPE.mono}>{hex.toUpperCase()}</div>
-                    <div
-                      className={`truncate ${TYPE.title}`}
-                      title={lookupColorName(color.value ?? parseColor(hex), hex)}>
-                      {lookupColorName(color.value ?? parseColor(hex), hex)}
-                    </div>
-                  </div>
-                  <Button
-                    variant='ghost'
-                    size='icon-sm'
-                    disabled={loading || !!error}
-                    aria-label={`Use ${hex.toUpperCase()} as seed`}
-                    title='Use as seed'
-                    onClick={() => useOne(i)}>
-                    <Sprout className='size-3.5' />
-                  </Button>
-                </div>
+                  type='button'
+                  aria-label={`Select ${hex.toUpperCase()} as primary color`}
+                  aria-pressed={isPrimary}
+                  title={`${name} · ${hex.toUpperCase()}`}
+                  onClick={() => setPrimaryIndex(i)}
+                  className={`flex min-h-16 min-w-0 cursor-pointer flex-col overflow-hidden rounded-md border bg-card text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring @min-[20rem]/extracted-colors:min-h-20 @min-[32rem]/extracted-colors:min-h-24 @min-[52rem]/extracted-colors:min-h-28 ${isPrimary ? 'border-primary ring-2 ring-primary/60' : 'border-border hover:border-input'}`}>
+                  <span
+                    className='relative flex min-h-8 w-full flex-1 items-start justify-end p-1 @min-[32rem]/extracted-colors:min-h-10 @min-[52rem]/extracted-colors:min-h-12'
+                    style={{ background: color.css ?? hex }}>
+                    {isPrimary && (
+                      <span className='grid size-4 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground'>
+                        <Check className='size-3' />
+                      </span>
+                    )}
+                  </span>
+                  <span className='flex min-w-0 flex-col gap-0.5 border-t border-border bg-card px-1.5 py-1.5 @min-[32rem]/extracted-colors:px-2 @min-[32rem]/extracted-colors:py-2'>
+                    <span className='truncate font-mono text-[9px] leading-none text-muted-foreground @min-[32rem]/extracted-colors:text-[10px]'>
+                      {hex.toUpperCase()}
+                    </span>
+                    <span className='truncate text-[10px] leading-snug font-semibold text-card-foreground @min-[32rem]/extracted-colors:text-xs'>
+                      {name}
+                    </span>
+                  </span>
+                </button>
               );
             })}
             {!extractedColors.length && (
-              <div className={`flex min-h-32 items-center justify-center ${TYPE.meta}`}>
+              <div
+                className={`col-span-full flex min-h-32 items-center justify-center ${TYPE.meta}`}>
                 No extracted colors
               </div>
             )}
           </div>
-          <Button
-            size='sm'
-            disabled={loading || !!error || !extractedColors.length}
-            onClick={useAll}>
-            <Sprout className='size-3.5' />
-            Use {Math.min(5, extractedColors.length)} seeds
-          </Button>
+          <section
+            data-palette-generation
+            className='flex shrink-0 flex-col gap-3 border-t border-border pt-3'>
+            <div className='flex items-center justify-between gap-2'>
+              <span className={TYPE.label}>Generate from image</span>
+              <span className={TYPE.mono}>{count} colors</span>
+            </div>
+            <div className='flex flex-col gap-1'>
+              <label
+                htmlFor='extract-palette-size'
+                className='flex items-center justify-between gap-2 text-xs font-medium'>
+                <span>Palette size</span>
+                <span className='font-mono text-muted-foreground'>{count}</span>
+              </label>
+              <input
+                id='extract-palette-size'
+                aria-label='Palette size'
+                type='range'
+                min={4}
+                max={MAX_SLOTS}
+                value={count}
+                onChange={(event) => setCount(Number(event.target.value))}
+                className='w-full accent-primary'
+              />
+            </div>
+            <div className='grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2'>
+              <NativeSelect
+                aria-label='Palette harmony'
+                value={mode}
+                onChange={(event) => setMode(event.target.value as HarmonyMode)}
+                title='Harmony'
+                className='h-8 pr-10 pl-2 text-xs @min-[32rem]/extracted-colors:h-9'>
+                {HARMONIES.map((harmony) => (
+                  <option key={harmony.id} value={harmony.id}>
+                    {harmony.label}
+                  </option>
+                ))}
+              </NativeSelect>
+              <Button
+                size='sm'
+                disabled={loading || generationPending || !!error || !primaryColor}
+                onClick={generateHarmonyPalette}>
+                {generationPending ? (
+                  <LoaderCircle className='size-3.5 animate-spin' />
+                ) : (
+                  <Sprout className='size-3.5' />
+                )}
+                {generationPending ? 'Generating...' : 'Generate palette'}
+              </Button>
+            </div>
+            <p className='text-[11px] leading-snug text-muted-foreground'>{selectedHarmony.desc}</p>
+            {extractedColors.length > 0 && (
+              <div className='flex flex-col gap-2' aria-live='polite'>
+                <div className='flex items-center justify-between gap-2'>
+                  <span className={TYPE.label}>Generated palette</span>
+                  {generationPending && (
+                    <span
+                      className='flex items-center gap-1.5 text-[10px] text-muted-foreground'
+                      role='status'>
+                      <LoaderCircle className='size-3 animate-spin' />
+                      Updating
+                    </span>
+                  )}
+                </div>
+                <div
+                  role='list'
+                  aria-label='Generated palette swatches'
+                  className='grid grid-cols-4 gap-1.5'>
+                  {slots.slice(0, count).map((slot, index) => (
+                    <div
+                      key={slot.id}
+                      role='listitem'
+                      aria-label={`Color ${index + 1}: ${slot.color.hex.toUpperCase()}`}
+                      title={`${index + 1}. ${slot.color.hex.toUpperCase()}`}
+                      className='min-w-0 overflow-hidden rounded border border-border bg-card'>
+                      <span
+                        className='block h-7 w-full @min-[32rem]/extracted-colors:h-8'
+                        style={{ background: slot.color.css ?? slot.color.hex }}
+                      />
+                      <span className='block truncate px-1 py-1 font-mono text-[8px] leading-none text-muted-foreground'>
+                        {slot.color.hex.toUpperCase()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {generationError && (
+              <p role='alert' className='text-xs text-destructive'>
+                {generationError}
+              </p>
+            )}
+          </section>
         </section>
       </div>
     </div>
@@ -291,7 +396,7 @@ function ConvertTab() {
     <>
       <div className='@container flex min-h-0 flex-1 flex-col overflow-auto'>
         <div className='grid min-h-0 flex-1 grid-cols-1 @3xl:grid-cols-[16rem_minmax(0,1fr)]'>
-          <section className='flex min-w-0 flex-col gap-4 border-b border-border p-4 @3xl:border-r @3xl:border-b-0'>
+          <section className='tool-panel-space tool-panel-stack flex min-w-0 flex-col border-b border-border @3xl:border-r @3xl:border-b-0'>
             <label htmlFor='convert-source' className={TYPE.label}>
               Source color
             </label>
@@ -337,7 +442,7 @@ function ConvertTab() {
               ))}
             </div>
           </section>
-          <section className='grid min-w-0 auto-rows-fr px-4 @3xl:min-h-0'>
+          <section className='tool-inline-space grid min-w-0 auto-rows-fr @3xl:min-h-0'>
             <ConvCard disabled={!valid} label='HEX' value={hex} />
             <ConvCard
               disabled={!valid}

@@ -115,7 +115,7 @@ export default function ColorMixer() {
         description='Two colors, seven blend steps and three interpolation spaces.'
       />
       <div className='flex min-h-0 flex-1 flex-col overflow-auto border-t border-border'>
-        <div className='grid shrink-0 grid-cols-1 items-center gap-4 border-b border-border p-4 @xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'>
+        <div className='tool-panel-space grid shrink-0 grid-cols-1 items-center gap-4 border-b border-border @xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'>
           {[
             { label: 'Color A', value: colorA, set: setColorA },
             { label: 'Color B', value: colorB, set: setColorB },
@@ -181,7 +181,7 @@ export default function ColorMixer() {
           </Button>
         </div>
         <div className='grid grid-cols-1 @4xl:min-h-0 @4xl:flex-1 @4xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]'>
-          <section className='flex min-h-0 min-w-0 flex-col gap-4 border-b border-border p-4 @4xl:border-r @4xl:border-b-0'>
+          <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col border-b border-border @4xl:border-r @4xl:border-b-0'>
             <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
               <span className={TYPE.label}>Blend</span>
               <ToolSegments
@@ -233,7 +233,7 @@ export default function ColorMixer() {
               <span className={TYPE.mono}>{blendRow[3].hex.toUpperCase()}</span>
             </div>
           </section>
-          <section className='flex min-w-0 flex-col gap-4 p-4'>
+          <section className='tool-panel-space tool-panel-stack flex min-w-0 flex-col'>
             <div className={TYPE.label}>Space comparison</div>
             <div className='grid flex-1 grid-rows-3 gap-4'>
               {allSpaces.map((space) => (
@@ -264,7 +264,7 @@ export default function ColorMixer() {
             </div>
           </section>
         </div>
-        <div className='flex shrink-0 flex-wrap items-center gap-2 border-t border-border px-4 py-3'>
+        <div className='tool-inline-space flex shrink-0 flex-wrap items-center gap-2 border-t border-border py-3'>
           <Button size='sm' onClick={useMixAsSeeds}>
             <Sprout className='size-3.5' />
             Use blend as seeds

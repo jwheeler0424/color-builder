@@ -143,7 +143,7 @@ function SingleColorTab() {
     <>
       <div className='@container flex min-h-0 flex-1 flex-col overflow-auto @4xl:overflow-hidden'>
         <div className='grid min-w-0 grid-cols-1 @4xl:min-h-0 @4xl:flex-1 @4xl:grid-cols-[minmax(0,1fr)_18rem]'>
-          <section className='@container/shades flex min-h-0 min-w-0 flex-col gap-4 p-4 @4xl:border-r @4xl:border-border'>
+          <section className='tool-panel-space tool-panel-stack @container/shades flex min-h-0 min-w-0 flex-col @4xl:border-r @4xl:border-border'>
             <div className='flex shrink-0 flex-wrap items-center justify-between gap-3'>
               <div className='flex min-w-0 items-center gap-3'>
                 <button
@@ -250,7 +250,7 @@ function SingleColorTab() {
               </div>
             </div>
           </section>
-          <aside className='flex min-h-0 min-w-0 flex-col gap-4 border-t border-border p-4 @4xl:border-t-0'>
+          <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col border-t border-border @4xl:border-t-0'>
             <div className='flex shrink-0 items-center justify-between gap-2'>
               <span className={TYPE.label}>Export scale</span>
               <Button
@@ -396,7 +396,7 @@ function FullPaletteTab() {
 
   if (!slots.length) {
     return (
-      <div className='flex-1 p-6'>
+      <div className='tool-panel-space flex-1'>
         <p className='text-[12px] text-muted-foreground'>Generate a palette first.</p>
       </div>
     );
@@ -405,7 +405,7 @@ function FullPaletteTab() {
   return (
     <div className='@container flex min-h-0 flex-1 flex-col overflow-auto @4xl:overflow-hidden'>
       <div className='grid grid-cols-1 @4xl:min-h-0 @4xl:flex-1 @4xl:grid-cols-[minmax(0,1fr)_18rem]'>
-        <section className='flex min-h-0 min-w-0 flex-col gap-4 p-4 @4xl:border-r @4xl:border-border'>
+        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col @4xl:border-r @4xl:border-border'>
           <div className='flex shrink-0 items-center justify-between gap-3'>
             <span className={TYPE.label}>Palette scales</span>
             <span className={TYPE.mono}>
@@ -508,7 +508,7 @@ function FullPaletteTab() {
             </div>
           )}
         </section>
-        <aside className='flex min-h-0 min-w-0 flex-col gap-4 border-t border-border p-4 @4xl:border-t-0'>
+        <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col border-t border-border @4xl:border-t-0'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
             <span className={TYPE.label}>Export all scales</span>
             <Button

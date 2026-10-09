@@ -27,6 +27,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import type { SpaceId, DisplayGamutId } from '@/lib/engine/browser';
 import type { HarmonyMode, ColorStop } from '@/types';
 
+import { NativeSelect } from '@/components/ui/select';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { HARMONIES, MAX_SLOTS, THEMES } from '@/lib/constants/chroma';
 import { hexToStop, renderColor, stopToColor } from '@/lib/engine/browser';
@@ -231,9 +232,9 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
       {show('colors') && (
         <Section>
           <SectionLabel>Color Space</SectionLabel>
-          <select
+          <NativeSelect
             aria-label='Generation color space'
-            className='w-full rounded border border-border bg-secondary px-2 py-1.5 text-xs'
+            className='text-xs'
             value={paletteSpace}
             onChange={(event) => {
               setPaletteSpace(event.target.value as SpaceId);
@@ -244,15 +245,16 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
             <option value='cielab'>CIELAB</option>
             <option value='hsl'>HSL</option>
             <option value='hsv'>HSV</option>
-          </select>
+          </NativeSelect>
           <label
             className='mt-3 block text-[10px] font-semibold text-muted-foreground'
             htmlFor={`display-gamut-${section ?? 'all'}`}>
             Display Gamut
           </label>
-          <select
+          <NativeSelect
+            id={`display-gamut-${section ?? 'all'}`}
             aria-label='Display gamut'
-            className='mt-1 w-full rounded border border-border bg-secondary px-2 py-1.5 text-xs'
+            className='mt-1 text-xs'
             value={displayGamut}
             onChange={(event) => {
               setDisplayGamut(event.target.value as DisplayGamutId);
@@ -261,7 +263,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
             <option value='srgb'>sRGB</option>
             <option value='p3'>Display P3</option>
             <option value='rec2020'>Rec.2020</option>
-          </select>
+          </NativeSelect>
         </Section>
       )}
       {/* ── Colors count ── */}

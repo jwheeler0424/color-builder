@@ -47,7 +47,7 @@ export function PaletteStudioPanel({ onEditSlot }: { onEditSlot?: (index: number
   const { generate, undo, openModal, setSaveName, slots } = useChromaStore();
 
   return (
-    <div className='flex flex-col gap-4 p-5'>
+    <div className='tool-panel-space tool-panel-stack flex flex-col'>
       <div>
         <p className='mb-1 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
           Palette

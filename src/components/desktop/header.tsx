@@ -60,7 +60,7 @@ export function MainHeader({ className }: MainHeaderProps) {
       </div>
       <section className='flex h-14 items-stretch justify-between gap-4 border-b border-border/30 px-4'>
         <SectionToolTabs className='-ml-2' />
-        <nav className='flex shrink-0 items-center justify-end gap-4'>
+        <nav className='ml-auto flex shrink-0 items-center justify-end gap-4'>
           <main className='flex h-full items-center gap-4'>
             <SearchButton onClick={() => openCommandPalette(true)} />
             {/* Action buttons */}

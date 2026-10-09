@@ -112,7 +112,7 @@ export default function UtilityColorsView() {
         title='Utility Colors'
         description='Semantic role colors and theme-aware state surfaces.'
       />
-      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border p-4'>
+      <div className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border'>
         <div className='flex flex-col gap-1'>
           <span className={TYPE.label}>Palette-derived roles</span>
           <span className={TYPE.meta}>
@@ -137,7 +137,7 @@ export default function UtilityColorsView() {
         </Button>
       </div>
       <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto @4xl/utilities:grid-cols-[10rem_minmax(0,1fr)_17rem] @4xl/utilities:grid-rows-[minmax(0,1fr)] @4xl/utilities:overflow-hidden @7xl/utilities:grid-cols-[11rem_minmax(0,1fr)_22rem]'>
-        <aside className='flex min-h-0 min-w-0 flex-col gap-3 border-b border-border p-3 @4xl/utilities:border-r @4xl/utilities:border-b-0'>
+        <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col border-b border-border @4xl/utilities:border-r @4xl/utilities:border-b-0'>
           <span className={`hidden ${TYPE.label} @4xl/utilities:block`}>Roles</span>
           <div
             role='group'
@@ -182,7 +182,7 @@ export default function UtilityColorsView() {
           </div>
           {!slots.length && <p className={TYPE.meta}>Default utility colors</p>}
         </aside>
-        <section className='@container/editor flex min-h-0 min-w-0 flex-col gap-4 p-4 @4xl/utilities:overflow-auto @4xl/utilities:border-r @4xl/utilities:border-border'>
+        <section className='tool-panel-space tool-panel-stack @container/editor flex min-h-0 min-w-0 flex-col @4xl/utilities:overflow-auto @4xl/utilities:border-r @4xl/utilities:border-border'>
           <div className='flex shrink-0 items-start justify-between gap-3'>
             <div className='flex min-w-0 items-center gap-3'>
               <span
