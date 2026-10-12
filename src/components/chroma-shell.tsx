@@ -68,6 +68,7 @@ export function ChromaShell() {
   });
   useRegisterHotkey({
     key: '?',
+    shift: true,
     label: 'Keyboard shortcuts',
     group: 'App',
     handler: () => openModal('shortcuts'),

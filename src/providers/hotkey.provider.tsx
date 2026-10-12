@@ -74,8 +74,10 @@ export function HotkeyProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName;
-      const isEditable = (e.target as HTMLElement).isContentEditable;
+      const target = e.target as HTMLElement;
+      const tag = target.tagName;
+      const isEditable =
+        tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
       const k = keyStr({
         key: e.key.toLowerCase() === ' ' ? 'space' : e.key.toLowerCase(),
         ctrl: e.ctrlKey || e.metaKey,
@@ -84,12 +86,7 @@ export function HotkeyProvider({ children }: { children: ReactNode }) {
 
       const def = registry.current.get(k);
       if (!def) return;
-      if (
-        isEditable &&
-        !def.allowInInput &&
-        (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || isEditable)
-      )
-        return;
+      if (isEditable && !def.allowInInput) return;
 
       e.preventDefault();
       def.handler();
@@ -118,7 +115,7 @@ export function useRegisterHotkey(def: HotkeyDef) {
     };
     return ctx.register(stableDef);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [def.key, def.ctrl, def.shift, def.label, def.group]);
+  }, [def.key, def.ctrl, def.shift, def.label, def.group, def.allowInInput]);
 }
 
 // ─── Hook: read the full hotkey list (for the shortcuts modal) ────────────────
