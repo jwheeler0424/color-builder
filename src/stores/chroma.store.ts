@@ -11,6 +11,7 @@ import type {
   HarmonyMode,
   BrandColor,
   ColorStop,
+  ThemePaletteVariant,
 } from '@/types';
 
 import { MAX_SLOTS } from '@/lib/constants/chroma';
@@ -108,6 +109,28 @@ function sanitizeSlots(slots: unknown[]): PaletteSlot[] {
   });
 }
 
+function sanitizeThemeVariants(value: unknown): Record<string, ThemePaletteVariant> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const variants: Record<string, ThemePaletteVariant> = {};
+  for (const [slotId, raw] of Object.entries(value)) {
+    if (!raw || typeof raw !== 'object') continue;
+    const entry = raw as Record<string, unknown>;
+    if (typeof entry.sourceFingerprint !== 'string') continue;
+    const variant: ThemePaletteVariant = { sourceFingerprint: entry.sourceFingerprint };
+    for (const mode of ['light', 'dark'] as const) {
+      const stop = entry[mode];
+      if (!stop || typeof stop !== 'object') continue;
+      try {
+        variant[mode] = colorToStop(stopToColor(stop as ColorStop));
+      } catch {
+        continue;
+      }
+    }
+    if (variant.light || variant.dark) variants[slotId] = variant;
+  }
+  return variants;
+}
+
 // ─── Snapshot helper ──────────────────────────────────────────────────────────
 
 function makeSnapshot(slots: PaletteSlot[], mode: HarmonyMode, label: string): PaletteSnapshot {
@@ -155,6 +178,7 @@ function makeInitialState(): ChromaState {
     seeds: [],
     history: [],
     paletteSnapshots: [],
+    themeVariants: {},
     recentColors: [],
     hoverSlot: null,
     gradient: defaultGradient,
@@ -407,6 +431,17 @@ export const useChromaStore = create<ChromaStore>()(
         set((s) => {
           s.slots[index].name = name;
         }),
+      setThemeVariant: (slotId, sourceFingerprint, mode, color) =>
+        set((s) => {
+          let variant = s.themeVariants[slotId];
+          if (!variant || variant.sourceFingerprint !== sourceFingerprint) {
+            variant = { sourceFingerprint };
+            s.themeVariants[slotId] = variant;
+          }
+          if (color) variant[mode] = castDraft(color);
+          else delete variant[mode];
+          if (!variant.light && !variant.dark) delete s.themeVariants[slotId];
+        }),
 
       loadPalette: (slots, mode, count) =>
         set((s) => {
@@ -592,11 +627,13 @@ export const useChromaStore = create<ChromaStore>()(
         utilityLocks: state.utilityLocks,
         paletteSnapshots: state.paletteSnapshots,
         brandColors: state.brandColors,
+        themeVariants: state.themeVariants,
       }),
       merge: (persisted, current) => {
         if (decodeUrl()) return current;
         const p = persisted as Partial<ChromaStore>;
         const slots = p.slots ? sanitizeSlots(p.slots as unknown[]) : current.slots;
+        const themeVariants = sanitizeThemeVariants(p.themeVariants);
         const utilityColors = generateUtilityColors(paletteValues(slots));
         const utilityLocks = Object.fromEntries(
           UTILITY_ROLES.map((role) => [role, false]),
@@ -624,10 +661,10 @@ export const useChromaStore = create<ChromaStore>()(
         const seeds = sanitizeSlots((p.seeds ?? current.seeds).map((color) => ({ color }))).map(
           (slot) => slot.color,
         );
-        return { ...current, ...p, slots, seeds, utilityColors, utilityLocks };
+        return { ...current, ...p, slots, seeds, utilityColors, utilityLocks, themeVariants };
       },
       migrate: (persisted) => persisted as Partial<ChromaStore>,
-      version: 5,
+      version: 6,
       skipHydration: true,
     },
   ),

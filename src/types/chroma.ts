@@ -155,7 +155,13 @@ export interface ThemeTokenSet {
       subtleDark: string;
     }
   >;
-  palette: { name: string; hex: string }[];
+  palette: { name: string; hex: string; light?: string; dark?: string }[];
+}
+
+export interface ThemePaletteVariant {
+  sourceFingerprint: string;
+  light?: ColorStop;
+  dark?: ColorStop;
 }
 
 // ─── Mixer ────────────────────────────────────────────────────────────────────
@@ -190,6 +196,7 @@ export interface ChromaState {
   history: PaletteSlot[][];
   hoverSlot: number | null;
   paletteSnapshots: PaletteSnapshot[];
+  themeVariants: Record<string, ThemePaletteVariant>;
   recentColors: string[];
   gradient: GradientState;
   seedMode: 'influence' | 'pin';
@@ -256,6 +263,12 @@ export interface ChromaActions {
   addBrandColor: (hex: string, label: string) => void;
   removeBrandColor: (id: string) => void;
   updateBrandColor: (id: string, patch: Partial<Omit<BrandColor, 'id'>>) => void;
+  setThemeVariant: (
+    slotId: string,
+    sourceFingerprint: string,
+    mode: 'light' | 'dark',
+    color?: ColorStop,
+  ) => void;
 }
 
 export type ChromaStore = ChromaState & ChromaActions;

@@ -18,6 +18,7 @@ export * from './chart-data.ts';
 export * from './palette-share.ts';
 export * from './cmyk-profile.ts';
 export * from './theme.ts';
+export * from './theme-optimizer.ts';
 export * from './theme-export.ts';
 export * from './svg-export.ts';
 export * from './extract.ts';

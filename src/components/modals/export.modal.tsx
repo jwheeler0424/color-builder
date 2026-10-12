@@ -14,6 +14,7 @@ import {
   semanticSlotNames,
 } from '@/lib/engine/browser';
 import { lookupColorName } from '@/lib/engine/colors/color-names';
+import { applyThemePaletteVariants } from '@/lib/utils/theme-variants';
 import { useChromaStore } from '@/stores/chroma.store';
 
 import { Button } from '../ui/button';
@@ -44,6 +45,7 @@ export function ExportModal() {
   const modal = useChromaStore((s) => s.modal);
   const slots = useChromaStore((s) => s.slots);
   const utilityColors = useChromaStore((s) => s.utilityColors);
+  const themeVariants = useChromaStore((s) => s.themeVariants);
   const exportTab = useChromaStore((s) => s.exportTab);
   const setExportTab = useChromaStore((s) => s.setExportTab);
   const closeModal = useChromaStore((s) => s.closeModal);
@@ -57,7 +59,11 @@ export function ExportModal() {
 
   const [copied, setCopied] = useState(false);
 
-  const tokens = useMemo(() => deriveThemeTokens(palette, utilityColors), [palette, utilityColors]);
+  const tokens = useMemo(
+    () =>
+      applyThemePaletteVariants(deriveThemeTokens(palette, utilityColors), slots, themeVariants),
+    [palette, utilityColors, slots, themeVariants],
+  );
 
   const svgContent = useMemo(
     () =>

@@ -155,6 +155,12 @@ export {
   type ContrastFix,
   type WcagLevel,
 } from './contrast.ts';
+export {
+  recommendThemeColor,
+  themeColorFingerprint,
+  type ThemeColorRecommendation,
+  type ThemeContrastTarget,
+} from './theme-optimizer.ts';
 export { mix, mixColor, type MixSpace, type MixOptions } from './mix.ts';
 export {
   applyEasing,

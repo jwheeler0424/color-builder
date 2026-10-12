@@ -45,6 +45,7 @@ import { Route as ChromaBuildIndexRouteImport } from './routes/_chroma/build/ind
 import { Route as ChromaBuildExtractRouteImport } from './routes/_chroma/build/extract'
 import { Route as ChromaBuildGradientRouteImport } from './routes/_chroma/build/gradient'
 import { Route as ChromaBuildMixerRouteImport } from './routes/_chroma/build/mixer'
+import { Route as ChromaBuildThemeRouteImport } from './routes/_chroma/build/theme'
 import { Route as ChromaExportIndexRouteImport } from './routes/_chroma/export/index'
 import { Route as ChromaExportDesignsystemRouteImport } from './routes/_chroma/export/designsystem'
 import { Route as ChromaExportScaleRouteImport } from './routes/_chroma/export/scale'
@@ -231,6 +232,11 @@ const ChromaBuildMixerRoute = ChromaBuildMixerRouteImport.update({
   path: '/mixer',
   getParentRoute: () => ChromaBuildRoute,
 } as any)
+const ChromaBuildThemeRoute = ChromaBuildThemeRouteImport.update({
+  id: '/theme',
+  path: '/theme',
+  getParentRoute: () => ChromaBuildRoute,
+} as any)
 const ChromaExportIndexRoute = ChromaExportIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -292,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/build/extract': typeof ChromaBuildExtractRoute
   '/build/gradient': typeof ChromaBuildGradientRoute
   '/build/mixer': typeof ChromaBuildMixerRoute
+  '/build/theme': typeof ChromaBuildThemeRoute
   '/export/designsystem': typeof ChromaExportDesignsystemRoute
   '/export/scale': typeof ChromaExportScaleRoute
   '/export/theme': typeof ChromaExportThemeRoute
@@ -331,6 +338,7 @@ export interface FileRoutesByTo {
   '/build/extract': typeof ChromaBuildExtractRoute
   '/build/gradient': typeof ChromaBuildGradientRoute
   '/build/mixer': typeof ChromaBuildMixerRoute
+  '/build/theme': typeof ChromaBuildThemeRoute
   '/export/designsystem': typeof ChromaExportDesignsystemRoute
   '/export/scale': typeof ChromaExportScaleRoute
   '/export/theme': typeof ChromaExportThemeRoute
@@ -375,6 +383,7 @@ export interface FileRoutesById {
   '/_chroma/build/extract': typeof ChromaBuildExtractRoute
   '/_chroma/build/gradient': typeof ChromaBuildGradientRoute
   '/_chroma/build/mixer': typeof ChromaBuildMixerRoute
+  '/_chroma/build/theme': typeof ChromaBuildThemeRoute
   '/_chroma/export/designsystem': typeof ChromaExportDesignsystemRoute
   '/_chroma/export/scale': typeof ChromaExportScaleRoute
   '/_chroma/export/theme': typeof ChromaExportThemeRoute
@@ -419,6 +428,7 @@ export interface FileRouteTypes {
     | '/build/extract'
     | '/build/gradient'
     | '/build/mixer'
+    | '/build/theme'
     | '/export/designsystem'
     | '/export/scale'
     | '/export/theme'
@@ -458,6 +468,7 @@ export interface FileRouteTypes {
     | '/build/extract'
     | '/build/gradient'
     | '/build/mixer'
+    | '/build/theme'
     | '/export/designsystem'
     | '/export/scale'
     | '/export/theme'
@@ -501,6 +512,7 @@ export interface FileRouteTypes {
     | '/_chroma/build/extract'
     | '/_chroma/build/gradient'
     | '/_chroma/build/mixer'
+    | '/_chroma/build/theme'
     | '/_chroma/export/designsystem'
     | '/_chroma/export/scale'
     | '/_chroma/export/theme'
@@ -770,6 +782,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChromaBuildMixerRouteImport
       parentRoute: typeof ChromaBuildRoute
     }
+    '/_chroma/build/theme': {
+      id: '/_chroma/build/theme'
+      path: '/theme'
+      fullPath: '/build/theme'
+      preLoaderRoute: typeof ChromaBuildThemeRouteImport
+      parentRoute: typeof ChromaBuildRoute
+    }
     '/_chroma/export/': {
       id: '/_chroma/export/'
       path: '/'
@@ -832,6 +851,7 @@ interface ChromaBuildRouteChildren {
   ChromaBuildExtractRoute: typeof ChromaBuildExtractRoute
   ChromaBuildGradientRoute: typeof ChromaBuildGradientRoute
   ChromaBuildMixerRoute: typeof ChromaBuildMixerRoute
+  ChromaBuildThemeRoute: typeof ChromaBuildThemeRoute
   ChromaBuildIndexRoute: typeof ChromaBuildIndexRoute
 }
 
@@ -839,6 +859,7 @@ const ChromaBuildRouteChildren: ChromaBuildRouteChildren = {
   ChromaBuildExtractRoute: ChromaBuildExtractRoute,
   ChromaBuildGradientRoute: ChromaBuildGradientRoute,
   ChromaBuildMixerRoute: ChromaBuildMixerRoute,
+  ChromaBuildThemeRoute: ChromaBuildThemeRoute,
   ChromaBuildIndexRoute: ChromaBuildIndexRoute,
 }
 

@@ -100,6 +100,14 @@ const TOOLS: CommandItem[] = [
   },
   // Build — merged views
   {
+    id: 'theme-optimizer',
+    label: 'Theme optimizer',
+    section: 'Build',
+    icon: IconPalette,
+    route: '/build/theme',
+    keywords: 'light dark contrast accessibility optimize palette recommendations',
+  },
+  {
     id: 'mixer',
     label: 'Color mixer',
     section: 'Build',

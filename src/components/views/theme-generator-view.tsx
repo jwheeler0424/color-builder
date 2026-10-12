@@ -19,6 +19,7 @@ import {
   parseColor,
   semanticSlotNames,
 } from '@/lib/engine/browser';
+import { applyThemePaletteVariants } from '@/lib/utils/theme-variants';
 
 import HexInput from '../common/hex-input';
 import {
@@ -44,7 +45,7 @@ const TAB_LABELS: Record<ThemeTab, string> = {
 // ─── Main View ────────────────────────────────────────────────────────────────
 
 export default function ThemeGeneratorView() {
-  const { slots, utilityColors } = useChromaStore();
+  const { slots, utilityColors, themeVariants } = useChromaStore();
   const [activeTab, setActiveTab] = useState<ThemeTab>('css');
   const [previewMode, setPreviewMode] = useState<PreviewMode | 'split'>('light');
   const [copied, setCopied] = useState(false);
@@ -59,7 +60,11 @@ export default function ThemeGeneratorView() {
     () => slots.map((slot) => slot.color.value ?? parseColor(slot.color.hex)),
     [slots],
   );
-  const tokens = useMemo(() => deriveThemeTokens(palette, utilityColors), [palette, utilityColors]);
+  const tokens = useMemo(
+    () =>
+      applyThemePaletteVariants(deriveThemeTokens(palette, utilityColors), slots, themeVariants),
+    [palette, utilityColors, slots, themeVariants],
+  );
   const slotNames = useMemo(() => semanticSlotNames(palette), [palette]);
   const [tokenOverrides, setTokenOverrides] = useState<
     Record<string, { light: string; dark: string }>

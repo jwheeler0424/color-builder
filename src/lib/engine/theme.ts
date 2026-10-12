@@ -44,7 +44,7 @@ export interface UtilityTokens {
 export interface ThemeTokenSet {
   semantic: SemanticToken[];
   utility: Record<UtilityRole, UtilityTokens>;
-  palette: { name: string; hex: string }[];
+  palette: { name: string; hex: string; light?: string; dark?: string }[];
 }
 
 const UTILITY_DEFS: Record<UtilityRole, { label: string; description: string }> = {

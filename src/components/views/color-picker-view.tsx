@@ -1,10 +1,15 @@
-import { IconArrowRight, IconCheck, IconColorPicker, IconPlus } from '@tabler/icons-react';
+import {
+  IconArrowRight,
+  IconCheck,
+  IconColorPicker,
+  IconCopy,
+  IconPlus,
+} from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import type { RGB, HSL, HSV, OKLCH } from '@/types';
 
-import { Button } from '@/components/ui/button';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCmykProfile } from '@/hooks/use-cmyk-profile';
 import {
@@ -35,7 +40,19 @@ import { HsvSliders } from '../common/sliders/hsv-sliders';
 import { OklabSliders } from '../common/sliders/oklab-sliders';
 import { OklchSliders } from '../common/sliders/oklch-sliders';
 import { RgbSliders } from '../common/sliders/rgb-sliders';
-import { PanelGroup as PanelSection, PanelGroupLabel as PanelSectionLabel } from '../panel';
+import { ToolButton as Button, ToolSegments } from './view-ui';
+
+function Section({ children }: { children: React.ReactNode }) {
+  return <div className='mx-1 border-b border-border py-3.5 last:border-b-0'>{children}</div>;
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className='mb-2.5 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+      {children}
+    </p>
+  );
+}
 
 // EyeDropper is a browser API not yet in lib.dom.d.ts
 interface EyeDropper {
@@ -49,7 +66,16 @@ declare global {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type PickerMode = 'rgb' | 'hsl' | 'hsv' | 'oklch' | 'oklab';
+type PickerMode = 'rgb' | 'hsl' | 'hsv' | 'oklch' | 'oklab' | 'cmyk';
+
+const MODES: { id: PickerMode; label: string }[] = [
+  { id: 'hsl', label: 'HSL' },
+  { id: 'rgb', label: 'RGB' },
+  { id: 'hsv', label: 'HSV' },
+  { id: 'oklch', label: 'OKLCH' },
+  { id: 'oklab', label: 'OKLab' },
+  { id: 'cmyk', label: 'CMYK' },
+];
 
 // ─── Main View ────────────────────────────────────────────────────────────────
 
@@ -83,7 +109,10 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
 
   const displayHex = formatColor(pickerColor, 'hex');
   const cssOut = formatPickerColor(pickerColor, pickerMode, profile.converter ?? undefined);
-  const previewStyle = { background: renderColor(pickerColor).css };
+  const previewCss = renderColor(pickerColor).css;
+  const previewSwatchStyle = {
+    background: `linear-gradient(${previewCss}, ${previewCss}), repeating-conic-gradient(#444 0% 25%, #222 0% 50%) 0 0/8px 8px`,
+  };
 
   // Setters — each converts its space back to hex as canonical
   const setRgb = useCallback((r: RGB) => setPickerHex(rgb8ToHex(r)), [setPickerHex]);
@@ -169,172 +198,149 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
     }
   };
 
-  const MODES = [
-    { id: 'hsl', label: 'HSL' },
-    { id: 'rgb', label: 'RGB' },
-    { id: 'hsv', label: 'HSV' },
-    { id: 'oklch', label: 'OKLCH' },
-    { id: 'oklab', label: 'OKLab' },
-    { id: 'cmyk', label: 'CMYK' },
-  ];
-
   return (
-    <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col overflow-y-auto'>
-      <PanelSection>
-        <PanelSectionLabel>COLOR PICKER</PanelSectionLabel>
+    <div
+      className={
+        showPalette
+          ? 'tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col overflow-y-auto'
+          : 'flex flex-col'
+      }>
+      <Section>
+        <SectionLabel>Color Picker</SectionLabel>
         {/* Color wheel — always visible, speaks HSL */}
-        <div className='my-6 flex flex-col items-center justify-center gap-1'>
+        <div className='flex flex-col items-center justify-center gap-1 py-2'>
           <ColorWheel hsl={hsl} size={240} onChange={handleWheelChange} />
         </div>
 
         {/* Mode tabs */}
-        <div className='mt-2.5 mb-1.5 flex gap-1'>
-          {MODES.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => setPickerMode(m.id as PickerMode)}
-              title={m.label}
-              style={{
-                flex: 1,
-                padding: '4px 0',
-                borderRadius: 4,
-                fontSize: 10.5,
-                fontWeight: 700,
-                border: 'none',
-                cursor: 'pointer',
-                background: pickerMode === m.id ? 'var(--color-primary)' : 'var(--color-secondary)',
-                color: pickerMode === m.id ? '#fff' : 'var(--color-secondary-foreground)',
-                transition: 'background .12s',
-              }}>
-              {m.label}
-            </button>
-          ))}
+        <div className='mb-1.5'>
+          <ToolSegments
+            value={pickerMode}
+            onValueChange={setPickerMode}
+            items={MODES}
+            label='Color format'
+          />
         </div>
 
-        {/* Sliders for active mode */}
-        {pickerMode === 'rgb' && (
-          <RgbSliders
-            rgb={rgb}
-            alpha={pickerAlpha}
-            hex={pickerHex}
-            onRgb={setRgb}
-            onAlpha={setPickerAlpha}
-          />
-        )}
-        {pickerMode === 'hsl' && (
-          <HslSliders
-            hsl={hsl}
-            alpha={pickerAlpha}
-            hex={pickerHex}
-            onHsl={setHsl}
-            onAlpha={setPickerAlpha}
-          />
-        )}
-        {pickerMode === 'hsv' && (
-          <HsvSliders
-            hsv={hsv}
-            alpha={pickerAlpha}
-            hex={pickerHex}
-            onHsv={setHsv}
-            onAlpha={setPickerAlpha}
-          />
-        )}
-        {pickerMode === 'oklch' && (
-          <OklchSliders
-            oklch={oklch}
-            alpha={pickerAlpha}
-            hex={pickerHex}
-            onOklch={setOklch}
-            onAlpha={setPickerAlpha}
-          />
-        )}
-        {pickerMode === 'oklab' && (
-          <OklabSliders
-            oklab={oklab}
-            alpha={pickerAlpha}
-            hex={pickerHex}
-            onOklab={setOklab}
-            onAlpha={setPickerAlpha}
-          />
-        )}
-        {pickerMode === 'cmyk' && (
-          <CmykSliders
-            cmyk={cmyk}
-            alpha={pickerAlpha}
-            hex={pickerHex}
-            onCmyk={setCmyk}
-            onAlpha={setPickerAlpha}
-          />
-        )}
+        <div className='px-2'>
+          {pickerMode === 'rgb' && (
+            <RgbSliders
+              rgb={rgb}
+              alpha={pickerAlpha}
+              hex={pickerHex}
+              onRgb={setRgb}
+              onAlpha={setPickerAlpha}
+            />
+          )}
+          {pickerMode === 'hsl' && (
+            <HslSliders
+              hsl={hsl}
+              alpha={pickerAlpha}
+              hex={pickerHex}
+              onHsl={setHsl}
+              onAlpha={setPickerAlpha}
+            />
+          )}
+          {pickerMode === 'hsv' && (
+            <HsvSliders
+              hsv={hsv}
+              alpha={pickerAlpha}
+              hex={pickerHex}
+              onHsv={setHsv}
+              onAlpha={setPickerAlpha}
+            />
+          )}
+          {pickerMode === 'oklch' && (
+            <OklchSliders
+              oklch={oklch}
+              alpha={pickerAlpha}
+              hex={pickerHex}
+              onOklch={setOklch}
+              onAlpha={setPickerAlpha}
+            />
+          )}
+          {pickerMode === 'oklab' && (
+            <OklabSliders
+              oklab={oklab}
+              alpha={pickerAlpha}
+              hex={pickerHex}
+              onOklab={setOklab}
+              onAlpha={setPickerAlpha}
+            />
+          )}
+          {pickerMode === 'cmyk' && (
+            <CmykSliders
+              cmyk={cmyk}
+              alpha={pickerAlpha}
+              hex={pickerHex}
+              onCmyk={setCmyk}
+              onAlpha={setPickerAlpha}
+            />
+          )}
+        </div>
 
         <div className='mt-3 flex w-full max-w-100 flex-col gap-4 pb-2'>
-          <div className='flex w-full gap-4'>
-            {/* Checkerboard shows through for alpha */}
-            <div className='relative size-16 shrink-0'>
-              <div
-                className='absolute inset-0 rounded'
-                style={{
-                  background: 'repeating-conic-gradient(#444 0% 25%,#222 0% 50%) 0 0/10px 10px',
-                }}
-              />
-              <div
-                className='relative size-full shrink-0 rounded border-2 border-input'
-                style={{ ...previewStyle }}
-              />
+          <div className='grid w-full min-w-0 grid-cols-[4.5rem_minmax(0,1fr)] gap-x-3'>
+            <div className='col-start-2 mb-0.5 text-[9px] font-bold tracking-[.07em] text-muted-foreground uppercase'>
+              HEX CODE
             </div>
-            <div className='flex flex-1 flex-col gap-1.5'>
-              <div className='flex items-center gap-1.5'>
-                {/* <label>HEX CODE</label> */}
-                <HexInput value={displayHex} onChange={handleHexInput} label='HEX CODE' />
-              </div>
+            <div
+              className='relative col-start-1 row-start-2 size-18 rounded border-2 border-input'
+              style={previewSwatchStyle}
+            />
+            <div className='col-start-2 row-start-2 flex min-w-0 flex-col gap-2'>
+              <HexInput
+                className='w-full'
+                value={displayHex}
+                onChange={handleHexInput}
+                aria-label='HEX CODE'
+                showSwatch={false}
+              />
               {/* CSS output string for current mode */}
-              <div className='mt-1 flex items-center gap-1 rounded bg-muted px-1.5 py-1'>
-                <span className='flex-1 overflow-hidden font-mono text-[9px] text-ellipsis whitespace-nowrap text-muted-foreground'>
+              <div className='flex h-8 min-w-0 items-center gap-1 rounded bg-muted px-1.5'>
+                <span className='min-w-0 flex-1 overflow-hidden font-mono text-[9px] text-ellipsis whitespace-nowrap text-muted-foreground'>
                   {cssOut}
                 </span>
-                <button
-                  onClick={copyCss}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: 9,
-                    color: copied ? '#4ade80' : 'var(--color-muted-foreground)',
-                    padding: '0 2px',
-                    flexShrink: 0,
-                  }}>
-                  {copied ? <IconCheck className='size-3' aria-hidden='true' /> : 'copy'}
-                </button>
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='icon-xs'
+                  title='Copy color value'
+                  aria-label={copied ? 'Color value copied' : 'Copy color value'}
+                  className={copied ? 'text-primary' : 'text-muted-foreground'}
+                  onClick={copyCss}>
+                  {copied ? <IconCheck aria-hidden='true' /> : <IconCopy aria-hidden='true' />}
+                </Button>
               </div>
             </div>
           </div>
           <div className='flex items-center justify-end gap-1.5'>
-            <Button variant='default' size='sm' onClick={useSeed}>
-              <IconArrowRight className='size-4' aria-hidden='true' />
+            <Button variant='default' size='xs' onClick={useSeed}>
+              <IconArrowRight className='size-3' aria-hidden='true' />
               Seed Palette
             </Button>
-            <Button variant='ghost' size='sm' onClick={addToPalette}>
-              <IconPlus className='size-4' aria-hidden='true' />
+            <Button variant='secondary' size='xs' onClick={addToPalette}>
+              <IconPlus className='size-3' aria-hidden='true' />
               Add
             </Button>
             {typeof window !== 'undefined' && 'EyeDropper' in window && (
               <Button
-                variant='ghost'
-                size='sm'
+                variant='secondary'
+                size='xs'
                 title='Sample color from screen (EyeDropper API)'
                 onClick={handleEyeDropper}>
-                <IconColorPicker className='size-4' aria-hidden='true' />
+                <IconColorPicker className='size-3' aria-hidden='true' />
                 Pick
               </Button>
             )}
           </div>
         </div>
-      </PanelSection>
+      </Section>
 
       {/* Recent colors */}
       {recentColors.length > 0 && (
-        <PanelSection>
-          <PanelSectionLabel>RECENT COLORS</PanelSectionLabel>
+        <Section>
+          <SectionLabel>Recent Colors</SectionLabel>
           <div className='flex flex-wrap gap-1.5 pb-2'>
             {recentColors.map((rh, i) => (
               <button
@@ -353,12 +359,12 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
               />
             ))}
           </div>
-        </PanelSection>
+        </Section>
       )}
 
       {/* Color info — all formats */}
-      <PanelSection>
-        <PanelSectionLabel>COLOR VALUES</PanelSectionLabel>
+      <Section>
+        <SectionLabel>Color Values</SectionLabel>
         <div className='pb-2 text-[11px] leading-[2.1] text-muted-foreground'>
           <InfoRow label='Name' value={name} />
           <InfoRow label='HEX' value={displayHex.toUpperCase()} mono />
@@ -373,12 +379,12 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
           />
           <InfoRow label='Lum.' value={`${(luminance(pickerColor.xyz) * 100).toFixed(1)}%`} />
         </div>
-      </PanelSection>
+      </Section>
 
       {/* Palette quick-pick */}
       {showPalette && (
-        <PanelSection>
-          <PanelSectionLabel>PALETTE</PanelSectionLabel>
+        <Section>
+          <SectionLabel>Palette</SectionLabel>
           <div className='flex flex-wrap gap-1.5 pb-2'>
             {slots.map((slot, i) => (
               <button
@@ -392,7 +398,7 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
               />
             ))}
           </div>
-        </PanelSection>
+        </Section>
       )}
     </div>
   );

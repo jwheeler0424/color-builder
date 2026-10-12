@@ -35,7 +35,9 @@ export function buildThemeCss(tokens: ThemeTokenSet): string {
           `  --${role}: ${v[mode]};\n  --${role}-subtle: ${mode === 'light' ? v.subtle : v.subtleDark};`,
       )
       .join('\n');
-  const palette = tokens.palette.map((p) => `  --${p.name}: ${p.hex};`).join('\n');
+  const hasPaletteVariants = tokens.palette.some((p) => p.light || p.dark);
+  const palette = (mode: 'light' | 'dark') =>
+    tokens.palette.map((p) => `  --${p.name}: ${p[mode] ?? p.hex};`).join('\n');
 
   return [
     '/* Surfaces: --background < --surface-dim < --card < --card-raised < --popover */',
@@ -44,7 +46,7 @@ export function buildThemeCss(tokens: ThemeTokenSet): string {
     '',
     utility('light'),
     '',
-    palette,
+    palette('light'),
     '}',
     '',
     '@media (prefers-color-scheme: dark) {',
@@ -52,6 +54,7 @@ export function buildThemeCss(tokens: ThemeTokenSet): string {
     indent(semantic('dark')),
     '',
     indent(utility('dark')),
+    ...(hasPaletteVariants ? ['', indent(palette('dark'))] : []),
     '  }',
     '}',
     '',
@@ -59,12 +62,14 @@ export function buildThemeCss(tokens: ThemeTokenSet): string {
     semantic('dark'),
     '',
     utility('dark'),
+    ...(hasPaletteVariants ? ['', palette('dark')] : []),
     '}',
   ].join('\n');
 }
 
 /** Tokens Studio (Figma Tokens) JSON. */
 export function buildFigmaTokens(tokens: ThemeTokenSet, utility: UtilityColorSet): string {
+  const hasPaletteVariants = tokens.palette.some((p) => p.light || p.dark);
   const semantic = (mode: 'light' | 'dark') =>
     Object.fromEntries(
       tokens.semantic.map((t) => [
@@ -77,6 +82,18 @@ export function buildFigmaTokens(tokens: ThemeTokenSet, utility: UtilityColorSet
       global: Object.fromEntries(
         tokens.palette.map((p) => [p.name, { value: p.hex, type: 'color' }]),
       ),
+      ...(hasPaletteVariants
+        ? {
+            palette: Object.fromEntries(
+              (['light', 'dark'] as const).map((mode) => [
+                mode,
+                Object.fromEntries(
+                  tokens.palette.map((p) => [p.name, { value: p[mode] ?? p.hex, type: 'color' }]),
+                ),
+              ]),
+            ),
+          }
+        : {}),
       semantic: { light: semantic('light'), dark: semantic('dark') },
       utility: Object.fromEntries(
         UTILITY_ROLES.map((role) => {
@@ -113,7 +130,10 @@ export function buildTailwindV4(tokens: ThemeTokenSet): string {
       ].join('\n'),
     )
     .join('\n');
-  const palette = tokens.palette.map((p) => `  --color-${p.name}: ${p.hex};`).join('\n');
+  const hasPaletteVariants = tokens.palette.some((p) => p.light || p.dark);
+  const palette = tokens.palette
+    .map((p) => `  --color-${p.name}: ${hasPaletteVariants ? `var(--${p.name})` : p.hex};`)
+    .join('\n');
   return ['@import "tailwindcss";', '', '@theme {', semantic, '', utility, '', palette, '}'].join(
     '\n',
   );
@@ -121,8 +141,9 @@ export function buildTailwindV4(tokens: ThemeTokenSet): string {
 
 /** Tailwind v3 JavaScript config with CSS-variable-backed semantic and utility colors. */
 export function buildTailwindV3(tokens: ThemeTokenSet): string {
+  const hasPaletteVariants = tokens.palette.some((p) => p.light || p.dark);
   const colors = Object.fromEntries([
-    ...tokens.palette.map(({ name, hex }) => [name, hex]),
+    ...tokens.palette.map(({ name, hex }) => [name, hasPaletteVariants ? `var(--${name})` : hex]),
     ...tokens.semantic.map((token) => [token.name.replace(/^--/, ''), `var(${token.name})`]),
     ...Object.entries(tokens.utility).map(([role, value]) => [
       role,
@@ -148,6 +169,7 @@ export function buildTailwindV3(tokens: ThemeTokenSet): string {
 
 /** W3C design-tokens (Style Dictionary) JSON. */
 export function buildStyleDictionary(tokens: ThemeTokenSet, utility: UtilityColorSet): string {
+  const hasPaletteVariants = tokens.palette.some((p) => p.light || p.dark);
   const semantic = (mode: 'light' | 'dark') =>
     Object.fromEntries(
       tokens.semantic.map((t) => [
@@ -164,6 +186,21 @@ export function buildStyleDictionary(tokens: ThemeTokenSet, utility: UtilityColo
             { $value: p.hex, $type: 'color', $description: `Palette slot ${i + 1}` },
           ]),
         ),
+        ...(hasPaletteVariants
+          ? {
+              palette: Object.fromEntries(
+                (['light', 'dark'] as const).map((mode) => [
+                  mode,
+                  Object.fromEntries(
+                    tokens.palette.map((p) => [
+                      p.name,
+                      { $value: p[mode] ?? p.hex, $type: 'color' },
+                    ]),
+                  ),
+                ]),
+              ),
+            }
+          : {}),
         semantic: { light: semantic('light'), dark: semantic('dark') },
         utility: Object.fromEntries(
           UTILITY_ROLES.map((role) => {

@@ -46,9 +46,11 @@ import {
   pickerReadings,
   formatPickerColor,
   renderColor,
+  recommendThemeColor,
   simulateVision,
   SRGB,
   stopToColor,
+  themeColorFingerprint,
   VISION_TYPES,
   xyzToRgb8,
 } from '../src/lib/engine/index';
@@ -61,6 +63,7 @@ import {
   regenerateUtilityColors as engineReroll,
   deriveThemeTokens as engineTokens,
 } from '../src/lib/engine/theme';
+import { applyThemePaletteVariants } from '../src/lib/utils/theme-variants';
 import { useChromaStore } from '../src/stores/chroma.store';
 
 test('engine parses and round-trips wide gamut and alpha without converting through hex', () => {
@@ -106,6 +109,48 @@ test('engine validates colors and composites linear XYZ with explicit alpha', ()
   expect(composited.xyz[1]).toBeCloseTo(0.5, 12);
   expect(compositeColor(colorValue([0, 0, 0], 0), front)).toEqual(front);
   expect(parseColor(cssColor(SRGB, white.xyz)).alpha).toBe(1);
+});
+
+test('theme recommendations find a minimal WCAG AA adjustment', () => {
+  const source = parseColor('#6366f1');
+  const result = recommendThemeColor(source, parseColor('#ffffff'), { standard: 'wcag' });
+
+  expect(result.meetsTarget).toBe(true);
+  expect(result.reachable).toBe(true);
+  expect(result.score).toBeGreaterThanOrEqual(4.5);
+  expect(result.score).toBeLessThan(4.51);
+  expect(result.direction).toBe('darken');
+  expect(result.color.display).toBe(source.display);
+  expect(result.color.alpha).toBe(source.alpha);
+});
+
+test('theme recommendations honor APCA targets and leave passing colors unchanged', () => {
+  const source = parseColor('#777777');
+  const result = recommendThemeColor(source, parseColor('#ffffff'), {
+    standard: 'apca',
+    target: 75,
+  });
+  const passing = parseColor('#000000');
+  const unchanged = recommendThemeColor(passing, parseColor('#ffffff'), { standard: 'wcag' });
+
+  expect(result.meetsTarget).toBe(true);
+  expect(result.score).toBeGreaterThanOrEqual(75);
+  expect(unchanged.color).toBe(passing);
+  expect(unchanged.direction).toBe('none');
+});
+
+test('theme recommendations preserve alpha and report unreachable contrast', () => {
+  const source = colorValue(parseColor('#777777').xyz, 0.5, 'p3');
+  const result = recommendThemeColor(source, parseColor('#ffffff'), { standard: 'wcag' });
+
+  expect(result.meetsTarget).toBe(false);
+  expect(result.reachable).toBe(false);
+  expect(result.score).toBeLessThan(4.5);
+  expect(result.color.display).toBe('p3');
+  expect(result.color.alpha).toBe(0.5);
+  expect(() =>
+    recommendThemeColor(source, colorValue(parseColor('#ffffff').xyz, 0.5), { standard: 'wcag' }),
+  ).toThrow();
 });
 
 test('engine formats alpha and preserves source XYZ in normal vision', () => {
@@ -267,6 +312,45 @@ test('engine theme exports cover CSS, Figma, Tailwind, Style Dictionary and HTML
   const p3 = parseColor('color(display-p3 1 0 0)');
   const p3Story = buildColorStoryHtml([p3], 'P3', generateUtilityColors([p3]));
   expect(p3Story).toContain('color(display-p3');
+});
+
+test('applied palette variants are source-checked and exported by mode', () => {
+  const source = parseColor('#123456');
+  const slot = { id: 'slot-a', color: colorToStop(source), locked: false };
+  const utility = generateUtilityColors([source]);
+  const tokens = deriveThemeTokens([source], utility);
+  const variant = colorToStop(parseColor('#abcdef'));
+  const variants = {
+    'slot-a': {
+      sourceFingerprint: themeColorFingerprint(source),
+      light: variant,
+      dark: colorToStop(parseColor('#fedcba')),
+    },
+  };
+  const themed = applyThemePaletteVariants(tokens, [slot], variants);
+  const paletteName = tokens.palette[0]!.name;
+
+  expect(themed.palette[0]).toMatchObject({ light: '#abcdef', dark: '#fedcba' });
+  expect(themed.palette[0]?.hex).toBe(tokens.palette[0]?.hex);
+  expect(buildThemeCss(themed)).toContain(`--${paletteName}: #abcdef;`);
+  expect(buildThemeCss(themed)).toContain(`--${paletteName}: #fedcba;`);
+  expect(buildTailwindV3(themed)).toContain(`"${paletteName}": "var(--${paletteName})"`);
+  expect(buildTailwindV4(themed)).toContain(`--color-${paletteName}: var(--${paletteName});`);
+
+  const figma = JSON.parse(buildFigmaTokens(themed, utility));
+  expect(figma.global[paletteName].value).toBe(tokens.palette[0]?.hex);
+  expect(figma.palette.light[paletteName].value).toBe('#abcdef');
+  expect(figma.palette.dark[paletteName].value).toBe('#fedcba');
+
+  const styleDictionary = JSON.parse(buildStyleDictionary(themed, utility));
+  expect(styleDictionary.color.primitive[paletteName].$value).toBe(tokens.palette[0]?.hex);
+  expect(styleDictionary.color.palette.light[paletteName].$value).toBe('#abcdef');
+  expect(styleDictionary.color.palette.dark[paletteName].$value).toBe('#fedcba');
+
+  const staleSlot = { ...slot, color: colorToStop(parseColor('#654321')) };
+  expect(
+    applyThemePaletteVariants(tokens, [staleSlot], variants).palette[0]?.light,
+  ).toBeUndefined();
 });
 
 test('palette runtime bounds concurrent workers and cancels queued computations', async () => {
@@ -488,6 +572,35 @@ test('adding a canonical midpoint mutates the palette without returning an Immer
     expect(slots.at(-1)?.color.value).toEqual(color.value);
   } finally {
     useChromaStore.setState({ slots: previous });
+  }
+});
+
+test('theme variants apply and revert independently without editing source slots', () => {
+  const state = useChromaStore.getState();
+  const slots = state.slots;
+  const previousVariants = state.themeVariants;
+  const source = stopToColor(slots[0]!.color);
+  const fingerprint = themeColorFingerprint(source);
+  const slotId = slots[0]!.id;
+
+  try {
+    state.setThemeVariant(slotId, fingerprint, 'light', colorToStop(parseColor('#111111')));
+    state.setThemeVariant(slotId, fingerprint, 'dark', colorToStop(parseColor('#eeeeee')));
+    expect(useChromaStore.getState().themeVariants[slotId]).toMatchObject({
+      sourceFingerprint: fingerprint,
+      light: { hex: '#111111' },
+      dark: { hex: '#eeeeee' },
+    });
+
+    useChromaStore.getState().setThemeVariant(slotId, fingerprint, 'light');
+    expect(useChromaStore.getState().themeVariants[slotId]?.light).toBeUndefined();
+    expect(useChromaStore.getState().themeVariants[slotId]?.dark?.hex).toBe('#eeeeee');
+
+    useChromaStore.getState().setThemeVariant(slotId, fingerprint, 'dark');
+    expect(useChromaStore.getState().themeVariants[slotId]).toBeUndefined();
+    expect(useChromaStore.getState().slots).toEqual(slots);
+  } finally {
+    useChromaStore.setState({ themeVariants: previousVariants });
   }
 });
 

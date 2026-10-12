@@ -58,18 +58,18 @@ export default function HexInput({
   const resolvedHex = invalid ? (validate(raw) ?? value) : value;
 
   return (
-    <div className={cn('flex items-center gap-2', className)} style={style}>
-      {showSwatch && (
-        <div
-          className='h-7 w-7 shrink-0 rounded border border-white/20 shadow-inner'
-          style={{ background: resolvedHex }}
-        />
+    <div className={cn('flex min-w-0 flex-1 flex-col gap-0.5', className)} style={style}>
+      {label && (
+        <div className='text-[9px] font-bold tracking-[.07em] text-muted-foreground uppercase'>
+          {label}
+        </div>
       )}
-      <div className='min-w-0 flex-1'>
-        {label && (
-          <div className='mb-0.5 text-[9px] font-bold tracking-[.07em] text-muted-foreground uppercase'>
-            {label}
-          </div>
+      <div className='flex min-w-0 items-center gap-2'>
+        {showSwatch && (
+          <div
+            className='size-8 shrink-0 rounded border border-white/20 shadow-inner'
+            style={{ background: resolvedHex }}
+          />
         )}
         <input
           aria-label={ariaLabel ?? label}
@@ -81,7 +81,7 @@ export default function HexInput({
           spellCheck={false}
           autoComplete='off'
           className={cn(
-            'w-full rounded border bg-muted px-2 py-1.5 font-mono text-[12px] text-foreground',
+            'h-8 min-w-0 flex-1 rounded border bg-muted px-2 py-1.5 font-mono text-[12px] text-foreground',
             'tracking-[.06em] transition-colors outline-none',
             'placeholder:text-muted-foreground',
             'focus:border-ring',

@@ -27,8 +27,10 @@ import { Link, useRouterState } from '@tanstack/react-router';
 
 import { cn } from '@/lib/utils';
 
+import { useCommandModifier } from '../../hooks/use-command-modifier';
 import { ThemeToggle } from '../common/theme-toggle';
 import { ExportModal, SaveModal, ShareModal, ShortcutsModal } from '../modals';
+import { Kbd } from '../ui/kbd';
 import { useCommandPalette } from '../views/command-palette';
 
 // ─── Section definitions ──────────────────────────────────────────────────────
@@ -61,7 +63,7 @@ export const SECTIONS: SectionDef[] = [
     label: 'Build',
     icon: IconTools,
     primary: '/build/mixer',
-    routes: ['/build/mixer', '/build/gradient', '/build/extract'],
+    routes: ['/build/theme', '/build/mixer', '/build/gradient', '/build/extract'],
   },
   {
     id: 'export',
@@ -90,6 +92,7 @@ export const SECTION_TOOLS: Record<string, { to: string; label: string }[]> = {
     { to: '/analyze/brand', label: 'Brand' },
   ],
   build: [
+    { to: '/build/theme', label: 'Theme' },
     { to: '/build/mixer', label: 'Mixer' },
     { to: '/build/gradient', label: 'Gradients' },
     { to: '/build/extract', label: 'Extract & Convert' },
@@ -213,6 +216,7 @@ export function SectionToolTabs({ className }: { className?: string }) {
 
 /** ⌘K command palette pill */
 export function SearchButton({ onClick }: { onClick: () => void }) {
+  const commandModifier = useCommandModifier();
   return (
     <button
       onClick={onClick}
@@ -224,7 +228,9 @@ export function SearchButton({ onClick }: { onClick: () => void }) {
       title='Search tools (⌘K)'>
       <IconSearch className='size-3.5 opacity-70' aria-hidden='true' />
       <span className='hidden lg:inline'>Search</span>
-      <kbd className='ml-0.5 text-[8px] opacity-50'>⌘K</kbd>
+      <Kbd className='ml-0.5 h-5 min-w-0 rounded border border-border bg-background px-1.5 font-mono text-[10px] font-semibold text-foreground shadow-sm'>
+        {commandModifier === '⌘' ? '⌘K' : 'Ctrl K'}
+      </Kbd>
     </button>
   );
 }
