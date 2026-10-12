@@ -1,4 +1,10 @@
-import { GripVertical } from 'lucide-react';
+import {
+  IconGripVertical as GripVertical,
+  IconRefresh,
+  IconSnowflake,
+  IconSun,
+  IconX,
+} from '@tabler/icons-react';
 import React, { useState, useCallback, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -169,7 +175,7 @@ export function PalettePanel() {
                 <button
                   className='cursor-pointer border-none bg-transparent text-sm leading-none text-muted-foreground transition-colors hover:text-destructive'
                   onClick={() => removeSeed(i)}>
-                  ×
+                  <IconX className='size-3' aria-hidden='true' />
                 </button>
               </div>
             ))}
@@ -233,11 +239,11 @@ export function PalettePanel() {
           <SectionLabel>
             Temperature{' '}
             <span className='font-normal text-muted-foreground'>
-              {temperature < -0.2 ? '❄ Cool' : temperature > 0.2 ? '🌅 Warm' : '⚪ Neutral'}
+              {temperature < -0.2 ? 'Cool' : temperature > 0.2 ? 'Warm' : 'Neutral'}
             </span>
           </SectionLabel>
           <div className='flex items-center gap-2'>
-            <span className='text-[9px] text-muted-foreground'>❄</span>
+            <IconSnowflake className='size-3 text-muted-foreground' aria-label='Cool' />
             <input
               type='range'
               min={-100}
@@ -249,7 +255,7 @@ export function PalettePanel() {
               }}
               className='flex-1'
             />
-            <span className='text-[9px] text-muted-foreground'>🌅</span>
+            <IconSun className='size-3 text-muted-foreground' aria-label='Warm' />
           </div>
         </Section>
 
@@ -300,8 +306,9 @@ export function PalettePanel() {
       </div>
 
       <div className='shrink-0 border-t border-border bg-card px-4 py-3'>
-        <Button className='w-full py-2.5 text-[12px]' onClick={generate}>
-          ⟳ Generate
+        <Button className='w-full py-2.5 text-[12px]' onClick={() => generate()}>
+          <IconRefresh className='mr-2 inline size-4' aria-hidden='true' />
+          Generate
         </Button>
         <p className='mt-1.5 text-center text-[10px] text-muted-foreground'>
           <kbd>Space</kbd> generate · <kbd>Ctrl+Z</kbd> undo · <kbd>?</kbd> shortcuts

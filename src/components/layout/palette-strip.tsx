@@ -29,7 +29,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { PlusIcon } from 'lucide-react';
+import { IconPlus as PlusIcon } from '@tabler/icons-react';
 import { Fragment, useState, useCallback, useLayoutEffect, useMemo, useId, useRef } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';

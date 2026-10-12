@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { OTPField as OTPPrimitive } from "@base-ui/react/otp-field";
+import { OTPField as OTPPrimitive } from '@base-ui/react/otp-field';
+import { IconMinus as MinusIcon } from '@tabler/icons-react';
+import * as React from 'react';
 
-import { cn } from "@/lib/utils";
-import { MinusIcon } from "lucide-react";
+import { cn } from '@/lib/utils';
 
 const InputOTPContext = React.createContext(6);
 
@@ -18,7 +18,7 @@ function InputOTP({
   onValueChange,
   onValueComplete,
   ...props
-}: Omit<OTPPrimitive.Root.Props, "length"> & {
+}: Omit<OTPPrimitive.Root.Props, 'length'> & {
   length?: number;
   maxLength?: number;
   onChange?: (value: string) => void;
@@ -28,7 +28,7 @@ function InputOTP({
   return (
     <InputOTPContext.Provider value={length}>
       <OTPPrimitive.Root
-        data-slot="input-otp"
+        data-slot='input-otp'
         length={length}
         onValueChange={(value, details) => {
           onValueChange?.(value, details);
@@ -39,7 +39,7 @@ function InputOTP({
           onComplete?.(value);
         }}
         className={cn(
-          "cn-input-otp flex items-center has-disabled:opacity-50",
+          'cn-input-otp flex items-center has-disabled:opacity-50',
           containerClassName,
           className,
         )}
@@ -49,12 +49,12 @@ function InputOTP({
   );
 }
 
-function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
+function InputOTPGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      data-slot="input-otp-group"
+      data-slot='input-otp-group'
       className={cn(
-        "has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40 has-aria-invalid:border-destructive rounded-md has-aria-invalid:ring-[3px] flex items-center",
+        'flex items-center rounded-md has-aria-invalid:border-destructive has-aria-invalid:ring-[3px] has-aria-invalid:ring-destructive/20 dark:has-aria-invalid:ring-destructive/40',
         className,
       )}
       {...props}
@@ -73,10 +73,10 @@ function InputOTPSlot({
 
   return (
     <OTPPrimitive.Input
-      data-slot="input-otp-slot"
+      data-slot='input-otp-slot'
       aria-label={`Character ${index + 1} of ${length}`}
       className={cn(
-        "relative size-9 border-y border-r border-input bg-transparent text-center text-sm shadow-xs transition-all outline-none first:rounded-l-md first:border-l last:rounded-r-md focus:z-10 focus:border-ring focus:ring-[3px] focus:ring-ring/50 aria-invalid:border-destructive disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/30",
+        'relative size-9 border-y border-r border-input bg-transparent text-center text-sm shadow-xs transition-all outline-none first:rounded-l-md first:border-l last:rounded-r-md focus:z-10 focus:border-ring focus:ring-[3px] focus:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive dark:bg-input/30',
         className,
       )}
       {...props}
@@ -84,13 +84,12 @@ function InputOTPSlot({
   );
 }
 
-function InputOTPSeparator({ ...props }: React.ComponentProps<"div">) {
+function InputOTPSeparator({ ...props }: React.ComponentProps<'div'>) {
   return (
     <OTPPrimitive.Separator
-      data-slot="input-otp-separator"
-      className="[&_svg:not([class*='size-'])]:size-4 flex items-center"
-      {...props}
-    >
+      data-slot='input-otp-separator'
+      className="flex items-center [&_svg:not([class*='size-'])]:size-4"
+      {...props}>
       <MinusIcon />
     </OTPPrimitive.Separator>
   );

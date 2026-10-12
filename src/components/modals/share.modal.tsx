@@ -1,7 +1,10 @@
-import { useMemo, useState } from "react";
-import { useChromaStore } from "@/stores/chroma.store";
-import { encodeUrl } from "@/lib/utils";
-import { Button } from "../ui/button";
+import { IconCheck, IconShare as ShareIcon } from '@tabler/icons-react';
+import { useMemo, useState } from 'react';
+
+import { encodeUrl } from '@/lib/utils';
+import { useChromaStore } from '@/stores/chroma.store';
+
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogClose,
@@ -11,8 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
-import { ShareIcon } from "lucide-react";
+} from '../ui/dialog';
 
 // ─── Share Modal ──────────────────────────────────────────────────────────────
 
@@ -37,51 +39,46 @@ export function ShareModal() {
   };
 
   return (
-    <Dialog
-      open={modal === "share"}
-      onOpenChange={(open) => !open && closeModal()}
-    >
+    <Dialog open={modal === 'share'} onOpenChange={(open) => !open && closeModal()}>
       <DialogTrigger
         render={
           <Button
-            variant="ghost"
-            size="icon-lg"
-            title="Share URL"
-            onClick={() => openModal("share")}
-            className="text-muted-foreground text-md"
-          >
-            <ShareIcon className="size-5" />
+            variant='ghost'
+            size='icon-lg'
+            title='Share URL'
+            onClick={() => openModal('share')}
+            className='text-md text-muted-foreground'>
+            <ShareIcon className='size-5' />
           </Button>
         }
       />
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className='sm:max-w-sm'>
         <DialogHeader>
           <DialogTitle>Share Palette</DialogTitle>
-          <DialogDescription>
-            Anyone with this URL can load your exact palette.
-          </DialogDescription>
+          <DialogDescription>Anyone with this URL can load your exact palette.</DialogDescription>
         </DialogHeader>
         <textarea
           readOnly
           value={url}
           rows={2}
           onFocus={(e) => e.target.select()}
-          className="w-full bg-muted border border-border rounded px-2.5 py-2 text-[11px] text-secondary-foreground font-mono leading-relaxed resize-none outline-none focus:border-ring transition-colors"
+          className='w-full resize-none rounded border border-border bg-muted px-2.5 py-2 font-mono text-[11px] leading-relaxed text-secondary-foreground transition-colors outline-none focus:border-ring'
         />
 
-        <div className="flex h-6 rounded overflow-hidden gap-px">
+        <div className='flex h-6 gap-px overflow-hidden rounded'>
           {slots.map((s, i) => (
             <div
               key={`${s.color.hex}-${i}`}
-              className="flex-1"
+              className='flex-1'
               style={{ background: s.color.hex }}
             />
           ))}
         </div>
         <DialogFooter>
-          <DialogClose render={<Button variant="ghost">Close</Button>} />
-          <Button variant="default" onClick={handleCopy}>
-            {copied ? "✓ Copied" : "Copy"}
+          <DialogClose render={<Button variant='ghost'>Close</Button>} />
+          <Button variant='default' onClick={handleCopy}>
+            {copied && <IconCheck className='size-4' aria-hidden='true' />}
+            {copied ? 'Copied' : 'Copy'}
           </Button>
         </DialogFooter>
       </DialogContent>

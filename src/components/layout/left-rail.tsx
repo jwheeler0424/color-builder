@@ -11,6 +11,7 @@
  * At 240px expanded, 48px collapsed (icon-only mode).
  */
 
+import { IconRefresh } from '@tabler/icons-react';
 import { useState, useEffect } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
@@ -98,10 +99,10 @@ export function LeftRail({ onEditSeed, className }: LeftRailProps) {
         <div className='flex flex-1 flex-col items-center gap-1 py-3'>
           {/* Generate shortcut */}
           <button
-            onClick={generate}
+            onClick={() => generate()}
             className='flex h-8 w-8 cursor-pointer items-center justify-center rounded border border-border bg-transparent text-base text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
             title='Generate (Space)'>
-            ⟳
+            <IconRefresh className='size-4' aria-hidden='true' />
           </button>
         </div>
       )}

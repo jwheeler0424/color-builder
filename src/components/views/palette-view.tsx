@@ -14,6 +14,7 @@
  *     - Renders full layout: PaletteStrip + sidebar controls
  */
 
+import { IconArrowBackUp, IconRefresh } from '@tabler/icons-react';
 import { useState } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
@@ -83,12 +84,14 @@ export function PaletteStudioPanel({ onEditSlot }: { onEditSlot?: (index: number
           onClick={() => undo()}
           aria-label='Undo last generate'
           className='h-10 cursor-pointer rounded-md border border-border bg-secondary px-4 font-mono text-[11px] text-secondary-foreground transition-colors hover:border-input'>
-          ↩ Undo
+          <IconArrowBackUp className='mr-1.5 inline size-4' aria-hidden='true' />
+          Undo
         </button>
         <button
           onClick={() => generate()}
           className='h-10 flex-1 cursor-pointer rounded-md border-0 bg-primary text-[12px] font-bold text-primary-foreground transition-opacity hover:opacity-90'>
-          ⟳ Generate
+          <IconRefresh className='mr-1.5 inline size-4' aria-hidden='true' />
+          Generate
         </button>
       </div>
     </div>

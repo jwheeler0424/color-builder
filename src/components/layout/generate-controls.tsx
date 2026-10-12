@@ -21,7 +21,16 @@
  *   onEdit(i) — called when a seed color swatch is clicked for editing
  */
 
-import { ChevronDown, Minus, Plus, RefreshCw, Undo2, X } from 'lucide-react';
+import {
+  IconChevronDown as ChevronDown,
+  IconMinus as Minus,
+  IconPlus as Plus,
+  IconRefresh as RefreshCw,
+  IconArrowBackUp as Undo2,
+  IconSnowflake,
+  IconSun,
+  IconX as X,
+} from '@tabler/icons-react';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 
 import type { SpaceId, DisplayGamutId } from '@/lib/engine/browser';
@@ -560,11 +569,11 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
           <SectionLabel>
             Temperature{' '}
             <span className='font-normal text-muted-foreground'>
-              {temperature < -0.2 ? '❄ Cool' : temperature > 0.2 ? '🌅 Warm' : '⚪ Neutral'}
+              {temperature < -0.2 ? 'Cool' : temperature > 0.2 ? 'Warm' : 'Neutral'}
             </span>
           </SectionLabel>
           <div className='flex items-center gap-2'>
-            <span className='text-[9px] text-muted-foreground'>❄</span>
+            <IconSnowflake className='size-3 text-muted-foreground' aria-label='Cool' />
             <input
               type='range'
               min={-100}
@@ -576,7 +585,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
               }}
               className='flex-1'
             />
-            <span className='text-[9px] text-muted-foreground'>🌅</span>
+            <IconSun className='size-3 text-muted-foreground' aria-label='Warm' />
           </div>
         </Section>
       )}
@@ -632,7 +641,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
                   className='cursor-pointer border-none bg-transparent text-sm leading-none text-muted-foreground transition-colors hover:text-destructive'
                   onClick={() => removeSeed(i)}
                   title='Remove seed'>
-                  ×
+                  <X className='size-3' aria-hidden='true' />
                 </button>
               </div>
             ))}

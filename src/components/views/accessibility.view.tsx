@@ -5,7 +5,7 @@
  * Sub-tabs:  [WCAG Slots] [Contrast Checker] [Color Blind]
  */
 
-import { ArrowLeftRight } from 'lucide-react';
+import { IconArrowsLeftRight as ArrowLeftRight } from '@tabler/icons-react';
 import { Fragment, useMemo, useState } from 'react';
 
 import type { ColorValue } from '@/lib/engine/color';

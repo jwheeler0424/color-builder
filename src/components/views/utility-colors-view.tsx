@@ -1,18 +1,18 @@
 import {
-  Check,
-  CheckCircle2,
-  Circle,
-  CircleAlert,
-  Copy,
-  Focus,
-  Info,
-  Lock,
-  Moon,
-  RefreshCw,
-  Sun,
-  TriangleAlert,
-  Unlock,
-} from 'lucide-react';
+  IconCheck as Check,
+  IconCircleCheck as CheckCircle2,
+  IconCircle as Circle,
+  IconAlertTriangle as CircleAlert,
+  IconCopy as Copy,
+  IconFocus2 as Focus,
+  IconInfoCircle as Info,
+  IconLock as Lock,
+  IconMoon as Moon,
+  IconRefresh as RefreshCw,
+  IconSun as Sun,
+  IconAlertTriangle as TriangleAlert,
+  IconLockOpen as Unlock,
+} from '@tabler/icons-react';
 import { useState, useMemo } from 'react';
 
 import type { UtilityRole, UtilityColorSet } from '@/types';

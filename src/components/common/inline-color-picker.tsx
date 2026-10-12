@@ -8,6 +8,7 @@
  * Shells should use InlineColorPicker directly.
  */
 
+import { IconCheck } from '@tabler/icons-react';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 
 import type { RGB, HSL, HSV, OKLCH, PickerMode } from '@/types';
@@ -333,7 +334,7 @@ export function InlineColorPicker({
                   padding: '0 2px',
                   flexShrink: 0,
                 }}>
-                {copied ? '✓' : 'copy'}
+                {copied ? <IconCheck className='size-3' aria-hidden='true' /> : 'copy'}
               </button>
             </div>
           </div>

@@ -5,7 +5,12 @@
  * Sub-tabs:  [OKLCH Space] [P3 Gamut]
  */
 
-import { Check, Copy, Lock, RotateCcw } from 'lucide-react';
+import {
+  IconCheck as Check,
+  IconCopy as Copy,
+  IconLock as Lock,
+  IconRefresh as RotateCcw,
+} from '@tabler/icons-react';
 import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 
 import type { ColorValue } from '@/lib/engine/color';

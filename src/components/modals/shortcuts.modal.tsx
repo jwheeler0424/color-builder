@@ -1,5 +1,9 @@
-import { useChromaStore } from "@/stores/chroma.store";
-import { Button } from "../ui/button";
+import { IconSquareAsterisk as SquareAsterisk } from '@tabler/icons-react';
+
+import { useHotkeyList } from '@/providers/hotkey.provider';
+import { useChromaStore } from '@/stores/chroma.store';
+
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogClose,
@@ -8,9 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
-import { useHotkeyList } from "@/providers/hotkey.provider";
-import { SquareAsterisk } from "lucide-react";
+} from '../ui/dialog';
 
 // ─── Shortcuts Modal ──────────────────────────────────────────────────────────
 
@@ -24,57 +26,50 @@ export function ShortcutsModal() {
   // Group by .group field
   const groups: Record<string, typeof hotkeys> = {};
   for (const hk of hotkeys) {
-    const g = hk.group || "General";
+    const g = hk.group || 'General';
     if (!groups[g]) groups[g] = [];
     groups[g].push(hk);
   }
 
   function keyLabel(hk: (typeof hotkeys)[0]): string {
     const parts: string[] = [];
-    if (hk.ctrl) parts.push("Ctrl");
-    if (hk.shift) parts.push("Shift");
-    const k = hk.key === "space" ? "Space" : hk.key.toUpperCase();
+    if (hk.ctrl) parts.push('Ctrl');
+    if (hk.shift) parts.push('Shift');
+    const k = hk.key === 'space' ? 'Space' : hk.key.toUpperCase();
     parts.push(k);
-    return parts.join("+");
+    return parts.join('+');
   }
   return (
-    <Dialog
-      open={modal === "shortcuts"}
-      onOpenChange={(open) => !open && closeModal()}
-    >
+    <Dialog open={modal === 'shortcuts'} onOpenChange={(open) => !open && closeModal()}>
       <DialogTrigger
         render={
           <Button
-            variant="ghost"
-            size="icon-lg"
-            title="Shortcuts"
-            onClick={() => openModal("shortcuts")}
-            className="text-muted-foreground"
-          >
-            <SquareAsterisk className="size-5" />
+            variant='ghost'
+            size='icon-lg'
+            title='Shortcuts'
+            onClick={() => openModal('shortcuts')}
+            className='text-muted-foreground'>
+            <SquareAsterisk className='size-5' />
           </Button>
         }
       />
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className='sm:max-w-sm'>
         <DialogHeader>
           <DialogTitle>Keyboard Shortcuts</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-5 min-w-85">
+        <div className='flex min-w-85 flex-col gap-5'>
           {Object.entries(groups).map(([group, keys]) => (
             <div key={group}>
-              <div className="text-[10px] tracking-widest uppercase text-muted-foreground mb-2 font-display font-semibold">
+              <div className='mb-2 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
                 {group}
               </div>
-              <div className="flex flex-col gap-1.5">
+              <div className='flex flex-col gap-1.5'>
                 {keys.map((hk) => (
                   <div
-                    key={hk.key + (hk.ctrl ? "c" : "") + (hk.shift ? "s" : "")}
-                    className="flex items-center justify-between gap-4"
-                  >
-                    <span className="text-secondary-foreground text-[12px]">
-                      {hk.label}
-                    </span>
-                    <kbd className="inline-block px-2 py-0.5 border border-input rounded text-[11px] text-muted-foreground font-mono bg-muted whitespace-nowrap shrink-0">
+                    key={hk.key + (hk.ctrl ? 'c' : '') + (hk.shift ? 's' : '')}
+                    className='flex items-center justify-between gap-4'>
+                    <span className='text-[12px] text-secondary-foreground'>{hk.label}</span>
+                    <kbd className='inline-block shrink-0 rounded border border-input bg-muted px-2 py-0.5 font-mono text-[11px] whitespace-nowrap text-muted-foreground'>
                       {keyLabel(hk)}
                     </kbd>
                   </div>
@@ -83,13 +78,13 @@ export function ShortcutsModal() {
             </div>
           ))}
           {hotkeys.length === 0 && (
-            <p className="text-[12px] text-muted-foreground">
+            <p className='text-[12px] text-muted-foreground'>
               Navigate to a view to see its shortcuts.
             </p>
           )}
         </div>
         <DialogFooter>
-          <DialogClose render={<Button variant="ghost">Close</Button>} />
+          <DialogClose render={<Button variant='ghost'>Close</Button>} />
         </DialogFooter>
       </DialogContent>
     </Dialog>

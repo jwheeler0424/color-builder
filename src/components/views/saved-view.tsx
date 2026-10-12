@@ -1,3 +1,4 @@
+import { IconCheck, IconDownload, IconShare, IconTrash } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 
@@ -61,7 +62,7 @@ export default function SavedView() {
           <div className='mb-2 font-display text-lg font-bold text-secondary-foreground'>
             No saved palettes yet
           </div>
-          <p className='text-[12px]'>Generate a palette you love, then click ♡ to save it.</p>
+          <p className='text-[12px]'>Generate a palette you love, then use Save to keep it.</p>
         </div>
       </div>
     );
@@ -93,13 +94,20 @@ export default function SavedView() {
                 </div>
                 <div className='flex gap-1.5'>
                   <Button variant='ghost' size='sm' onClick={() => handleLoad(p)}>
-                    ↓ Load
+                    <IconDownload className='size-4' aria-hidden='true' />
+                    Load
                   </Button>
                   <Button variant='ghost' size='sm' onClick={() => handleShare(p)}>
-                    {sharedId === p.id ? '✓ Copied!' : '⤴ Share'}
+                    {sharedId === p.id ? (
+                      <IconCheck className='size-4' aria-hidden='true' />
+                    ) : (
+                      <IconShare className='size-4' aria-hidden='true' />
+                    )}
+                    {sharedId === p.id ? 'Copied!' : 'Share'}
                   </Button>
                   <Button variant='destructive' size='sm' onClick={() => handleDelete(p.id)}>
-                    × Del
+                    <IconTrash className='size-4' aria-hidden='true' />
+                    Delete
                   </Button>
                 </div>
               </div>

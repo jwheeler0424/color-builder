@@ -1,4 +1,11 @@
-import { Check, Copy, Moon, RotateCcw, Sun } from 'lucide-react';
+import {
+  IconCheck as Check,
+  IconCopy as Copy,
+  IconMoon as Moon,
+  IconRefresh as RotateCcw,
+  IconSun as Sun,
+  IconX,
+} from '@tabler/icons-react';
 import { useMemo, useState, useCallback } from 'react';
 
 import type { SemanticToken, UtilityColorSet, UtilityRole } from '@/types';
@@ -171,7 +178,17 @@ function TokenRow({
           color: passes ? '#16a34a' : '#dc2626',
         }}
         title={`Best contrast: ${bestRatio.toFixed(1)}:1`}>
-        {passes ? `✓ ${bestRatio.toFixed(1)}` : `✗ ${bestRatio.toFixed(1)}`}
+        {passes ? (
+          <>
+            <Check className='mr-1 inline size-3' aria-hidden='true' />
+            {bestRatio.toFixed(1)}
+          </>
+        ) : (
+          <>
+            <IconX className='mr-1 inline size-3' aria-hidden='true' />
+            {bestRatio.toFixed(1)}
+          </>
+        )}
       </span>
 
       {/* Revert */}

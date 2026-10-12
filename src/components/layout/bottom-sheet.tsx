@@ -23,8 +23,10 @@
  *   children    — sheet body
  */
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { cn } from "@/lib/utils";
+import { IconX } from '@tabler/icons-react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+
+import { cn } from '@/lib/utils';
 
 interface BottomSheetProps {
   open: boolean;
@@ -64,10 +66,10 @@ export function BottomSheet({
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
   }, [open, onClose]);
 
   // ── Drag-to-dismiss on drag handle ──────────────────────────────────────────
@@ -102,8 +104,8 @@ export function BottomSheet({
       {/* Backdrop */}
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-200",
-          visible ? "opacity-100" : "opacity-0",
+          'fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-200',
+          visible ? 'opacity-100' : 'opacity-0',
         )}
         onClick={onClose}
         aria-hidden
@@ -112,14 +114,14 @@ export function BottomSheet({
       {/* Sheet */}
       <div
         ref={sheetRef}
-        role="dialog"
+        role='dialog'
         aria-modal
-        aria-label={title ?? "Panel"}
+        aria-label={title ?? 'Panel'}
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-50 flex flex-col",
-          "bg-card rounded-t-2xl shadow-2xl border-t border-border",
-          "transition-transform duration-300 ease-out will-change-transform",
-          !visible && "translate-y-full",
+          'fixed right-0 bottom-0 left-0 z-50 flex flex-col',
+          'rounded-t-2xl border-t border-border bg-card shadow-2xl',
+          'transition-transform duration-300 ease-out will-change-transform',
+          !visible && 'translate-y-full',
           className,
         )}
         style={{
@@ -128,43 +130,38 @@ export function BottomSheet({
             dragOffset > 0
               ? `translateY(${dragOffset}px)`
               : visible
-                ? "translateY(0)"
-                : "translateY(100%)",
-          transition: dragging ? "none" : undefined,
+                ? 'translateY(0)'
+                : 'translateY(100%)',
+          transition: dragging ? 'none' : undefined,
           // Safe area for iPhone home bar
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        }}
-      >
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        }}>
         {/* Drag handle */}
         <div
-          className="shrink-0 flex items-center justify-center h-10 cursor-grab active:cursor-grabbing touch-none"
+          className='flex h-10 shrink-0 cursor-grab touch-none items-center justify-center active:cursor-grabbing'
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
-          aria-hidden
-        >
-          <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+          aria-hidden>
+          <div className='h-1 w-10 rounded-full bg-muted-foreground/30' />
         </div>
 
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-5 pb-3 shrink-0 border-b border-border">
-            <h2 className="text-sm font-bold text-foreground">{title}</h2>
+          <div className='flex shrink-0 items-center justify-between border-b border-border px-5 pb-3'>
+            <h2 className='text-sm font-bold text-foreground'>{title}</h2>
             <button
               onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:text-foreground text-lg cursor-pointer border-0 transition-colors"
-              aria-label="Close"
-            >
-              ×
+              className='flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-muted text-lg text-muted-foreground transition-colors hover:text-foreground'
+              aria-label='Close'>
+              <IconX className='size-4' aria-hidden='true' />
             </button>
           </div>
         )}
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto [scrollbar-width:thin]">
-          {children}
-        </div>
+        <div className='flex-1 [scrollbar-width:thin] overflow-y-auto'>{children}</div>
       </div>
     </>
   );

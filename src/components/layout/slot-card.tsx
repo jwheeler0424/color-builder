@@ -16,7 +16,12 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ArrowLeftRight, ArrowUpDown, EllipsisVertical, XIcon } from 'lucide-react';
+import {
+  IconArrowsLeftRight as ArrowLeftRight,
+  IconArrowsUpDown as ArrowUpDown,
+  IconDotsVertical as EllipsisVertical,
+  IconX as XIcon,
+} from '@tabler/icons-react';
 import React, { useState, useRef, useMemo } from 'react';
 
 import type { PaletteSlot } from '@/types';
@@ -43,7 +48,7 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 
-// ─── Icon stubs (avoids lucide-react dep in shim environments) ────────────────
+// ─── Inline icon fallbacks for shim environments ──────────────────────────────
 
 function GripIcon() {
   return (

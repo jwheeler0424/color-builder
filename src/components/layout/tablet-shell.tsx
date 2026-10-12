@@ -5,17 +5,17 @@
  *
  *   ┌──────────────────────────────────────────────────────┐
  *   │  HEADER (56px — taller for touch targets)             │
- *   │  [◆ Chroma]                    [⌘K]  [♡]  [↗]  [?]  │
+ *   │  [Brand]                     [Search] [Save] [Export] │
  *   ├─────────┬────────────────────────────────────────────┤
  *   │         │  PALETTE STRIP — horizontal, ~140px        │
  *   │  NAV    │  [██][██][██][██][██][██][██]  →           │
  *   │  RAIL   ├────────────────────────────────────────────┤
  *   │  (64px) │                                             │
  *   │         │  ACTIVE PANEL — full width, scrollable      │
- *   │  ✦ Cr   │                                             │
- *   │  ◎ An   │  CREATE:  GenerateControlsAccordion         │
- *   │  ⬡ Bu   │  Others:  <Outlet /> (tool view)           │
- *   │  ↗ Ex   │                                             │
+ *   │ Palette │  Create: GenerateControlsAccordion           │
+ *   │ Analyze │  Others: <Outlet /> (tool view)              │
+ *   │ Build   │                                             │
+ *   │ Export  │                                             │
  *   │         │                                             │
  *   └─────────┴────────────────────────────────────────────┘
  *
@@ -24,6 +24,15 @@
  * All touch targets: minimum 48×48px (Material Design spec).
  */
 
+import {
+  IconArrowBackUp,
+  IconArrowUpRight,
+  IconHeart,
+  IconKeyboard,
+  IconRefresh,
+  IconSearch,
+  IconShare,
+} from '@tabler/icons-react';
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useState, useCallback, useEffect, Suspense } from 'react';
 
@@ -105,7 +114,7 @@ export function TabletShell() {
             onClick={() => openCmd(true)}
             className='flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl border border-transparent bg-transparent text-xl text-muted-foreground transition-colors hover:border-border hover:text-foreground'
             title='Search (⌘K)'>
-            🔍
+            <IconSearch className='size-5' aria-hidden='true' />
           </button>
 
           {/* Actions */}
@@ -113,7 +122,7 @@ export function TabletShell() {
             onClick={() => openModal('share')}
             className='flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-xl text-muted-foreground transition-colors hover:text-foreground'
             title='Share'>
-            ⤴
+            <IconShare className='size-5' aria-hidden='true' />
           </button>
           <button
             onClick={() => {
@@ -122,20 +131,20 @@ export function TabletShell() {
             }}
             className='flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-xl text-muted-foreground transition-colors hover:text-foreground'
             title='Save'>
-            ♡
+            <IconHeart className='size-5' aria-hidden='true' />
           </button>
           <button
             onClick={() => openModal('export')}
             className='flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-xl text-muted-foreground transition-colors hover:text-foreground'
             title='Export'>
-            ↗
+            <IconArrowUpRight className='size-5' aria-hidden='true' />
           </button>
           <button
             onClick={() => openModal('shortcuts')}
             className='flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-xl text-muted-foreground transition-colors hover:text-foreground'
             title='Keyboard shortcuts'
             aria-label='Keyboard shortcuts'>
-            ⌨
+            <IconKeyboard className='size-5' aria-hidden='true' />
           </button>
           <ThemeToggle />
         </header>
@@ -162,13 +171,14 @@ export function TabletShell() {
                         className='h-12 shrink-0 cursor-pointer rounded-xl border-0 bg-secondary px-4 font-mono text-[11px] text-secondary-foreground transition-colors outline-none hover:bg-secondary/80'
                         title='Undo (Ctrl+Z)'
                         aria-label='Undo generate'>
-                        ↩ Undo
+                        <IconArrowBackUp className='size-4' aria-hidden='true' />
+                        Undo
                       </button>
                       <button
                         onClick={() => generate()}
                         className='flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-0 bg-primary text-sm font-bold tracking-[.03em] text-primary-foreground transition-opacity outline-none active:opacity-80'
                         aria-label='Generate new palette'>
-                        <span className='text-[16px] leading-none'>⟳</span>
+                        <IconRefresh className='size-4' aria-hidden='true' />
                         Generate Palette
                       </button>
                     </div>

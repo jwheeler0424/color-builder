@@ -1,3 +1,4 @@
+import { IconCheck } from '@tabler/icons-react';
 import React, { useMemo } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
@@ -54,7 +55,14 @@ function InfoRow({ label, value, mono }: { label: string; value: string; mono?: 
         }}
         title={`Click to copy: ${value}`}
         onClick={copy}>
-        {copied ? '✓ copied' : value}
+        {copied ? (
+          <>
+            <IconCheck className='mr-1 inline size-3' aria-hidden='true' />
+            Copied
+          </>
+        ) : (
+          value
+        )}
       </span>
     </div>
   );

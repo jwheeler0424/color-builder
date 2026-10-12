@@ -1,5 +1,9 @@
+import {
+  IconDeviceDesktop as Monitor,
+  IconMoon as Moon,
+  IconSun as Sun,
+} from '@tabler/icons-react';
 import { useRouteContext, useRouter } from '@tanstack/react-router';
-import { Monitor, Moon, Sun } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { setTheme, type Theme } from '@/lib/theme';

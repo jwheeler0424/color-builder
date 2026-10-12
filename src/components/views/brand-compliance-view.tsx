@@ -6,7 +6,12 @@
  * harmonic compatibility score, and practical pairing recommendations.
  */
 
-import { Pencil, Plus, SwatchBook, Trash2 } from 'lucide-react';
+import {
+  IconPencil as Pencil,
+  IconPlus as Plus,
+  IconColorSwatch as SwatchBook,
+  IconTrash as Trash2,
+} from '@tabler/icons-react';
 import { useState, useMemo } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
@@ -251,7 +256,7 @@ export default function BrandComplianceView() {
         <section className='@container/results flex min-h-0 min-w-0 flex-col'>
           {!selected ? (
             <div className='tool-panel-space flex min-h-64 flex-1 flex-col items-center justify-center gap-3 text-muted-foreground'>
-              <SwatchBook className='size-8' strokeWidth={1.25} />
+              <SwatchBook className='size-8' stroke={1.25} />
               <p className={TYPE.title}>No brand colors</p>
             </div>
           ) : (

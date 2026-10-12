@@ -24,6 +24,7 @@
  *   - On slot double-click: panel shows ColorPickerModal for that slot.
  */
 
+import { IconX } from '@tabler/icons-react';
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useState, useCallback, useEffect } from 'react';
 
@@ -106,42 +107,58 @@ export function StudioShell() {
         {/* Right panel */}
         {panelOpen && (
           <Panel
-            open
-            title={isPicking ? undefined : panelTitle}
-            width={340}
-            onClose={() => {
-              setEditingSlotIndex(null);
-              setPanelOpen(false);
-            }}
+            aria-label={isPicking ? 'Color picker' : (panelTitle ?? 'Tool panel')}
+            side='right'
+            panelWidth='340px'
+            collapsible='none'
             className='desktop-right'>
-            {isPicking && editingSlotIndex !== null && slots[editingSlotIndex] ? (
-              /* Picker mode */
-              <div className='flex h-full flex-col overflow-hidden'>
-                <div className='flex shrink-0 items-center gap-3 border-b border-border px-4 py-2.5'>
-                  <button
-                    onClick={handlePickerBack}
-                    className='inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[11px] text-muted-foreground transition-colors hover:text-foreground'>
-                    ← Back
-                  </button>
-                  <span className='text-[11px] font-bold text-foreground'>
-                    Slot {editingSlotIndex + 1} — Edit Color
-                  </span>
-                </div>
-                <div className='flex-1 overflow-auto p-4'>
-                  <InlineColorPicker
-                    initialHex={slots[editingSlotIndex].color.hex}
-                    title={`Slot ${editingSlotIndex + 1}`}
-                    onApply={handlePickerApply}
-                    onCancel={handlePickerBack}
-                  />
-                </div>
+            <div className='flex h-full min-h-0 flex-col overflow-hidden'>
+              <div className='flex shrink-0 items-center justify-between gap-3 border-b border-border px-3 py-2'>
+                <span className='truncate text-[11px] font-bold text-foreground'>
+                  {isPicking ? `Slot ${editingSlotIndex! + 1} — Edit Color` : panelTitle}
+                </span>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setEditingSlotIndex(null);
+                    setPanelOpen(false);
+                  }}
+                  className='grid size-7 shrink-0 cursor-pointer place-items-center rounded border-0 bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground'
+                  aria-label='Close tool panel'>
+                  <IconX className='size-4' aria-hidden='true' />
+                </button>
               </div>
-            ) : (
-              /* Tool view */
-              <div className='flex h-full flex-col overflow-hidden'>
-                <Outlet />
+              <div className='min-h-0 flex-1 overflow-hidden'>
+                {isPicking && editingSlotIndex !== null && slots[editingSlotIndex] ? (
+                  /* Picker mode */
+                  <div className='flex h-full flex-col overflow-hidden'>
+                    <div className='flex shrink-0 items-center gap-3 border-b border-border px-4 py-2.5'>
+                      <button
+                        onClick={handlePickerBack}
+                        className='inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[11px] text-muted-foreground transition-colors hover:text-foreground'>
+                        ← Back
+                      </button>
+                      <span className='text-[11px] font-bold text-foreground'>
+                        Slot {editingSlotIndex + 1} — Edit Color
+                      </span>
+                    </div>
+                    <div className='flex-1 overflow-auto p-4'>
+                      <InlineColorPicker
+                        initialHex={slots[editingSlotIndex].color.hex}
+                        title={`Slot ${editingSlotIndex + 1}`}
+                        onApply={handlePickerApply}
+                        onCancel={handlePickerBack}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  /* Tool view */
+                  <div className='flex h-full flex-col overflow-hidden'>
+                    <Outlet />
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </Panel>
         )}
 

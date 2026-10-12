@@ -1,4 +1,4 @@
-import { ExternalLinkIcon } from 'lucide-react';
+import { IconCheck, IconDownload, IconExternalLink as ExternalLinkIcon } from '@tabler/icons-react';
 import { useState, useMemo } from 'react';
 
 import type { ExportTab } from '@/types';
@@ -187,16 +187,19 @@ export function ExportModal() {
         <DialogFooter>
           {exportTab === 'svg' ? (
             <Button variant='ghost' onClick={handleDownloadSvg}>
-              ↓ Download SVG
+              <IconDownload className='size-4' aria-hidden='true' />
+              Download SVG
             </Button>
           ) : (
             <Button variant='ghost' onClick={downloadStory}>
-              ↓ Color Story
+              <IconDownload className='size-4' aria-hidden='true' />
+              Color Story
             </Button>
           )}
           <DialogClose render={<Button variant='ghost'>Close</Button>} />
           <Button variant='default' onClick={handleCopy}>
-            {copied ? '✓ Copied' : 'Copy'}
+            {copied && <IconCheck className='size-4' aria-hidden='true' />}
+            {copied ? 'Copied' : 'Copy'}
           </Button>
         </DialogFooter>
       </DialogContent>

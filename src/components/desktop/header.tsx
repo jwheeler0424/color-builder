@@ -4,7 +4,7 @@
  * Main Desktop Header
  */
 
-import { PanelRightIcon } from 'lucide-react';
+import { IconLayoutSidebarRightCollapse as PanelRightIcon } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

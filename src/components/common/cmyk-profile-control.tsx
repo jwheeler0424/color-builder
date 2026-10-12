@@ -1,4 +1,4 @@
-import { Upload, X } from 'lucide-react';
+import { IconUpload as Upload, IconX as X } from '@tabler/icons-react';
 import { useRef } from 'react';
 
 import { clearCmykProfile, loadCmykProfile, useCmykProfile } from '@/hooks/use-cmyk-profile';

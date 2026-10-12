@@ -14,6 +14,15 @@
  *   EXPORT  → /scale, /designsystem, /theme, /utility, /brand
  */
 
+import type { ComponentType } from 'react';
+
+import {
+  IconChartRadar,
+  IconDownload,
+  IconPalette,
+  IconSearch,
+  IconTools,
+} from '@tabler/icons-react';
 import { Link, useRouterState } from '@tanstack/react-router';
 
 import { cn } from '@/lib/utils';
@@ -29,35 +38,35 @@ interface SectionDef {
   label: string;
   primary: string; // primary route — navigated to when section is clicked
   routes: string[]; // all routes that belong to this section (for active detection)
-  icon: string;
+  icon: ComponentType<{ className?: string }>;
 }
 
 export const SECTIONS: SectionDef[] = [
   {
     id: 'create',
     label: 'Palette',
-    icon: '✦',
+    icon: IconPalette,
     primary: '/palette',
     routes: ['/palette', '/picker'],
   },
   {
     id: 'analyze',
     label: 'Analyze',
-    icon: '◎',
+    icon: IconChartRadar,
     primary: '/analyze/accessibility',
     routes: ['/analyze/accessibility', '/analyze/scoring', '/analyze/visualize', '/analyze/brand'],
   },
   {
     id: 'build',
     label: 'Build',
-    icon: '⬡',
+    icon: IconTools,
     primary: '/build/mixer',
     routes: ['/build/mixer', '/build/gradient', '/build/extract'],
   },
   {
     id: 'export',
     label: 'Export',
-    icon: '↗',
+    icon: IconDownload,
     primary: '/export/scale',
     routes: ['/export/scale', '/export/designsystem', '/export/theme', '/export/utility'],
   },
@@ -147,6 +156,7 @@ export function SectionTabs({ className }: { className?: string }) {
     <nav className={cn('flex h-full items-stretch', className)} aria-label='Sections'>
       {SECTIONS.map((section) => {
         const isActive = section.id === activeSection?.id;
+        const SectionIcon = section.icon;
         return (
           <Link
             key={section.id}
@@ -159,7 +169,7 @@ export function SectionTabs({ className }: { className?: string }) {
                 ? 'border-b-primary text-foreground'
                 : 'border-b-transparent text-muted-foreground hover:border-b-border hover:text-foreground',
             )}>
-            <span className='text-sm leading-none'>{section.icon}</span>
+            <SectionIcon className='size-4' aria-hidden='true' />
             {section.label}
           </Link>
         );
@@ -214,7 +224,7 @@ export function SearchButton({ onClick }: { onClick: () => void }) {
         'border-border bg-muted text-muted-foreground hover:border-input hover:text-foreground',
       )}
       title='Search tools (⌘K)'>
-      <span className='opacity-70'>🔍</span>
+      <IconSearch className='size-3.5 opacity-70' aria-hidden='true' />
       <span className='hidden lg:inline'>Search</span>
       <kbd className='ml-0.5 text-[8px] opacity-50'>⌘K</kbd>
     </button>

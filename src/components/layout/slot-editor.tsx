@@ -1,4 +1,10 @@
-import { CheckIcon, CopyIcon, LockIcon, LockOpenIcon, Trash2Icon } from 'lucide-react';
+import {
+  IconCheck as CheckIcon,
+  IconCopy as CopyIcon,
+  IconLock as LockIcon,
+  IconLockOpen as LockOpenIcon,
+  IconTrash as Trash2Icon,
+} from '@tabler/icons-react';
 import { useState } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';

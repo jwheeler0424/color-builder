@@ -1,3 +1,4 @@
+import { IconCheck } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
 import React, { useCallback, useMemo, useState } from 'react';
 
@@ -319,7 +320,7 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
                     padding: '0 2px',
                     flexShrink: 0,
                   }}>
-                  {copied ? '✓' : 'copy'}
+                  {copied ? <IconCheck className='size-3' aria-hidden='true' /> : 'copy'}
                 </button>
               </div>
             </div>
@@ -431,7 +432,14 @@ function InfoRow({ label, value, mono }: { label: string; value: string; mono?: 
         }}
         title={`Click to copy: ${value}`}
         onClick={copy}>
-        {copied ? '✓ copied' : value}
+        {copied ? (
+          <>
+            <IconCheck className='mr-1 inline size-3' aria-hidden='true' />
+            Copied
+          </>
+        ) : (
+          value
+        )}
       </span>
     </div>
   );

@@ -1,14 +1,16 @@
+import { IconMenu2 as MenuIcon } from '@tabler/icons-react';
+import { createContext, useCallback, useContext, useState } from 'react';
+
 /* eslint-disable react-refresh/only-export-components */
-import { cn } from "@/lib/utils";
-import { createContext, useCallback, useContext, useState } from "react";
-import { Button } from "../ui/button";
-import { Separator } from "../ui/separator";
-import { MenuIcon } from "lucide-react";
+import { cn } from '@/lib/utils';
+
+import { Button } from '../ui/button';
+import { Separator } from '../ui/separator';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type SidebarSide = "left" | "right";
-export type SidebarVariant = "push" | "overlay";
+export type SidebarSide = 'left' | 'right';
+export type SidebarVariant = 'push' | 'overlay';
 
 export interface SidebarContextValue {
   isOpen: boolean;
@@ -52,7 +54,7 @@ const SidebarContext = createContext<SidebarContextValue | null>(null);
 
 export function useSidebar(): SidebarContextValue {
   const ctx = useContext(SidebarContext);
-  if (!ctx) throw new Error("useSidebar must be used within a SidebarProvider");
+  if (!ctx) throw new Error('useSidebar must be used within a SidebarProvider');
   return ctx;
 }
 
@@ -61,8 +63,8 @@ export function useSidebar(): SidebarContextValue {
 export function SidebarProvider({
   children,
   defaultOpen = true,
-  side = "left",
-  variant = "push",
+  side = 'left',
+  variant = 'push',
   width = 260,
 }: SidebarProviderProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -71,9 +73,7 @@ export function SidebarProvider({
   const close = useCallback(() => setIsOpen(false), []);
 
   return (
-    <SidebarContext.Provider
-      value={{ isOpen, side, variant, width, toggle, open, close }}
-    >
+    <SidebarContext.Provider value={{ isOpen, side, variant, width, toggle, open, close }}>
       {children}
     </SidebarContext.Provider>
   );
@@ -81,23 +81,18 @@ export function SidebarProvider({
 
 // ─── Layout wrapper (scoped container) ───────────────────────────────────────
 
-export function SidebarLayout({
-  children,
-  className = "",
-  style,
-}: SidebarLayoutProps) {
+export function SidebarLayout({ children, className = '', style }: SidebarLayoutProps) {
   return (
     <div
       className={className}
       style={{
-        position: "relative",
-        display: "flex",
-        overflow: "hidden",
-        width: "100%",
-        height: "100%",
+        position: 'relative',
+        display: 'flex',
+        overflow: 'hidden',
+        width: '100%',
+        height: '100%',
         ...style,
-      }}
-    >
+      }}>
       {children}
     </div>
   );
@@ -105,56 +100,38 @@ export function SidebarLayout({
 
 // ─── Sidebar panel ────────────────────────────────────────────────────────────
 
-export function Sidebar({
-  children,
-  header,
-  footer,
-  className = "",
-}: SidebarProps) {
+export function Sidebar({ children, header, footer, className = '' }: SidebarProps) {
   const { isOpen, side, variant, width } = useSidebar();
 
-  const translateX = isOpen
-    ? "0"
-    : side === "left"
-      ? `-${width}px`
-      : `${width}px`;
+  const translateX = isOpen ? '0' : side === 'left' ? `-${width}px` : `${width}px`;
 
   return (
     <>
       {/* Overlay backdrop for overlay variant */}
-      {variant === "overlay" && (
+      {variant === 'overlay' && (
         <div
-          aria-hidden="true"
+          aria-hidden='true'
           className={cn(
-            "absolute inset-0 bg-black/45 backdrop-blur-xs z-40 transition-opacity duration-300 pointer-events-none opacity-0",
-            isOpen && "opacity-100 pointer-events-auto",
+            'pointer-events-none absolute inset-0 z-40 bg-black/45 opacity-0 backdrop-blur-xs transition-opacity duration-300',
+            isOpen && 'pointer-events-auto opacity-100',
           )}
         />
       )}
 
       <aside
         className={cn(
-          `top-0 bottom-0 [${side}]-0 relative z-auto shrink-0 flex flex-col overflow-hidden bg-background border-x border-x-border/40 transition-all duration-300 ease-in-out`,
+          `top-0 bottom-0 [${side}]-0 relative z-auto flex shrink-0 flex-col overflow-hidden border-x border-x-border/40 bg-background transition-all duration-300 ease-in-out`,
           `translate-x-[${translateX}] w-[${width}px] min-w-[${width}px]`,
-          side === "left" && "border-l-0",
-          side === "right" && "border-r-0",
-          variant === "overlay" && "absolute z-50",
+          side === 'left' && 'border-l-0',
+          side === 'right' && 'border-r-0',
+          variant === 'overlay' && 'absolute z-50',
           className,
-        )}
-      >
-        {header && (
-          <div className="px-4 py-5 border-b border-b-border/40 shrink-0">
-            {header}
-          </div>
-        )}
+        )}>
+        {header && <div className='shrink-0 border-b border-b-border/40 px-4 py-5'>{header}</div>}
 
-        <div className="flex-1 overflow-y-auto py-3 px-0">{children}</div>
+        <div className='flex-1 overflow-y-auto px-0 py-3'>{children}</div>
 
-        {footer && (
-          <div className="px-5 py-3 border-t border-t-border/40 shrink-0">
-            {footer}
-          </div>
-        )}
+        {footer && <div className='shrink-0 border-t border-t-border/40 px-5 py-3'>{footer}</div>}
       </aside>
     </>
   );
@@ -164,7 +141,7 @@ export function Sidebar({
 
 export function SidebarContent({
   children,
-  className = "",
+  className = '',
   style,
 }: {
   children: React.ReactNode;
@@ -174,11 +151,10 @@ export function SidebarContent({
   return (
     <main
       className={cn(
-        "flex-1 min-w-0 overflow-y-auto transition-[flex] duration-300 ease-in-out",
+        'min-w-0 flex-1 overflow-y-auto transition-[flex] duration-300 ease-in-out',
         className,
       )}
-      style={style}
-    >
+      style={style}>
       {children}
     </main>
   );
@@ -186,20 +162,16 @@ export function SidebarContent({
 
 // ─── Trigger button ───────────────────────────────────────────────────────────
 
-export function SidebarTrigger({
-  className = "",
-  children,
-}: SidebarTriggerProps) {
+export function SidebarTrigger({ className = '', children }: SidebarTriggerProps) {
   const { toggle, isOpen, side } = useSidebar();
 
   return (
     <Button
       onClick={toggle}
-      aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
-      size={"icon"}
-      variant={"ghost"}
-      className={cn("text-muted-foreground", className)}
-    >
+      aria-label={isOpen ? 'Close sidebar' : 'Open sidebar'}
+      size={'icon'}
+      variant={'ghost'}
+      className={cn('text-muted-foreground', className)}>
       {children ?? <MenuIcon />}
     </Button>
   );
@@ -221,10 +193,9 @@ export function SidebarGroup({
       {label && (
         <div
           className={cn(
-            `px-5 pt-1.5 pb-1 text-[10px] tracking-widest uppercase text-muted-foreground font-mono`,
+            `px-5 pt-1.5 pb-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase`,
             className,
-          )}
-        >
+          )}>
           {label}
         </div>
       )}
@@ -251,29 +222,23 @@ export function SidebarItem({
   return (
     <Button
       onClick={onClick}
-      variant={"ghost"}
-      size={"sm"}
+      variant={'ghost'}
+      size={'sm'}
       className={cn(
-        "w-full flex items-center gap-2.5 cursor-pointer mr-1",
-        active && `bg-secondary border-l-2 border-l-accent font-semibold`,
+        'mr-1 flex w-full cursor-pointer items-center gap-2.5',
+        active && `border-l-2 border-l-accent bg-secondary font-semibold`,
         className,
-      )}
-    >
+      )}>
       {icon && (
-        <span
-          style={{ flexShrink: 0, opacity: active ? 1 : 0.7, display: "flex" }}
-        >
-          {icon}
-        </span>
+        <span style={{ flexShrink: 0, opacity: active ? 1 : 0.7, display: 'flex' }}>{icon}</span>
       )}
       <span
         style={{
           flex: 1,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-      >
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}>
         {label}
       </span>
       {badge !== undefined && (
@@ -281,13 +246,12 @@ export function SidebarItem({
           style={{
             fontSize: 11,
             fontWeight: 600,
-            padding: "1px 6px",
+            padding: '1px 6px',
             borderRadius: 10,
-            background: active ? "var(--sidebar-accent, #6366f1)" : "#23262f",
-            color: active ? "#fff" : "#9ca3af",
-            fontFamily: "monospace",
-          }}
-        >
+            background: active ? 'var(--sidebar-accent, #6366f1)' : '#23262f',
+            color: active ? '#fff' : '#9ca3af',
+            fontFamily: 'monospace',
+          }}>
           {badge}
         </span>
       )}
@@ -299,15 +263,12 @@ export function SidebarItem({
 
 // ─── Separator ────────────────────────────────────────────────────────────────
 
-export function SidebarSeparator({
-  className,
-  ...props
-}: React.ComponentProps<typeof Separator>) {
+export function SidebarSeparator({ className, ...props }: React.ComponentProps<typeof Separator>) {
   return (
     <Separator
-      data-slot="sidebar-separator"
-      data-sidebar="separator"
-      className={cn("bg-sidebar-border mx-2 w-auto", className)}
+      data-slot='sidebar-separator'
+      data-sidebar='separator'
+      className={cn('mx-2 w-auto bg-sidebar-border', className)}
       {...props}
     />
   );

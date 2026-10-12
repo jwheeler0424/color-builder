@@ -14,6 +14,26 @@
  *   - Recent items (persisted in localStorage, max 5)
  */
 
+import {
+  IconAccessible,
+  IconAdjustments,
+  IconBrush,
+  IconChartBar,
+  IconColorSwatch,
+  IconDownload,
+  IconEye,
+  IconGradienter,
+  IconHeart,
+  IconKeyboard,
+  IconLayoutDashboard,
+  IconPalette,
+  IconPhoto,
+  IconRefresh,
+  IconRulerMeasure,
+  IconSearch,
+  IconShare,
+  IconTrademark,
+} from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
 import React, {
   useState,
@@ -36,7 +56,7 @@ interface CommandItem {
   label: string;
   section: 'Palette' | 'Analyze' | 'Build' | 'Export' | 'Action';
   keywords?: string;
-  icon: string;
+  icon: React.ComponentType<{ className?: string }>;
   route?: string;
   action?: () => void;
 }
@@ -49,7 +69,7 @@ const TOOLS: CommandItem[] = [
     id: 'palette',
     label: 'Palette',
     section: 'Palette',
-    icon: '🎨',
+    icon: IconPalette,
     route: '/palette',
     keywords: 'generate slots colors',
   },
@@ -58,7 +78,7 @@ const TOOLS: CommandItem[] = [
     id: 'accessibility',
     label: 'Accessibility (WCAG + Contrast + Color Blind)',
     section: 'Analyze',
-    icon: '♿',
+    icon: IconAccessible,
     route: '/analyze/accessibility',
     keywords: 'wcag contrast aa aaa apca a11y color blind deuteranopia',
   },
@@ -66,7 +86,7 @@ const TOOLS: CommandItem[] = [
     id: 'scoring',
     label: 'Score & Compare palettes',
     section: 'Analyze',
-    icon: '📊',
+    icon: IconChartBar,
     route: '/analyze/scoring',
     keywords: 'score grade evaluate balance compare diff',
   },
@@ -74,7 +94,7 @@ const TOOLS: CommandItem[] = [
     id: 'oklch-scatter',
     label: 'Visualize (OKLCH + P3 Gamut)',
     section: 'Analyze',
-    icon: '🔬',
+    icon: IconEye,
     route: '/analyze/visualize',
     keywords: 'oklch perceptual p3 gamut wide color chroma scatter',
   },
@@ -83,7 +103,7 @@ const TOOLS: CommandItem[] = [
     id: 'mixer',
     label: 'Color mixer',
     section: 'Build',
-    icon: '⚗',
+    icon: IconColorSwatch,
     route: '/build/mixer',
     keywords: 'mix blend interpolate combine',
   },
@@ -91,7 +111,7 @@ const TOOLS: CommandItem[] = [
     id: 'gradient',
     label: 'Gradient editor',
     section: 'Build',
-    icon: '◈',
+    icon: IconGradienter,
     route: '/build/gradient',
     keywords: 'gradient linear radial conic stops',
   },
@@ -99,7 +119,7 @@ const TOOLS: CommandItem[] = [
     id: 'extract',
     label: 'Extract & Convert',
     section: 'Build',
-    icon: '🖼',
+    icon: IconPhoto,
     route: '/build/extract',
     keywords: 'image extract palette photo upload convert hex hsl oklch cmyk',
   },
@@ -108,7 +128,7 @@ const TOOLS: CommandItem[] = [
     id: 'scale',
     label: 'Scales (Single + Full Palette)',
     section: 'Export',
-    icon: '🪜',
+    icon: IconRulerMeasure,
     route: '/export/scale',
     keywords: 'tint shade scale 50 100 500 900 steps tokens all palette',
   },
@@ -116,7 +136,7 @@ const TOOLS: CommandItem[] = [
     id: 'designsystem',
     label: 'Tokens & CSS Preview',
     section: 'Export',
-    icon: '🏗',
+    icon: IconLayoutDashboard,
     route: '/export/designsystem',
     keywords: 'design system semantic tokens css variables figma preview app',
   },
@@ -124,7 +144,7 @@ const TOOLS: CommandItem[] = [
     id: 'theme',
     label: 'Theme generator',
     section: 'Export',
-    icon: '🎭',
+    icon: IconBrush,
     route: '/export/theme',
     keywords: 'theme tailwind shadcn dark light generate',
   },
@@ -132,7 +152,7 @@ const TOOLS: CommandItem[] = [
     id: 'utility',
     label: 'Utility colors',
     section: 'Export',
-    icon: '🔧',
+    icon: IconAdjustments,
     route: '/export/utility',
     keywords: 'utility destructive warning success info semantic',
   },
@@ -140,7 +160,7 @@ const TOOLS: CommandItem[] = [
     id: 'brand',
     label: 'Brand compliance',
     section: 'Export',
-    icon: '™',
+    icon: IconTrademark,
     route: '/analyze/brand',
     keywords: 'brand compliance guidelines logo',
   },
@@ -255,7 +275,7 @@ function CommandPalette() {
         id: `action:${h.key}`,
         label: h.label,
         section: 'Action' as const,
-        icon: '⌨',
+        icon: IconKeyboard,
         keywords: h.group ?? '',
         action: h.handler,
       })),
@@ -268,7 +288,7 @@ function CommandPalette() {
       id: 'action:generate',
       label: 'Generate new palette',
       section: 'Action',
-      icon: '⟳',
+      icon: IconRefresh,
       keywords: 'generate regen space',
       action: generate,
     },
@@ -276,7 +296,7 @@ function CommandPalette() {
       id: 'action:save',
       label: 'Save current palette',
       section: 'Action',
-      icon: '♡',
+      icon: IconHeart,
       keywords: 'save store',
       action: () => openModal('save'),
     },
@@ -284,7 +304,7 @@ function CommandPalette() {
       id: 'action:export',
       label: 'Export palette',
       section: 'Action',
-      icon: '↑',
+      icon: IconDownload,
       keywords: 'export download copy',
       action: () => openModal('export'),
     },
@@ -292,7 +312,7 @@ function CommandPalette() {
       id: 'action:share',
       label: 'Share palette URL',
       section: 'Action',
-      icon: '🔗',
+      icon: IconShare,
       keywords: 'share link url',
       action: () => openModal('share'),
     },
@@ -300,7 +320,7 @@ function CommandPalette() {
       id: 'action:shortcuts',
       label: 'Keyboard shortcuts',
       section: 'Action',
-      icon: '⌨',
+      icon: IconKeyboard,
       keywords: 'hotkey keyboard help',
       action: () => openModal('shortcuts'),
     },
@@ -379,7 +399,7 @@ function CommandPalette() {
         style={{ animation: 'cmd-in 0.12s cubic-bezier(.16,1,.3,1)' }}>
         {/* Search input */}
         <div className='flex h-14 items-center gap-3 border-b border-border px-4'>
-          <span className='shrink-0 text-base text-muted-foreground'>🔍</span>
+          <IconSearch className='size-4 shrink-0 text-muted-foreground' aria-hidden='true' />
           <input
             ref={inputRef}
             value={query}
@@ -413,6 +433,7 @@ function CommandPalette() {
               {items.map((item) => {
                 const idx = globalIdx++;
                 const isActive = idx === activeIdx;
+                const ItemIcon = item.icon;
                 return (
                   <button
                     key={item.id}
@@ -422,9 +443,10 @@ function CommandPalette() {
                     )}
                     onMouseEnter={() => setActiveIdx(idx)}
                     onClick={() => execute(item)}>
-                    <span className='w-5 shrink-0 text-center text-[16px] leading-none'>
-                      {item.icon}
-                    </span>
+                    <ItemIcon
+                      className='size-4 shrink-0 text-muted-foreground'
+                      aria-hidden='true'
+                    />
                     <span className='flex-1 text-sm text-foreground'>{item.label}</span>
                     <span className='shrink-0 rounded bg-muted px-1.5 py-0.5 text-[9px] font-bold tracking-[0.08em] text-muted-foreground uppercase'>
                       {item.section}

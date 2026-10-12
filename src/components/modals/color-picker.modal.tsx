@@ -1,5 +1,6 @@
 'use client';
 
+import { IconCheck } from '@tabler/icons-react';
 import { useState, useCallback, useMemo } from 'react';
 
 import type { RGB, HSL, HSV, OKLCH, PickerMode } from '@/types';
@@ -308,7 +309,7 @@ export default function ColorPickerModal({
                       padding: '0 2px',
                       flexShrink: 0,
                     }}>
-                    {copied ? '✓' : 'copy'}
+                    {copied ? <IconCheck className='size-3' aria-hidden='true' /> : 'copy'}
                   </button>
                 </div>
               </div>

@@ -1,16 +1,16 @@
 import {
-  Check,
-  CheckCircle2,
-  Circle,
-  CircleAlert,
-  Copy,
-  Focus,
-  Info,
-  Moon,
-  Search,
-  Sun,
-  TriangleAlert,
-} from 'lucide-react';
+  IconCheck as Check,
+  IconCircleCheck as CheckCircle2,
+  IconCircle as Circle,
+  IconAlertTriangle as CircleAlert,
+  IconCopy as Copy,
+  IconFocus2 as Focus,
+  IconInfoCircle as Info,
+  IconMoon as Moon,
+  IconSearch as Search,
+  IconSun as Sun,
+  IconAlertTriangle as TriangleAlert,
+} from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';

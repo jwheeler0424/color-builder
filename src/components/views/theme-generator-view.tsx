@@ -1,4 +1,11 @@
-import { Check, Copy, Moon, RotateCcw, Search, Sun } from 'lucide-react';
+import {
+  IconCheck as Check,
+  IconCopy as Copy,
+  IconMoon as Moon,
+  IconRefresh as RotateCcw,
+  IconSearch as Search,
+  IconSun as Sun,
+} from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';

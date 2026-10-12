@@ -1,7 +1,11 @@
 'use client';
 
 import { Select as SelectPrimitive } from '@base-ui/react/select';
-import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from 'lucide-react';
+import {
+  IconChevronDown as ChevronDownIcon,
+  IconCheck as CheckIcon,
+  IconChevronUp as ChevronUpIcon,
+} from '@tabler/icons-react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';

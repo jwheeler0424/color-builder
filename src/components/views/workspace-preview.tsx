@@ -1,24 +1,24 @@
 import {
-  ArrowUpRight,
-  Check,
-  CheckCircle2,
-  Circle,
-  Clock3,
-  Component,
-  Hexagon,
-  Layers,
-  MoreHorizontal,
-  Plus,
-  Quote,
-  Search,
-  Square,
-  Star,
-  Trash2,
-  Triangle,
-  Users,
-  X,
-  Zap,
-} from 'lucide-react';
+  IconArrowUpRight as ArrowUpRight,
+  IconCheck as Check,
+  IconCircleCheck as CheckCircle2,
+  IconCircle as Circle,
+  IconClockHour3 as Clock3,
+  IconComponents as Component,
+  IconHexagon as Hexagon,
+  IconStack2 as Layers,
+  IconDots as MoreHorizontal,
+  IconPlus as Plus,
+  IconQuote as Quote,
+  IconSearch as Search,
+  IconSquare as Square,
+  IconStar as Star,
+  IconTrash as Trash2,
+  IconTriangle as Triangle,
+  IconUsers as Users,
+  IconX as X,
+  IconBolt as Zap,
+} from '@tabler/icons-react';
 import { useState, type CSSProperties, type ReactNode } from 'react';
 
 import type { PaletteSlot, SemanticToken, UtilityRole } from '@/types';
@@ -415,7 +415,7 @@ function ProductMockup({ t }: { t: Theme }) {
                     color: get('--primary-foreground'),
                     border: `1.5px solid ${row.role === 'success' ? get('--primary') : get('--border-strong')}`,
                   }}>
-                  {row.role === 'success' && <Check className='size-2' strokeWidth={4} />}
+                  {row.role === 'success' && <Check className='size-2' stroke={4} />}
                 </span>
                 <span className='min-w-0 flex-1 truncate'>{row.label}</span>
                 <span
@@ -764,7 +764,7 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
                         background: get('--primary-container'),
                         color: get('--primary-container-foreground'),
                       }}>
-                      <Check className='size-2.5' strokeWidth={3} />
+                      <Check className='size-2.5' stroke={3} />
                     </span>
                     {feature}
                   </span>

@@ -5,14 +5,14 @@
  *
  *   ┌────────────────────────────────┐
  *   │  HEADER (52px)                  │
- *   │  [◆ Chroma]      [🔍]  [⚙]    │
+ *   │  [Brand]       [Search] [Tools] │
  *   ├────────────────────────────────┤
  *   │  PALETTE STRIP (44vh)           │
  *   │  horizontal scroll + snap       │
  *   │  [██] [██] [██] [██]  →        │
  *   │  ● ○ ○ ○ ○ (dot indicators)   │
  *   ├────────────────────────────────┤
- *   │  [⟳ Generate Palette]           │
+ *   │  [Generate Palette]              │
  *   │  (sticky full-width bar, 52px)  │
  *   ├────────────────────────────────┤
  *   │  CONTENT AREA (scrollable)      │
@@ -21,7 +21,7 @@
  *   │                                 │
  *   ├────────────────────────────────┤
  *   │  BOTTOM NAV (56px + safe area)  │
- *   │  [✦] [◎] [ ⟳ ] [⬡] [↗]       │
+ *   │  [Palette] [Analyze] [Build] ... │
  *   │  Cr  An   GEN   Bu  Ex         │
  *   └────────────────────────────────┘
  *
@@ -30,6 +30,16 @@
  * Safe area insets: env(safe-area-inset-*) for notch/home bar.
  */
 
+import {
+  IconArrowBackUp,
+  IconArrowUpRight,
+  IconDots,
+  IconHeart,
+  IconKeyboard,
+  IconRefresh,
+  IconSearch,
+  IconShare,
+} from '@tabler/icons-react';
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useState, useCallback, useEffect, Suspense } from 'react';
 
@@ -119,7 +129,7 @@ export function MobileShell() {
             className='flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-xl text-muted-foreground transition-colors hover:text-foreground'
             title='Search (⌘K)'
             aria-label='Open search'>
-            🔍
+            <IconSearch className='size-5' aria-hidden='true' />
           </button>
 
           {/* Export */}
@@ -128,7 +138,7 @@ export function MobileShell() {
             className='flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-xl text-muted-foreground transition-colors hover:text-foreground'
             title='Export palette'
             aria-label='Export palette'>
-            ↗
+            <IconArrowUpRight className='size-5' aria-hidden='true' />
           </button>
 
           <ThemeToggle />
@@ -139,19 +149,24 @@ export function MobileShell() {
               className='flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-xl text-muted-foreground transition-colors hover:text-foreground'
               title='More actions'
               aria-label='More actions'>
-              ⋯
+              <IconDots className='size-5' aria-hidden='true' />
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end' className='w-44'>
-              <DropdownMenuItem onClick={() => openModal('share')}>⤴ Share URL</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openModal('share')}>
+                <IconShare className='size-4' />
+                Share URL
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
                   setSaveName('');
                   openModal('save');
                 }}>
-                ♡ Save Palette
+                <IconHeart className='size-4' />
+                Save Palette
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => openModal('shortcuts')}>
-                ⌨ Keyboard Shortcuts
+                <IconKeyboard className='size-4' />
+                Keyboard Shortcuts
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -172,7 +187,8 @@ export function MobileShell() {
                 className='h-12 shrink-0 cursor-pointer rounded-xl border-0 bg-secondary px-4 font-mono text-[11px] text-secondary-foreground transition-colors outline-none hover:bg-secondary/80'
                 title='Undo (Ctrl+Z)'
                 aria-label='Undo generate'>
-                ↩ Undo
+                <IconArrowBackUp className='size-4' aria-hidden='true' />
+                Undo
               </button>
               <button
                 onClick={() => generate()}
@@ -185,7 +201,7 @@ export function MobileShell() {
                   'outline-none',
                 )}
                 aria-label='Generate new palette'>
-                <span className='text-[16px] leading-none'>⟳</span>
+                <IconRefresh className='size-4' aria-hidden='true' />
                 Generate Palette
               </button>
             </div>

@@ -1,5 +1,10 @@
+import {
+  IconArrowsLeftRight as ArrowLeftRight,
+  IconCheck as Check,
+  IconPlus as Plus,
+  IconPlant2 as Sprout,
+} from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
-import { ArrowLeftRight, Check, Plus, Sprout } from 'lucide-react';
 import { useState, useMemo } from 'react';
 
 import type { ColorValue } from '@/lib/engine/color';

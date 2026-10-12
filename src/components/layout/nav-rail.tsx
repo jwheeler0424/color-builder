@@ -19,6 +19,7 @@ import { Link, useRouterState } from '@tanstack/react-router';
 
 import { cn } from '@/lib/utils';
 
+import { LogoIcon } from '../logo-icon';
 import { SECTIONS } from './nav-desktop';
 
 interface NavRailProps {
@@ -40,11 +41,12 @@ export function NavRail({ className, onSectionChange }: NavRailProps) {
       aria-label='Section navigation'>
       {/* Brand mark */}
       <div className='mb-1 flex h-12 w-12 items-center justify-center'>
-        <span className='text-[18px] font-black text-primary'>◆</span>
+        <LogoIcon className='size-6' />
       </div>
 
       {SECTIONS.map((section) => {
         const isActive = section.routes.some((r) => pathname.startsWith(r));
+        const SectionIcon = section.icon;
         return (
           <Link
             key={section.id}
@@ -65,13 +67,13 @@ export function NavRail({ className, onSectionChange }: NavRailProps) {
                 'mb-1 flex h-8 w-14 items-center justify-center rounded-xl transition-colors',
                 isActive ? 'bg-secondary-foreground/10' : 'hover:bg-accent/60',
               )}>
-              <span
+              <SectionIcon
                 className={cn(
-                  'text-[18px] leading-none transition-colors',
+                  'size-5 transition-colors',
                   isActive ? 'text-primary' : 'text-muted-foreground',
-                )}>
-                {section.icon}
-              </span>
+                )}
+                aria-hidden='true'
+              />
             </div>
             {/* Label */}
             <span

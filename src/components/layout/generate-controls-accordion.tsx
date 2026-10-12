@@ -8,6 +8,7 @@
  * Default closed: Themes, Seed Behavior, Temperature, Harmony (secondary).
  */
 
+import { IconRefresh, IconSnowflake, IconSun, IconX } from '@tabler/icons-react';
 import { useState, useCallback, useRef } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
@@ -135,7 +136,7 @@ export function GenerateControlsAccordion({
                 className='flex h-11 w-11 cursor-pointer items-center justify-center text-xl text-muted-foreground transition-colors hover:text-destructive'
                 onClick={() => removeSeed(i)}
                 title='Remove seed'>
-                ×
+                <IconX className='size-4' aria-hidden='true' />
               </button>
             </div>
           ))}
@@ -195,9 +196,9 @@ export function GenerateControlsAccordion({
       {/* ── Temperature ── */}
       <AccordionSection
         id='temp'
-        title={`Temperature — ${temperature < -0.2 ? '❄ Cool' : temperature > 0.2 ? '🌅 Warm' : '⚪ Neutral'}`}>
+        title={`Temperature — ${temperature < -0.2 ? 'Cool' : temperature > 0.2 ? 'Warm' : 'Neutral'}`}>
         <div className='flex items-center gap-3 pt-1'>
-          <span className='text-[11px] text-muted-foreground'>❄</span>
+          <IconSnowflake className='size-3.5 text-muted-foreground' aria-label='Cool' />
           <input
             type='range'
             min={-100}
@@ -209,7 +210,7 @@ export function GenerateControlsAccordion({
             }}
             className='h-9 flex-1'
           />
-          <span className='text-[11px] text-muted-foreground'>🌅</span>
+          <IconSun className='size-3.5 text-muted-foreground' aria-label='Warm' />
         </div>
       </AccordionSection>
 
@@ -258,7 +259,8 @@ export function GenerateControlsAccordion({
           <button
             className='h-12 w-full cursor-pointer rounded-md border-0 bg-primary text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 active:opacity-75'
             onClick={() => generate()}>
-            ⟳ Generate
+            <IconRefresh className='mr-2 inline size-4' aria-hidden='true' />
+            Generate
           </button>
         </div>
       )}

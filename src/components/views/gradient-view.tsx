@@ -1,21 +1,21 @@
 import '../../../node_modules/@tanstack/charts/dist/mark.js';
+import {
+  IconArrowDown as ArrowDown,
+  IconArrowDownLeft as ArrowDownLeft,
+  IconArrowDownRight as ArrowDownRight,
+  IconArrowLeft as ArrowLeft,
+  IconArrowRight as ArrowRight,
+  IconArrowUp as ArrowUp,
+  IconArrowUpLeft as ArrowUpLeft,
+  IconArrowUpRight as ArrowUpRight,
+  IconCheck as Check,
+  IconCopy as Copy,
+  IconPlus as Plus,
+  IconTrash as Trash2,
+} from '@tabler/icons-react';
 import { lineY } from '@tanstack/charts/line';
 import { scaleLinear } from '@tanstack/charts/scales/linear';
 import { defineChart } from '@tanstack/charts/scene';
-import {
-  ArrowDown,
-  ArrowDownLeft,
-  ArrowDownRight,
-  ArrowLeft,
-  ArrowRight,
-  ArrowUp,
-  ArrowUpLeft,
-  ArrowUpRight,
-  Check,
-  Copy,
-  Plus,
-  Trash2,
-} from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
 
 import type { GradientStop, GradientState, GradientType } from '@/types';

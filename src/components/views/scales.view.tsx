@@ -5,8 +5,13 @@
  * Sub-tabs:  [Single Color] [Full Palette]
  */
 
+import {
+  IconCheck as Check,
+  IconCopy as Copy,
+  IconRefresh as RefreshCw,
+  IconPlant2 as Sprout,
+} from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
-import { Check, Copy, RefreshCw, Sprout } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 
 import ColorPickerModal from '@/components/modals/color-picker.modal';

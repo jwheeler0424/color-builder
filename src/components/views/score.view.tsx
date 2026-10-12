@@ -5,8 +5,12 @@
  * Sub-tabs:  [Score] [Compare]
  */
 
+import {
+  IconCheck,
+  IconDownload as ArrowDownToLine,
+  IconArrowsLeftRight as ArrowLeftRight,
+} from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
-import { ArrowDownToLine, ArrowLeftRight } from 'lucide-react';
 import { useState, useEffect, useMemo, useRef } from 'react';
 
 import type { SavedPalette } from '@/types';
@@ -766,6 +770,9 @@ function hueDist(a: number, b: number) {
 }
 
 function paletteStats(hexes: string[]) {
+  if (hexes.length === 0) {
+    return { avgChroma: 0, avgLight: 0, hueSpread: 0, aaAny: 0, total: 0 };
+  }
   const colors = hexes.map((hex) => parseColor(hex).xyz);
   const oklchs = colors.map((xyz) => {
     const { l, c, h } = xyzToLch(OKLAB, xyz);
@@ -855,7 +862,7 @@ function PaletteCard({
               <span
                 className='text-[10px] font-bold'
                 style={{ color: textColor(parseColor(hex).xyz) }}>
-                ✓
+                <IconCheck className='size-3' aria-hidden='true' />
               </span>
             )}
           </button>
@@ -992,8 +999,8 @@ function CompareTab() {
   const options = [CURRENT, ...saved];
   const palA = options.find((p) => p.id === (selA ?? '__current__')) ?? CURRENT;
   const palB = options.find((p) => p.id === selB) ?? saved[0];
-  const statsA = useMemo(() => (palA ? paletteStats(palA.hexes) : null), [palA]);
-  const statsB = useMemo(() => (palB ? paletteStats(palB.hexes) : null), [palB]);
+  const statsA = useMemo(() => paletteStats(palA?.hexes ?? []), [palA]);
+  const statsB = useMemo(() => paletteStats(palB?.hexes ?? []), [palB]);
   const scoreA = useMemo(
     () => scorePalette((palA?.hexes ?? []).map((hex) => parseColor(hex).xyz)),
     [palA],

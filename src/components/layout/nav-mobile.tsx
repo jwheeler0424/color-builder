@@ -4,13 +4,14 @@
  * Mobile bottom tab bar with center Generate FAB.
  * Follows iOS Human Interface Guidelines and Material Design 3 bottom nav spec.
  *
- * 5 items: Palette · Analyze · [⟳ FAB] · Build · Export
+ * 5 items: Palette · Analyze · [Generate FAB] · Build · Export
  * The center Generate FAB is elevated (shadow, primary color).
  *
  * Safe area: padding-bottom uses env(safe-area-inset-bottom) for iPhone home bar.
  * Touch target: minimum 44×44px per Apple HIG (stricter than Material's 48px).
  */
 
+import { IconRefresh } from '@tabler/icons-react';
 import { Link, useRouterState } from '@tanstack/react-router';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
@@ -42,6 +43,7 @@ export function NavMobile({ className }: NavMobileProps) {
       {/* Left sections */}
       {leftSections.map((section) => {
         const isActive = section.routes.some((r) => pathname.startsWith(r));
+        const SectionIcon = section.icon;
         return (
           <Link
             key={section.id}
@@ -54,7 +56,7 @@ export function NavMobile({ className }: NavMobileProps) {
               isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
             )}
             aria-current={isActive ? 'page' : undefined}>
-            <span className='mb-1 text-[20px] leading-none'>{section.icon}</span>
+            <SectionIcon className='mb-1 size-5' aria-hidden='true' />
             <span className='text-[9px] font-bold tracking-[.04em]'>{section.label}</span>
           </Link>
         );
@@ -63,7 +65,7 @@ export function NavMobile({ className }: NavMobileProps) {
       {/* Center Generate FAB */}
       <div className='relative flex h-12 w-14 shrink-0 items-end justify-center'>
         <button
-          onClick={generate}
+          onClick={() => generate()}
           className={cn(
             'absolute top-0 left-1/2 z-101 h-14 w-14 -translate-x-1/2 -translate-y-7 rounded-full',
             'bg-primary text-primary-foreground',
@@ -75,7 +77,7 @@ export function NavMobile({ className }: NavMobileProps) {
           )}
           title='Generate palette (Space)'
           aria-label='Generate new palette'>
-          ⟳
+          <IconRefresh className='size-5' aria-hidden='true' />
         </button>
       </div>
       <span className='absolute bottom-2 left-1/2 -translate-x-1/2 text-[9px] leading-3 font-bold tracking-[.04em] text-foreground'>
@@ -85,6 +87,7 @@ export function NavMobile({ className }: NavMobileProps) {
       {/* Right sections */}
       {rightSections.map((section) => {
         const isActive = section.routes.some((r) => pathname.startsWith(r));
+        const SectionIcon = section.icon;
         return (
           <Link
             key={section.id}
@@ -97,7 +100,7 @@ export function NavMobile({ className }: NavMobileProps) {
               isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
             )}
             aria-current={isActive ? 'page' : undefined}>
-            <span className='mb-1 text-[20px] leading-none'>{section.icon}</span>
+            <SectionIcon className='mb-1 size-5' aria-hidden='true' />
             <span className='text-[9px] font-bold tracking-[.04em]'>{section.label}</span>
           </Link>
         );

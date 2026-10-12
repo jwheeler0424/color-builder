@@ -1,3 +1,4 @@
+import { IconX } from '@tabler/icons-react';
 import React, { useRef, useCallback } from 'react';
 
 import type { GradientStop } from '@/types';
@@ -144,7 +145,7 @@ export default function GradientStopBar({
                 title='Remove stop (or press Delete)'
                 className='absolute -top-2.5 -right-2.5 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border-none bg-destructive p-0 text-[10px] leading-none text-white'
                 tabIndex={-1}>
-                ×
+                <IconX className='size-3' aria-hidden='true' />
               </button>
             )}
           </div>

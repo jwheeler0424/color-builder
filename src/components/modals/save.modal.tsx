@@ -1,6 +1,9 @@
-import { useChromaStore } from "@/stores/chroma.store";
-import { savePalette } from "@/lib/utils";
-import { Button } from "../ui/button";
+import { IconHeart as HeartIcon } from '@tabler/icons-react';
+
+import { savePalette } from '@/lib/utils';
+import { useChromaStore } from '@/stores/chroma.store';
+
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogClose,
@@ -9,8 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
-import { HeartIcon } from "lucide-react";
+} from '../ui/dialog';
 
 // ─── Save Modal ───────────────────────────────────────────────────────────────
 
@@ -26,58 +28,50 @@ export function SaveModal() {
   const hexes = slots.map((s) => s.color.hex);
 
   const handleSave = () => {
-    savePalette(saveName.trim() || "Unnamed", hexes, mode);
+    savePalette(saveName.trim() || 'Unnamed', hexes, mode);
     closeModal();
   };
 
   return (
-    <Dialog
-      open={modal === "save"}
-      onOpenChange={(open) => !open && closeModal()}
-    >
+    <Dialog open={modal === 'save'} onOpenChange={(open) => !open && closeModal()}>
       <DialogTrigger
         render={
           <Button
-            variant="ghost"
-            size="icon-lg"
+            variant='ghost'
+            size='icon-lg'
             onClick={() => {
-              setSaveName("");
-              openModal("save");
+              setSaveName('');
+              openModal('save');
             }}
-            title="Save palette"
-            className="text-muted-foreground"
-          >
-            <HeartIcon className="size-5" />
+            title='Save palette'
+            className='text-muted-foreground'>
+            <HeartIcon className='size-5' />
           </Button>
         }
       />
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className='sm:max-w-sm'>
         <DialogHeader>
           <DialogTitle>Save Palette</DialogTitle>
         </DialogHeader>
-        <div className="flex h-9 rounded overflow-hidden gap-px">
+        <div className='flex h-9 gap-px overflow-hidden rounded'>
           {hexes.map((h, i) => (
-            <div
-              key={`${h}-${i}`}
-              className="flex-1"
-              style={{ background: h }}
-            />
+            <div key={`${h}-${i}`} className='flex-1' style={{ background: h }} />
           ))}
         </div>
 
         <input
-          className="w-full bg-muted border border-border rounded px-2 py-1.5 text-[12px] text-foreground font-mono tracking-[.06em] outline-none focus:border-ring transition-colors placeholder:text-muted-foreground"
+          className='w-full rounded border border-border bg-muted px-2 py-1.5 font-mono text-[12px] tracking-[.06em] text-foreground transition-colors outline-none placeholder:text-muted-foreground focus:border-ring'
           value={saveName}
           onChange={(e) => setSaveName(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSave()}
-          placeholder="Name your palette…"
+          onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+          placeholder='Name your palette…'
           maxLength={40}
           autoFocus
-          autoComplete="off"
+          autoComplete='off'
         />
         <DialogFooter>
-          <DialogClose render={<Button variant="ghost">Cancel</Button>} />
-          <Button variant="default" onClick={handleSave}>
+          <DialogClose render={<Button variant='ghost'>Cancel</Button>} />
+          <Button variant='default' onClick={handleSave}>
             Save
           </Button>
         </DialogFooter>

@@ -6,21 +6,21 @@
  */
 
 import {
-  ArrowRight,
-  ChevronDown,
-  Check,
-  Copy,
-  Image as ImageIcon,
-  LoaderCircle,
-  MoreHorizontal,
-  Minus,
-  Palette,
-  Pipette,
-  Plus,
-  Sparkles,
-  Trash2,
-  Upload,
-} from 'lucide-react';
+  IconArrowRight as ArrowRight,
+  IconChevronDown as ChevronDown,
+  IconCheck as Check,
+  IconCopy as Copy,
+  IconPhoto as ImageIcon,
+  IconLoader2 as LoaderCircle,
+  IconDots as MoreHorizontal,
+  IconMinus as Minus,
+  IconPalette as Palette,
+  IconColorPicker as Pipette,
+  IconPlus as Plus,
+  IconSparkles as Sparkles,
+  IconTrash as Trash2,
+  IconUpload as Upload,
+} from '@tabler/icons-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 
 import type { PaletteSlot } from '@/lib/engine/color-stop';
@@ -255,15 +255,15 @@ function ImageTab() {
               <div className='flex max-w-lg flex-col items-center gap-4 px-5 py-6 text-center'>
                 <div className='flex items-center gap-2.5' aria-hidden='true'>
                   <span className='grid size-11 place-items-center rounded-md border border-primary/30 bg-primary/10 text-primary'>
-                    <ImageIcon className='size-5' strokeWidth={1.5} />
+                    <ImageIcon className='size-5' stroke={1.5} />
                   </span>
                   <ArrowRight className='size-4 text-muted-foreground' />
                   <span className='grid size-11 place-items-center rounded-md border border-border bg-card text-foreground'>
-                    <Pipette className='size-5' strokeWidth={1.5} />
+                    <Pipette className='size-5' stroke={1.5} />
                   </span>
                   <ArrowRight className='size-4 text-muted-foreground' />
                   <span className='grid size-11 place-items-center rounded-md border border-border bg-card text-foreground'>
-                    <Palette className='size-5' strokeWidth={1.5} />
+                    <Palette className='size-5' stroke={1.5} />
                   </span>
                 </div>
                 <div className='space-y-1.5'>
@@ -375,7 +375,7 @@ function ImageTab() {
                         onClick={() => {
                           clearPalettePreview();
                           const nextColors = extractedColors.filter((_, index) => index !== i);
-                          setExtracted(nextColors, imgSrc);
+                          if (imgSrc) setExtracted(nextColors, imgSrc);
                           setPrimaryIndex((current) => {
                             if (nextColors.length === 0) return 0;
                             const nextIndex = current > i ? current - 1 : current;
@@ -462,7 +462,9 @@ function ImageTab() {
                 step={1}
                 value={[paletteCount]}
                 thumbAriaLabel='Palette size'
-                onValueChange={(value) => updatePaletteCount(value[0] ?? paletteCount)}
+                onValueChange={(value) =>
+                  updatePaletteCount(typeof value === 'number' ? value : (value[0] ?? paletteCount))
+                }
               />
             </div>
             {hasImagePalette && primaryColor && (
