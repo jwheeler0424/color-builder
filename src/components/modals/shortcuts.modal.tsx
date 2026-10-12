@@ -1,5 +1,6 @@
 import { IconSquareAsterisk as SquareAsterisk } from '@tabler/icons-react';
 
+import { useCommandModifier } from '@/hooks/use-command-modifier';
 import { useHotkeyList } from '@/providers/hotkey.provider';
 import { useChromaStore } from '@/stores/chroma.store';
 
@@ -13,6 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '../ui/dialog';
+import { Kbd, KbdGroup } from '../ui/kbd';
 
 // ─── Shortcuts Modal ──────────────────────────────────────────────────────────
 
@@ -21,7 +23,8 @@ export function ShortcutsModal() {
   const closeModal = useChromaStore((s) => s.closeModal);
   const openModal = useChromaStore((s) => s.openModal);
 
-  const hotkeys = useHotkeyList();
+  const hotkeys = useHotkeyList(modal === 'shortcuts');
+  const commandModifier = useCommandModifier();
 
   // Group by .group field
   const groups: Record<string, typeof hotkeys> = {};
@@ -31,13 +34,23 @@ export function ShortcutsModal() {
     groups[g].push(hk);
   }
 
-  function keyLabel(hk: (typeof hotkeys)[0]): string {
+  function keyParts(hk: (typeof hotkeys)[0]): string[] {
     const parts: string[] = [];
-    if (hk.ctrl) parts.push('Ctrl');
-    if (hk.shift) parts.push('Shift');
-    const k = hk.key === 'space' ? 'Space' : hk.key.toUpperCase();
+    if (hk.ctrl) parts.push(commandModifier);
+    if (hk.shift) parts.push(commandModifier === '⌘' ? '⇧' : 'Shift');
+    const keyNames: Record<string, string> = {
+      space: 'Space',
+      arrowleft: '←',
+      arrowright: '→',
+      arrowup: '↑',
+      arrowdown: '↓',
+      escape: 'Esc',
+      delete: 'Del',
+      backspace: 'Backspace',
+    };
+    const k = keyNames[hk.key.toLowerCase()] ?? hk.key.toUpperCase();
     parts.push(k);
-    return parts.join('+');
+    return parts;
   }
   return (
     <Dialog open={modal === 'shortcuts'} onOpenChange={(open) => !open && closeModal()}>
@@ -69,9 +82,15 @@ export function ShortcutsModal() {
                     key={hk.key + (hk.ctrl ? 'c' : '') + (hk.shift ? 's' : '')}
                     className='flex items-center justify-between gap-4'>
                     <span className='text-[12px] text-secondary-foreground'>{hk.label}</span>
-                    <kbd className='inline-block shrink-0 rounded border border-input bg-muted px-2 py-0.5 font-mono text-[11px] whitespace-nowrap text-muted-foreground'>
-                      {keyLabel(hk)}
-                    </kbd>
+                    <KbdGroup className='shrink-0 gap-1' aria-label={`${hk.label} shortcut`}>
+                      {keyParts(hk).map((part, index) => (
+                        <Kbd
+                          key={`${part}-${index}`}
+                          className='h-5 min-w-0 rounded border border-border bg-background px-1.5 font-mono text-[10px] font-semibold text-foreground shadow-sm'>
+                          {part}
+                        </Kbd>
+                      ))}
+                    </KbdGroup>
                   </div>
                 ))}
               </div>
