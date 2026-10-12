@@ -228,7 +228,7 @@ export function SearchButton({ onClick }: { onClick: () => void }) {
       title='Search tools (⌘K)'>
       <IconSearch className='size-3.5 opacity-70' aria-hidden='true' />
       <span className='hidden lg:inline'>Search</span>
-      <Kbd className='ml-0.5 h-5 min-w-0 rounded border border-border bg-background px-1.5 font-mono text-[10px] font-semibold text-foreground shadow-sm'>
+      <Kbd className='ml-0.5 h-5 min-w-0 rounded border border-border/60 bg-background/50 px-1.5 font-mono text-[10px] font-medium text-foreground/75 shadow-none'>
         {commandModifier === '⌘' ? '⌘K' : 'Ctrl K'}
       </Kbd>
     </button>

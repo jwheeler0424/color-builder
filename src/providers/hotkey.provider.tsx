@@ -20,7 +20,7 @@ import React, {
   useContext,
   useEffect,
   useRef,
-} from "react";
+} from 'react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,6 +34,8 @@ export interface HotkeyDef {
   handler: () => void;
   /** Optional group for display in shortcuts modal */
   group?: string;
+  /** Allow this shortcut while focus is in an editable control. */
+  allowInInput?: boolean;
 }
 
 type Registry = Map<string, HotkeyDef>;
@@ -49,14 +51,10 @@ const HotkeyContext = createContext<HotkeyContextValue | null>(null);
 
 // ─── Canonical key string ─────────────────────────────────────────────────────
 
-function keyStr(def: Pick<HotkeyDef, "key" | "ctrl" | "shift">): string {
-  return [
-    def.ctrl ? "ctrl" : "",
-    def.shift ? "shift" : "",
-    def.key.toLowerCase(),
-  ]
+function keyStr(def: Pick<HotkeyDef, 'key' | 'ctrl' | 'shift'>): string {
+  return [def.ctrl ? 'ctrl' : '', def.shift ? 'shift' : '', def.key.toLowerCase()]
     .filter(Boolean)
-    .join("+");
+    .join('+');
 }
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
@@ -76,39 +74,32 @@ export function HotkeyProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Skip when typing in form fields
       const tag = (e.target as HTMLElement).tagName;
       const isEditable = (e.target as HTMLElement).isContentEditable;
-      if (
-        tag === "INPUT" ||
-        tag === "TEXTAREA" ||
-        tag === "SELECT" ||
-        isEditable
-      )
-        return;
-
       const k = keyStr({
-        key: e.key.toLowerCase() === " " ? "space" : e.key.toLowerCase(),
+        key: e.key.toLowerCase() === ' ' ? 'space' : e.key.toLowerCase(),
         ctrl: e.ctrlKey || e.metaKey,
         shift: e.shiftKey,
       });
 
       const def = registry.current.get(k);
-      if (def) {
-        e.preventDefault();
-        def.handler();
-      }
+      if (!def) return;
+      if (
+        isEditable &&
+        !def.allowInInput &&
+        (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || isEditable)
+      )
+        return;
+
+      e.preventDefault();
+      def.handler();
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  return (
-    <HotkeyContext.Provider value={{ register, getList }}>
-      {children}
-    </HotkeyContext.Provider>
-  );
+  return <HotkeyContext.Provider value={{ register, getList }}>{children}</HotkeyContext.Provider>;
 }
 
 // ─── Hook: register a hotkey for the lifetime of a component ─────────────────
@@ -132,13 +123,13 @@ export function useRegisterHotkey(def: HotkeyDef) {
 
 // ─── Hook: read the full hotkey list (for the shortcuts modal) ────────────────
 
-export function useHotkeyList(): HotkeyDef[] {
+export function useHotkeyList(refreshToken?: unknown): HotkeyDef[] {
   const ctx = useContext(HotkeyContext);
   const [list, setList] = React.useState<HotkeyDef[]>([]);
   useEffect(() => {
     if (!ctx) return;
     // Snapshot on mount and whenever the modal is likely to open
     setList(ctx.getList());
-  }, [ctx]);
+  }, [ctx, refreshToken]);
   return list;
 }
