@@ -10,6 +10,7 @@ import {
   paletteVisionPairs,
   xyzToLch,
 } from '../src/lib/engine/browser';
+import { handleColorNames } from '../src/lib/engine/colors/color-names.server';
 import { findNearestNamedColorXyz } from '../src/lib/engine/colors/named-color-lookup';
 import { extractColors as extractPixels } from '../src/lib/engine/extract';
 import { sampleGradient, buildGradientCss } from '../src/lib/engine/gradient';
@@ -60,7 +61,6 @@ import {
   regenerateUtilityColors as engineReroll,
   deriveThemeTokens as engineTokens,
 } from '../src/lib/engine/theme';
-import { handleColorNames } from '../src/lib/engine/colors/color-names.server';
 import { useChromaStore } from '../src/stores/chroma.store';
 
 test('engine parses and round-trips wide gamut and alpha without converting through hex', () => {
@@ -433,8 +433,8 @@ test('engine extraction retains the declared pixel gamut and unrounded means', (
 test('engine image extraction decodes browser images and preserves P3 stops', async () => {
   const originalImage = globalThis.Image;
   const originalCreateElement = document.createElement;
-  const originalCreateObjectURL = URL.createObjectURL;
-  const originalRevokeObjectURL = URL.revokeObjectURL;
+  const originalCreateObjectURL = URL.createObjectURL.bind(URL);
+  const originalRevokeObjectURL = URL.revokeObjectURL.bind(URL);
   let revoked = false;
   class ImageStub {
     width = 2;

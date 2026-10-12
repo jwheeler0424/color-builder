@@ -93,7 +93,7 @@ export function ChromaShell() {
 
   // Rehydrate store on mount (TanStack Start SSR)
   useEffect(() => {
-    useChromaStore.persist?.rehydrate?.();
+    void useChromaStore.persist?.rehydrate?.();
   }, []);
 
   useEffect(

@@ -364,7 +364,7 @@ function CommandPalette() {
   const execute = useCallback(
     (item: CommandItem) => {
       pushRecent(item.id);
-      if (item.route) navigate({ to: item.route as Parameters<typeof navigate>[0]['to'] });
+      if (item.route) void navigate({ to: item.route as Parameters<typeof navigate>[0]['to'] });
       else if (item.action) item.action();
       setOpen(false);
     },

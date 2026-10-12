@@ -182,18 +182,18 @@ test('workspace preview supports search, filters, creation, selection and activi
   fireEvent.change(view.getByRole('searchbox', { name: 'Search projects' }), {
     target: { value: '' },
   });
-  fireEvent.click(view.getByRole('button', { name: 'Completed', exact: true }));
+  fireEvent.click(view.getByRole('button', { name: 'Completed' }));
   expect(view.container.querySelectorAll('[data-preview-project]')).toHaveLength(1);
-  fireEvent.click(view.getByRole('button', { name: 'All projects', exact: true }));
-  fireEvent.click(view.getByRole('button', { name: 'New project', exact: true }));
-  expect(view.getByRole('button', { name: 'Create project', exact: true })).toBeDisabled();
+  fireEvent.click(view.getByRole('button', { name: 'All projects' }));
+  fireEvent.click(view.getByRole('button', { name: 'New project' }));
+  expect(view.getByRole('button', { name: 'Create project' })).toBeDisabled();
   fireEvent.change(view.getByLabelText('Project name'), { target: { value: 'Launch checklist' } });
-  fireEvent.click(view.getByRole('button', { name: 'Create project', exact: true }));
+  fireEvent.click(view.getByRole('button', { name: 'Create project' }));
   expect(view.container.querySelectorAll('[data-preview-project]')).toHaveLength(5);
   fireEvent.click(view.getByRole('checkbox', { name: 'Select Launch checklist' }));
-  fireEvent.click(view.getByRole('button', { name: 'Delete selected', exact: true }));
+  fireEvent.click(view.getByRole('button', { name: 'Delete selected' }));
   expect(view.container.querySelectorAll('[data-preview-project]')).toHaveLength(4);
-  fireEvent.click(view.getByRole('button', { name: 'Activity', exact: true }));
+  fireEvent.click(view.getByRole('button', { name: 'Activity' }));
   expect(view.getByRole('heading', { name: 'Team activity' })).toBeInTheDocument();
 });
 
@@ -212,24 +212,24 @@ test('workspace preview landing and settings pages retain working theme controls
       mode='dark'
     />,
   );
-  fireEvent.click(view.getByRole('button', { name: 'Landing', exact: true }));
+  fireEvent.click(view.getByRole('button', { name: 'Landing' }));
   expect(view.getByRole('heading', { name: /in orbit/ })).toBeInTheDocument();
   expect(view.getByText('$16', { exact: true })).toBeInTheDocument();
-  fireEvent.click(view.getByRole('button', { name: 'Yearly', exact: true }));
+  fireEvent.click(view.getByRole('button', { name: 'Yearly' }));
   expect(view.getByText('$12', { exact: true })).toBeInTheDocument();
-  fireEvent.click(view.getByRole('button', { name: 'Get started', exact: true }));
+  fireEvent.click(view.getByRole('button', { name: 'Get started' }));
   expect(view.getByLabelText('Project name')).toBeInTheDocument();
-  fireEvent.click(view.getByRole('button', { name: 'Settings', exact: true }));
+  fireEvent.click(view.getByRole('button', { name: 'Settings' }));
   fireEvent.change(view.getByLabelText('Full name'), { target: { value: 'Taylor Reed' } });
   fireEvent.click(view.getByRole('checkbox', { name: /Weekly digest/ }));
-  fireEvent.click(view.getByRole('button', { name: 'Save changes', exact: true }));
+  fireEvent.click(view.getByRole('button', { name: 'Save changes' }));
   expect(view.getByRole('status')).toHaveTextContent('Preferences saved');
-  fireEvent.click(view.getByRole('button', { name: 'Reset workspace', exact: true }));
-  expect(view.getByRole('button', { name: 'Confirm reset', exact: true })).toBeInTheDocument();
-  fireEvent.click(view.getByRole('button', { name: 'Confirm reset', exact: true }));
+  fireEvent.click(view.getByRole('button', { name: 'Reset workspace' }));
+  expect(view.getByRole('button', { name: 'Confirm reset' })).toBeInTheDocument();
+  fireEvent.click(view.getByRole('button', { name: 'Confirm reset' }));
   expect(view.getByLabelText('Full name')).toHaveValue('Avery James');
   expect(view.getByRole('checkbox', { name: /Weekly digest/ })).not.toBeChecked();
-  fireEvent.click(view.getByRole('button', { name: 'Projects', exact: true }));
+  fireEvent.click(view.getByRole('button', { name: 'Projects' }));
   expect(view.container.querySelectorAll('[data-preview-project]')).toHaveLength(4);
   expect(view.queryByLabelText('Project name')).not.toBeInTheDocument();
 });
@@ -337,9 +337,9 @@ test('CSS preview keeps realistic sample-page navigation synchronized across the
     );
   }
   const view = render(<Comparison />);
-  fireEvent.click(view.getAllByRole('button', { name: 'Settings', exact: true })[0]);
+  fireEvent.click(view.getAllByRole('button', { name: 'Settings' })[0]);
   expect(view.getAllByRole('heading', { name: 'Workspace settings' })).toHaveLength(2);
-  fireEvent.click(view.getAllByRole('button', { name: 'Landing', exact: true })[1]);
+  fireEvent.click(view.getAllByRole('button', { name: 'Landing' })[1]);
   expect(view.getAllByRole('heading', { name: /Keep every project in orbit/ })).toHaveLength(2);
 });
 
@@ -356,9 +356,7 @@ test('CSS token inspector covers all semantic roles, filters and copies selected
   view.rerender(<TokenLegend tokens={tokens} mode='dark' query='--primary' onCopy={copy} />);
   expect(view.container.querySelectorAll('[data-token-role]')).toHaveLength(4);
   const primary = tokens.semantic.find((token) => token.name === '--primary')!.dark;
-  fireEvent.click(
-    view.getByRole('button', { name: `Copy dark --primary ${primary}`, exact: true }),
-  );
+  fireEvent.click(view.getByRole('button', { name: `Copy dark --primary ${primary}` }));
   expect(copy).toHaveBeenCalledWith('dark:--primary', primary);
   view.rerender(<TokenLegend tokens={tokens} mode='dark' query='unmatched-token' onCopy={copy} />);
   expect(view.getByText('No matching tokens.')).toBeInTheDocument();
@@ -369,46 +367,42 @@ test('theme workspace token edits update the live preview and can be reverted', 
   fireEvent.click(
     within(view.getByRole('group', { name: 'Theme sample page' })).getByRole('button', {
       name: 'Projects',
-      exact: true,
     }),
   );
   const preview = view.container.querySelector<HTMLElement>('[data-theme-mode="light"]')!;
-  const original = within(preview).getByRole('button', { name: 'New project', exact: true }).style
-    .background;
+  const original = within(preview).getByRole('button', { name: 'New project' }).style.background;
   fireEvent.click(
     within(view.getByRole('tablist', { name: 'Theme inspector' })).getByRole('tab', {
       name: 'Tokens',
-      exact: true,
     }),
   );
   fireEvent.change(view.getByRole('searchbox', { name: 'Search theme tokens' }), {
     target: { value: '--primary' },
   });
-  fireEvent.change(view.getByRole('textbox', { name: 'Theme light --primary', exact: true }), {
+  fireEvent.change(view.getByRole('textbox', { name: 'Theme light --primary' }), {
     target: { value: '#e63946' },
   });
-  expect(within(preview).getByRole('button', { name: 'New project', exact: true })).toHaveStyle({
+  expect(within(preview).getByRole('button', { name: 'New project' })).toHaveStyle({
     background: '#e63946',
   });
-  fireEvent.click(view.getByRole('button', { name: 'Revert --primary', exact: true }));
-  expect(
-    within(preview).getByRole('button', { name: 'New project', exact: true }).style.background,
-  ).toBe(original);
+  fireEvent.click(view.getByRole('button', { name: 'Revert --primary' }));
+  expect(within(preview).getByRole('button', { name: 'New project' }).style.background).toBe(
+    original,
+  );
   fireEvent.click(
     within(view.getByRole('group', { name: 'Theme preview mode' })).getByRole('button', {
       name: 'Split',
-      exact: true,
     }),
   );
   expect(view.container.querySelectorAll('[data-theme-mode]')).toHaveLength(2);
 });
 
-test('export utility workspace edits roles, rejects invalid hex and preserves locks during regeneration', () => {
+test('export utility workspace edits roles, rejects invalid hex and preserves locks during regeneration', async () => {
   const previous = useChromaStore.getState().utilityColors;
   const previousLocks = useChromaStore.getState().utilityLocks;
   const view = render(<UtilityColorsView />);
   try {
-    const input = view.getByRole('textbox', { name: 'Info base hex', exact: true });
+    const input = view.getByRole('textbox', { name: 'Info base hex' });
     fireEvent.change(input, { target: { value: '#e63946' } });
     expect(useChromaStore.getState().utilityColors.info.hex).toBe('#e63946');
     fireEvent.change(input, { target: { value: '#zzzzzz' } });
@@ -417,10 +411,10 @@ test('export utility workspace edits roles, rejects invalid hex and preserves lo
     fireEvent.blur(input);
     expect(input).toHaveValue('#e63946');
     if (useChromaStore.getState().utilityLocks.info)
-      fireEvent.click(view.getByRole('button', { name: 'Unlock Info', exact: true }));
-    fireEvent.click(view.getByRole('button', { name: 'Lock Info', exact: true }));
+      fireEvent.click(view.getByRole('button', { name: 'Unlock Info' }));
+    fireEvent.click(view.getByRole('button', { name: 'Lock Info' }));
     const beforeRegeneration = useChromaStore.getState().utilityColors;
-    fireEvent.click(view.getByRole('button', { name: 'Regenerate all', exact: true }));
+    fireEvent.click(view.getByRole('button', { name: 'Regenerate all' }));
     const regenerated = useChromaStore.getState().utilityColors;
     for (const role of Object.keys(beforeRegeneration) as (keyof typeof beforeRegeneration)[]) {
       if (useChromaStore.getState().utilityLocks[role])
@@ -429,12 +423,14 @@ test('export utility workspace edits roles, rejects invalid hex and preserves lo
     }
     expect(useChromaStore.getState().utilityColors.info.hex).toBe('#e63946');
     expect(useChromaStore.getState().utilityLocks.info).toBe(true);
-    fireEvent.click(view.getByRole('button', { name: 'Select Focus', exact: true }));
-    expect(view.getByRole('textbox', { name: 'Focus base hex', exact: true })).toBeInTheDocument();
+    fireEvent.click(view.getByRole('button', { name: 'Select Focus' }));
+    expect(view.getByRole('textbox', { name: 'Focus base hex' })).toBeInTheDocument();
     expect(view.container.querySelectorAll('[data-utility-theme]')).toHaveLength(2);
   } finally {
     view.unmount();
-    act(() => useChromaStore.setState({ utilityColors: previous, utilityLocks: previousLocks }));
+    await act(async () => {
+      useChromaStore.setState({ utilityColors: previous, utilityLocks: previousLocks });
+    });
   }
 });
 

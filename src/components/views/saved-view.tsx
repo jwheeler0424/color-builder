@@ -30,7 +30,7 @@ export default function SavedView() {
       name: p.slotNames?.[i],
     }));
     loadPalette(slots, p.mode, p.hexes.length);
-    navigate({ to: '/palette' });
+    void navigate({ to: '/palette' });
   };
 
   const handleDelete = (id: string) => {
