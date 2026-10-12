@@ -34,7 +34,6 @@ import { ShellProvider } from '@/providers/shell.provider';
 
 import { InlineColorPicker } from '../common/inline-color-picker';
 import { Panel } from '../panel';
-import { GenerateFab } from './generate-fab';
 import { LeftRail } from './left-rail';
 import { NavDesktop, SECTIONS } from './nav-desktop';
 import { PaletteStrip } from './palette-strip';
@@ -102,7 +101,6 @@ export function StudioShell() {
         {/* Center: palette strip + FAB */}
         <div className='desktop-main relative flex h-full flex-1 overflow-hidden'>
           <PaletteStrip onEditSlot={handleEditSlot} />
-          <GenerateFab />
         </div>
 
         {/* Right panel */}

@@ -57,14 +57,23 @@ const UTILITY_DEFS: Record<UtilityRole, { label: string; description: string }> 
   focus: { label: 'Focus', description: 'Keyboard focus rings — matches primary palette color' },
 };
 
-/** OKLCH hue centre and tolerance arc of each semantic role. */
-const ROLE_HUES: Record<'info' | 'success' | 'warning' | 'error', { center: number; arc: number }> =
-  {
-    info: { center: 220, arc: 60 },
-    success: { center: 148, arc: 50 },
-    warning: { center: 75, arc: 35 },
-    error: { center: 27, arc: 35 },
-  };
+/** OKLCH hue centre and half-width of each role's band; generated hues never leave it. */
+export const ROLE_HUES: Record<
+  'info' | 'success' | 'warning' | 'error',
+  { center: number; arc: number }
+> = {
+  info: { center: 250, arc: 22 },
+  success: { center: 148, arc: 20 },
+  warning: { center: 72, arc: 22 },
+  error: { center: 27, arc: 10 },
+};
+
+const signedHue = (from: number, to: number) => ((to - from + 540) % 360) - 180;
+
+function clampRoleHue(role: keyof typeof ROLE_HUES, h: number): number {
+  const { center, arc } = ROLE_HUES[role];
+  return (center + clamp(signedHue(center, h), -arc, arc) + 360) % 360;
+}
 
 export type ThemeColorInput = string | ColorValue;
 const readColor = (input: ThemeColorInput): ColorValue =>
@@ -79,9 +88,11 @@ const mostChromatic = (colors: Lch[]) =>
   colors.reduce((best, c) => (c.c > best.c ? c : best), colors[0]!);
 
 /**
- * Semantic state colors drawn from a palette (hex). Each role takes the hue of the palette color
- * that best fits its hue arc and the palette's lightness/chroma, or leans the nearest palette hue
- * toward the role's canonical hue; neutral and focus follow the most chromatic color.
+ * Semantic state colors drawn from a palette (hex). A role reuses a palette color outright when one
+ * is already vivid, readable and inside the role's hue band. Otherwise it takes the hue of the
+ * palette color that best fits its hue arc (or leans the nearest palette hue toward the role's
+ * canonical hue) with the palette's lightness/chroma; neutral and focus follow the most chromatic
+ * color.
  */
 export function generateUtilityColors(
   palette: readonly ThemeColorInput[],
@@ -114,9 +125,8 @@ export function generateUtilityColors(
     for (const c of colors) {
       if (hueDistance(c.h, center) < hueDistance(nearest, center)) nearest = c.h;
     }
-    const keep = clamp(1 - hueDistance(nearest, center) / 120, 0, 0.6);
-    const delta = ((center - nearest + 540) % 360) - 180;
-    return (nearest + delta * (1 - keep) + 360) % 360;
+    // No palette hue fits the band: lean slightly toward the nearest one, never out of the band.
+    return clampRoleHue(role, center + signedHue(center, nearest) * 0.3);
   };
 
   const make = (role: UtilityRole, l: number, c: number, h: number): UtilityColor => {
@@ -129,6 +139,30 @@ export function generateUtilityColors(
     };
   };
   const warningH = roleHue('warning');
+
+  // A palette color already in the role's hue band, vivid and readable, is used as-is.
+  const reuse = (role: keyof typeof ROLE_HUES): UtilityColor | undefined => {
+    const { center, arc } = ROLE_HUES[role];
+    let best: { index: number; score: number } | undefined;
+    colors.forEach((c, index) => {
+      const distance = hueDistance(c.h, center);
+      if (distance > arc || c.c < 0.09 || c.l < 0.4 || c.l > (role === 'warning' ? 0.85 : 0.74))
+        return;
+      const score =
+        (1 - distance / arc) * 0.4 +
+        Math.min(c.c / 0.15, 1) * 0.4 +
+        (1 - Math.abs(c.l - targetL)) * 0.2;
+      if (!best || score > best.score) best = { index, score };
+    });
+    if (!best) return undefined;
+    const rendition = renderColor(colorValue(readColor(palette[best.index]!).xyz, 1, display));
+    return {
+      role,
+      ...UTILITY_DEFS[role],
+      hex: rendition.hex,
+      value: colorValue(rendition.xyz, 1, display),
+    };
+  };
   // Amber reads bright, so it sits darker to carry the same weight as the other roles.
   const warningL = clamp(
     targetL - Math.max(0, 1 - hueDistance(warningH, 75) / 40) * 0.08,
@@ -137,10 +171,12 @@ export function generateUtilityColors(
   );
 
   return {
-    info: make('info', targetL, targetC, roleHue('info')),
-    success: make('success', targetL, targetC, roleHue('success')),
-    warning: make('warning', warningL, clamp(targetC * 1.05, 0.09, 0.2), warningH),
-    error: make('error', targetL, clamp(targetC * 1.1, 0.12, 0.24), roleHue('error')),
+    info: reuse('info') ?? make('info', targetL, targetC, roleHue('info')),
+    success: reuse('success') ?? make('success', targetL, targetC, roleHue('success')),
+    warning:
+      reuse('warning') ?? make('warning', warningL, clamp(targetC * 1.05, 0.09, 0.2), warningH),
+    error:
+      reuse('error') ?? make('error', targetL, clamp(targetC * 1.1, 0.12, 0.24), roleHue('error')),
     neutral: make(
       'neutral',
       clamp(targetL + 0.05, 0.5, 0.68),
@@ -181,8 +217,9 @@ export function regenerateUtilityColors(
       role === 'neutral' ? 0.006 : 0.08,
       role === 'neutral' ? 0.035 : role === 'focus' ? 0.3 : 0.26,
     );
-    const h =
+    const jittered =
       (base.h + (role === 'neutral' || role === 'focus' ? 0 : (random() - 0.5) * 12) + 360) % 360;
+    const h = role === 'neutral' || role === 'focus' ? jittered : clampRoleHue(role, jittered);
     const display = generated[role].value?.display ?? 'srgb';
     let value = colorValue(lchToXyz(OKLAB, { l, c, h }), 1, display);
     let rendition = renderColor(value);
@@ -221,7 +258,14 @@ function hueName({ l, c, h }: Lch): string {
   return 'pink';
 }
 
-/** Token names for palette colors: the two most chromatic are primary and secondary, the rest by hue. */
+/** Token names for palette colors: the four most chromatic are primary through quaternary, the rest by hue. */
+export const ROLE_SLOT_NAMES: readonly string[] = [
+  'primary',
+  'secondary',
+  'tertiary',
+  'quaternary',
+];
+
 export function semanticSlotNames(palette: readonly ThemeColorInput[]): string[] {
   const colors = palette.map(oklch);
   const names = new Array<string>(colors.length);
@@ -230,7 +274,7 @@ export function semanticSlotNames(palette: readonly ThemeColorInput[]): string[]
     .map((c, i) => ({ c, i }))
     .sort((x, y) => y.c.c - x.c.c)
     .forEach(({ c, i }, rank) => {
-      const name = rank === 0 ? 'primary' : rank === 1 ? 'secondary' : hueName(c);
+      const name = ROLE_SLOT_NAMES[rank] ?? hueName(c);
       let unique = name;
       for (let k = 2; used.has(unique); k++) unique = `${name}-${k}`;
       used.add(unique);

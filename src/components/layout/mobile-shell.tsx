@@ -1,7 +1,7 @@
 /**
  * mobile-shell.tsx  — Phase 5 layout component
  *
- * Mobile Touch-First Layout (< 640px):
+ * Mobile Touch-First Layout (< 600px):
  *
  *   ┌────────────────────────────────┐
  *   │  HEADER (52px)                  │
@@ -40,6 +40,7 @@ import { ShellProvider } from '@/providers/shell.provider';
 
 import { InlineColorPicker } from '../common/inline-color-picker';
 import { ThemeToggle } from '../common/theme-toggle';
+import { BrandLockup } from '../logo-icon';
 import { ExportModal, ShareModal, SaveModal, ShortcutsModal } from '../modals';
 import {
   DropdownMenu,
@@ -109,10 +110,7 @@ export function MobileShell() {
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         {/* ── Header (52px) ── */}
         <header className='flex h-13 shrink-0 items-center gap-2 border-b border-border bg-card px-4'>
-          <div className='shrink-0 font-display text-[15px] font-black tracking-tight text-foreground'>
-            Chroma
-            <sup className='text-[9px] font-normal text-muted-foreground'>v4</sup>
-          </div>
+          <BrandLockup compact />
           <div className='flex-1' />
 
           {/* Search button — 44×44px touch target */}
@@ -164,27 +162,27 @@ export function MobileShell() {
         {isPalettePage ? (
           /* Palette page: full swatch strip (all slot actions), generate bar, controls */
           <div className='min-h-0 flex-1 scrollbar-thin overflow-y-auto'>
-            <div className='flex h-[60dvh] min-h-108 scrollbar-thin overflow-x-auto [&>.slot-item]:min-w-44'>
+            <div className='flex min-h-[calc(100dvh-14rem)] flex-col'>
               <PaletteStrip onEditSlot={handleEditSlot} />
             </div>
 
-            <div className='sticky top-0 z-10 flex gap-2 border-b border-border bg-card px-4 py-2'>
+            <div className='sticky top-0 z-10 flex gap-2 bg-background px-4 py-2'>
               <button
                 onClick={undo}
-                className='h-12 shrink-0 cursor-pointer rounded-xl border border-border bg-secondary px-4 font-mono text-[11px] text-secondary-foreground transition-colors hover:border-input'
+                className='h-12 shrink-0 cursor-pointer rounded-xl border-0 bg-secondary px-4 font-mono text-[11px] text-secondary-foreground transition-colors outline-none hover:bg-secondary/80'
                 title='Undo (Ctrl+Z)'
                 aria-label='Undo generate'>
                 ↩ Undo
               </button>
               <button
-                onClick={generate}
+                onClick={() => generate()}
                 className={cn(
                   'h-12 w-full rounded-xl',
                   'bg-primary text-primary-foreground',
                   'text-sm font-bold tracking-[.03em]',
                   'flex items-center justify-center gap-2',
-                  'cursor-pointer border-0 transition-opacity active:opacity-80',
-                  'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none',
+                  'cursor-pointer border-0 transition-opacity outline-none active:opacity-80',
+                  'outline-none',
                 )}
                 aria-label='Generate new palette'>
                 <span className='text-[16px] leading-none'>⟳</span>

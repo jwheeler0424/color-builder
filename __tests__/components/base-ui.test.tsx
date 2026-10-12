@@ -213,7 +213,7 @@ test('workspace preview landing and settings pages retain working theme controls
     />,
   );
   fireEvent.click(view.getByRole('button', { name: 'Landing', exact: true }));
-  expect(view.getByRole('heading', { name: 'Orbit', exact: true })).toBeInTheDocument();
+  expect(view.getByRole('heading', { name: /in orbit/ })).toBeInTheDocument();
   expect(view.getByText('$16', { exact: true })).toBeInTheDocument();
   fireEvent.click(view.getByRole('button', { name: 'Yearly', exact: true }));
   expect(view.getByText('$12', { exact: true })).toBeInTheDocument();
@@ -340,7 +340,7 @@ test('CSS preview keeps realistic sample-page navigation synchronized across the
   fireEvent.click(view.getAllByRole('button', { name: 'Settings', exact: true })[0]);
   expect(view.getAllByRole('heading', { name: 'Workspace settings' })).toHaveLength(2);
   fireEvent.click(view.getAllByRole('button', { name: 'Landing', exact: true })[1]);
-  expect(view.getAllByRole('heading', { name: 'Orbit', exact: true })).toHaveLength(2);
+  expect(view.getAllByRole('heading', { name: /Keep every project in orbit/ })).toHaveLength(2);
 });
 
 test('CSS token inspector covers all semantic roles, filters and copies selected-mode values', () => {

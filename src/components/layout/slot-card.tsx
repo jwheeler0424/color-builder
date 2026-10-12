@@ -16,12 +16,13 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ArrowLeftRight, XIcon } from 'lucide-react';
+import { ArrowLeftRight, ArrowUpDown, EllipsisVertical, XIcon } from 'lucide-react';
 import React, { useState, useRef, useMemo } from 'react';
 
 import type { PaletteSlot } from '@/types';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
+import { useStripLayout } from '@/hooks/use-stacked-palette';
 import {
   BLACK_XYZ,
   WHITE_XYZ,
@@ -31,10 +32,16 @@ import {
   rgbToHsl,
   textColor,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
 import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 
 // ─── Icon stubs (avoids lucide-react dep in shim environments) ────────────────
 
@@ -199,6 +206,7 @@ export function SlotCard({
     zIndex: isDragging ? 10 : undefined,
   };
 
+  const layout = useStripLayout();
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(slot.color.hex).catch(() => {});
@@ -206,12 +214,102 @@ export function SlotCard({
     setTimeout(() => setCopied(false), 1400);
   };
 
+  // Phones stack swatches as tall rows; secondary actions live in a menu to leave room for the color
+  if (layout === 'rows') {
+    const rowButton =
+      'size-11 shrink-0 bg-black/20 transition-all duration-200 hover:bg-black/50 dark:hover:bg-black/50';
+    return (
+      <section
+        ref={setNodeRef}
+        style={style}
+        className={cn(
+          'group slot-item relative flex min-h-28 w-full flex-1 items-start px-3 py-3 select-none',
+          isOver && !isDragging && 'ring-2 ring-white/60 ring-inset',
+          overlay && 'shadow-2xl',
+        )}
+        onDoubleClick={() => onEdit(index)}
+        {...attributes}>
+        <div className='flex w-[58%] max-w-md min-w-0 flex-col gap-2 rounded-lg bg-black/35 px-3 py-2.5'>
+          <span className='font-mono text-xs leading-snug font-medium break-words text-white'>
+            {displayName}
+          </span>
+          <button
+            type='button'
+            className='w-fit cursor-copy text-left font-mono-alt text-2xl leading-none font-black tracking-widest text-white uppercase'
+            onClick={handleCopy}
+            title='Copy hex'>
+            {slot.color.hex.toUpperCase()}
+          </button>
+          <span className='truncate font-mono text-[11px] leading-none text-white opacity-90 [word-spacing:0.3em]'>
+            {contrastVsWhite.toFixed(1)}:1 · H&ensp;{Math.round(hsl.h)}° S&ensp;
+            {Math.round(hsl.s * 100)}% L&ensp;
+            {Math.round(hsl.l * 100)}%
+          </span>
+        </div>
+        {slot.locked && (
+          <span className='absolute bottom-3 left-3 text-white' aria-label='Locked'>
+            <LockIcon />
+          </span>
+        )}
+        <div className='absolute top-3 right-3 flex gap-2'>
+          <Button
+            variant='ghost'
+            size='icon-lg'
+            ref={setActivatorNodeRef}
+            className={cn(rowButton, 'cursor-grab touch-none active:cursor-grabbing')}
+            title='Drag to reorder'
+            {...listeners}
+            onClick={(e) => e.stopPropagation()}>
+            <ArrowUpDown />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className={cn(
+                rowButton,
+                'flex cursor-pointer items-center justify-center rounded-lg border-0 text-white',
+              )}
+              title='More actions'
+              aria-label='More actions'>
+              <EllipsisVertical />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end' className='w-44'>
+              <DropdownMenuItem onClick={() => onEdit(index)}>Edit color</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  navigator.clipboard.writeText(slot.color.hex).catch(() => {});
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1400);
+                }}>
+                Copy hex
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toggleLock(index)}>
+                {slot.locked ? 'Unlock color' : 'Lock color'}
+              </DropdownMenuItem>
+              <DropdownMenuItem variant='destructive' onClick={() => removeSlot(index)}>
+                Remove color
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        {copied && (
+          <div
+            className='pointer-events-none absolute inset-0 flex items-center justify-center'
+            aria-live='polite'>
+            <span className='rounded-full bg-black/80 px-3 py-1.5 font-mono text-[11px] text-white'>
+              Copied!
+            </span>
+          </div>
+        )}
+      </section>
+    );
+  }
+
   return (
     <section
       ref={setNodeRef}
       style={style}
       className={cn(
-        'group slot-item @container relative flex h-full flex-1 justify-between select-none',
+        'group slot-item @container relative -mr-px flex h-full flex-1 justify-between select-none',
         isOver && !isDragging && 'ring-2 ring-white/60 ring-inset',
         overlay && 'shadow-2xl',
         // isHovering && "bg-black!",
@@ -224,18 +322,34 @@ export function SlotCard({
         className='absolute top-0 bottom-0 left-0 h-full w-12 flex-1'
         onPointerEnter={() => setHoverSlot(index - 1)}
         onPointerLeave={() => setHoverSlot(null)}></div>
-      <main className='flex h-full w-full flex-1 flex-col items-center gap-12 py-12'>
-        <div className='flex flex-1 flex-col items-center justify-end gap-4'>
-          {/* Remove Button */}
+      <main className='flex h-full w-full flex-1 flex-col items-center gap-4 py-3 @[6.5rem]:py-5 @[11rem]:gap-4'>
+        <div className='flex flex-1 flex-col items-center justify-start gap-2 @[11rem]:justify-center @[11rem]:gap-4'>
+          {/* Lock Button */}
+          <Button
+            variant={'ghost'}
+            size='icon-lg'
+            className={cn(
+              'bg-black/20 transition-all duration-200 hover:bg-black/50 dark:hover:bg-black/50',
+              slot.locked && 'text-primary',
+            )}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleLock(index);
+            }}
+            title={slot.locked ? 'Unlock slot' : 'Lock slot'}>
+            {slot.locked ? <LockIcon /> : <LockOpenIcon />}
+          </Button>
+
+          {/* Copy Button */}
           <Button
             variant={'ghost'}
             size='icon-lg'
             className={
               'bg-black/20 transition-all duration-200 hover:bg-black/50 dark:hover:bg-black/50'
             }
-            title='Remove Color'
-            onClick={() => removeSlot(index)}>
-            <XIcon />
+            title='Copy hex to clipboard'
+            onClick={handleCopy}>
+            {copied ? <CheckIcon /> : <CopyIcon />}
           </Button>
 
           {/* Drag Button */}
@@ -254,63 +368,53 @@ export function SlotCard({
             <ArrowLeftRight />
           </Button>
 
-          {/* Copy Button */}
+          {/* Remove Button */}
           <Button
             variant={'ghost'}
             size='icon-lg'
             className={
               'bg-black/20 transition-all duration-200 hover:bg-black/50 dark:hover:bg-black/50'
             }
-            title='Copy hex to clipboard'
-            onClick={handleCopy}>
-            {copied ? <CheckIcon /> : <CopyIcon />}
-          </Button>
-
-          {/* Lock Button */}
-          <Button
-            variant={'ghost'}
-            size='icon-lg'
-            className={cn(
-              'bg-black/20 transition-all duration-200 hover:bg-black/50 dark:hover:bg-black/50',
-              slot.locked && 'text-primary',
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleLock(index);
-            }}
-            title={slot.locked ? 'Unlock slot' : 'Lock slot'}>
-            {slot.locked ? <LockIcon /> : <LockOpenIcon />}
+            title='Remove Color'
+            onClick={() => removeSlot(index)}>
+            <XIcon />
           </Button>
         </div>
 
         {/* ── Bottom info ── */}
-        <div className='flex w-max max-w-sm min-w-0 -rotate-90 flex-col gap-1 overflow-hidden rounded-md bg-black/35 p-1 px-2.5 @[11rem]:rotate-0'>
-          {/* Token name */}
-          <span className='w-full cursor-text overflow-hidden py-1.5 text-left font-mono text-xs leading-none font-medium text-ellipsis whitespace-nowrap text-white'>
-            {displayName}
-          </span>
-
-          {/* Hex */}
-          <Button
-            variant={'ghost'}
-            className='cursor-copy bg-transparent text-center font-mono-alt text-xl leading-none
-            font-black tracking-widest uppercase transition-opacity hover:bg-transparent hover:opacity-80 dark:hover:bg-transparent'
-            onClick={handleCopy}
-            title='Copy hex'>
-            {slot.color.hex.toUpperCase()}
-          </Button>
-
-          <div className='hidden flex-col items-end gap-1 @[7rem]:flex'>
-            <span className='font-mono text-[10px] leading-none font-medium text-white opacity-95'>
-              RATIO {contrastVsWhite.toFixed(1)}:1
+        <div className='relative h-60 w-full shrink-0 @[15rem]:h-auto @[15rem]:w-full @[15rem]:px-2'>
+          <div className='absolute top-1/2 left-1/2 flex w-60 min-w-0 -translate-x-1/2 -translate-y-1/2 -rotate-90 flex-col gap-0.5 overflow-hidden rounded-md bg-black/35 px-2 py-1 @[5rem]:gap-1.5 @[5rem]:px-3 @[5rem]:py-2 @[6rem]:gap-2 @[6rem]:px-3.5 @[6rem]:py-2.5 @[15rem]:static @[15rem]:mx-auto @[15rem]:w-full @[15rem]:max-w-64 @[15rem]:translate-x-0 @[15rem]:translate-y-0 @[15rem]:rotate-0 @[15rem]:gap-3 @[15rem]:px-3 @[15rem]:py-3'>
+            {/* Token name */}
+            <span className='w-full cursor-text overflow-hidden py-0 text-left font-mono text-xs leading-none font-medium text-ellipsis whitespace-nowrap text-white @[15rem]:py-0'>
+              {displayName}
             </span>
-            {/* HSL */}
-            <span className='font-mono text-[10px] leading-none font-medium text-white opacity-95'>
-              HSL {Math.round(hsl.h)}° {Math.round(hsl.s * 100)}% {Math.round(hsl.l * 100)}%
-              {slot.color.a !== undefined && slot.color.a < 100 && (
-                <span className='ml-1'>· {slot.color.a}%</span>
-              )}
+
+            {/* Hex */}
+            <Button
+              variant={'ghost'}
+              className='h-auto cursor-copy justify-start bg-transparent px-0 py-0 text-left font-mono-alt text-lg leading-none font-black tracking-widest uppercase transition-opacity hover:bg-transparent hover:opacity-80 @[15rem]:h-auto @[15rem]:justify-center @[15rem]:px-0 @[15rem]:py-0 @[15rem]:text-center @[15rem]:text-xl dark:hover:bg-transparent'
+              onClick={handleCopy}
+              title='Copy hex'>
+              {slot.color.hex.toUpperCase()}
+            </Button>
+
+            <span className='truncate font-mono text-[10px] leading-none font-medium text-white opacity-95 [word-spacing:0.3em] @[15rem]:hidden'>
+              {contrastVsWhite.toFixed(1)}:1 · H&ensp;{Math.round(hsl.h)}° S&ensp;
+              {Math.round(hsl.s * 100)}% L&ensp;
+              {Math.round(hsl.l * 100)}%
             </span>
+            <div className='hidden flex-col items-end gap-1 @[15rem]:flex'>
+              <span className='font-mono text-[10px] leading-none font-medium text-white opacity-95'>
+                RATIO {contrastVsWhite.toFixed(1)}:1
+              </span>
+              {/* HSL */}
+              <span className='font-mono text-[10px] leading-none font-medium text-white opacity-95'>
+                HSL {Math.round(hsl.h)}° {Math.round(hsl.s * 100)}% {Math.round(hsl.l * 100)}%
+                {slot.color.a !== undefined && slot.color.a < 100 && (
+                  <span className='ml-1'>· {slot.color.a}%</span>
+                )}
+              </span>
+            </div>
           </div>
         </div>
 

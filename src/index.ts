@@ -4,7 +4,7 @@ import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import index from './index.html';
-import { handleColorNames } from './lib/tools/color-names.server';
+import { handleColorNames } from './lib/engine/colors/color-names.server';
 
 const publicDirectory = new URL('../public/', import.meta.url);
 const workerBundle = await Bun.build({

@@ -24,7 +24,7 @@ import {
   renderColor,
   rgb8ToHex,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
 
 import ColorWheel from '../common/color-wheel';
 import HexInput from '../common/hex-input';

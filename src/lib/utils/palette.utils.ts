@@ -1,5 +1,7 @@
 import type { HarmonyMode, SavedPalette } from '@/types';
 
+import { decodePaletteHash, encodePaletteHash } from '@/lib/engine/palette-share';
+
 // ─── localStorage ─────────────────────────────────────────────────────────────
 
 const LS_KEY = 'chroma:palettes';
@@ -50,20 +52,11 @@ const isBrowser = typeof window !== 'undefined';
 export function encodeUrl(hexes: string[], mode: HarmonyMode): string {
   if (!isBrowser) return '';
   const base = `${location.origin}${location.pathname}`;
-  return `${base}#p=${hexes.map((h) => h.replace('#', '')).join('-')}&m=${mode}`;
+  return `${base}${encodePaletteHash(hexes, mode)}`;
 }
 
 export function decodeUrl(): { hexes: string[]; mode: HarmonyMode } | null {
   if (!isBrowser) return null; // SSR — no location, no hash
-  try {
-    const p = new URLSearchParams(location.hash.slice(1));
-    const hexes = (p.get('p') || '')
-      .split('-')
-      .map((c) => '#' + c)
-      .filter((c) => /^#[0-9a-fA-F]{6}$/.test(c));
-    const mode = (p.get('m') || 'analogous') as HarmonyMode;
-    return hexes.length >= 2 ? { hexes, mode } : null;
-  } catch {
-    return null;
-  }
+  const decoded = decodePaletteHash(location.hash);
+  return decoded && { hexes: decoded.hexes, mode: decoded.mode as HarmonyMode };
 }

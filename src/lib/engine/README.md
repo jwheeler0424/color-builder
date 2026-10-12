@@ -1,18 +1,17 @@
 # Color Engine
 
-Reusable TypeScript color computation for palette generation, gamut mapping,
-conversion, accessibility analysis, and theme export. The numerical API is
-independent of React and the application UI, and can be used by server APIs,
-command-line tools, or browser applications.
+Reusable TypeScript color computation for palette generation, gamut mapping, conversion,
+accessibility analysis, and theme export. The numerical API is independent of React and the
+application UI, and can be used by server APIs, command-line tools, or browser applications.
 
-[index.ts](index.ts) is the public entry point. This folder is source code, not
-a separately published package: the repository's package entry points at the
-application server, not the engine. Import the engine explicitly.
+[index.ts](index.ts) is the public entry point. This folder is source code, not a separately
+published package: the repository's package entry points at the application server, not the engine.
+Import the engine explicitly.
 
 ## Quick Start
 
-From the repository root, install dependencies with `bun install`. A script at
-the repository root can generate a palette as follows:
+From the repository root, install dependencies with `bun install`. A script at the repository root
+can generate a palette as follows:
 
 ```ts
 import { generateEnginePalette } from './src/engine/index.ts';
@@ -23,17 +22,18 @@ const palette = generateEnginePalette({
   count: 5,
 });
 
-console.log(palette.map(({ hex, css, isBase }) => ({
-  hex,
-  display: css.display,
-  isBase,
-})));
+console.log(
+  palette.map(({ hex, css, isBase }) => ({
+    hex,
+    display: css.display,
+    isBase,
+  })),
+);
 ```
 
-Generation is synchronous and returns `EngineColor[]`. The defaults are
-CAM16-UCS, sRGB display output, the physical optimal-color solid as the ideal
-gamut, and base-matched chroma. Locate the base with `isBase`; do not assume it
-is always the first entry, particularly for ramps.
+Generation is synchronous and returns `EngineColor[]`. The defaults are CAM16-UCS, sRGB display
+output, the physical optimal-color solid as the ideal gamut, and base-matched chroma. Locate the
+base with `isBase`; do not assume it is always the first entry, particularly for ramps.
 
 ## Palette Configuration
 
@@ -59,8 +59,8 @@ The full contract is `EnginePaletteConfig` in [palette.ts](palette.ts).
 | `shadeHueShift`          | Designer hue-shift strength for shades, except CIELAB; `0` disables it                  | `1`                           |
 | `naturalChroma`          | Natural harmony chroma relative to `display` or `ideal`                                 | `display`                     |
 
-Harmony-specific chroma requests can override the general chroma mode.
-Lightness-shift defaults above are engine defaults, not application UI presets.
+Harmony-specific chroma requests can override the general chroma mode. Lightness-shift defaults
+above are engine defaults, not application UI presets.
 
 Available harmony IDs:
 
@@ -75,22 +75,21 @@ matsuda_N             accented-analogous  pentadic
 hexadic
 ```
 
-Use `HARMONIES` for labels and descriptions, `HARMONY_IDS` for the IDs, and
-`getHarmony()` for a rule definition. Rules produce slots; the palette pipeline
-then resolves their chroma against the ideal and display gamuts. Shades use
-perceptual neighbor-distance spacing rather than simple linear lightness steps.
+Use `HARMONIES` for labels and descriptions, `HARMONY_IDS` for the IDs, and `getHarmony()` for a
+rule definition. Rules produce slots; the palette pipeline then resolves their chroma against the
+ideal and display gamuts. Shades use perceptual neighbor-distance spacing rather than simple linear
+lightness steps.
 
 ## Inputs, Units, and Outputs
 
-The shared interchange format is `Vec3`: `[X, Y, Z]` under D65, with relative
-luminance `Y` normalized so reference white is 1. It is not an RGB tuple.
-Wide-gamut XYZ values need not have every component between 0 and 1.
+The shared interchange format is `Vec3`: `[X, Y, Z]` under D65, with relative luminance `Y`
+normalized so reference white is 1. It is not an RGB tuple. Wide-gamut XYZ values need not have
+every component between 0 and 1.
 
-`Lab` uses `{ L, a, b }`; `Lch` uses `{ l, c, h }`, with hue in degrees.
-Lightness ranges are space-specific: OKLab uses 0 to 1, CIELAB and CAM16-UCS
-use 0 to 100, and device HSL/HSV use 0 to 1. For HSL/HSV palette results, `c`
-means saturation and `l` means lightness/value. CIELAB is D50 internally and
-adapts to/from the common D65 XYZ representation.
+`Lab` uses `{ L, a, b }`; `Lch` uses `{ l, c, h }`, with hue in degrees. Lightness ranges are
+space-specific: OKLab uses 0 to 1, CIELAB and CAM16-UCS use 0 to 100, and device HSL/HSV use 0 to 1.
+For HSL/HSV palette results, `c` means saturation and `l` means lightness/value. CIELAB is D50
+internally and adapts to/from the common D65 XYZ representation.
 
 Each `EngineColor` includes:
 
@@ -108,14 +107,13 @@ Each `EngineColor` includes:
 | `lightnessShift`                 | Applied display-mapping lightness change                                            |
 | `match`                          | Optional catalog name, hex, and perceptual distance                                 |
 
-For wide-gamut workflows, preserve `xyz` or `css.display`; converting everything
-to `hex` discards wide-gamut color information. Catalog matching attaches metadata
-without replacing the generated color. It pins the base to its closest entry
-and assigns the remaining colors by minimum total perceptual distance; entries
-can be reused when the palette is larger than the catalog.
+For wide-gamut workflows, preserve `xyz` or `css.display`; converting everything to `hex` discards
+wide-gamut color information. Catalog matching attaches metadata without replacing the generated
+color. It pins the base to its closest entry and assigns the remaining colors by minimum total
+perceptual distance; entries can be reused when the palette is larger than the catalog.
 
-`baseColor` strings do not parse arbitrary color functions. Use `parseColor()`
-and pass its XYZ to preserve non-hex input:
+`baseColor` strings do not parse arbitrary color functions. Use `parseColor()` and pass its XYZ to
+preserve non-hex input:
 
 ```ts
 import { generateEnginePalette, parseColor } from './src/engine/index.ts';
@@ -129,11 +127,10 @@ const palette = generateEnginePalette({
 });
 ```
 
-Parsing supports short/full RGB hex, `rgb()`, `hsl()`, `hsv()`, `oklch()`,
-`oklab()`, `lab()`, `cam16ucs()`, and profile-backed `cmyk()` / `device-cmyk()`.
-It is not a complete CSS parser: alpha, CSS named colors, `lch()`, and
-`color(display-p3 ...)` are not accepted. `cam16ucs()` and `hsv()` are engine
-formats, not native CSS syntax. Invalid inputs throw.
+Parsing supports short/full RGB hex, `rgb()`, `hsl()`, `hsv()`, `oklch()`, `oklab()`, `lab()`,
+`cam16ucs()`, and profile-backed `cmyk()` / `device-cmyk()`. It is not a complete CSS parser: alpha,
+CSS named colors, `lch()`, and `color(display-p3 ...)` are not accepted. `cam16ucs()` and `hsv()`
+are engine formats, not native CSS syntax. Invalid inputs throw.
 
 ## Additional APIs
 
@@ -150,18 +147,20 @@ formats, not native CSS syntax. Invalid inputs throw.
 | Theme construction    | `generateUtilityColors`, `mergeUtilityColors`, `semanticSlotNames`, `deriveThemeTokens`                      |
 | Export                | `buildThemeCss`, `buildTailwindV4`, `buildFigmaTokens`, `buildStyleDictionary`, `buildColorStoryHtml`        |
 | Image colors          | `extractColors`, `extractHarmonies`                                                                          |
+| Chart data            | `oklchPoint`, `MAX_CHROMA`, `SCORE_DIMENSIONS`, `scoreLevel`                                                 |
+| Sharing               | `encodePaletteHash`, `decodePaletteHash`                                                                     |
+| CMYK registry         | `getCmykConverter`, `setCmykConverter` (shared converter set once a profile loads)                           |
 | Presets               | `THEMES`, `GRADIENT_PRESETS`                                                                                 |
 | ICC                   | `createCmykConverter`                                                                                        |
 
-Contrast, mixing, scoring, and vision simulation consume XYZ tuples, not hex
-strings. Use `hexToXyz()` when needed. WCAG/APCA scores and generated theme
-tokens are analysis aids, not automatic accessibility certification; evaluate
-actual foreground/background pairs, text sizes, and UI states.
+Contrast, mixing, scoring, and vision simulation consume XYZ tuples, not hex strings. Use
+`hexToXyz()` when needed. WCAG/APCA scores and generated theme tokens are analysis aids, not
+automatic accessibility certification; evaluate actual foreground/background pairs, text sizes, and
+UI states.
 
-Image extraction accepts decoded RGBA pixel data, such as `ImageData.data`, not
-an image URL or encoded file. It uses median cut, skips low-alpha pixels, merges
-nearby OKLab colors, and filters low-saturation and extreme-lightness colors;
-it can return fewer than the requested count.
+Image extraction accepts decoded RGBA pixel data, such as `ImageData.data`, not an image URL or
+encoded file. It uses median cut, skips low-alpha pixels, merges nearby OKLab colors, and filters
+low-saturation and extreme-lightness colors; it can return fewer than the requested count.
 
 ### Theme Example
 
@@ -187,39 +186,43 @@ console.log(css);
 
 ## Integration and Runtime Boundaries
 
-- Keep [harmony-lightness.ts](../harmony-lightness.ts) when extracting the engine
-  into another project: [harmony.ts](harmony.ts) imports this sibling module.
-- Use a TypeScript-aware runtime or bundler that supports `.ts` imports, or
-  configure a compilation pipeline that rewrites them for JavaScript output.
-  Bun is the repository's supported development/test runner.
-- The numerical core does not load the named-color database. The Bun-specific
-  lookup is a separate import described in [colors/README.md](colors/README.md).
-- ICC support dynamically loads `lcms-wasm` only when creating a converter.
-  Supply your own CMYK output profile; no profile is bundled. Ink values are
-  percentages from 0 to 100, and the converter uses D50 Lab. Browser bundling
-  must serve the WASM asset; `locateWasm` can specify its location.
+- Keep [harmony-lightness.ts](../harmony-lightness.ts) when extracting the engine into another
+  project: [harmony.ts](harmony.ts) imports this sibling module.
+- Use a TypeScript-aware runtime or bundler that supports `.ts` imports, or configure a compilation
+  pipeline that rewrites them for JavaScript output. Bun is the repository's supported
+  development/test runner.
+- The numerical core does not load the named-color database. The Bun-specific lookup is a separate
+  import described in [colors/README.md](colors/README.md).
+- ICC support dynamically loads `lcms-wasm` only when creating a converter. Supply your own CMYK
+  output profile; no profile is bundled. Ink values are percentages from 0 to 100, and the converter
+  uses D50 Lab. Browser bundling must serve the WASM asset; `locateWasm` can specify its location.
 - [runtime/palette-runtime.ts](runtime/palette-runtime.ts) and
-  [runtime/palette.worker.ts](runtime/palette.worker.ts) are application browser
-  infrastructure, not barrel exports. They include workers, IndexedDB caching,
-  WASM asset handling, and UI settings. Server consumers do not need them.
-- The physical solid is built lazily and reused in-process. Call `optimalSolid()`
-  during server startup to prewarm it. Serialization/loading helpers are also
-  exported. `ideal: 'display'` changes chroma semantics; it is not an equivalent
-  performance switch.
-- Generation is CPU-bound and synchronous. Validate API requests, bound batch
-  sizes, and use server workers if concurrent requests must not block the event
-  loop. TypeScript types alone do not validate untrusted JSON. Runtime checks
-  cover count and selected numeric/options constraints, not the entire schema.
+  [runtime/palette.worker.ts](runtime/palette.worker.ts) are application browser infrastructure, not
+  barrel exports. They include workers, IndexedDB caching, WASM asset handling, and UI settings.
+  Server consumers do not need them.
+- The physical solid is built lazily and reused in-process. Call `optimalSolid()` during server
+  startup to prewarm it. Serialization/loading helpers are also exported. `ideal: 'display'` changes
+  chroma semantics; it is not an equivalent performance switch.
+- Generation is CPU-bound and synchronous. Validate API requests, bound batch sizes, and use server
+  workers if concurrent requests must not block the event loop. TypeScript types alone do not
+  validate untrusted JSON. Runtime checks cover count and selected numeric/options constraints, not
+  the entire schema.
 
 ## Layout and Verification
 
 - [spaces/](spaces/): perceptual conversions and color-space adapters.
 - [gamuts/](gamuts/): RGB gamuts, physical solid, and slab indexing.
-- [solver.ts](solver.ts), [intervals.ts](intervals.ts),
-  [separable.ts](separable.ts): gamut-boundary and feasible-interval solving.
+- [solver.ts](solver.ts), [intervals.ts](intervals.ts), [separable.ts](separable.ts): gamut-boundary
+  and feasible-interval solving.
 - [data/cie.ts](data/cie.ts): spectral data used to construct the physical solid.
 - [math/](math/): matrix, polynomial, and assignment utilities.
-- [colors/](colors/): named-color datasets and Bun/SQLite lookup.
+- [colors/](colors/): named-color datasets, Bun/SQLite lookup, the browser `lookupColorName` cache
+  ([color-names.ts](colors/color-names.ts)) and the `handleColorNames` request handler
+  ([color-names.server.ts](colors/color-names.server.ts)).
+- [chart-data.ts](chart-data.ts), [palette-share.ts](palette-share.ts),
+  [cmyk-profile.ts](cmyk-profile.ts): chart coordinates/score levels, palette URL hashes and the
+  shared CMYK converter. Rendering-only chart definitions and localStorage persistence stay in the
+  application (`src/lib/tools`, `src/lib/utils`).
 
 Run from the repository root:
 
@@ -231,8 +234,7 @@ bun run bench:cam16
 bun run bench
 ```
 
-The benchmark commands overwrite the corresponding reports in
-[benchmarks/](../../benchmarks/). They measure local computation, not HTTP latency;
-results depend on the runtime, hardware, space, harmony, and request settings.
-Regenerate spectral data with `bun run cie:data`; optional solid serialization
-is available through `bun run solid:precompute`.
+The benchmark commands overwrite the corresponding reports in [benchmarks/](../../benchmarks/). They
+measure local computation, not HTTP latency; results depend on the runtime, hardware, space,
+harmony, and request settings. Regenerate spectral data with `bun run cie:data`; optional solid
+serialization is available through `bun run solid:precompute`.

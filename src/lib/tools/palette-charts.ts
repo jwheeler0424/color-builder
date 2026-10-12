@@ -15,10 +15,16 @@ import { scalePoint } from '@tanstack/charts/scales/point';
 import { defineChart } from '@tanstack/charts/scene';
 import { curveLinearClosed } from 'd3-shape';
 
-export type ScoreDimension = 'balance' | 'accessibility' | 'harmony' | 'uniqueness';
-export type RadarScores = Record<ScoreDimension, number>;
+import {
+  MAX_CHROMA,
+  SCORE_DIMENSIONS as dimensions,
+  scoreLevel,
+  type OklchPoint,
+  type RadarScores,
+  type ScoreDimension,
+} from '../engine/chart-data.ts';
 
-const dimensions: readonly ScoreDimension[] = ['balance', 'accessibility', 'harmony', 'uniqueness'];
+export { MAX_CHROMA, type RadarScores, type ScoreDimension };
 
 const chartTheme = {
   foreground: 'var(--foreground)',
@@ -35,16 +41,11 @@ const chartTheme = {
   ],
 };
 
-export const MAX_CHROMA = 0.37;
-
-export interface PaletteChartPoint {
+export interface PaletteChartPoint extends OklchPoint {
   id: string;
   name: string;
   hex: string;
   locked: boolean;
-  lightness: number;
-  chroma: number;
-  hue: number;
 }
 
 export function createChromaChart(points: readonly PaletteChartPoint[], activeId?: string | null) {
@@ -144,7 +145,12 @@ export function createHueChart(points: readonly PaletteChartPoint[], activeId?: 
 }
 
 export function scoreLevelColor(value: number): string {
-  return value >= 75 ? 'var(--success)' : value >= 50 ? 'var(--warning)' : 'var(--destructive)';
+  const level = scoreLevel(value);
+  return level === 'good'
+    ? 'var(--success)'
+    : level === 'fair'
+      ? 'var(--warning)'
+      : 'var(--destructive)';
 }
 
 // ─── Score radar ───────────────────────────────────────────────────────────────────
@@ -157,6 +163,7 @@ type RadarRow = { metric: ScoreDimension; label: string; value: number };
 const RADAR_MARGIN = { top: 12, bottom: 12, left: 64, right: 64 };
 
 const RADAR_RATIO = 0.68;
+const SCORE_RADAR_RATIO = 0.75;
 const RADAR_LEVELS = [25, 50, 75, 100];
 
 const radarScales = () => ({
@@ -189,12 +196,12 @@ function radarGuides() {
   ];
 }
 
-function radarLabels(rows: RadarRow[], showValues: boolean) {
+function radarLabels(rows: RadarRow[], showValues: boolean, radiusRatio = RADAR_RATIO) {
   const index = (row: RadarRow) => dimensions.indexOf(row.metric);
   return decorative(
     polar({
       id: 'radar-labels',
-      radiusRatio: RADAR_RATIO,
+      radiusRatio,
       scales: radarScales(),
       marks: [
         ...(showValues
@@ -232,15 +239,15 @@ function radarLabels(rows: RadarRow[], showValues: boolean) {
   );
 }
 
-export function createScoreChart(scores: RadarScores) {
+export function createScoreChart(scores: RadarScores, radiusRatio = SCORE_RADAR_RATIO) {
   const rows = radarRows(scores);
 
   return defineChart({
-    margin: RADAR_MARGIN,
+    margin: { ...RADAR_MARGIN, left: 40, right: 40 },
     theme: chartTheme,
     marks: [
       polar({
-        radiusRatio: RADAR_RATIO,
+        radiusRatio,
         scales: radarScales(),
         guides: radarGuides(),
         marks: [
@@ -267,7 +274,7 @@ export function createScoreChart(scores: RadarScores) {
           }),
         ],
       }),
-      radarLabels(rows, true),
+      radarLabels(rows, true, radiusRatio),
     ],
     scales: { x: null, y: null },
     focus: focusGroupAngle,

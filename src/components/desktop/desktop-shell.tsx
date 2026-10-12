@@ -4,14 +4,11 @@ import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { ShellProvider } from '@/providers/shell.provider';
 
-import { GenerateControls } from '../layout/generate-controls';
-import { GenerateFab } from '../layout/generate-fab';
 import { isPaletteRoute } from '../layout/nav-desktop';
 import { PaletteStrip } from '../layout/palette-strip';
 import { PaletteTools, type PaletteToolTab } from '../layout/palette-tools';
 import { SlotEditor } from '../layout/slot-editor';
 import { Panel, PanelContent, PanelHeader, usePanel } from '../panel';
-import { PaletteStudioPanel } from '../views/palette-view';
 import { MainHeader } from './header';
 
 const FALLBACK = (
@@ -25,7 +22,7 @@ export function DesktopStudio() {
   const navigate = useNavigate();
   const openPanel = usePanel((state) => state.openPanel);
   const [editingSlotIndex, setEditingSlotIndex] = useState<number | null>(null);
-  const [toolTab, setToolTab] = useState<PaletteToolTab>('colors');
+  const [toolTab, setToolTab] = useState<PaletteToolTab>('generate');
 
   const isPalettePage = isPaletteRoute(pathname);
   const isPickerRoute = pathname === '/picker';
@@ -33,7 +30,7 @@ export function DesktopStudio() {
   const activeTab: PaletteToolTab = isPickerRoute
     ? 'picker'
     : isPalettePage && toolTab === 'picker'
-      ? 'colors'
+      ? 'generate'
       : toolTab;
 
   useEffect(() => {
@@ -86,7 +83,6 @@ export function DesktopStudio() {
         {isPalettePage ? (
           <main className='relative flex min-w-0 flex-1 grow overflow-hidden'>
             <PaletteStrip onEditSlot={handleEditSlot} />
-            <GenerateFab />
           </main>
         ) : (
           <main className='flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden'>
@@ -104,20 +100,14 @@ export function DesktopStudio() {
             </PanelContent>
           ) : (
             <>
-              <PanelHeader>
-                <h2 className='text-xl font-bold'>Palette Tools</h2>
+              <PanelHeader className='px-3.5 pt-3.5 pb-2'>
+                <h2 className='text-base font-bold tracking-tight'>Palette Tools</h2>
               </PanelHeader>
               <PanelContent>
                 <PaletteTools
                   tab={activeTab}
                   onTabChange={handleTabChange}
-                  top={
-                    isPalettePage ? (
-                      <GenerateControls section='preview' onPreviewSelect={handleSelectSlot} />
-                    ) : (
-                      <PaletteStudioPanel onEditSlot={handleSelectSlot} />
-                    )
-                  }
+                  onSelectSlot={handleSelectSlot}
                 />
               </PanelContent>
             </>

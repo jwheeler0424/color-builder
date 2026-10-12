@@ -1,8 +1,6 @@
-import { colorValue, parseColor, type ColorValue } from '@/lib/engine/browser';
-import {
-  findNearestNamedColor,
-  findNearestNamedColorXyz,
-} from '@/lib/engine/colors/named-color-lookup';
+import { colorValue, type ColorValue } from '../color.ts';
+import { parseColor } from '../parse.ts';
+import { findNearestNamedColor, findNearestNamedColorXyz } from './named-color-lookup.ts';
 
 export async function handleColorNames(request: Request): Promise<Response> {
   if (request.method !== 'POST')

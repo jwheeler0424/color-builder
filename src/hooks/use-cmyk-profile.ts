@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
 import { createCmykConverter, type CmykConverter, type RenderingIntent } from '@/lib/engine/icc';
-import { setCmykConverter } from '@/lib/tools/cmyk-profile';
+import { setCmykConverter } from '@/lib/engine/cmyk-profile';
 
 interface ProfileState {
   converter: CmykConverter | null;

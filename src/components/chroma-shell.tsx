@@ -4,8 +4,8 @@
  * Root layout shell — wraps all routes.
  * Responsive layout dispatch:
  *
- *   < 640px   → MobileShell  (Phase 5: bottom nav, snap strip, full-screen sheet)
- *   640–1023px → TabletShell  (Phase 4: nav rail, horizontal strip, bottom sheet)
+ *   < 600px   → MobileShell  (Phase 5: bottom nav, snap strip, full-screen sheet)
+ *   600–1023px → TabletShell  (Phase 4: nav rail, horizontal strip, bottom sheet)
  *   ≥ 1024px  → StudioShell  (Phase 3: 3-column, left rail, right panel)
  *
  * Only the shell matching the viewport is mounted, so route views and hotkeys
@@ -20,16 +20,16 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { MobileShell } from '@/components/layout/mobile-shell';
 import { TabletShell } from '@/components/layout/tablet-shell';
 import { useChromaStore } from '@/hooks/use-chroma-store';
-import { subscribeColorNames } from '@/lib/tools/color-names';
+import { subscribeColorNames } from '@/lib/engine/colors/color-names';
 import { useRegisterHotkey } from '@/providers/hotkey.provider';
 
 import { DesktopStudio } from './desktop/desktop-shell';
 
 type ShellKind = 'mobile' | 'tablet' | 'desktop';
 
-// Mirrors Tailwind's sm (40rem) and lg (64rem) breakpoints
+// Tablet starts at 600px (the common tablet breakpoint); desktop mirrors Tailwind's lg (64rem)
 const DESKTOP_QUERY = '(min-width: 64rem)';
-const TABLET_QUERY = '(min-width: 40rem)';
+const TABLET_QUERY = '(min-width: 37.5rem)';
 
 function getShellKind(): ShellKind {
   if (typeof window === 'undefined') return 'desktop';
@@ -41,7 +41,12 @@ function getShellKind(): ShellKind {
 function subscribeShellKind(onChange: () => void) {
   const queries = [DESKTOP_QUERY, TABLET_QUERY].map((q) => window.matchMedia(q));
   queries.forEach((mql) => mql.addEventListener('change', onChange));
-  return () => queries.forEach((mql) => mql.removeEventListener('change', onChange));
+  // Device emulation and some embedded browsers resize without firing media-query change events
+  window.addEventListener('resize', onChange);
+  return () => {
+    queries.forEach((mql) => mql.removeEventListener('change', onChange));
+    window.removeEventListener('resize', onChange);
+  };
 }
 
 export function ChromaShell() {

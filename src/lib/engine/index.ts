@@ -176,6 +176,18 @@ export {
 } from './scale.ts';
 export { cmykToColor, formatPickerColor, pickerReadings, type PickerReadings } from './picker.ts';
 export {
+  MAX_CHROMA,
+  SCORE_DIMENSIONS,
+  oklchPoint,
+  scoreLevel,
+  type OklchPoint,
+  type RadarScores,
+  type ScoreDimension,
+  type ScoreLevel,
+} from './chart-data.ts';
+export { decodePaletteHash, encodePaletteHash } from './palette-share.ts';
+export { getCmykConverter, setCmykConverter } from './cmyk-profile.ts';
+export {
   UTILITY_ROLES,
   deriveThemeTokens,
   generateUtilityColors,

@@ -608,14 +608,15 @@ export const useChromaStore = create<ChromaStore>()(
                 color?: ColorStop;
               })
             | undefined;
-          if (!stored) continue;
+          const locked = !!(p.utilityLocks?.[role] ?? stored?.locked);
+          if (!stored || !locked) continue;
           try {
             const rawValue = stored.value ?? stored.color?.value;
             const value = rawValue
               ? colorValue(rawValue.xyz, rawValue.alpha, rawValue.display)
               : parseColor(stored.hex ?? stored.color?.hex ?? utilityColors[role].hex);
             utilityColors[role] = { ...utilityColors[role], value, hex: renderColor(value).hex };
-            utilityLocks[role] = !!stored.locked;
+            utilityLocks[role] = true;
           } catch {
             continue;
           }
@@ -626,7 +627,7 @@ export const useChromaStore = create<ChromaStore>()(
         return { ...current, ...p, slots, seeds, utilityColors, utilityLocks };
       },
       migrate: (persisted) => persisted as Partial<ChromaStore>,
-      version: 4,
+      version: 5,
       skipHydration: true,
     },
   ),

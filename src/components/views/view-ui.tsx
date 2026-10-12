@@ -45,7 +45,10 @@ export function ToolTabs<Value extends string>({
 }) {
   return (
     <div className='shrink-0 overflow-x-auto'>
-      <div role='tablist' aria-label={label} className='flex min-w-max border-b border-border'>
+      <div
+        role='tablist'
+        aria-label={label}
+        className='flex min-w-max border-b border-border pl-(--tool-panel-x)'>
         {items.map((item, index) => (
           <button
             key={item.id}

@@ -41,10 +41,10 @@ function StandalonePaletteView() {
 }
 
 // ─── Studio panel ────────────────────────────────────────────────────────────────────
-// Palette summary + quick actions, shown beside (or in a sheet over) tool pages.
+// Palette summary + Generate/Undo for the tablet and mobile palette sheet.
 
 export function PaletteStudioPanel({ onEditSlot }: { onEditSlot?: (index: number) => void }) {
-  const { generate, undo, openModal, setSaveName, slots } = useChromaStore();
+  const { generate, undo, slots } = useChromaStore();
 
   return (
     <div className='tool-panel-space tool-panel-stack flex flex-col'>
@@ -78,48 +78,18 @@ export function PaletteStudioPanel({ onEditSlot }: { onEditSlot?: (index: number
         </div>
       )}
 
-      <div className='flex flex-col gap-2'>
+      <div className='flex gap-2'>
         <button
-          onClick={generate}
-          className='h-10 w-full cursor-pointer rounded-md border-0 bg-primary text-[12px] font-bold text-primary-foreground transition-opacity hover:opacity-90'>
-          ⟳ Generate New Palette
+          onClick={() => undo()}
+          aria-label='Undo last generate'
+          className='h-10 cursor-pointer rounded-md border border-border bg-secondary px-4 font-mono text-[11px] text-secondary-foreground transition-colors hover:border-input'>
+          ↩ Undo
         </button>
         <button
-          onClick={undo}
-          className='h-9 w-full cursor-pointer rounded-md border border-border bg-secondary font-mono text-[11px] text-secondary-foreground transition-colors hover:border-input'>
-          ↩ Undo Last Generate
+          onClick={() => generate()}
+          className='h-10 flex-1 cursor-pointer rounded-md border-0 bg-primary text-[12px] font-bold text-primary-foreground transition-opacity hover:opacity-90'>
+          ⟳ Generate
         </button>
-      </div>
-
-      <div className='flex flex-col gap-2 border-t border-border pt-3'>
-        <p className='text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
-          Export
-        </p>
-        <button
-          onClick={() => openModal('export')}
-          className='h-9 w-full cursor-pointer rounded-md border border-border bg-secondary font-mono text-[11px] text-secondary-foreground transition-colors hover:border-input'>
-          ↗ Export Palette
-        </button>
-        <button
-          onClick={() => {
-            setSaveName('');
-            openModal('save');
-          }}
-          className='h-9 w-full cursor-pointer rounded-md border border-border bg-secondary font-mono text-[11px] text-secondary-foreground transition-colors hover:border-input'>
-          ♡ Save Palette
-        </button>
-        <button
-          onClick={() => openModal('share')}
-          className='h-9 w-full cursor-pointer rounded-md border border-border bg-secondary font-mono text-[11px] text-secondary-foreground transition-colors hover:border-input'>
-          ⤴ Share URL
-        </button>
-      </div>
-
-      <div className='border-t border-border pt-3'>
-        <p className='text-[10px] leading-relaxed text-muted-foreground'>
-          <kbd>Space</kbd> generate · <kbd>Ctrl+Z</kbd> undo · <kbd>Ctrl+E</kbd> export ·{' '}
-          <kbd>?</kbd> all shortcuts
-        </p>
       </div>
     </div>
   );

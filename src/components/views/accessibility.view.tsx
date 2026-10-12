@@ -32,10 +32,10 @@ import {
   type WcagLevel,
   type ApcaLevel,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
 import { cn } from '@/lib/utils';
 
-import { ToolButton as Button, ToolSegments, ToolTabs } from './view-ui';
+import { ToolButton as Button, ToolSegments, ToolTabs, ViewHeader } from './view-ui';
 
 // ─── Shared badge helpers ─────────────────────────────────────────────────────
 
@@ -939,9 +939,10 @@ export default function AccessibilityView() {
   const [activeTab, setActiveTab] = useState<Tab>('wcag');
   return (
     <div className='@container/accessibility flex min-h-0 flex-1 flex-col overflow-hidden'>
-      <div className='shrink-0 px-4 pt-5 pb-0'>
-        <h2 className='mb-1'>Accessibility</h2>
-      </div>
+      <ViewHeader
+        title='Accessibility'
+        description='WCAG contrast, a contrast checker and color-blind simulation for your palette.'
+      />
       <TabBar active={activeTab} setActive={setActiveTab} />
       {activeTab === 'wcag' && <WcagSlotsTab />}
       {activeTab === 'contrast' && <ContrastCheckerTab />}

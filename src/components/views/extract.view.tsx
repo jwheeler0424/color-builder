@@ -5,13 +5,37 @@
  * Sub-tabs:  [From Image] [Convert]
  */
 
-import { Check, Copy, Image as ImageIcon, LoaderCircle, Sprout, Upload } from 'lucide-react';
+import {
+  ArrowRight,
+  ChevronDown,
+  Check,
+  Copy,
+  Image as ImageIcon,
+  LoaderCircle,
+  MoreHorizontal,
+  Minus,
+  Palette,
+  Pipette,
+  Plus,
+  Sparkles,
+  Trash2,
+  Upload,
+} from 'lucide-react';
 import { useState, useMemo, useRef, useEffect } from 'react';
 
+import type { PaletteSlot } from '@/lib/engine/color-stop';
 import type { HarmonyMode } from '@/types';
 
+import { HarmonyPicker } from '@/components/layout/generate-controls';
 import ColorPickerModal from '@/components/modals/color-picker.modal';
-import { NativeSelect } from '@/components/ui/select';
+import { Button as ActionButton } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Slider } from '@/components/ui/slider';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCmykProfile } from '@/hooks/use-cmyk-profile';
 import { HARMONIES, MAX_SLOTS } from '@/lib/constants/chroma';
@@ -22,7 +46,9 @@ import {
   pickerReadings,
   renderColor,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { colorToStop, stopToColor } from '@/lib/engine/color-stop';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
+import { computeColorPalette } from '@/lib/engine/runtime/palette-runtime';
 
 import { ToolButton as Button, ToolTabs, TYPE, ViewHeader } from './view-ui';
 
@@ -54,23 +80,49 @@ function ImageTab() {
     imgSrc,
     mode,
     count,
-    slots,
-    generationError,
-    generationPending,
-    setMode,
-    setCount,
+    paletteSpace,
+    displayGamut,
+    temperature,
+    loadPalette,
+    setSeedMode,
+    setSeeds,
     setExtracted,
-    generateFromExtractedColor,
   } = useChromaStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [primaryIndex, setPrimaryIndex] = useState(0);
+  const [harmonyOpen, setHarmonyOpen] = useState(false);
+  const [draftMode, setDraftMode] = useState<HarmonyMode | null>(null);
+  const [draftCount, setDraftCount] = useState<number | null>(null);
+  const [palettePreview, setPalettePreview] = useState<PaletteSlot[] | null>(null);
+  const [previewPending, setPreviewPending] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [paletteApplied, setPaletteApplied] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const requestRef = useRef(0);
+  const previewControllerRef = useRef<AbortController | null>(null);
+  const paletteMode = draftMode ?? mode;
+  const paletteCount = draftCount ?? count;
+
+  function clearPalettePreview() {
+    previewControllerRef.current?.abort();
+    previewControllerRef.current = null;
+    setPalettePreview(null);
+    setPreviewPending(false);
+    setPreviewError(null);
+    setPaletteApplied(false);
+  }
+
+  function updatePaletteCount(nextCount: number) {
+    setDraftCount(nextCount);
+    clearPalettePreview();
+  }
+
   useEffect(
     () => () => {
       requestRef.current += 1;
+      previewControllerRef.current?.abort();
     },
     [],
   );
@@ -82,6 +134,9 @@ function ImageTab() {
       setError('Choose an image file.');
       return;
     }
+    clearPalettePreview();
+    setDraftMode(null);
+    setDraftCount(null);
     setLoading(true);
     setError(null);
     try {
@@ -90,7 +145,6 @@ function ImageTab() {
       const objectUrl = URL.createObjectURL(file);
       setExtracted(colors, objectUrl);
       setPrimaryIndex(0);
-      if (colors[0]) generateFromExtractedColor(colors[0], mode);
       if (imgSrc?.startsWith('blob:')) URL.revokeObjectURL(imgSrc);
     } catch {
       if (request === requestRef.current) setError('Extraction failed. Try another image.');
@@ -100,11 +154,51 @@ function ImageTab() {
   }
 
   const primaryColor = extractedColors[primaryIndex] ?? extractedColors[0];
-  const selectedHarmony = HARMONIES.find((harmony) => harmony.id === mode) ?? HARMONIES[0]!;
-  const generateHarmonyPalette = () => {
-    if (!primaryColor) return;
-    generateFromExtractedColor(primaryColor, mode);
-  };
+  const hasImagePalette = Boolean(imgSrc && primaryColor);
+  const selectedHarmony = HARMONIES.find((harmony) => harmony.id === paletteMode) ?? HARMONIES[0]!;
+
+  async function generatePalettePreview() {
+    if (!imgSrc || !primaryColor) return;
+    previewControllerRef.current?.abort();
+    const controller = new AbortController();
+    previewControllerRef.current = controller;
+    setPalettePreview(null);
+    setPaletteApplied(false);
+    setPreviewPending(true);
+    setPreviewError(null);
+    try {
+      const colors = await computeColorPalette(
+        {
+          harmony: paletteMode,
+          count: paletteCount,
+          seeds: [stopToColor(primaryColor)],
+          seedMode: 'pin',
+          temperature,
+          space: paletteSpace,
+          display: displayGamut,
+          locked: [],
+        },
+        controller.signal,
+      );
+      if (controller.signal.aborted) return;
+      setPalettePreview(
+        colors.map((color, index) => ({
+          id: crypto.randomUUID(),
+          color: colorToStop(color),
+          locked: index === 0,
+        })),
+      );
+    } catch (cause) {
+      if (!controller.signal.aborted) {
+        setPreviewError(cause instanceof Error ? cause.message : 'Palette preview failed.');
+      }
+    } finally {
+      if (previewControllerRef.current === controller) {
+        previewControllerRef.current = null;
+        setPreviewPending(false);
+      }
+    }
+  }
 
   return (
     <div className='@container/extract-view flex min-h-0 flex-1 flex-col overflow-auto'>
@@ -115,11 +209,16 @@ function ImageTab() {
           data-extract-source
           className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
-            <span className={TYPE.label}>Source image</span>
-            <Button variant='outline' size='xs' onClick={() => fileRef.current?.click()}>
-              <Upload className='size-3' />
-              {imgSrc ? 'Replace image' : 'Choose image'}
-            </Button>
+            <span className='flex items-center gap-2'>
+              <span className='font-mono text-[10px] text-primary'>01</span>
+              <span className={TYPE.label}>Source image</span>
+            </span>
+            {imgSrc && (
+              <Button variant='outline' size='xs' onClick={() => fileRef.current?.click()}>
+                <Upload className='size-3' />
+                Replace image
+              </Button>
+            )}
           </div>
           <input
             ref={fileRef}
@@ -135,7 +234,7 @@ function ImageTab() {
           />
           <div
             aria-label='Image drop zone'
-            className={`relative flex min-h-32 flex-1 items-center justify-center overflow-hidden rounded-md border bg-secondary transition-colors @min-[40rem]:min-h-40 @3xl:min-h-40 ${dragOver ? 'border-primary ring-2 ring-primary/30' : 'border-border'}`}
+            className={`relative flex min-h-56 flex-1 items-center justify-center overflow-hidden rounded-md border transition-colors @min-[40rem]:min-h-56 ${imgSrc ? 'border-border bg-secondary' : 'border-dashed border-input bg-secondary/30'} ${dragOver ? 'border-primary bg-primary/5 ring-2 ring-primary/30' : ''}`}
             onDragOver={(e) => {
               e.preventDefault();
               setDragOver(true);
@@ -150,16 +249,39 @@ function ImageTab() {
               <img
                 src={imgSrc}
                 alt='Source image'
-                className='relative max-h-32 max-w-full object-contain @min-[40rem]:max-h-full'
+                className='relative max-h-32 max-w-full object-contain @min-[40rem]:max-h-72 @min-[56rem]/extract-view:max-h-full'
               />
             ) : (
-              <div className='flex flex-col items-center gap-3 text-muted-foreground'>
-                <ImageIcon className='size-10' strokeWidth={1} />
-                <span className={TYPE.meta}>No source image</span>
-                <Button variant='outline' size='sm' onClick={() => fileRef.current?.click()}>
+              <div className='flex max-w-lg flex-col items-center gap-4 px-5 py-6 text-center'>
+                <div className='flex items-center gap-2.5' aria-hidden='true'>
+                  <span className='grid size-11 place-items-center rounded-md border border-primary/30 bg-primary/10 text-primary'>
+                    <ImageIcon className='size-5' strokeWidth={1.5} />
+                  </span>
+                  <ArrowRight className='size-4 text-muted-foreground' />
+                  <span className='grid size-11 place-items-center rounded-md border border-border bg-card text-foreground'>
+                    <Pipette className='size-5' strokeWidth={1.5} />
+                  </span>
+                  <ArrowRight className='size-4 text-muted-foreground' />
+                  <span className='grid size-11 place-items-center rounded-md border border-border bg-card text-foreground'>
+                    <Palette className='size-5' strokeWidth={1.5} />
+                  </span>
+                </div>
+                <div className='space-y-1.5'>
+                  <p className='font-display text-base font-semibold text-foreground'>
+                    Make a palette from any image
+                  </p>
+                  <p className='text-xs leading-relaxed text-muted-foreground'>
+                    Upload a photo, illustration, or screenshot. Chroma will find its key colors and
+                    expand them into an app-ready palette.
+                  </p>
+                </div>
+                <Button size='sm' onClick={() => fileRef.current?.click()}>
                   <Upload className='size-3.5' />
                   Choose image
                 </Button>
+                <span className='text-[10px] text-muted-foreground'>
+                  PNG, JPG, or WebP · or drag and drop
+                </span>
               </div>
             )}
             {loading && (
@@ -179,7 +301,10 @@ function ImageTab() {
         </section>
         <section className='tool-panel-space tool-panel-stack @container/extracted-colors flex min-h-0 min-w-0 flex-col'>
           <div className='flex shrink-0 items-center justify-between gap-2'>
-            <span className={TYPE.label}>Extracted colors</span>
+            <div className='flex min-w-0 items-center gap-2'>
+              <span className='font-mono text-[10px] text-primary'>02</span>
+              <span className={TYPE.label}>Extracted colors</span>
+            </div>
             <span className={TYPE.mono}>{extractedColors.length}</span>
           </div>
           <div
@@ -191,131 +316,260 @@ function ImageTab() {
               const name = lookupColorName(value, hex);
               const isPrimary = primaryIndex === i;
               return (
-                <button
+                <div
                   key={i}
-                  type='button'
-                  aria-label={`Select ${hex.toUpperCase()} as primary color`}
-                  aria-pressed={isPrimary}
-                  title={`${name} · ${hex.toUpperCase()}`}
-                  onClick={() => setPrimaryIndex(i)}
-                  className={`flex min-h-16 min-w-0 cursor-pointer flex-col overflow-hidden rounded-md border bg-card text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring @min-[20rem]/extracted-colors:min-h-20 @min-[32rem]/extracted-colors:min-h-24 @min-[52rem]/extracted-colors:min-h-28 ${isPrimary ? 'border-primary ring-2 ring-primary/60' : 'border-border hover:border-input'}`}>
-                  <span
-                    className='relative flex min-h-8 w-full flex-1 items-start justify-end p-1 @min-[32rem]/extracted-colors:min-h-10 @min-[52rem]/extracted-colors:min-h-12'
-                    style={{ background: color.css ?? hex }}>
-                    {isPrimary && (
-                      <span className='grid size-4 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground'>
-                        <Check className='size-3' />
+                  className={`relative min-w-0 overflow-hidden rounded-md border bg-card transition-colors ${isPrimary ? 'border-primary ring-2 ring-primary/60' : 'border-border hover:border-input'}`}>
+                  <button
+                    type='button'
+                    aria-label={`Select ${hex.toUpperCase()} as primary color`}
+                    aria-pressed={isPrimary}
+                    title={`${name} · ${hex.toUpperCase()}`}
+                    onClick={() => {
+                      setPrimaryIndex(i);
+                      clearPalettePreview();
+                    }}
+                    className='flex min-h-16 w-full min-w-0 cursor-pointer flex-col text-left outline-none focus-visible:ring-2 focus-visible:ring-ring @min-[20rem]/extracted-colors:min-h-20 @min-[32rem]/extracted-colors:min-h-24 @min-[52rem]/extracted-colors:min-h-28'>
+                    <span
+                      className='relative flex min-h-8 w-full flex-1 items-start justify-start p-1 @min-[32rem]/extracted-colors:min-h-10 @min-[52rem]/extracted-colors:min-h-12'
+                      style={{ background: color.css ?? hex }}>
+                      {isPrimary && (
+                        <span className='grid size-5 shrink-0 place-items-center rounded-sm border border-primary bg-primary text-primary-foreground shadow-sm'>
+                          <Check className='size-3.5' />
+                        </span>
+                      )}
+                    </span>
+                    <span className='flex min-w-0 flex-col gap-0.5 border-t border-border bg-card px-1.5 py-1.5 @min-[32rem]/extracted-colors:px-2 @min-[32rem]/extracted-colors:py-2'>
+                      <span className='truncate font-mono text-[9px] leading-none text-muted-foreground @min-[32rem]/extracted-colors:text-[10px]'>
+                        {hex.toUpperCase()}
                       </span>
-                    )}
-                  </span>
-                  <span className='flex min-w-0 flex-col gap-0.5 border-t border-border bg-card px-1.5 py-1.5 @min-[32rem]/extracted-colors:px-2 @min-[32rem]/extracted-colors:py-2'>
-                    <span className='truncate font-mono text-[9px] leading-none text-muted-foreground @min-[32rem]/extracted-colors:text-[10px]'>
-                      {hex.toUpperCase()}
+                      <span className='truncate text-[10px] leading-snug font-semibold text-card-foreground @min-[32rem]/extracted-colors:text-xs'>
+                        {name}
+                      </span>
                     </span>
-                    <span className='truncate text-[10px] leading-snug font-semibold text-card-foreground @min-[32rem]/extracted-colors:text-xs'>
-                      {name}
-                    </span>
-                  </span>
-                </button>
+                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      aria-label={`Actions for ${hex.toUpperCase()}`}
+                      title='Color options'
+                      className='absolute top-1 right-1 grid size-7 cursor-pointer place-items-center rounded-sm border border-border bg-background/90 text-foreground opacity-60 shadow-sm transition-opacity outline-none hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring data-popup-open:opacity-100'>
+                      <MoreHorizontal className='size-4' />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align='end' className='w-48'>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setPrimaryIndex(i);
+                          clearPalettePreview();
+                        }}
+                        className='cursor-pointer'>
+                        <Check className='size-4' />
+                        Use as primary color
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => void navigator.clipboard.writeText(hex.toUpperCase())}
+                        className='cursor-pointer'>
+                        <Copy className='size-4' />
+                        Copy HEX
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        variant='destructive'
+                        onClick={() => {
+                          clearPalettePreview();
+                          const nextColors = extractedColors.filter((_, index) => index !== i);
+                          setExtracted(nextColors, imgSrc);
+                          setPrimaryIndex((current) => {
+                            if (nextColors.length === 0) return 0;
+                            const nextIndex = current > i ? current - 1 : current;
+                            return Math.min(nextIndex, nextColors.length - 1);
+                          });
+                        }}
+                        className='cursor-pointer'>
+                        <Trash2 className='size-4' />
+                        Remove color
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               );
             })}
             {!extractedColors.length && (
-              <div
-                className={`col-span-full flex min-h-32 items-center justify-center ${TYPE.meta}`}>
-                No extracted colors
+              <div className='col-span-full flex min-h-32 flex-col items-center justify-center gap-1 text-center'>
+                <span className='text-xs font-medium text-foreground'>
+                  Color samples will appear here
+                </span>
+                <span className='text-[11px] text-muted-foreground'>
+                  Extracted from your source image
+                </span>
               </div>
             )}
           </div>
           <section
             data-palette-generation
-            className='flex shrink-0 flex-col gap-3 border-t border-border pt-3'>
-            <div className='flex items-center justify-between gap-2'>
-              <span className={TYPE.label}>Generate from image</span>
-              <span className={TYPE.mono}>{count} colors</span>
+            className='flex shrink-0 flex-col gap-6 border-t border-border pt-3'>
+            <div className='flex items-start justify-between gap-3'>
+              <div className='min-w-0'>
+                <span className='flex items-center gap-2'>
+                  <span className='font-mono text-[10px] text-primary'>03</span>
+                  <span className={TYPE.label}>Build your app palette</span>
+                </span>
+                <p className='mt-1 text-[11px] text-muted-foreground'>
+                  {hasImagePalette
+                    ? 'Choose a harmony and palette size.'
+                    : 'Upload an image above to unlock generation.'}
+                </p>
+              </div>
             </div>
-            <div className='flex flex-col gap-1'>
-              <label
-                htmlFor='extract-palette-size'
-                className='flex items-center justify-between gap-2 text-xs font-medium'>
-                <span>Palette size</span>
-                <span className='font-mono text-muted-foreground'>{count}</span>
-              </label>
-              <input
-                id='extract-palette-size'
-                aria-label='Palette size'
-                type='range'
-                min={4}
-                max={MAX_SLOTS}
-                value={count}
-                onChange={(event) => setCount(Number(event.target.value))}
-                className='w-full accent-primary'
-              />
-            </div>
-            <div className='grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2'>
-              <NativeSelect
-                aria-label='Palette harmony'
-                value={mode}
-                onChange={(event) => setMode(event.target.value as HarmonyMode)}
-                title='Harmony'
-                className='h-8 pr-10 pl-2 text-xs @min-[32rem]/extracted-colors:h-9'>
-                {HARMONIES.map((harmony) => (
-                  <option key={harmony.id} value={harmony.id}>
-                    {harmony.label}
-                  </option>
-                ))}
-              </NativeSelect>
-              <Button
-                size='sm'
-                disabled={loading || generationPending || !!error || !primaryColor}
-                onClick={generateHarmonyPalette}>
-                {generationPending ? (
-                  <LoaderCircle className='size-3.5 animate-spin' />
-                ) : (
-                  <Sprout className='size-3.5' />
-                )}
-                {generationPending ? 'Generating...' : 'Generate palette'}
-              </Button>
-            </div>
-            <p className='text-[11px] leading-snug text-muted-foreground'>{selectedHarmony.desc}</p>
-            {extractedColors.length > 0 && (
-              <div className='flex flex-col gap-2' aria-live='polite'>
-                <div className='flex items-center justify-between gap-2'>
-                  <span className={TYPE.label}>Generated palette</span>
-                  {generationPending && (
-                    <span
-                      className='flex items-center gap-1.5 text-[10px] text-muted-foreground'
-                      role='status'>
-                      <LoaderCircle className='size-3 animate-spin' />
-                      Updating
-                    </span>
-                  )}
+            <div className='flex min-w-0 flex-col gap-2'>
+              <div className='flex items-center justify-between gap-2'>
+                <div>
+                  <label htmlFor='extract-palette-size' className='text-xs font-medium'>
+                    Palette size
+                  </label>
+                  <p className='text-[10px] text-muted-foreground'>
+                    Choose 4 to {MAX_SLOTS} colors
+                  </p>
                 </div>
-                <div
-                  role='list'
-                  aria-label='Generated palette swatches'
-                  className='grid grid-cols-4 gap-1.5'>
-                  {slots.slice(0, count).map((slot, index) => (
-                    <div
-                      key={slot.id}
-                      role='listitem'
-                      aria-label={`Color ${index + 1}: ${slot.color.hex.toUpperCase()}`}
-                      title={`${index + 1}. ${slot.color.hex.toUpperCase()}`}
-                      className='min-w-0 overflow-hidden rounded border border-border bg-card'>
-                      <span
-                        className='block h-7 w-full @min-[32rem]/extracted-colors:h-8'
-                        style={{ background: slot.color.css ?? slot.color.hex }}
-                      />
-                      <span className='block truncate px-1 py-1 font-mono text-[8px] leading-none text-muted-foreground'>
-                        {slot.color.hex.toUpperCase()}
-                      </span>
-                    </div>
-                  ))}
+                <div className='flex shrink-0 items-center gap-3'>
+                  <ActionButton
+                    type='button'
+                    variant='outline'
+                    size='icon-sm'
+                    title='Remove one color'
+                    aria-label='Remove one color'
+                    disabled={paletteCount <= 4}
+                    onClick={() => updatePaletteCount(Math.max(4, paletteCount - 1))}>
+                    <Minus className='size-3.5' />
+                  </ActionButton>
+                  <span className='w-7 text-center font-display text-lg font-bold tabular-nums'>
+                    {paletteCount}
+                  </span>
+                  <ActionButton
+                    type='button'
+                    variant='outline'
+                    size='icon-sm'
+                    title='Add one color'
+                    aria-label='Add one color'
+                    disabled={paletteCount >= MAX_SLOTS}
+                    onClick={() => updatePaletteCount(Math.min(MAX_SLOTS, paletteCount + 1))}>
+                    <Plus className='size-3.5' />
+                  </ActionButton>
                 </div>
               </div>
+              <Slider
+                id='extract-palette-size'
+                aria-label='Palette size'
+                min={4}
+                max={MAX_SLOTS}
+                step={1}
+                value={[paletteCount]}
+                thumbAriaLabel='Palette size'
+                onValueChange={(value) => updatePaletteCount(value[0] ?? paletteCount)}
+              />
+            </div>
+            {hasImagePalette && primaryColor && (
+              <div className='border-b border-border pb-3'>
+                <div className='flex items-start justify-between gap-2'>
+                  <div className='min-w-0'>
+                    <p className={TYPE.label}>Harmony</p>
+                    <p className='mt-1 text-[13px] font-semibold text-foreground'>
+                      {selectedHarmony.label}
+                    </p>
+                    <p className='mt-0.5 text-[11px] leading-relaxed text-muted-foreground'>
+                      {selectedHarmony.desc}
+                    </p>
+                  </div>
+                  <button
+                    type='button'
+                    aria-expanded={harmonyOpen}
+                    onClick={() => setHarmonyOpen((open) => !open)}
+                    className='inline-flex shrink-0 cursor-pointer items-center gap-1 rounded border-0 bg-transparent p-0 text-[11px] font-semibold text-primary'>
+                    {harmonyOpen ? 'Done' : 'Change'}
+                    <ChevronDown
+                      className={`size-3 transition-transform ${harmonyOpen ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                </div>
+                {harmonyOpen && (
+                  <div className='mt-3'>
+                    <HarmonyPicker
+                      mode={paletteMode}
+                      base={primaryColor}
+                      onSelect={(selectedMode) => {
+                        setDraftMode(selectedMode);
+                        clearPalettePreview();
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             )}
-            {generationError && (
+            <ActionButton
+              size='lg'
+              className='w-full justify-between px-4'
+              disabled={loading || previewPending || !!error || !hasImagePalette}
+              onClick={() => void generatePalettePreview()}>
+              <span className='flex items-center gap-2'>
+                {previewPending ? (
+                  <LoaderCircle className='size-4 animate-spin' />
+                ) : (
+                  <Sparkles className='size-4' />
+                )}
+                {previewPending ? 'Generating preview...' : 'Generate palette'}
+              </span>
+              {!previewPending && <ArrowRight className='size-4' />}
+            </ActionButton>
+            {palettePreview && (
+              <div className='flex flex-col gap-3 border-t border-border pt-4'>
+                <div
+                  role='list'
+                  aria-label='Generated palette colors'
+                  className='grid min-w-0 grid-cols-2 gap-2 @min-[32rem]/extracted-colors:grid-cols-3 @min-[32rem]/extracted-colors:gap-3'>
+                  {palettePreview.map((slot, index) => {
+                    const hex = slot.color.hex;
+                    const value = slot.color.value ?? parseColor(hex);
+                    const name = lookupColorName(value, hex);
+                    return (
+                      <div
+                        key={slot.id}
+                        role='listitem'
+                        aria-label={`Generated color ${index + 1}: ${hex.toUpperCase()}, ${name}`}
+                        className='flex min-h-16 min-w-0 flex-col overflow-hidden rounded-md border border-border bg-card @min-[20rem]/extracted-colors:min-h-20 @min-[32rem]/extracted-colors:min-h-24 @min-[52rem]/extracted-colors:min-h-28'>
+                        <span
+                          className='relative flex min-h-8 w-full flex-1 @min-[32rem]/extracted-colors:min-h-10 @min-[52rem]/extracted-colors:min-h-12'
+                          style={{ background: slot.color.css ?? hex }}
+                        />
+                        <span className='flex min-w-0 flex-col gap-0.5 border-t border-border bg-card px-1.5 py-1.5 @min-[32rem]/extracted-colors:px-2 @min-[32rem]/extracted-colors:py-2'>
+                          <span className='truncate font-mono text-[9px] leading-none text-muted-foreground @min-[32rem]/extracted-colors:text-[10px]'>
+                            {hex.toUpperCase()}
+                          </span>
+                          <span className='truncate text-[10px] leading-snug font-semibold text-card-foreground @min-[32rem]/extracted-colors:text-xs'>
+                            {name}
+                          </span>
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <ActionButton
+                  size='lg'
+                  className='w-full justify-between px-4'
+                  disabled={paletteApplied}
+                  onClick={() => {
+                    loadPalette(palettePreview, paletteMode, paletteCount);
+                    setSeedMode('pin');
+                    setSeeds([primaryColor!]);
+                    setPaletteApplied(true);
+                  }}>
+                  <span className='flex items-center gap-2'>
+                    {paletteApplied ? <Check className='size-4' /> : <Palette className='size-4' />}
+                    {paletteApplied ? 'Palette set' : 'Set palette'}
+                  </span>
+                  {!paletteApplied && <ArrowRight className='size-4' />}
+                </ActionButton>
+              </div>
+            )}
+            {previewError && (
               <p role='alert' className='text-xs text-destructive'>
-                {generationError}
+                {previewError}
               </p>
             )}
           </section>
@@ -508,7 +762,11 @@ export default function ExtractView() {
     <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
       <ViewHeader
         title='Extract & Convert'
-        description='Image palettes and color values across formats.'
+        description={
+          activeTab === 'image'
+            ? 'Turn any image into a complete, app-ready color palette.'
+            : 'Convert colors between formats with precise, live readouts.'
+        }
       />
       <TabBar active={activeTab} setActive={setActiveTab} />
       {activeTab === 'image' && <ImageTab />}

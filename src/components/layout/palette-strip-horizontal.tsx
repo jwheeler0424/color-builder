@@ -25,7 +25,7 @@ import type { ColorStop } from '@/types';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { parseColor, renderColor, rgbToHsl, textColor } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
 import { cn } from '@/lib/utils';
 
 // ─── Horizontal Slot Card ─────────────────────────────────────────────────────

@@ -483,7 +483,9 @@ remain functional:
 ### Charts
 
 The scoring radar and the two OKLCH plots use the React adapter from
-`@tanstack/charts`. Definitions live in `src/lib/tools/palette-charts.ts`; the
+`@tanstack/charts`. Definitions live in `src/lib/tools/palette-charts.ts` and only
+style and lay out data; the underlying chart data (OKLCH coordinates, chroma bound,
+score dimensions and levels) comes from the engine's `chart-data.ts`. The
 shared host in `src/components/ui/chart.tsx` measures container widths on animation
 frames to keep narrow panels and responsive shells stable. Charts inherit theme
 colors and support pointer and keyboard tooltips. The numeric summaries remain

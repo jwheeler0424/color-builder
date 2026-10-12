@@ -19,12 +19,13 @@ import {
   containsXyz,
   colorValue,
   formatColor,
+  oklchPoint,
   parseColor,
   renderColor,
   textColor,
   xyzToLch,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
 import {
   createChromaChart,
   createHueChart,
@@ -141,8 +142,8 @@ function OklchTab() {
     () =>
       slots.map((slot) => {
         const color = slot.color.value ?? parseColor(slot.color.hex);
-        const coordinates = xyzToLch(OKLAB, color.xyz);
-        const lch = { L: coordinates.l, C: coordinates.c, H: coordinates.h };
+        const coordinates = oklchPoint(color);
+        const lch = { L: coordinates.lightness, C: coordinates.chroma, H: coordinates.hue };
         const name = slot.name || lookupColorName(color, renderColor(color).hex);
         return {
           slot,
@@ -259,7 +260,7 @@ function OklchTab() {
                 onPointerLeave={() => setHoveredId(null)}
                 onFocus={() => setFocusedId(pt.id)}
                 onBlur={() => setFocusedId(null)}
-                className={`@container/reading grid min-h-0 min-w-0 grid-cols-[2.5rem_minmax(0,1fr)] content-center gap-x-3 gap-y-2 border-b border-border pb-1 transition-colors focus-within:ring-2 focus-within:ring-ring ${activeId === pt.id ? 'bg-accent/30' : ''}`}>
+                className={`@container/reading grid min-h-0 min-w-0 grid-cols-[2.5rem_minmax(0,1fr)] content-center gap-x-3 gap-y-2 border-b border-border pb-1 transition-colors last:border-b-0 focus-within:ring-2 focus-within:ring-ring ${activeId === pt.id ? 'bg-accent/30' : ''}`}>
                 <span
                   className='aspect-square size-10 self-center rounded-sm border border-foreground/10 @min-[17rem]/reading:row-span-2'
                   style={{ background: pt.hex }}

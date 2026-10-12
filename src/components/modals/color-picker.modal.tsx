@@ -24,7 +24,7 @@ import {
   renderColor,
   rgb8ToHex,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
 
 import HexInput from '../common/hex-input';
 import { CmykSliders } from '../common/sliders/cmyk-sliders';

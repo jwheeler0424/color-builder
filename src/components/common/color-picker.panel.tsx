@@ -11,7 +11,7 @@ import {
   pickerReadings,
   renderColor,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
 
 import { Button } from '../ui/button';
 import { CmykProfileControl } from './cmyk-profile-control';

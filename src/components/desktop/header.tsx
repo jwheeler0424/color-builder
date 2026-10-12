@@ -4,7 +4,6 @@
  * Main Desktop Header
  */
 
-import { Link } from '@tanstack/react-router';
 import { PanelRightIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 import { ThemeToggle } from '../common/theme-toggle';
 import { SearchButton, SectionTabs, SectionToolTabs } from '../layout/nav-desktop';
-import { LogoIcon } from '../logo-icon';
+import { BrandLockup } from '../logo-icon';
 import { ExportModal, SaveModal, ShareModal, ShortcutsModal } from '../modals';
 import { usePanel } from '../panel';
 import { Separator } from '../ui/separator';
@@ -36,14 +35,7 @@ export function MainHeader({ className }: MainHeaderProps) {
       )}>
       <div className='relative'>
         <main className='flex h-16 items-center justify-between gap-8 border-b border-border/40 px-4'>
-          <Link to='/' className='flex items-center gap-2'>
-            <LogoIcon className='size-8' />
-
-            <h1 className='flex items-center gap-0.5 pt-1 font-display text-3xl leading-10 font-black'>
-              Chroma
-              <sup className='font-sans text-xl font-normal text-primary'>ELITE</sup>
-            </h1>
-          </Link>
+          <BrandLockup heading />
           <SectionTabs className='self-stretch' />
           <nav className='flex items-center gap-4'>
             <Separator orientation='vertical' className='bg-muted-foreground' />
@@ -59,7 +51,7 @@ export function MainHeader({ className }: MainHeaderProps) {
         </main>
       </div>
       <section className='flex h-14 items-stretch justify-between gap-4 border-b border-border/30 px-4'>
-        <SectionToolTabs className='-ml-2' />
+        <SectionToolTabs />
         <nav className='ml-auto flex shrink-0 items-center justify-end gap-4'>
           <main className='flex h-full items-center gap-4'>
             <SearchButton onClick={() => openCommandPalette(true)} />

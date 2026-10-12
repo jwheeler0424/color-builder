@@ -240,7 +240,7 @@ export function GenerateControlsAccordion({
 
       {/* Palette preview */}
       {slots.length > 0 && (
-        <div className='border-b border-border px-4 py-3'>
+        <div className='border-b border-border px-4 py-3 last:border-b-0'>
           <p className='mb-2 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
             Preview
           </p>
@@ -257,7 +257,7 @@ export function GenerateControlsAccordion({
         <div className='px-4 py-3'>
           <button
             className='h-12 w-full cursor-pointer rounded-md border-0 bg-primary text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 active:opacity-75'
-            onClick={generate}>
+            onClick={() => generate()}>
             ⟳ Generate
           </button>
         </div>

@@ -13,7 +13,7 @@ import {
   parseColor,
   semanticSlotNames,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
 import { useChromaStore } from '@/stores/chroma.store';
 
 import { Button } from '../ui/button';

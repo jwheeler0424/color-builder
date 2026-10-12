@@ -28,18 +28,19 @@ import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useState, useCallback, useEffect, Suspense } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
+import { usePortraitViewport } from '@/hooks/use-stacked-palette';
 import { hexToStop } from '@/lib/engine/browser';
 import { ShellProvider } from '@/providers/shell.provider';
 
 import { InlineColorPicker } from '../common/inline-color-picker';
 import { ThemeToggle } from '../common/theme-toggle';
+import { BrandLockup } from '../logo-icon';
 import { ExportModal, ShareModal, SaveModal, ShortcutsModal } from '../modals';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../ui/sheet';
 import ColorPickerView from '../views/color-picker-view';
 import { useCommandPalette } from '../views/command-palette';
 import { BottomSheet } from './bottom-sheet';
 import { GenerateControlsAccordion } from './generate-controls-accordion';
-import { GenerateFab } from './generate-fab';
 import { SectionToolTabs, isPaletteRoute } from './nav-desktop';
 import { NavRail } from './nav-rail';
 import { PaletteBar, PaletteSheetBody } from './palette-sheet';
@@ -54,7 +55,8 @@ const FALLBACK = (
 
 export function TabletShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { modal, slots, editSlotColor, openModal, setSaveName } = useChromaStore();
+  const { modal, slots, editSlotColor, openModal, setSaveName, generate, undo } = useChromaStore();
+  const stacked = usePortraitViewport();
   const { setOpen: openCmd } = useCommandPalette();
 
   const [editingSlotIndex, setEditingSlotIndex] = useState<number | null>(null);
@@ -95,10 +97,7 @@ export function TabletShell() {
       <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
         {/* ── Header (56px, touch-height) ── */}
         <header className='flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-4'>
-          <div className='shrink-0 font-display text-[15px] font-black tracking-tight text-foreground'>
-            Chroma
-            <sup className='text-[9px] font-normal text-muted-foreground'>v4</sup>
-          </div>
+          <BrandLockup compact />
           <div className='flex-1' />
 
           {/* ⌘K */}
@@ -152,16 +151,39 @@ export function TabletShell() {
             {isPalettePage ? (
               /* Palette page: full swatch strip (all slot actions) + controls, scrolling together */
               <div className='min-h-0 flex-1 [scrollbar-width:thin] overflow-y-auto'>
-                <div className='relative h-[60dvh] min-h-108'>
-                  <div className='flex h-full [scrollbar-width:thin] overflow-x-auto [&>.slot-item]:min-w-44'>
-                    <PaletteStrip onEditSlot={handleEditSlot} />
+                {stacked ? (
+                  <>
+                    <div className='flex min-h-[calc(100dvh-8rem)] flex-col'>
+                      <PaletteStrip onEditSlot={handleEditSlot} />
+                    </div>
+                    <div className='sticky bottom-0 z-10 flex gap-2 bg-background px-4 py-2'>
+                      <button
+                        onClick={undo}
+                        className='h-12 shrink-0 cursor-pointer rounded-xl border-0 bg-secondary px-4 font-mono text-[11px] text-secondary-foreground transition-colors outline-none hover:bg-secondary/80'
+                        title='Undo (Ctrl+Z)'
+                        aria-label='Undo generate'>
+                        ↩ Undo
+                      </button>
+                      <button
+                        onClick={() => generate()}
+                        className='flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-0 bg-primary text-sm font-bold tracking-[.03em] text-primary-foreground transition-opacity outline-none active:opacity-80'
+                        aria-label='Generate new palette'>
+                        <span className='text-[16px] leading-none'>⟳</span>
+                        Generate Palette
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className='relative h-[64dvh] min-h-[34rem]'>
+                    <div className='flex h-full'>
+                      <PaletteStrip onEditSlot={handleEditSlot} />
+                    </div>
                   </div>
-                  <GenerateFab />
-                </div>
+                )}
                 {pathname === '/picker' ? (
                   <ColorPickerView />
                 ) : (
-                  <GenerateControlsAccordion onEditSeed={handleEditSlot} showFooter />
+                  <GenerateControlsAccordion onEditSeed={handleEditSlot} showFooter={!stacked} />
                 )}
               </div>
             ) : (

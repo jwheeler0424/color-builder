@@ -21,7 +21,7 @@
  *   onEdit(i) — called when a seed color swatch is clicked for editing
  */
 
-import { RefreshCw } from 'lucide-react';
+import { ChevronDown, Minus, Plus, RefreshCw, Undo2, X } from 'lucide-react';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 
 import type { SpaceId, DisplayGamutId } from '@/lib/engine/browser';
@@ -39,7 +39,7 @@ import { cn } from '@/lib/utils';
 // The last section drops its border: the footer below already draws one.
 function Section({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('border-b border-border px-4 py-3.5 last:border-b-0', className)}>
+    <div className={cn('mx-1 border-b border-border py-3.5 last:border-b-0', className)}>
       {children}
     </div>
   );
@@ -81,7 +81,7 @@ const HARMONY_GROUPS: { label: string; ids: HarmonyMode[] }[] = [
 ];
 
 // Same card pattern as Themes: a live 5-color sample of each harmony, built from the current base color
-function HarmonyPicker({
+export function HarmonyPicker({
   mode,
   base,
   onSelect,
@@ -170,7 +170,7 @@ function HarmonyPicker({
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
-export type GenerateSection = 'colors' | 'harmony' | 'themes' | 'preview';
+export type GenerateSection = 'generate' | 'colors' | 'harmony' | 'themes' | 'preview';
 
 interface GenerateControlsProps {
   /** Called when a seed swatch is clicked to open the picker */
@@ -208,6 +208,8 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
 
   const [seedInp, setSeedInp] = useState('');
   const [seedErr, setSeedErr] = useState(false);
+  const [harmonyOpen, setHarmonyOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   // Debounce generate for sliders
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -229,6 +231,268 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
 
   return (
     <>
+      {section === 'generate' && (
+        <>
+          <Section>
+            <div className='mb-2.5 flex items-center justify-between gap-2'>
+              <p className='text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                Harmony
+              </p>
+              <button
+                type='button'
+                aria-expanded={harmonyOpen}
+                onClick={() => setHarmonyOpen((open) => !open)}
+                className='inline-flex cursor-pointer items-center gap-1 rounded border-0 bg-transparent p-0 text-[11px] font-semibold text-primary'>
+                {harmonyOpen ? 'Done' : 'Change'}
+                <ChevronDown
+                  className={cn('size-3 transition-transform', harmonyOpen && 'rotate-180')}
+                />
+              </button>
+            </div>
+            <p className='text-[13px] font-semibold text-foreground'>
+              {HARMONIES.find((h) => h.id === mode)?.label ?? mode}
+            </p>
+            <p className='mt-0.5 text-[11px] leading-relaxed text-muted-foreground'>
+              {HARMONIES.find((h) => h.id === mode)?.desc ?? ''}
+            </p>
+            {harmonyOpen && (
+              <div className='mt-3'>
+                <HarmonyPicker
+                  mode={mode}
+                  base={seeds[0] ?? slots[0]?.color}
+                  onSelect={(m) => {
+                    setMode(m);
+                    generate();
+                  }}
+                />
+              </div>
+            )}
+          </Section>
+
+          <Section>
+            <SectionLabel>Colors</SectionLabel>
+            <div className='flex items-center gap-2'>
+              <button
+                type='button'
+                aria-label='Fewer colors'
+                disabled={count <= 4}
+                onClick={() => {
+                  setCount(Math.max(4, count - 1));
+                  debouncedGenerate();
+                }}
+                className='grid size-7 shrink-0 cursor-pointer place-items-center rounded border border-border bg-secondary text-secondary-foreground transition-colors hover:border-input disabled:cursor-not-allowed disabled:opacity-40'>
+                <Minus className='size-3.5' />
+              </button>
+              <input
+                type='range'
+                aria-label='Number of colors'
+                min={4}
+                max={MAX_SLOTS}
+                value={count}
+                onChange={(e) => {
+                  setCount(+e.target.value);
+                  debouncedGenerate();
+                }}
+                className='min-w-0 flex-1'
+              />
+              <button
+                type='button'
+                aria-label='More colors'
+                disabled={count >= MAX_SLOTS}
+                onClick={() => {
+                  setCount(Math.min(MAX_SLOTS, count + 1));
+                  debouncedGenerate();
+                }}
+                className='grid size-7 shrink-0 cursor-pointer place-items-center rounded border border-border bg-secondary text-secondary-foreground transition-colors hover:border-input disabled:cursor-not-allowed disabled:opacity-40'>
+                <Plus className='size-3.5' />
+              </button>
+              <span className='w-6 text-right text-[15px] font-black text-primary tabular-nums'>
+                {count}
+              </span>
+            </div>
+          </Section>
+
+          <Section>
+            <div className='mb-2.5 flex items-center justify-between'>
+              <p className='text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                Temperature
+              </p>
+              {temperature !== 0 && (
+                <button
+                  type='button'
+                  onClick={() => {
+                    setTemperature(0);
+                    debouncedGenerate();
+                  }}
+                  className='cursor-pointer border-0 bg-transparent p-0 text-[11px] font-semibold text-primary'>
+                  Reset
+                </button>
+              )}
+            </div>
+            <input
+              type='range'
+              aria-label='Temperature'
+              min={-100}
+              max={100}
+              value={Math.round(temperature * 100)}
+              onChange={(e) => {
+                setTemperature(+e.target.value / 100);
+                debouncedGenerate();
+              }}
+              className='w-full'
+            />
+            <div className='mt-1 flex justify-between text-[10px] text-muted-foreground'>
+              <span>Cool</span>
+              <span>Neutral</span>
+              <span>Warm</span>
+            </div>
+          </Section>
+
+          <Section>
+            <SectionLabel>Seed colors</SectionLabel>
+            {seeds.length > 0 && (
+              <div className='mb-2.5 flex flex-wrap gap-2'>
+                {seeds.map((s, i) => (
+                  <span key={i} className='group relative'>
+                    <button
+                      type='button'
+                      className='block size-8 cursor-pointer rounded-md border border-white/15'
+                      style={{ background: s.css ?? s.hex }}
+                      onClick={() => onEditSeed?.(i)}
+                      title={`Edit seed ${s.hex.toUpperCase()}`}
+                      aria-label={`Edit seed ${s.hex.toUpperCase()}`}
+                    />
+                    <button
+                      type='button'
+                      onClick={() => removeSeed(i)}
+                      title='Remove seed'
+                      aria-label={`Remove seed ${s.hex.toUpperCase()}`}
+                      className='absolute -top-1.5 -right-1.5 hidden size-4 cursor-pointer place-items-center rounded-full border border-border bg-background text-muted-foreground group-focus-within:grid group-hover:grid hover:text-destructive'>
+                      <X className='size-2.5' />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className='flex gap-1.5'>
+              <input
+                className={cn(
+                  'min-w-0 flex-1 rounded border bg-muted px-2 py-1.5 font-mono text-[11px] text-foreground',
+                  'transition-colors outline-none placeholder:text-muted-foreground focus:border-ring',
+                  seedErr ? 'border-destructive' : 'border-border',
+                )}
+                aria-label='Seed color hex'
+                value={seedInp}
+                onChange={(e) => setSeedInp(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddSeed()}
+                placeholder='#F4A261'
+                maxLength={200}
+                spellCheck={false}
+                autoComplete='off'
+              />
+              <button
+                type='button'
+                className='inline-flex cursor-pointer items-center justify-center rounded border border-border bg-secondary px-3 py-1.5 text-[11px] font-bold text-secondary-foreground transition-colors hover:border-input hover:text-foreground'
+                onClick={handleAddSeed}>
+                Add
+              </button>
+            </div>
+            {seeds.length > 0 && (
+              <div className='mt-3'>
+                <div
+                  role='radiogroup'
+                  aria-label='Seed behavior'
+                  className='grid grid-cols-2 gap-1 rounded-md border border-border bg-muted p-0.5'>
+                  {(
+                    [
+                      { id: 'influence', label: 'Guide generation' },
+                      { id: 'pin', label: 'Pin as locked' },
+                    ] as const
+                  ).map(({ id, label }) => (
+                    <button
+                      key={id}
+                      type='button'
+                      role='radio'
+                      aria-checked={seedMode === id}
+                      onClick={() => setSeedMode(id)}
+                      className={cn(
+                        'cursor-pointer rounded border-0 px-2 py-1.5 text-[11px] font-semibold transition-colors',
+                        seedMode === id
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'bg-transparent text-muted-foreground hover:text-foreground',
+                      )}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <p className='mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground'>
+                  {seedMode === 'pin'
+                    ? 'Seed colors appear exactly in the palette as locked slots.'
+                    : 'Seed hue guides generation, but the exact color may shift.'}
+                </p>
+              </div>
+            )}
+          </Section>
+
+          <Section>
+            <button
+              type='button'
+              aria-expanded={advancedOpen}
+              onClick={() => setAdvancedOpen((open) => !open)}
+              className='flex w-full cursor-pointer items-center justify-between border-0 bg-transparent p-0 text-left'>
+              <span className='text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                Advanced
+              </span>
+              <ChevronDown
+                className={cn(
+                  'size-3.5 text-muted-foreground transition-transform',
+                  advancedOpen && 'rotate-180',
+                )}
+              />
+            </button>
+            {advancedOpen && (
+              <div className='mt-3 flex flex-col gap-3'>
+                <label className='block'>
+                  <span className='mb-1 block text-[11px] font-semibold text-muted-foreground'>
+                    Generation color space
+                  </span>
+                  <NativeSelect
+                    aria-label='Generation color space'
+                    className='text-xs'
+                    value={paletteSpace}
+                    onChange={(event) => {
+                      setPaletteSpace(event.target.value as SpaceId);
+                      debouncedGenerate();
+                    }}>
+                    <option value='cam16'>CAM16-UCS</option>
+                    <option value='oklch'>OKLCH</option>
+                    <option value='cielab'>CIELAB</option>
+                    <option value='hsl'>HSL</option>
+                    <option value='hsv'>HSV</option>
+                  </NativeSelect>
+                </label>
+                <label className='block'>
+                  <span className='mb-1 block text-[11px] font-semibold text-muted-foreground'>
+                    Display gamut
+                  </span>
+                  <NativeSelect
+                    aria-label='Display gamut'
+                    className='text-xs'
+                    value={displayGamut}
+                    onChange={(event) => {
+                      setDisplayGamut(event.target.value as DisplayGamutId);
+                      debouncedGenerate();
+                    }}>
+                    <option value='srgb'>sRGB</option>
+                    <option value='p3'>Display P3</option>
+                    <option value='rec2020'>Rec.2020</option>
+                  </NativeSelect>
+                </label>
+              </div>
+            )}
+          </Section>
+        </>
+      )}
       {show('colors') && (
         <Section>
           <SectionLabel>Color Space</SectionLabel>
@@ -503,25 +767,36 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
 
 export function GenerateFooter() {
   const generate = useChromaStore((s) => s.generate);
+  const undo = useChromaStore((s) => s.undo);
+  const canUndo = useChromaStore((s) => s.history.length > 0);
   const pending = useChromaStore((state) => state.generationPending);
   const error = useChromaStore((state) => state.generationError);
   return (
-    <div className='shrink-0 border-t border-r border-border bg-card px-4 py-3'>
-      <button
-        className='w-full cursor-pointer rounded border-0 bg-primary py-2.5 text-[12px] font-bold text-primary-foreground transition-opacity hover:opacity-90'
-        aria-busy={pending}
-        onClick={generate}>
-        <RefreshCw className='mr-2 inline size-3.5' aria-hidden='true' />
-        {pending ? 'Generating...' : 'Generate'}
-      </button>
+    <div className='shrink-0 border-t border-border bg-card p-3.5'>
+      <div className='flex gap-2'>
+        <button
+          type='button'
+          aria-label='Undo last generate'
+          title='Undo (Ctrl+Z)'
+          disabled={!canUndo}
+          onClick={() => undo()}
+          className='grid size-10 shrink-0 cursor-pointer place-items-center rounded border border-border bg-secondary text-secondary-foreground transition-colors hover:border-input disabled:cursor-not-allowed disabled:opacity-40'>
+          <Undo2 className='size-4' aria-hidden='true' />
+        </button>
+        <button
+          className='h-10 flex-1 cursor-pointer rounded border-0 bg-primary text-[12px] font-bold text-primary-foreground transition-opacity hover:opacity-90'
+          aria-busy={pending}
+          title='Generate (Space)'
+          onClick={() => generate()}>
+          <RefreshCw className='mr-2 inline size-3.5' aria-hidden='true' />
+          {pending ? 'Generating...' : 'Generate'}
+        </button>
+      </div>
       {error && (
         <p role='alert' className='mt-2 text-xs text-destructive'>
           {error}
         </p>
       )}
-      <p className='mt-1.5 text-center text-[10px] text-muted-foreground'>
-        <kbd>Space</kbd> generate · <kbd>Ctrl+Z</kbd> undo · <kbd>?</kbd> shortcuts
-      </p>
     </div>
   );
 }

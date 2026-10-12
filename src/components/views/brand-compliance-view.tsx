@@ -19,7 +19,7 @@ import {
   parseColor,
   xyzToLch,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
 import { cn } from '@/lib/utils';
 import { useRegisterHotkey } from '@/providers/hotkey.provider';
 

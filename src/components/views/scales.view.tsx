@@ -13,7 +13,9 @@ import ColorPickerModal from '@/components/modals/color-picker.modal';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
   BLACK_XYZ,
+  ROLE_SLOT_NAMES,
   SCALE_STEPS,
+  UTILITY_ROLES,
   contrastRatio,
   generateScale,
   hexToStop,
@@ -24,7 +26,7 @@ import {
   textColor,
   WHITE_XYZ,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
 
 import { ToolButton as Button, ToolSegments, ToolTabs, TYPE, ViewHeader } from './view-ui';
 
@@ -346,8 +348,23 @@ function buildMultiScaleTokens(
   }
 }
 
+type ScaleGroup = 'palette' | 'utility';
+
+const tokenSlug = (name: string, fallback: string) =>
+  name
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || fallback;
+
+const GROUPS: { id: ScaleGroup; label: string; hint: string }[] = [
+  { id: 'palette', label: 'Palette colors', hint: 'From your generated palette' },
+  { id: 'utility', label: 'Utility colors', hint: 'Status and interface roles' },
+];
+
 function FullPaletteTab() {
-  const { slots } = useChromaStore();
+  const { slots, utilityColors } = useChromaStore();
   const [fmt, setFmt] = useState<ExportFmt>('css');
   const [copied, setCopied] = useState(false);
   const [selectedCell, setSelectedCell] = useState<{
@@ -361,15 +378,42 @@ function FullPaletteTab() {
     [slots],
   );
   const slotNames = useMemo(() => semanticSlotNames(palette), [palette]);
-  const scales = useMemo(
-    () =>
-      slots.map((slot, i) => ({
-        name: slotNames[i] ?? `color-${i + 1}`,
-        hex: slot.color.hex,
-        steps: generateScale({ baseColor: slot.color.value ?? parseColor(slot.color.hex) }),
-      })),
-    [slots, slotNames],
-  );
+  const scales = useMemo(() => {
+    const used = new Set<string>(ROLE_SLOT_NAMES);
+    const unique = (slug: string) => {
+      let name = slug;
+      for (let k = 2; used.has(name); k++) name = `${slug}-${k}`;
+      used.add(name);
+      return name;
+    };
+    return [
+      ...slots.map((slot, i) => {
+        const role = slotNames[i] ?? '';
+        const isRole = ROLE_SLOT_NAMES.includes(role);
+        const color = slot.color.value ?? parseColor(slot.color.hex);
+        const real = isRole ? '' : slot.name || lookupColorName(color, '');
+        return {
+          id: slot.id,
+          group: 'palette' as ScaleGroup,
+          name: real ? unique(tokenSlug(real, `color-${i + 1}`)) : role || `color-${i + 1}`,
+          label: real || role || `color-${i + 1}`,
+          hex: slot.color.hex,
+          steps: generateScale({ baseColor: color }),
+        };
+      }),
+      ...UTILITY_ROLES.map((role) => {
+        const color = utilityColors[role];
+        return {
+          id: `utility-${role}`,
+          group: 'utility' as ScaleGroup,
+          name: role,
+          label: role,
+          hex: color.hex,
+          steps: generateScale({ baseColor: color.value ?? parseColor(color.hex) }),
+        };
+      }),
+    ];
+  }, [slots, slotNames, utilityColors]);
 
   const tokens = useMemo(
     () =>
@@ -409,75 +453,93 @@ function FullPaletteTab() {
           <div className='flex shrink-0 items-center justify-between gap-3'>
             <span className={TYPE.label}>Palette scales</span>
             <span className={TYPE.mono}>
-              {scales.length} colors / {scales.length * STEPS.length} tokens
+              {slots.length} palette + {UTILITY_ROLES.length} utility /{' '}
+              {scales.length * STEPS.length} tokens
             </span>
           </div>
-          <div
-            className='min-w-0 overflow-auto rounded-md border border-border @4xl:min-h-0 @4xl:flex-1'
-            data-scale-matrix>
-            <table className='h-full w-full min-w-160 table-fixed border-separate border-spacing-0'>
-              <thead className='sticky top-0 z-20 bg-background'>
-                <tr>
-                  <th
-                    scope='col'
-                    className={`sticky left-0 z-30 w-28 border-b border-border bg-background px-3 py-3 text-left ${TYPE.label}`}>
-                    Color
-                  </th>
-                  {STEPS.map((step) => (
-                    <th
-                      key={step}
-                      scope='col'
-                      className='border-b border-border px-1 py-3 text-center font-mono text-[10px] font-semibold text-muted-foreground'>
-                      {step}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {scales.map((scale, slotIndex) => (
-                  <tr key={slots[slotIndex].id}>
-                    <th
-                      scope='row'
-                      aria-label={`${scale.name} ${scale.hex.toUpperCase()}`}
-                      className='sticky left-0 z-10 border-b border-border bg-background px-3 py-2 text-left last:border-b-0'>
-                      <div className='flex min-w-0 items-center gap-2'>
-                        <span
-                          className='size-5 shrink-0 rounded-sm border border-border'
-                          style={{ background: scale.hex }}
-                        />
-                        <div className='flex min-w-0 flex-col gap-1'>
-                          <span
-                            className='truncate text-[11px] leading-tight font-semibold'
-                            title={scale.name}>
-                            {scale.name}
-                          </span>
-                          <span className='font-mono text-[9px] leading-none text-muted-foreground'>
-                            {scale.hex.toUpperCase()}
-                          </span>
-                        </div>
-                      </div>
-                    </th>
-                    {scale.steps.map(({ step, color }) => (
-                      <td key={step} className='h-10 p-1'>
-                        <button
-                          type='button'
-                          data-scale-cell={`${slotIndex}-${step}`}
-                          aria-label={`Copy ${scale.name}-${step}: ${color.hex}`}
-                          title={`${scale.name}-${step}: ${color.hex.toUpperCase()}`}
-                          onFocus={() => setSelectedCell({ slot: slotIndex, step })}
-                          onClick={() => {
-                            void copyShade(color.hex, slotIndex, step);
-                          }}
-                          className={`flex h-full min-h-8 w-full cursor-pointer items-center justify-center rounded-sm border border-foreground/10 transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedCell.slot === slotIndex && selectedCell.step === step ? 'ring-1 ring-foreground/50' : ''}`}
-                          style={{ background: color.hex, color: textColor(color.xyz) }}>
-                          {copiedHex === color.hex && <Check className='size-3' />}
-                        </button>
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className='flex min-w-0 flex-col gap-5 overflow-auto @4xl:min-h-0 @4xl:flex-1'>
+            {GROUPS.map((group) => (
+              <section
+                key={group.id}
+                data-scale-group={group.id}
+                className='flex shrink-0 flex-col gap-2'>
+                <div className='flex items-baseline gap-3'>
+                  <span className={TYPE.label}>{group.label}</span>
+                  <span className={TYPE.meta}>{group.hint}</span>
+                </div>
+                <div
+                  className='min-w-0 overflow-x-auto rounded-md border border-border'
+                  data-scale-matrix={group.id}>
+                  <table className='w-full min-w-160 table-fixed border-separate border-spacing-0'>
+                    <thead className='bg-background'>
+                      <tr>
+                        <th
+                          scope='col'
+                          className={`sticky left-0 z-10 w-28 border-b border-border bg-background px-3 py-2.5 text-left ${TYPE.label}`}>
+                          Color
+                        </th>
+                        {STEPS.map((step) => (
+                          <th
+                            key={step}
+                            scope='col'
+                            className='border-b border-border px-1 py-2.5 text-center font-mono text-[10px] font-semibold text-muted-foreground'>
+                            {step}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {scales
+                        .flatMap((scale, slotIndex) =>
+                          scale.group === group.id ? [{ scale, slotIndex }] : [],
+                        )
+                        .map(({ scale, slotIndex }) => (
+                          <tr key={scale.id}>
+                            <th
+                              scope='row'
+                              aria-label={`${scale.name} ${scale.hex.toUpperCase()}`}
+                              className='sticky left-0 z-10 border-b border-border bg-background px-3 py-2 text-left'>
+                              <div className='flex min-w-0 items-center gap-2'>
+                                <span
+                                  className='size-5 shrink-0 rounded-sm border border-border'
+                                  style={{ background: scale.hex }}
+                                />
+                                <div className='flex min-w-0 flex-col gap-1'>
+                                  <span
+                                    className='truncate text-[11px] leading-tight font-semibold'
+                                    title={scale.label}>
+                                    {scale.label}
+                                  </span>
+                                  <span className='font-mono text-[9px] leading-none text-muted-foreground'>
+                                    {scale.hex.toUpperCase()}
+                                  </span>
+                                </div>
+                              </div>
+                            </th>
+                            {scale.steps.map(({ step, color }) => (
+                              <td key={step} className='h-10 border-b border-border p-1'>
+                                <button
+                                  type='button'
+                                  data-scale-cell={`${slotIndex}-${step}`}
+                                  aria-label={`Copy ${scale.name}-${step}: ${color.hex}`}
+                                  title={`${scale.name}-${step}: ${color.hex.toUpperCase()}`}
+                                  onFocus={() => setSelectedCell({ slot: slotIndex, step })}
+                                  onClick={() => {
+                                    void copyShade(color.hex, slotIndex, step);
+                                  }}
+                                  className={`flex h-full min-h-8 w-full cursor-pointer items-center justify-center rounded-sm border border-foreground/10 transition-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring ${selectedCell.slot === slotIndex && selectedCell.step === step ? 'ring-1 ring-foreground/50' : ''}`}
+                                  style={{ background: color.hex, color: textColor(color.xyz) }}>
+                                  {copiedHex === color.hex && <Check className='size-3' />}
+                                </button>
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            ))}
           </div>
           {selectedShade && (
             <div className='grid shrink-0 grid-cols-2 items-center gap-4 border-t border-border pt-4 @3xl:grid-cols-[minmax(0,1fr)_auto_auto]'>

@@ -15,7 +15,7 @@ import {
   stopToColor,
   textColor,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
 
 import { ToolButton as Button, ToolSegments, TYPE, ViewHeader } from './view-ui';
 

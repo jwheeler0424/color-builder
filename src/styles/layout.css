@@ -32,12 +32,28 @@
 @media (min-width: 120rem) {
   :root {
     --tool-panel-x: 1.5rem;
+    --tool-panel-y: 1.25rem;
+    --tool-section-gap: 1.25rem;
+  }
+}
+
+@media (min-width: 160rem) {
+  :root {
+    --tool-panel-x: 1.75rem;
+    --tool-panel-y: 1.5rem;
+    --tool-section-gap: 1.5rem;
   }
 }
 
 .tool-panel-space {
   padding-block: var(--tool-panel-y);
   padding-inline: var(--tool-panel-x);
+}
+
+@container (min-width: 80rem) {
+  [data-score-divider-column] {
+    padding-inline-start: calc(var(--tool-panel-x) - 1px);
+  }
 }
 
 .tool-inline-space {
@@ -57,19 +73,33 @@
   border-bottom: 1px solid var(--border);
 }
 
-@media (min-height: 64rem) {
-  @container extract-view (min-width: 56rem) {
-    [data-extract-layout-grid] {
-      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-      grid-template-rows: minmax(0, 1fr);
-      align-content: stretch;
-      overflow: hidden;
-    }
+@container extract-view (min-width: 56rem) {
+  [data-extract-layout-grid] {
+    grid-template-columns: minmax(0, 3fr) minmax(22rem, 2fr);
+    grid-template-rows: minmax(0, 1fr);
+    align-content: stretch;
+    overflow: hidden;
+  }
 
-    [data-extract-source] {
-      border-right: 1px solid var(--border);
-      border-bottom: 0;
-    }
+  [data-extract-source] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    border-right: 1px solid var(--border);
+    border-bottom: 0;
+  }
+
+  [data-extract-source] [aria-label='Image drop zone'] {
+    width: 100%;
+    max-height: min(62vh, 44rem);
+    min-height: 0;
+    aspect-ratio: 16 / 10;
+    justify-self: center;
+    align-self: center;
+  }
+
+  [data-extract-layout-grid] > section:nth-child(2) {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 }
 

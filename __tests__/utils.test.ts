@@ -22,7 +22,7 @@ import {
   rgb8ToHslPercent,
   UTILITY_ROLES,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/tools/color-names';
+import { lookupColorName } from '@/lib/engine/colors/color-names';
 
 test('explicit utility regeneration varies every unlocked role and preserves locked objects', () => {
   const palette = ['#6366f1', '#ec4899', '#10b981'].map((hex) => parseColor(hex));

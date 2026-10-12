@@ -60,7 +60,7 @@ import {
   regenerateUtilityColors as engineReroll,
   deriveThemeTokens as engineTokens,
 } from '../src/lib/engine/theme';
-import { handleColorNames } from '../src/lib/tools/color-names.server';
+import { handleColorNames } from '../src/lib/engine/colors/color-names.server';
 import { useChromaStore } from '../src/stores/chroma.store';
 
 test('engine parses and round-trips wide gamut and alpha without converting through hex', () => {

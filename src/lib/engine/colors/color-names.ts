@@ -1,4 +1,4 @@
-import { colorValue, type ColorValue } from '@/lib/engine/color';
+import { colorValue, type ColorValue } from '../color.ts';
 
 const cache = new Map<string, string>();
 const pending = new Map<string, ColorValue>();

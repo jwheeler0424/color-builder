@@ -132,12 +132,19 @@ src/
       theme.ts, theme-export.ts                 // utility colors, tokens and export formats
       contrast.ts, simulate.ts, gradient.ts     // accessibility, vision simulation, and gradients
       svg-export.ts                             // standalone labelled SVG generation
+      chart-data.ts                             // OKLCH chart points, chroma bound, score dimensions/levels
+      palette-share.ts                          // palette URL-hash encoding/decoding
+      cmyk-profile.ts                           // shared CMYK converter registry
+      colors/
+        color-names.ts                          // browser name lookup with batching and cache
+        color-names.server.ts                   // POST handler for /api/color-names
+        named-color-lookup.ts                   // Bun/SQLite nearest-name search
     tools/
-      palette-charts.ts                         // radar, OKLCH scatter and hue/chroma chart definitions
+      palette-charts.ts                         // chart rendering definitions (CSS-token styling) over engine chart data
       .gitkeep                                  // keeps tools folder committed until populated
     utils/
       index.ts                                  // app-only utility barrel; no color-math exports
-      palette.utils.ts                          // app palette persistence and share URLs
+      palette.utils.ts                          // localStorage persistence; URL helpers delegate to the engine
       seo.ts                                    // SEO metadata helper utilities
       tw.ts                                     // Tailwind-focused utility helpers
   providers/
