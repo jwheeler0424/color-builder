@@ -1,4 +1,4 @@
-import { IconCheck } from '@tabler/icons-react';
+import { IconArrowRight, IconCheck, IconColorPicker, IconPlus } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
 import React, { useCallback, useMemo, useState } from 'react';
 
@@ -50,26 +50,6 @@ declare global {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type PickerMode = 'rgb' | 'hsl' | 'hsv' | 'oklch' | 'oklab';
-
-const MODES: { id: PickerMode; label: string; desc: string }[] = [
-  { id: 'rgb', label: 'RGB', desc: 'Red, Green, Blue — 0 to 255 per channel' },
-  { id: 'hsl', label: 'HSL', desc: 'Hue, Saturation, Lightness — CSS native' },
-  {
-    id: 'hsv',
-    label: 'HSV',
-    desc: 'Hue, Saturation, Value — common in design tools',
-  },
-  {
-    id: 'oklch',
-    label: 'OKLCH',
-    desc: 'Perceptually uniform — same space as palette generation',
-  },
-  {
-    id: 'oklab',
-    label: 'OKLab',
-    desc: 'Perceptual Lab — a/b axes match Photoshop Lab mode',
-  },
-];
 
 // ─── Main View ────────────────────────────────────────────────────────────────
 
@@ -154,17 +134,20 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
     addRecent(displayHex);
     generate();
     void navigate({ to: '/palette' });
-  }, [pickerHex, setSeeds, addRecent, generate, navigate]);
+  }, [pickerHex, pickerAlpha, displayHex, setSeeds, addRecent, generate, navigate]);
 
   const addToPalette = useCallback(() => {
     addSlot(hexToStop(pickerHex, pickerAlpha < 100 ? pickerAlpha : undefined));
     addRecent(displayHex);
-  }, [pickerHex, addSlot, addRecent]);
+  }, [pickerHex, pickerAlpha, displayHex, addSlot, addRecent]);
 
-  const updateColor = useCallback((newHex: string) => {
-    setPickerHex(newHex);
-    handleHexInput(newHex);
-  }, []);
+  const updateColor = useCallback(
+    (newHex: string) => {
+      setPickerHex(newHex);
+      handleHexInput(newHex);
+    },
+    [setPickerHex, handleHexInput],
+  );
 
   const [copied, setCopied] = useState(false);
   const copyCss = () => {
@@ -180,7 +163,7 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
         const { sRGBHex } = await dropper.open();
         const parsed = parseHexInput(sRGBHex);
         if (parsed) updateColor(parsed.hex);
-      } catch (e) {
+      } catch {
         /* cancelled */
       }
     }
@@ -327,10 +310,12 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
           </div>
           <div className='flex items-center justify-end gap-1.5'>
             <Button variant='default' size='sm' onClick={useSeed}>
-              → Seed Palette
+              <IconArrowRight className='size-4' aria-hidden='true' />
+              Seed Palette
             </Button>
             <Button variant='ghost' size='sm' onClick={addToPalette}>
-              + Add
+              <IconPlus className='size-4' aria-hidden='true' />
+              Add
             </Button>
             {typeof window !== 'undefined' && 'EyeDropper' in window && (
               <Button
@@ -338,7 +323,8 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
                 size='sm'
                 title='Sample color from screen (EyeDropper API)'
                 onClick={handleEyeDropper}>
-                ⊕ Pick
+                <IconColorPicker className='size-4' aria-hidden='true' />
+                Pick
               </Button>
             )}
           </div>
@@ -351,9 +337,11 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
           <PanelSectionLabel>RECENT COLORS</PanelSectionLabel>
           <div className='flex flex-wrap gap-1.5 pb-2'>
             {recentColors.map((rh, i) => (
-              <div
+              <button
                 key={i}
-                className='h-5.5 w-5.5 cursor-pointer rounded border border-white/10 transition-transform hover:scale-110'
+                type='button'
+                aria-label={`Use recent color ${rh.toUpperCase()}`}
+                className='h-5.5 w-5.5 cursor-pointer rounded border border-white/10 p-0 transition-transform hover:scale-110'
                 style={{ background: rh }}
                 title={rh}
                 onClick={() => {
@@ -393,9 +381,11 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
           <PanelSectionLabel>PALETTE</PanelSectionLabel>
           <div className='flex flex-wrap gap-1.5 pb-2'>
             {slots.map((slot, i) => (
-              <div
+              <button
                 key={i}
-                className='h-5.5 w-5.5 cursor-pointer rounded border border-white/10 transition-transform hover:scale-110'
+                type='button'
+                aria-label={`Use palette color ${i + 1} ${slot.color.hex.toUpperCase()}`}
+                className='h-5.5 w-5.5 cursor-pointer rounded border border-white/10 p-0 transition-transform hover:scale-110'
                 style={{ background: slot.color.hex }}
                 title={slot.color.hex}
                 onClick={() => setPickerHex(slot.color.hex)}
@@ -418,7 +408,10 @@ function InfoRow({ label, value, mono }: { label: string; value: string; mono?: 
   return (
     <div className='flex items-center justify-between gap-1.5'>
       <span className='min-w-9.5 shrink-0 text-muted-foreground'>{label}</span>
-      <span
+      <button
+        type='button'
+        aria-label={copied ? `${label} copied` : `Copy ${label}: ${value}`}
+        className='min-w-0 flex-1 cursor-pointer border-0 bg-transparent p-0 text-right outline-none focus-visible:ring-2 focus-visible:ring-ring'
         style={{
           fontFamily: mono ? 'var(--font-mono)' : undefined,
           fontSize: mono ? 9.5 : undefined,
@@ -440,7 +433,7 @@ function InfoRow({ label, value, mono }: { label: string; value: string; mono?: 
         ) : (
           value
         )}
-      </span>
+      </button>
     </div>
   );
 }

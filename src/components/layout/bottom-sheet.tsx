@@ -55,11 +55,8 @@ export function BottomSheet({
 
   // Mount animation — delay visibility to trigger CSS transition
   useEffect(() => {
-    if (open) {
-      requestAnimationFrame(() => setVisible(true));
-    } else {
-      setVisible(false);
-    }
+    const frame = requestAnimationFrame(() => setVisible(open));
+    return () => cancelAnimationFrame(frame);
   }, [open]);
 
   // Escape to close

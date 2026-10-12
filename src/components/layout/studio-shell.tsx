@@ -44,7 +44,7 @@ const STRIP_ONLY_ROUTES = new Set(['/palette']);
 
 export function StudioShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const { modal, slots, editSlotColor } = useChromaStore();
+  const { slots, editSlotColor } = useChromaStore();
 
   const [editingSlotIndex, setEditingSlotIndex] = useState<number | null>(null);
   const [prevRoute, setPrevRoute] = useState<string | null>(null);

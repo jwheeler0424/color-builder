@@ -248,7 +248,7 @@ function ImageTab() {
             {imgSrc ? (
               <img
                 src={imgSrc}
-                alt='Source image'
+                alt='Uploaded color source'
                 className='relative max-h-32 max-w-full object-contain @min-[40rem]:max-h-72 @min-[56rem]/extract-view:max-h-full'
               />
             ) : (
@@ -644,7 +644,7 @@ function ConvertTab() {
     () => pickerReadings(color, profile.converter ?? undefined),
     [color, profile.converter],
   );
-  const { rgb, hsl, hsv, cmyk, oklab, oklch } = readings;
+  const { rgb, hsl, hsv, cmyk, oklch } = readings;
   const hex = renderColor(color).hex;
   const name = lookupColorName(color, hex);
 

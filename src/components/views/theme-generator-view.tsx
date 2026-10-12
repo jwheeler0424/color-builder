@@ -370,7 +370,7 @@ export default function ThemeGeneratorView() {
                   (role) => (
                     <UtilityThemeCard
                       key={role}
-                      role={role}
+                      colorRole={role}
                       utility={mergedTokens.utility}
                       mode={editedMode}
                     />

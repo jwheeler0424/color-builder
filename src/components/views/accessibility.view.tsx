@@ -281,12 +281,52 @@ function PairMatrix({ hexes, useApca }: { hexes: string[]; useApca: boolean }) {
                   <span className='sr-only'>Text {fg.toUpperCase()}</span>
                 </th>
                 {hexes.map((bg, j) => {
-                  if (i === j)
+                  if (i === j) {
+                    const colorXyz = parseColor(fg).xyz;
+                    const blackRatio = contrastRatio(colorXyz, BLACK_XYZ);
+                    const whiteRatio = contrastRatio(colorXyz, WHITE_XYZ);
+                    const blackLc = apcaContrast(BLACK_XYZ, colorXyz);
+                    const whiteLc = apcaContrast(WHITE_XYZ, colorXyz);
+                    const blackPass = useApca ? Math.abs(blackLc) >= 45 : blackRatio >= 4.5;
+                    const whitePass = useApca ? Math.abs(whiteLc) >= 45 : whiteRatio >= 4.5;
+                    const blackLabel = useApca
+                      ? `Lc${Math.abs(blackLc)}`
+                      : `${blackRatio.toFixed(1)}:1`;
+                    const whiteLabel = useApca
+                      ? `Lc${Math.abs(whiteLc)}`
+                      : `${whiteRatio.toFixed(1)}:1`;
+                    const useBlackText =
+                      blackPass !== whitePass
+                        ? blackPass
+                        : useApca
+                          ? Math.abs(blackLc) >= Math.abs(whiteLc)
+                          : blackRatio >= whiteRatio;
+                    const selectedPass = useBlackText ? blackPass : whitePass;
+                    const selectedLabel = useBlackText ? blackLabel : whiteLabel;
+                    const selectedText = useBlackText ? '#000000' : '#ffffff';
                     return (
-                      <td key={j} className='text-center text-[10px] text-muted-foreground'>
-                        —
+                      <td
+                        key={j}
+                        aria-label={`${fg.toUpperCase()}: showing ${useBlackText ? 'black' : 'white'} text, ${selectedLabel}, ${selectedPass ? 'pass' : 'fail'}`}>
+                        <div
+                          className={cn(
+                            'flex min-w-16 flex-col items-center gap-0.5 rounded px-1.5 py-1.5',
+                            !selectedPass && 'opacity-45',
+                          )}
+                          style={{ background: fg }}
+                          title={`Black text: ${blackLabel} · White text: ${whiteLabel} · Showing ${useBlackText ? 'black' : 'white'} text`}>
+                          <span
+                            className='text-sm leading-none font-extrabold'
+                            style={{ color: selectedText }}>
+                            {useBlackText ? 'B Aa' : 'W Aa'}
+                          </span>
+                          <span className='rounded bg-card px-1 font-mono text-[9px] text-foreground'>
+                            {selectedLabel}
+                          </span>
+                        </div>
                       </td>
                     );
+                  }
                   const xyzFg = parseColor(fg).xyz;
                   const xyzBg = parseColor(bg).xyz;
                   const label = useApca

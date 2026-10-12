@@ -100,7 +100,7 @@ export default function GradientStopBar({
         }
       }
     },
-    [stops, onMoveStop, onRemoveStop, onSelectStop],
+    [stops, onMoveStop, onRemoveStop],
   );
 
   return (

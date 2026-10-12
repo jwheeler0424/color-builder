@@ -476,7 +476,10 @@ function ScoreTab() {
                           { side: 'white', ratio: onWhite, label: wcagLevel(onWhite) },
                           { side: 'black', ratio: onBlack, label: wcagLevel(onBlack) },
                         ].map(({ side, ratio, label }) => (
-                          <td key={side} className='px-1 py-2 text-right'>
+                          <td
+                            key={side}
+                            aria-label={`${label} contrast ${ratio.toFixed(2)} to 1, ${wcagLevel(ratio)}`}
+                            className='px-1 py-2 text-right'>
                             <div className='flex flex-col items-end gap-0.5'>
                               <span className={`${TYPE.mono} whitespace-nowrap`}>
                                 {ratio.toFixed(2)}:1
@@ -971,20 +974,11 @@ function CompareTab() {
   const loadPalette = useChromaStore((s) => s.loadPalette);
   const openModal = useChromaStore((s) => s.openModal);
   const navigate = useNavigate();
-  const [saved, setSaved] = useState<SavedPalette[]>([]);
-  const [selA, setSelA] = useState<string | null>(null);
-  const [selB, setSelB] = useState<string | null>(null);
-
-  useEffect(() => {
-    const all = loadSaved();
-    setSaved(all);
-    if (all.length > 1) {
-      setSelA(all[0].id);
-      setSelB(all[1].id);
-    } else if (all.length === 1) {
-      setSelB(all[0].id);
-    }
-  }, []);
+  const [saved] = useState<SavedPalette[]>(() => loadSaved());
+  const [selA, setSelA] = useState<string | null>(() => (saved.length > 1 ? saved[0]!.id : null));
+  const [selB, setSelB] = useState<string | null>(() =>
+    saved.length > 1 ? saved[1]!.id : (saved[0]?.id ?? null),
+  );
 
   const CURRENT: SavedPalette = useMemo(
     () => ({
@@ -992,7 +986,7 @@ function CompareTab() {
       name: 'Current Palette',
       hexes: slots.map((s) => s.color.hex),
       mode,
-      createdAt: Date.now(),
+      createdAt: 0,
     }),
     [slots, mode],
   );

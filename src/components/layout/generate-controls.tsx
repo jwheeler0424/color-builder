@@ -596,9 +596,10 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
           <SectionLabel>Themes</SectionLabel>
           <div className='grid grid-cols-2 gap-1.5'>
             {THEMES.map((t, i) => (
-              <div
+              <button
                 key={i}
-                className='cursor-pointer overflow-hidden rounded border border-border transition-colors hover:border-input'
+                type='button'
+                className='w-full cursor-pointer overflow-hidden rounded border border-border bg-transparent p-0 text-left transition-colors hover:border-input'
                 title={t.name}
                 onClick={() => {
                   setMode(t.mode);
@@ -613,7 +614,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
                 <div className='bg-secondary px-2 py-1.5 text-[11px] font-semibold text-secondary-foreground'>
                   {t.name}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </Section>
@@ -627,17 +628,24 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
             {seeds.map((s, i) => (
               <div key={i} className='flex items-center gap-1.5'>
                 <button
+                  type='button'
+                  aria-label={`Edit seed ${s.hex.toUpperCase()}`}
                   className='h-4 w-4 shrink-0 rounded-sm border border-white/10'
                   style={{ background: s.css ?? s.hex }}
                   onClick={() => onEditSeed?.(i)}
                   title={`Edit seed: ${s.hex}`}
                 />
-                <span
+                <button
+                  type='button'
+                  aria-label={`Edit seed ${s.hex.toUpperCase()}`}
+                  title={`Edit seed ${s.hex.toUpperCase()}`}
                   className='flex-1 cursor-pointer font-mono text-[10px] tracking-[.05em] text-muted-foreground uppercase transition-colors hover:text-foreground'
                   onClick={() => onEditSeed?.(i)}>
                   {s.hex.toUpperCase()}
-                </span>
+                </button>
                 <button
+                  type='button'
+                  aria-label={`Remove seed ${s.hex.toUpperCase()}`}
                   className='cursor-pointer border-none bg-transparent text-sm leading-none text-muted-foreground transition-colors hover:text-destructive'
                   onClick={() => removeSeed(i)}
                   title='Remove seed'>

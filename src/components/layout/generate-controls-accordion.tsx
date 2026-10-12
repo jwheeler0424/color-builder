@@ -91,9 +91,10 @@ export function GenerateControlsAccordion({
       <AccordionSection id='themes' title='Themes'>
         <div className='grid grid-cols-2 gap-1.5 pt-1'>
           {THEMES.map((t, i) => (
-            <div
+            <button
               key={i}
-              className='cursor-pointer overflow-hidden rounded border border-border transition-opacity active:opacity-70'
+              type='button'
+              className='w-full cursor-pointer overflow-hidden rounded border border-border bg-transparent p-0 text-left transition-opacity active:opacity-70'
               title={t.name}
               onClick={() => {
                 setMode(t.mode);
@@ -108,7 +109,7 @@ export function GenerateControlsAccordion({
               <div className='bg-secondary px-2 py-1.5 text-[11px] font-semibold text-secondary-foreground'>
                 {t.name}
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </AccordionSection>
@@ -122,17 +123,23 @@ export function GenerateControlsAccordion({
           {seeds.map((s, i) => (
             <div key={i} className='flex min-h-11 items-center gap-2'>
               <button
+                type='button'
+                aria-label={`Edit seed ${s.hex.toUpperCase()}`}
                 className='h-9 w-9 shrink-0 rounded-md border border-border/50'
                 style={{ background: s.hex }}
                 onClick={() => onEditSeed?.(i)}
                 title={`Edit seed: ${s.hex}`}
               />
-              <span
-                className='flex-1 cursor-pointer font-mono text-[11px] tracking-[.05em] text-muted-foreground uppercase transition-colors hover:text-foreground'
+              <button
+                type='button'
+                aria-label={`Edit seed ${s.hex.toUpperCase()}`}
+                className='flex-1 cursor-pointer border-0 bg-transparent p-0 text-left font-mono text-[11px] tracking-[.05em] text-muted-foreground uppercase transition-colors hover:text-foreground'
                 onClick={() => onEditSeed?.(i)}>
                 {s.hex.toUpperCase()}
-              </span>
+              </button>
               <button
+                type='button'
+                aria-label={`Remove seed ${s.hex.toUpperCase()}`}
                 className='flex h-11 w-11 cursor-pointer items-center justify-center text-xl text-muted-foreground transition-colors hover:text-destructive'
                 onClick={() => removeSeed(i)}
                 title='Remove seed'>

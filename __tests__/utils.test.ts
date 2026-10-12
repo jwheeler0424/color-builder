@@ -13,7 +13,6 @@ import {
   generateUtilityColors,
   generateSvgSwatch,
   colorValue,
-  hexToStop,
   hexToRgb8,
   parseColor,
   regenerateUtilityColors,

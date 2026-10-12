@@ -12,7 +12,7 @@
  */
 
 import { IconRefresh } from '@tabler/icons-react';
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { cn } from '@/lib/utils';
@@ -21,6 +21,7 @@ import { LogoIcon } from '../logo-icon';
 import { GenerateControls, GenerateFooter } from './generate-controls';
 
 const COLLAPSE_KEY = 'chroma:rail-collapsed';
+const collapsedListeners = new Set<() => void>();
 
 function loadCollapsed(): boolean {
   try {
@@ -33,6 +34,19 @@ function saveCollapsed(v: boolean) {
   try {
     localStorage.setItem(COLLAPSE_KEY, String(v));
   } catch {}
+  collapsedListeners.forEach((listener) => listener());
+}
+
+function subscribeCollapsed(listener: () => void) {
+  collapsedListeners.add(listener);
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === COLLAPSE_KEY || event.key === null) listener();
+  };
+  window.addEventListener('storage', onStorage);
+  return () => {
+    collapsedListeners.delete(listener);
+    window.removeEventListener('storage', onStorage);
+  };
 }
 
 interface LeftRailProps {
@@ -42,19 +56,11 @@ interface LeftRailProps {
 }
 
 export function LeftRail({ onEditSeed, className }: LeftRailProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const collapsed = useSyncExternalStore(subscribeCollapsed, loadCollapsed, () => false);
   const generate = useChromaStore((s) => s.generate);
 
-  // Load persisted state after mount (avoids SSR mismatch)
-  useEffect(() => {
-    setCollapsed(loadCollapsed());
-  }, []);
-
   const toggle = () => {
-    setCollapsed((v) => {
-      saveCollapsed(!v);
-      return !v;
-    });
+    saveCollapsed(!collapsed);
   };
 
   return (

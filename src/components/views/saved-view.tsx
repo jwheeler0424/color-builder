@@ -1,6 +1,6 @@
 import { IconCheck, IconDownload, IconShare, IconTrash } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import type { SavedPalette } from '@/types';
 
@@ -12,14 +12,10 @@ import { loadSaved, deleteSaved, clearSaved, encodeUrl } from '@/lib/utils';
 export default function SavedView() {
   const loadPalette = useChromaStore((s) => s.loadPalette);
   const navigate = useNavigate();
-  const [palettes, setPalettes] = useState<SavedPalette[]>([]);
+  const [palettes, setPalettes] = useState<SavedPalette[]>(() => loadSaved());
   const [sharedId, setSharedId] = useState<string | null>(null);
 
   const refresh = () => setPalettes(loadSaved());
-
-  useEffect(() => {
-    refresh();
-  }, []);
 
   // Renamed to avoid collision with the store's loadPalette method
   const handleLoad = (p: SavedPalette) => {

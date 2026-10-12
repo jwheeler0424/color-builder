@@ -26,7 +26,7 @@ import { PaletteStrip } from '../layout/palette-strip';
 // ─── Standalone full layout ───────────────────────────────────────────────────
 
 function StandalonePaletteView() {
-  const [editingSlot, setEditingSlot] = useState<number | null>(null);
+  const [, setEditingSlot] = useState<number | null>(null);
 
   return (
     <div className='flex flex-1 overflow-hidden'>

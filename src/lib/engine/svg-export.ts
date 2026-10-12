@@ -16,7 +16,7 @@ export interface SvgExportOptions {
 
 const esc = (value: string) =>
   value.replace(
-    /[&<>\"]/g,
+    /[&<>"]/g,
     (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[character]!,
   );
 

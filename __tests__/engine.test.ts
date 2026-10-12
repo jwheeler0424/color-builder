@@ -432,7 +432,7 @@ test('engine extraction retains the declared pixel gamut and unrounded means', (
 
 test('engine image extraction decodes browser images and preserves P3 stops', async () => {
   const originalImage = globalThis.Image;
-  const originalCreateElement = document.createElement;
+  const originalCreateElement = document.createElement.bind(document);
   const originalCreateObjectURL = URL.createObjectURL.bind(URL);
   const originalRevokeObjectURL = URL.revokeObjectURL.bind(URL);
   let revoked = false;

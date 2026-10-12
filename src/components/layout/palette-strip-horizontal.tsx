@@ -19,6 +19,7 @@
  * For now, the reorder affordance is visually hidden on touch.
  */
 
+import { IconLock, IconPencil } from '@tabler/icons-react';
 import React, { useRef, useState, useCallback, useMemo } from 'react';
 
 import type { ColorStop } from '@/types';
@@ -53,17 +54,7 @@ function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
   const tc = useMemo(() => textColor(color.xyz), [color.xyz]);
   const autoName = lookupColorName(color, rendition.hex);
 
-  const [lastTap, setLastTap] = useState(0);
   const [copied, setCopied] = useState(false);
-
-  // Double-tap to edit
-  const handleTap = useCallback(() => {
-    const now = Date.now();
-    if (now - lastTap < 300) {
-      onEdit(index);
-    }
-    setLastTap(now);
-  }, [lastTap, index, onEdit]);
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -76,7 +67,6 @@ function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
 
   return (
     <div
-      onClick={handleTap}
       className={cn(
         'relative flex h-full shrink-0 flex-col select-none',
         'scroll-snap-align-center transition-all duration-150',
@@ -86,7 +76,7 @@ function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
       {/* Lock badge */}
       {slot.locked && (
         <div className='absolute top-2 right-2 text-[10px] opacity-70' style={{ color: tc }}>
-          🔒
+          <IconLock className='size-3' aria-hidden='true' />
         </div>
       )}
 
@@ -124,7 +114,7 @@ function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
             onEdit(index);
           }}
           title='Edit color'>
-          <span style={{ fontSize: 10 }}>✎</span>
+          <IconPencil className='size-3' aria-hidden='true' />
         </button>
       </div>
 
@@ -167,7 +157,7 @@ export function PaletteStripHorizontal({
   // Track scroll position for dot indicator
   const handleScroll = useCallback(() => {
     if (!scrollRef.current) return;
-    const { scrollLeft, clientWidth } = scrollRef.current;
+    const { scrollLeft } = scrollRef.current;
     const index = Math.round(scrollLeft / slotWidth);
     setActiveIndex(Math.min(index, slots.length - 1));
   }, [slotWidth, slots.length]);

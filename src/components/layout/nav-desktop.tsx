@@ -107,11 +107,9 @@ export const SECTION_TOOLS: Record<string, { to: string; label: string }[]> = {
 interface NavDesktopProps {
   /** Extra className — typically not needed */
   className?: string;
-  /** Called when theme toggle is clicked */
-  onThemeToggle?: () => void;
 }
 
-export function NavDesktop({ className, onThemeToggle }: NavDesktopProps) {
+export function NavDesktop({ className }: NavDesktopProps) {
   const { setOpen: openPalette } = useCommandPalette();
 
   return (

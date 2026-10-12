@@ -12,7 +12,7 @@ import {
   IconPlant2 as Sprout,
 } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 
 import ColorPickerModal from '@/components/modals/color-picker.modal';
 import { useChromaStore } from '@/hooks/use-chroma-store';
@@ -98,14 +98,11 @@ function SingleColorTab() {
   } = useChromaStore();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const [inputVal, setInputVal] = useState(scaleHex);
+  const [draftInput, setDraftInput] = useState<string | null>(null);
+  const inputVal = draftInput ?? scaleHex;
   const [showPicker, setShowPicker] = useState(false);
   const [selectedStep, setSelectedStep] = useState(500);
   const [copiedHex, setCopiedHex] = useState<string | null>(null);
-
-  React.useEffect(() => {
-    setInputVal(scaleHex);
-  }, [scaleHex]);
 
   const scale = useMemo(() => generateScale({ baseColor: scaleHex }), [scaleHex]);
   const tokens = useMemo(
@@ -125,17 +122,19 @@ function SingleColorTab() {
   };
 
   const handleInput = (v: string) => {
-    setInputVal(v);
+    setDraftInput(v);
     if (isHex(v)) setScaleHex(normalizeHex(v));
   };
 
   const handleGenerate = () => {
     const h = isHex(inputVal) ? normalizeHex(inputVal) : null;
-    if (h) setScaleHex(h);
-    else if (slots.length) {
+    if (h) {
+      setScaleHex(h);
+      setDraftInput(null);
+    } else if (slots.length) {
       const h2 = slots[0].color.hex;
-      setInputVal(h2);
       setScaleHex(h2);
+      setDraftInput(null);
     }
   };
 
@@ -196,7 +195,7 @@ function SingleColorTab() {
                     title={slot.name || slot.color.hex.toUpperCase()}
                     onClick={() => {
                       setScaleHex(slot.color.hex);
-                      setInputVal(slot.color.hex);
+                      setDraftInput(null);
                     }}
                     className='size-5 shrink-0 cursor-pointer rounded-sm border border-border outline-none focus-visible:ring-2 focus-visible:ring-ring'
                     style={{ background: slot.color.hex }}
@@ -314,7 +313,7 @@ function SingleColorTab() {
         title='Base color — Tint Scale'
         onApply={(hex) => {
           setScaleHex(hex);
-          setInputVal(hex);
+          setDraftInput(null);
           setShowPicker(false);
         }}
         onClose={() => setShowPicker(false)}

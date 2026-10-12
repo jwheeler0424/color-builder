@@ -698,7 +698,6 @@ function PanelGroupContent({ className, ...props }: React.ComponentProps<'div'>)
 function PanelMenu({ className, ...props }: React.ComponentProps<'ul'>) {
   return (
     <ul
-      role='list'
       data-slot='panel-menu'
       data-panel='menu'
       className={cn('flex w-full min-w-0 flex-col gap-0', className)}
@@ -826,13 +825,11 @@ function PanelMenuAction({
   className,
   render,
   showOnHover = false,
-  panelId,
   'aria-label': ariaLabel = 'Menu action',
   ...props
 }: useRender.ComponentProps<'button'> &
   React.ComponentProps<'button'> & {
     showOnHover?: boolean;
-    panelId?: string;
   }) {
   return useRender({
     defaultTagName: 'button',
@@ -919,7 +916,6 @@ function PanelMenuSkeletonStatus({ loadingText = 'Loading…' }: { loadingText?:
 function PanelMenuSub({ className, id, ...props }: React.ComponentProps<'ul'>) {
   return (
     <ul
-      role='list'
       id={id}
       data-slot='panel-menu-sub'
       data-panel='menu-sub'

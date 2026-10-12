@@ -225,7 +225,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
   return (
     <CommandPaletteContext.Provider value={{ open, setOpen }}>
       {children}
-      <CommandPalette />
+      <CommandPalette key={open ? 'open' : 'closed'} />
     </CommandPaletteContext.Provider>
   );
 }
@@ -240,7 +240,7 @@ function CommandPalette() {
   const { open, setOpen } = useCommandPalette();
   const [query, setQuery] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
-  const [recent, setRecent] = useState<string[]>([]);
+  const [recent] = useState<string[]>(() => loadRecent());
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -248,14 +248,11 @@ function CommandPalette() {
   const openModal = useChromaStore((s) => s.openModal);
   const hotkeyList = useHotkeyList();
 
-  // Load recent on open
+  // Fresh command state is created each time the palette opens.
   useEffect(() => {
-    if (open) {
-      setRecent(loadRecent());
-      setQuery('');
-      setActiveIdx(0);
-      setTimeout(() => inputRef.current?.focus(), 30);
-    }
+    if (!open) return;
+    const focusTimeout = setTimeout(() => inputRef.current?.focus(), 30);
+    return () => clearTimeout(focusTimeout);
   }, [open]);
 
   // Esc to close
@@ -283,50 +280,56 @@ function CommandPalette() {
   );
 
   // Always-available actions
-  const builtinActions: CommandItem[] = [
-    {
-      id: 'action:generate',
-      label: 'Generate new palette',
-      section: 'Action',
-      icon: IconRefresh,
-      keywords: 'generate regen space',
-      action: generate,
-    },
-    {
-      id: 'action:save',
-      label: 'Save current palette',
-      section: 'Action',
-      icon: IconHeart,
-      keywords: 'save store',
-      action: () => openModal('save'),
-    },
-    {
-      id: 'action:export',
-      label: 'Export palette',
-      section: 'Action',
-      icon: IconDownload,
-      keywords: 'export download copy',
-      action: () => openModal('export'),
-    },
-    {
-      id: 'action:share',
-      label: 'Share palette URL',
-      section: 'Action',
-      icon: IconShare,
-      keywords: 'share link url',
-      action: () => openModal('share'),
-    },
-    {
-      id: 'action:shortcuts',
-      label: 'Keyboard shortcuts',
-      section: 'Action',
-      icon: IconKeyboard,
-      keywords: 'hotkey keyboard help',
-      action: () => openModal('shortcuts'),
-    },
-  ];
+  const builtinActions = useMemo<CommandItem[]>(
+    () => [
+      {
+        id: 'action:generate',
+        label: 'Generate new palette',
+        section: 'Action',
+        icon: IconRefresh,
+        keywords: 'generate regen space',
+        action: generate,
+      },
+      {
+        id: 'action:save',
+        label: 'Save current palette',
+        section: 'Action',
+        icon: IconHeart,
+        keywords: 'save store',
+        action: () => openModal('save'),
+      },
+      {
+        id: 'action:export',
+        label: 'Export palette',
+        section: 'Action',
+        icon: IconDownload,
+        keywords: 'export download copy',
+        action: () => openModal('export'),
+      },
+      {
+        id: 'action:share',
+        label: 'Share palette URL',
+        section: 'Action',
+        icon: IconShare,
+        keywords: 'share link url',
+        action: () => openModal('share'),
+      },
+      {
+        id: 'action:shortcuts',
+        label: 'Keyboard shortcuts',
+        section: 'Action',
+        icon: IconKeyboard,
+        keywords: 'hotkey keyboard help',
+        action: () => openModal('shortcuts'),
+      },
+    ],
+    [generate, openModal],
+  );
 
-  const allItems = [...TOOLS, ...builtinActions, ...actionItems];
+  const allItems = useMemo(
+    () => [...TOOLS, ...builtinActions, ...actionItems],
+    [builtinActions, actionItems],
+  );
 
   // Filter
   const filtered = useMemo(() => {
@@ -356,10 +359,8 @@ function CommandPalette() {
   // Flat list for keyboard nav
   const flatItems = useMemo(() => [...grouped.values()].flat(), [grouped]);
 
-  // Clamp active index
-  useEffect(() => {
-    setActiveIdx((i) => Math.min(i, Math.max(0, flatItems.length - 1)));
-  }, [flatItems.length]);
+  const maxActiveIdx = Math.max(0, flatItems.length - 1);
+  const activeIndex = Math.min(activeIdx, maxActiveIdx);
 
   const execute = useCallback(
     (item: CommandItem) => {
@@ -374,13 +375,13 @@ function CommandPalette() {
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setActiveIdx((i) => Math.min(i + 1, flatItems.length - 1));
+      setActiveIdx((i) => Math.min(Math.min(i, maxActiveIdx) + 1, maxActiveIdx));
     }
     if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setActiveIdx((i) => Math.max(i - 1, 0));
+      setActiveIdx((i) => Math.max(Math.min(i, maxActiveIdx) - 1, 0));
     }
-    if (e.key === 'Enter' && flatItems[activeIdx]) execute(flatItems[activeIdx]);
+    if (e.key === 'Enter' && flatItems[activeIndex]) execute(flatItems[activeIndex]);
   };
 
   if (!open) return null;
@@ -390,6 +391,7 @@ function CommandPalette() {
   return (
     <div
       className='fixed inset-0 z-200 flex items-start justify-center pt-[14vh]'
+      role='presentation'
       style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(2px)' }}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) setOpen(false);
@@ -432,7 +434,7 @@ function CommandPalette() {
               </div>
               {items.map((item) => {
                 const idx = globalIdx++;
-                const isActive = idx === activeIdx;
+                const isActive = idx === activeIndex;
                 const ItemIcon = item.icon;
                 return (
                   <button

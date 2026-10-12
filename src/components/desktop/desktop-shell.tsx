@@ -23,9 +23,14 @@ export function DesktopStudio() {
   const openPanel = usePanel((state) => state.openPanel);
   const [editingSlotIndex, setEditingSlotIndex] = useState<number | null>(null);
   const [toolTab, setToolTab] = useState<PaletteToolTab>('generate');
+  const [previousPathname, setPreviousPathname] = useState(pathname);
 
   const isPalettePage = isPaletteRoute(pathname);
   const isPickerRoute = pathname === '/picker';
+  if (previousPathname !== pathname) {
+    setPreviousPathname(pathname);
+    setEditingSlotIndex(null);
+  }
   // On palette routes the URL owns the Picker tab so /picker links and back/forward work
   const activeTab: PaletteToolTab = isPickerRoute
     ? 'picker'
@@ -38,9 +43,8 @@ export function DesktopStudio() {
   }, [openPanel]);
 
   useEffect(() => {
-    setEditingSlotIndex(null);
     if (isPickerRoute) openPanel('main-right');
-  }, [pathname, isPickerRoute, openPanel]);
+  }, [isPickerRoute, openPanel]);
 
   const handleTabChange = useCallback(
     (tab: PaletteToolTab) => {

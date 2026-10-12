@@ -209,15 +209,15 @@ function TokenRow({
 // ─── Utility token row ────────────────────────────────────────────────────────
 
 export function UtilityThemeCard({
-  role,
+  colorRole,
   utility,
   mode,
 }: {
-  role: UtilityRole;
+  colorRole: UtilityRole;
   utility: ReturnType<typeof deriveThemeTokens>['utility'];
   mode: Mode;
 }) {
-  const u = utility[role];
+  const u = utility[colorRole];
   const color = mode === 'light' ? u.light : u.dark;
   const tc = textColor(parseColor(color).xyz);
   const [copied, setCopied] = useState<string | null>(null);
@@ -233,23 +233,23 @@ export function UtilityThemeCard({
 
   return (
     <article
-      aria-label={`${role} utility colors`}
+      aria-label={`${colorRole} utility colors`}
       className='flex min-w-0 flex-col gap-3 rounded-md border border-border bg-card p-3'>
       <div className='flex min-w-0 items-center gap-3'>
         <span
           className='grid size-9 shrink-0 place-items-center rounded-md border border-foreground/10 text-sm font-bold'
           style={{ background: color, color: tc }}>
-          {role[0].toUpperCase()}
+          {colorRole[0].toUpperCase()}
         </span>
         <div className='flex min-w-0 flex-1 flex-col gap-1'>
-          <h3 className={`${TYPE.title} capitalize`}>{role}</h3>
+          <h3 className={`${TYPE.title} capitalize`}>{colorRole}</h3>
           <span className={TYPE.meta}>{mode === 'light' ? 'Light' : 'Dark'} accent</span>
         </div>
         <div className='flex shrink-0 flex-col items-end gap-1'>
           <span className={TYPE.label}>Base</span>
           <button
             type='button'
-            aria-label={`Copy ${role} base ${u.base}`}
+            aria-label={`Copy ${colorRole} base ${u.base}`}
             title='Copy base color'
             onClick={() => {
               void copyColor(u.base, 'base');
@@ -282,13 +282,13 @@ export function UtilityThemeCard({
                 <span
                   className='rounded-sm px-2 py-1 text-[10px] font-semibold capitalize'
                   style={{ background: accent, color: textColor(parseColor(accent).xyz) }}>
-                  {role}
+                  {colorRole}
                 </span>
                 <span className='font-display text-base font-semibold'>Aa</span>
               </div>
               <button
                 type='button'
-                aria-label={`Copy ${role} ${theme} ${accent}`}
+                aria-label={`Copy ${colorRole} ${theme} ${accent}`}
                 title={`Copy ${theme} accent`}
                 onClick={() => {
                   void copyColor(accent, theme);
@@ -303,7 +303,7 @@ export function UtilityThemeCard({
               </button>
               <button
                 type='button'
-                aria-label={`Copy ${role} ${theme} subtle ${surface}`}
+                aria-label={`Copy ${colorRole} ${theme} subtle ${surface}`}
                 title={`Copy ${theme} subtle background`}
                 onClick={() => {
                   void copyColor(surface, `${theme}-subtle`);
@@ -834,7 +834,12 @@ export default function DesignSystemView() {
             </div>
             <div className='grid min-w-0 grid-cols-1 gap-4 p-4 @xl/design:grid-cols-2 @4xl/design:min-h-0 @4xl/design:flex-1 @4xl/design:auto-rows-[minmax(min-content,1fr)] @4xl/design:grid-cols-3 @4xl/design:overflow-auto'>
               {(Object.keys(tokens.utility) as UtilityRole[]).map((role) => (
-                <UtilityThemeCard key={role} role={role} utility={tokens.utility} mode={mode} />
+                <UtilityThemeCard
+                  key={role}
+                  colorRole={role}
+                  utility={tokens.utility}
+                  mode={mode}
+                />
               ))}
             </div>
           </>

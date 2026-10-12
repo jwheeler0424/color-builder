@@ -1,7 +1,6 @@
 import type { DisplayGamutId } from './gamuts/types.ts';
 
 import { colorValue, renderColor, type ColorValue } from './color.ts';
-import { fitHex } from './output.ts';
 import { parseColor } from './parse.ts';
 import { OKLAB } from './spaces/oklab.ts';
 import { clamp, lchToXyz, xyzToLch, type Lch } from './spaces/types.ts';
@@ -79,7 +78,6 @@ export type ThemeColorInput = string | ColorValue;
 const readColor = (input: ThemeColorInput): ColorValue =>
   typeof input === 'string' ? parseColor(input) : colorValue(input.xyz, input.alpha, input.display);
 const oklch = (input: ThemeColorInput): Lch => xyzToLch(OKLAB, readColor(input).xyz);
-const hexOf = (l: number, c: number, h: number) => fitHex(OKLAB, { l, c, h });
 const hueDistance = (a: number, b: number) => {
   const d = Math.abs(a - b) % 360;
   return Math.min(d, 360 - d);

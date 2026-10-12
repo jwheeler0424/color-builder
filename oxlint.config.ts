@@ -33,6 +33,7 @@ export default defineConfig({
     '**/dist/**',
     '**/coverage/**',
     '**/public/**',
+    'src/lib/constants/named-colors/color-names.js',
     '**/vendor/**',
     '**/test/snapshots/**',
     '**/graveyard/**',

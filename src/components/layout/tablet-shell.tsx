@@ -34,7 +34,7 @@ import {
   IconShare,
 } from '@tabler/icons-react';
 import { Outlet, useRouterState } from '@tanstack/react-router';
-import { useState, useCallback, useEffect, Suspense } from 'react';
+import { useState, useCallback, Suspense } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { usePortraitViewport } from '@/hooks/use-stacked-palette';
@@ -71,15 +71,16 @@ export function TabletShell() {
   const [editingSlotIndex, setEditingSlotIndex] = useState<number | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [paletteSheetOpen, setPaletteSheetOpen] = useState(false);
+  const [previousPathname, setPreviousPathname] = useState(pathname);
 
   const isPalettePage = isPaletteRoute(pathname);
 
-  // Close picker and palette sheet when navigating
-  useEffect(() => {
+  if (previousPathname !== pathname) {
+    setPreviousPathname(pathname);
     setPickerOpen(false);
     setEditingSlotIndex(null);
     setPaletteSheetOpen(false);
-  }, [pathname]);
+  }
 
   const handleEditSlot = useCallback((index: number) => {
     setPaletteSheetOpen(false);

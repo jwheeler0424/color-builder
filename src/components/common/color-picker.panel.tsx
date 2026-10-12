@@ -41,7 +41,10 @@ function InfoRow({ label, value, mono }: { label: string; value: string; mono?: 
   return (
     <div className='flex items-center justify-between gap-1.5'>
       <span className='min-w-9.5 shrink-0 text-muted-foreground'>{label}</span>
-      <span
+      <button
+        type='button'
+        aria-label={copied ? `${label} copied` : `Copy ${label}: ${value}`}
+        className='min-w-0 flex-1 cursor-pointer border-0 bg-transparent p-0 text-right outline-none focus-visible:ring-2 focus-visible:ring-ring'
         style={{
           fontFamily: mono ? 'var(--font-mono)' : undefined,
           fontSize: mono ? 9.5 : undefined,
@@ -63,7 +66,7 @@ function InfoRow({ label, value, mono }: { label: string; value: string; mono?: 
         ) : (
           value
         )}
-      </span>
+      </button>
     </div>
   );
 }
@@ -77,7 +80,7 @@ export function ColorPickerPanel() {
     const parsed = parseColor(pickerHex);
     return colorValue(parsed.xyz, pickerAlpha / 100, parsed.display);
   }, [pickerHex, pickerAlpha]);
-  const { rgb, hsl, hsv, oklch, oklab, cmyk } = useMemo(
+  const { cmyk } = useMemo(
     () => pickerReadings(color, profile.converter ?? undefined),
     [color, profile.converter],
   );
@@ -91,9 +94,11 @@ export function ColorPickerPanel() {
           <SectionLabel>Recent</SectionLabel>
           <div className='flex items-center gap-2.5'>
             {recentColors.map((rh, i) => (
-              <div
+              <button
                 key={i}
-                className='h-5.5 w-5.5 cursor-pointer rounded border border-white/10 transition-transform hover:scale-110'
+                type='button'
+                aria-label={`Use recent color ${rh.toUpperCase()}`}
+                className='h-5.5 w-5.5 cursor-pointer rounded border border-white/10 p-0 transition-transform hover:scale-110'
                 style={{ background: rh }}
                 title={rh}
                 onClick={() => {

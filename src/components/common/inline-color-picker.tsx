@@ -8,7 +8,7 @@
  * Shells should use InlineColorPicker directly.
  */
 
-import { IconCheck } from '@tabler/icons-react';
+import { IconCheck, IconColorPicker } from '@tabler/icons-react';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 
 import type { RGB, HSL, HSV, OKLCH, PickerMode } from '@/types';
@@ -33,7 +33,6 @@ import {
   renderColor,
   rgb8ToHex,
 } from '@/lib/engine/browser';
-import { lookupColorName } from '@/lib/engine/colors/color-names';
 
 import HexInput from '../common/hex-input';
 import { CmykSliders } from '../common/sliders/cmyk-sliders';
@@ -59,20 +58,8 @@ export function InlineColorPicker({
   onCancel,
 }: InlineColorPickerProps) {
   const [hex, setHex] = useState(initialHex);
-  const {
-    pickerHex,
-    pickerAlpha,
-    pickerMode,
-    setPickerHex,
-    setPickerAlpha,
-    setPickerMode,
-    recentColors,
-    slots,
-    setSeeds,
-    addRecent,
-    addSlot,
-    generate,
-  } = useChromaStore();
+  const { pickerHex, pickerAlpha, pickerMode, setPickerHex, setPickerAlpha, setPickerMode } =
+    useChromaStore();
 
   const profile = useCmykProfile();
   const pickerColor = useMemo(() => {
@@ -83,8 +70,6 @@ export function InlineColorPicker({
     () => pickerReadings(pickerColor, profile.converter ?? undefined),
     [pickerColor, profile.converter],
   );
-  const name = lookupColorName(pickerColor, renderColor(pickerColor).hex);
-
   const displayHex = formatColor(pickerColor, 'hex');
   const cssOut = formatPickerColor(pickerColor, pickerMode, profile.converter ?? undefined);
   const previewStyle = { background: renderColor(pickerColor).css };
@@ -133,24 +118,13 @@ export function InlineColorPicker({
     [setPickerHex, setPickerAlpha],
   );
 
-  // const useSeed = useCallback(() => {
-  //   setSeeds([
-  //     hexToStop(pickerHex, pickerAlpha < 100 ? pickerAlpha : undefined),
-  //   ]);
-  //   addRecent(displayHex);
-  //   generate();
-  //   navigate({ to: "/palette" });
-  // }, [pickerHex, setSeeds, addRecent, generate, navigate]);
-
-  // const addToPalette = useCallback(() => {
-  //   addSlot(hexToStop(pickerHex, pickerAlpha < 100 ? pickerAlpha : undefined));
-  //   addRecent(displayHex);
-  // }, [pickerHex, addSlot, addRecent]);
-
-  const updateColor = useCallback((newHex: string) => {
-    setHex(newHex);
-    handleHexInput(newHex);
-  }, []);
+  const updateColor = useCallback(
+    (newHex: string) => {
+      setHex(newHex);
+      handleHexInput(newHex);
+    },
+    [handleHexInput],
+  );
 
   const [copied, setCopied] = useState(false);
   const copyCss = () => {
@@ -166,7 +140,7 @@ export function InlineColorPicker({
         const { sRGBHex } = await dropper.open();
         const parsed = parseHexInput(sRGBHex);
         if (parsed) updateColor(parsed.hex);
-      } catch (e) {
+      } catch {
         /* cancelled */
       }
     }
@@ -340,19 +314,14 @@ export function InlineColorPicker({
           </div>
         </div>
         <div className='flex items-center justify-end gap-1.5'>
-          {/* <Button variant="default" size="sm" onClick={useSeed}>
-                    → Seed Palette
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={addToPalette}>
-                    + Add
-                  </Button> */}
           {typeof window !== 'undefined' && 'EyeDropper' in window && (
             <Button
               variant='ghost'
               size='sm'
               title='Sample color from screen (EyeDropper API)'
               onClick={handleEyeDropper}>
-              ⊕ Pick
+              <IconColorPicker className='size-4' aria-hidden='true' />
+              Pick
             </Button>
           )}
         </div>
@@ -370,6 +339,9 @@ export function InlineColorPicker({
             return (
               <button
                 key={i}
+                type='button'
+                aria-label={`Use suggested color ${sugHex.toUpperCase()}`}
+                title={`Use ${sugHex.toUpperCase()}`}
                 onClick={() => updateColor(sugHex)}
                 className='size-7 rounded-lg border border-black/10 shadow-sm transition-transform hover:z-10 hover:scale-125'
                 style={{ background: sugHex }}

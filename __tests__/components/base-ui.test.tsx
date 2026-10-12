@@ -241,7 +241,7 @@ test('design token utility card displays matching light and dark accent/surface 
     locked: false,
   }));
   const tokens = themeForSlots(slots);
-  const view = render(<UtilityThemeCard role='info' utility={tokens.utility} mode='dark' />);
+  const view = render(<UtilityThemeCard colorRole='info' utility={tokens.utility} mode='dark' />);
   expect(view.container.querySelector('[data-utility-preview="light"]')).toHaveStyle({
     background: tokens.utility.info.subtle,
     color: tokens.utility.info.light,

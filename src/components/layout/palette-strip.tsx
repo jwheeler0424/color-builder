@@ -39,6 +39,7 @@ import {
   type StripLayout,
 } from '@/hooks/use-stacked-palette';
 import { MAX_SLOTS } from '@/lib/constants/chroma';
+import { cn } from '@/lib/utils';
 
 import { SlotButton } from './slot-button';
 import { SlotCard } from './slot-card';
@@ -107,13 +108,14 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
     <StripLayoutContext.Provider value={layout}>
       <div
         ref={wrapRef}
-        className={
+        className={cn(
           tallRows
             ? 'contents'
             : crowded
               ? 'flex h-full w-full flex-col overflow-y-auto'
-              : 'flex h-full w-full'
-        }>
+              : 'flex h-full w-full',
+          className,
+        )}>
         <DndContext
           id={dndId}
           sensors={sensors}
@@ -129,22 +131,7 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
                 {!stacked && slots.length < MAX_SLOTS && i === 0 && (
                   <SlotButton key={`button-${slot.id}`} index={-1} adjust={true} />
                 )}
-                <SlotCard
-                  key={slot.id}
-                  slot={slot}
-                  index={i}
-                  isEdge={i === 0 || i === slots.length - 1}
-                  edge={
-                    i === 0
-                      ? 'first'
-                      : i === slots.length - 1
-                        ? 'last'
-                        : i === 0 && i === slots.length - 1
-                          ? 'both'
-                          : 'none'
-                  }
-                  onEdit={onEditSlot}
-                />
+                <SlotCard key={slot.id} slot={slot} index={i} onEdit={onEditSlot} />
                 {!stacked && slots.length < MAX_SLOTS && (
                   <SlotButton
                     key={`button-after-${slot.id}`}
@@ -171,13 +158,7 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
               easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
             }}>
             {activeSlot ? (
-              <SlotCard
-                slot={activeSlot}
-                index={activeSlotIndex}
-                isEdge={activeSlotIndex === 0 || activeSlotIndex === slots.length - 1}
-                onEdit={() => {}}
-                overlay
-              />
+              <SlotCard slot={activeSlot} index={activeSlotIndex} onEdit={() => {}} overlay />
             ) : null}
           </DragOverlay>
         </DndContext>

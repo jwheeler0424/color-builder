@@ -163,7 +163,7 @@ export function SidebarContent({
 // ─── Trigger button ───────────────────────────────────────────────────────────
 
 export function SidebarTrigger({ className = '', children }: SidebarTriggerProps) {
-  const { toggle, isOpen, side } = useSidebar();
+  const { toggle, isOpen } = useSidebar();
 
   return (
     <Button
