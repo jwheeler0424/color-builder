@@ -272,7 +272,7 @@ export default function ColorPickerModal({
                 </div>
                 {/* CSS output string for current mode */}
                 <div className='mt-1 flex items-center gap-1 rounded bg-muted px-1.5 py-1'>
-                  <span className='flex-1 overflow-hidden font-mono text-[9px] overflow-ellipsis whitespace-nowrap text-muted-foreground'>
+                  <span className='flex-1 overflow-hidden font-mono text-[9px] text-ellipsis whitespace-nowrap text-muted-foreground'>
                     {cssOut}
                   </span>
                   <button

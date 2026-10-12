@@ -133,7 +133,7 @@ export function GenerateControlsAccordion({
               <button
                 type='button'
                 aria-label={`Edit seed ${s.hex.toUpperCase()}`}
-                className='flex-1 cursor-pointer border-0 bg-transparent p-0 text-left font-mono text-[11px] tracking-[.05em] text-muted-foreground uppercase transition-colors hover:text-foreground'
+                className='flex-1 cursor-pointer border-0 bg-transparent p-0 text-left font-mono text-[11px] tracking-wider text-muted-foreground uppercase transition-colors hover:text-foreground'
                 onClick={() => onEditSeed?.(i)}>
                 {s.hex.toUpperCase()}
               </button>
