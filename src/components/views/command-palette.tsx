@@ -46,8 +46,11 @@ import React, {
 } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
+import { useCommandModifier } from '@/hooks/use-command-modifier';
 import { cn } from '@/lib/utils';
-import { useHotkeyList } from '@/providers/hotkey.provider';
+import { useHotkeyList, useRegisterHotkey } from '@/providers/hotkey.provider';
+
+import { Kbd, KbdGroup } from '../ui/kbd';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -218,17 +221,14 @@ const CommandPaletteContext = createContext<CommandPaletteCtx>({
 export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
-  // Global Cmd+K / Ctrl+K
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setOpen((v) => !v);
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, []);
+  useRegisterHotkey({
+    key: 'k',
+    ctrl: true,
+    label: 'Toggle command palette',
+    group: 'App',
+    allowInInput: true,
+    handler: () => setOpen((value) => !value),
+  });
 
   return (
     <CommandPaletteContext.Provider value={{ open, setOpen }}>
@@ -246,6 +246,7 @@ export function useCommandPalette() {
 
 function CommandPalette() {
   const { open, setOpen } = useCommandPalette();
+  const commandModifier = useCommandModifier();
   const [query, setQuery] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
   const [recent] = useState<string[]>(() => loadRecent());
@@ -254,7 +255,7 @@ function CommandPalette() {
   const navigate = useNavigate();
   const generate = useChromaStore((s) => s.generate);
   const openModal = useChromaStore((s) => s.openModal);
-  const hotkeyList = useHotkeyList();
+  const hotkeyList = useHotkeyList(open);
 
   // Fresh command state is created each time the palette opens.
   useEffect(() => {
@@ -473,7 +474,14 @@ function CommandPalette() {
           <span className='text-[9px] text-muted-foreground'>↑↓ navigate</span>
           <span className='text-[9px] text-muted-foreground'>↵ select</span>
           <span className='flex-1 text-[9px] text-muted-foreground'>esc close</span>
-          <span className='text-[9px] text-muted-foreground'>⌘K toggle</span>
+          <KbdGroup className='gap-1'>
+            <Kbd className='h-4 min-w-0 rounded border border-border bg-background/50 px-1 font-mono text-[9px] font-medium text-muted-foreground'>
+              {commandModifier}
+            </Kbd>
+            <Kbd className='h-4 min-w-0 rounded border border-border bg-background/50 px-1 font-mono text-[9px] font-medium text-muted-foreground'>
+              K
+            </Kbd>
+          </KbdGroup>
         </div>
       </div>
 
