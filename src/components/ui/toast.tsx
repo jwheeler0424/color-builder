@@ -79,7 +79,7 @@ function Toaster({
         <ToastPrimitive.Viewport
           aria-label='Notifications'
           className={cn(
-            'pointer-events-none fixed z-[100] flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2 outline-none',
+            'pointer-events-none fixed z-100 flex w-[calc(100%-2rem)] max-w-sm flex-col gap-2 outline-none',
             position === 'top-center' ? 'top-4 left-1/2 -translate-x-1/2' : 'right-4 bottom-4',
             className,
           )}>

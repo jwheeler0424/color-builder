@@ -434,7 +434,7 @@ function WcagSlotsTab() {
               }}>
               {val}
             </div>
-            <div className='mt-0.5 text-[9px] tracking-[.05em] text-muted-foreground uppercase'>
+            <div className='mt-0.5 text-[9px] tracking-wider text-muted-foreground uppercase'>
               {label}
             </div>
           </div>

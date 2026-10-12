@@ -32,7 +32,7 @@ function StandalonePaletteView() {
     <div className='flex flex-1 overflow-hidden'>
       <PaletteStrip onEditSlot={setEditingSlot} />
       <aside className='flex w-[320px] shrink-0 flex-col overflow-hidden border-l border-border bg-card'>
-        <div className='flex-1 [scrollbar-width:thin] overflow-y-auto'>
+        <div className='flex-1 scrollbar-thin overflow-y-auto'>
           <GenerateControls onEditSeed={setEditingSlot} />
         </div>
         <GenerateFooter />
