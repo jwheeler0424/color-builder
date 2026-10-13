@@ -47,7 +47,7 @@ const PALETTE_SWATCHES = [
   { name: 'Iris', hex: '#8D61E8' },
 ];
 
-function PaletteArtwork() {
+export function PaletteArtwork() {
   return (
     <figure className='palette-artwork'>
       <div className='palette-artwork-top'>

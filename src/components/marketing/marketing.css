@@ -853,10 +853,17 @@
   .marketing-nav {
     order: 3;
     width: 100%;
-    justify-content: center;
-    gap: 38px;
+    justify-content: flex-start;
+    gap: 22px;
+    overflow-x: auto;
+    padding: 0 2px 3px;
+    scrollbar-width: none;
+  }
+  .marketing-nav::-webkit-scrollbar {
+    display: none;
   }
   .marketing-nav-link {
+    flex: none;
     padding: 8px 0 10px;
   }
   .marketing-studio-link {

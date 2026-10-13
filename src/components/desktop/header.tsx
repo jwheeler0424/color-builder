@@ -96,19 +96,19 @@ export function MainHeader({ className }: MainHeaderProps) {
             className='h-8 bg-muted-foreground/60'
             style={{ alignSelf: 'center' }}
           />
-          <nav className='flex shrink-0 items-center gap-2'>
-            <section className='flex items-center gap-2'>
+          <nav className='flex shrink-0 items-center gap-1'>
+            <section className='flex items-center gap-1'>
               <Button
                 variant='ghost'
-                size='lg'
-                className='font-semibold tracking-wide'
+                size='sm'
+                className='h-8 px-3 text-xs font-semibold'
                 onClick={() => void navigate({ to: '/sign-in' })}>
                 Sign In
               </Button>
               <Button
                 variant='default'
-                size='lg'
-                className='font-semibold tracking-wide'
+                size='sm'
+                className='h-8 px-3 text-xs font-semibold'
                 onClick={() => void navigate({ to: '/sign-up' })}>
                 Sign Up
               </Button>

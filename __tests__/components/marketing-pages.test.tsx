@@ -12,6 +12,12 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, test } from 'bun:test';
 
 import {
+  ApiPage as DeveloperApiPage,
+  DataPage as ProductDataPage,
+  GuidesPage as ProductGuidesPage,
+  OverviewPage as MarketingOverviewPage,
+} from '@/components/marketing/marketing-content';
+import {
   createCheckoutIntent,
   FeaturesPage,
   getBillingTotal,
@@ -20,7 +26,10 @@ import {
   type CheckoutIntent,
 } from '@/components/marketing/marketing-pages';
 
-function renderMarketingPage(path: '/features' | '/pricing', page: ReactNode) {
+function renderMarketingPage(
+  path: '/features' | '/pricing' | '/overview' | '/api' | '/guides' | '/data',
+  page: ReactNode,
+) {
   const rootRoute = createRootRoute({ component: Outlet });
   const pageRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -45,6 +54,52 @@ function renderPricing(onPlanSelected?: (intent: CheckoutIntent) => void) {
 }
 
 describe('marketing pricing', () => {
+  test('explains the product workflow on the overview page', async () => {
+    renderMarketingPage('/overview', <MarketingOverviewPage />);
+
+    await screen.findByRole('heading', { name: 'Color that holds up, all the way to code.' });
+    expect(screen.getByRole('link', { name: /See plans/ })).toHaveAttribute('href', '/pricing');
+    expect(screen.getByRole('link', { name: /Open the studio/ })).toHaveAttribute('href', '/');
+  });
+
+  test('switches API examples and exposes the draft contract note', async () => {
+    renderMarketingPage('/api', <DeveloperApiPage />);
+
+    await screen.findByRole('heading', { name: 'Color intelligence, in your workflow.' });
+    expect(screen.getByRole('code')).toHaveTextContent('CHROMA_API_BASE/v1/palettes');
+
+    fireEvent.click(screen.getByRole('button', { name: 'TypeScript' }));
+    expect(screen.getByRole('code')).toHaveTextContent('process.env.CHROMA_API_KEY');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Response' }));
+    expect(screen.getByRole('code')).toHaveTextContent('"space": "oklch"');
+    expect(screen.getByText(/Final API routes, authentication, quotas/)).toBeInTheDocument();
+  });
+
+  test('switches the guide and presents the contrast thresholds', async () => {
+    renderMarketingPage('/guides', <ProductGuidesPage />);
+
+    await screen.findByRole('heading', { name: 'Find a harmony, then make it yours.' });
+    fireEvent.click(screen.getByRole('button', { name: /Check contrast/ }));
+
+    expect(
+      screen.getByRole('heading', { name: 'Check the actual foreground and background pair.' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('AA normal 4.5:1')).toBeInTheDocument();
+    expect(screen.getByText('AA large 3:1')).toBeInTheDocument();
+  });
+
+  test('describes the current local-first data behavior', async () => {
+    renderMarketingPage('/data', <ProductDataPage />);
+
+    await screen.findByRole('heading', { name: 'Know where your color work lives.' });
+    expect(
+      screen.getByText(/Saved palettes and studio preferences use browser local storage/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/does not upload the image to the Chroma server/)).toBeInTheDocument();
+    expect(screen.getByText(/not a substitute for a formal privacy policy/)).toBeInTheDocument();
+  });
+
   test('switches feature explorer content by workflow stage', async () => {
     renderMarketingPage('/features', <FeaturesPage />);
 

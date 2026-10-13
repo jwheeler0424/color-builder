@@ -1,0 +1,556 @@
+import { IconArrowRight, IconArrowUpRight, IconCheck, IconCopy } from '@tabler/icons-react';
+import { Link } from '@tanstack/react-router';
+import { useState } from 'react';
+
+import { PaletteArtwork } from '@/components/marketing/marketing-pages';
+
+import './marketing-content.css';
+
+const API_EXAMPLES = {
+  curl: `curl --request POST "$CHROMA_API_BASE/v1/palettes" \\
+  --header "Authorization: Bearer $CHROMA_API_KEY" \\
+  --header "Content-Type: application/json" \\
+  --data '{
+    "seed": "#5267E8",
+    "harmony": "analogous",
+    "count": 6,
+    "space": "oklch"
+  }'`,
+  typescript: [
+    'const response = await fetch(`${CHROMA_API_BASE}/v1/palettes`, {',
+    "  method: 'POST',",
+    '  headers: {',
+    '    Authorization: `Bearer ${process.env.CHROMA_API_KEY}`,',
+    "    'Content-Type': 'application/json',",
+    '  },',
+    '  body: JSON.stringify({',
+    "    seed: '#5267E8',",
+    "    harmony: 'analogous',",
+    '    count: 6,',
+    "    space: 'oklch',",
+    '  }),',
+    '});',
+    '',
+    'const palette = await response.json();',
+  ].join('\n'),
+  response: `{
+  "colors": [
+    { "hex": "#5267E8", "oklch": [0.55, 0.2, 270] },
+    { "hex": "#A64DE8", "oklch": [0.58, 0.21, 315] },
+    { "hex": "#E64D89", "oklch": [0.63, 0.2, 5] }
+  ],
+  "space": "oklch"
+}`,
+} as const;
+
+type ApiExample = keyof typeof API_EXAMPLES;
+
+const EXAMPLE_LABELS: Record<ApiExample, string> = {
+  curl: 'cURL',
+  typescript: 'TypeScript',
+  response: 'Response',
+};
+
+function CopyExample({ code }: { code: string }) {
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
+
+  async function copyCode() {
+    if (!navigator.clipboard?.writeText) {
+      setCopyState('error');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopyState('copied');
+    } catch {
+      setCopyState('error');
+    }
+  }
+
+  return (
+    <button type='button' className='content-copy-button' onClick={() => void copyCode()}>
+      {copyState === 'copied' ? (
+        <IconCheck aria-hidden='true' size={15} />
+      ) : (
+        <IconCopy aria-hidden='true' size={15} />
+      )}
+      {copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Copy unavailable' : 'Copy'}
+    </button>
+  );
+}
+
+function ApiCodeExplorer() {
+  const [activeExample, setActiveExample] = useState<ApiExample>('curl');
+
+  return (
+    <div className='api-code-explorer'>
+      <div className='api-code-topbar'>
+        <div className='api-example-tabs' role='group' aria-label='API example language'>
+          {(Object.keys(API_EXAMPLES) as ApiExample[]).map((example) => (
+            <button
+              key={example}
+              type='button'
+              aria-pressed={activeExample === example}
+              onClick={() => setActiveExample(example)}>
+              {EXAMPLE_LABELS[example]}
+            </button>
+          ))}
+        </div>
+        <CopyExample code={API_EXAMPLES[activeExample]} />
+      </div>
+      <pre className='api-code-block' aria-live='polite'>
+        <code>{API_EXAMPLES[activeExample]}</code>
+      </pre>
+    </div>
+  );
+}
+
+export function OverviewPage() {
+  return (
+    <main>
+      <section className='marketing-wrap marketing-hero overview-hero'>
+        <div className='marketing-hero-copy'>
+          <p className='marketing-kicker'>A workspace for color systems</p>
+          <h1 className='marketing-title'>
+            Color that holds up, <em>all the way to code.</em>
+          </h1>
+          <p className='marketing-lede'>
+            Explore a palette, test how it works, and build a system your team can ship. Chroma
+            brings perceptual color tools and implementation-ready exports into one focused studio.
+          </p>
+          <div className='marketing-hero-actions'>
+            <Link to='/' className='marketing-primary-link'>
+              Open the studio <IconArrowUpRight aria-hidden='true' size={17} />
+            </Link>
+            <Link to='/pricing' className='marketing-secondary-link'>
+              See plans <IconArrowRight aria-hidden='true' size={16} />
+            </Link>
+          </div>
+          <p className='overview-free-note'>Start free · no account required</p>
+        </div>
+        <div className='marketing-hero-art'>
+          <PaletteArtwork />
+        </div>
+      </section>
+
+      <section className='workflow-section' aria-label='The Chroma workflow'>
+        <div className='marketing-wrap workflow-grid'>
+          {[
+            ['01', 'Create', 'Generate and refine with color harmony and OKLCH controls.'],
+            ['02', 'Analyze', 'Review contrast, color vision, balance, and brand rules.'],
+            ['03', 'Build', 'Shape scales, themes, gradients, and image palettes.'],
+            ['04', 'Export', 'Hand off tokens and styles in formats your stack uses.'],
+          ].map(([number, title, description]) => (
+            <article key={number} className='workflow-step'>
+              <span className='workflow-number'>{number} / 04</span>
+              <h2>{title}</h2>
+              <p>{description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className='marketing-wrap marketing-section overview-detail-grid'>
+        <article>
+          <p className='marketing-kicker'>Perceptual color, practical checks</p>
+          <h2 className='marketing-section-title'>See the system, not just the swatches.</h2>
+          <p>
+            Work in OKLCH, inspect gamut, compare harmony, and check accessibility as part of the
+            same design decision. Keep exploration connected to the output you will actually use.
+          </p>
+          <Link to='/features' className='marketing-text-link'>
+            Explore the tools <IconArrowRight aria-hidden='true' size={15} />
+          </Link>
+        </article>
+        <div className='overview-token-preview' aria-label='Example design tokens'>
+          <div className='overview-token-heading'>
+            <span>semantic / light</span>
+            <span>CSS variables</span>
+          </div>
+          {[
+            ['--color-brand', '#5267E8'],
+            ['--color-accent', '#E64D89'],
+            ['--color-success', '#0FA987'],
+            ['--color-caution', '#F0A620'],
+          ].map(([name, color]) => (
+            <div className='overview-token-row' key={name}>
+              <span className='overview-token-swatch' style={{ backgroundColor: color }} />
+              <code>{name}</code>
+              <code>{color}</code>
+            </div>
+          ))}
+          <Link to='/guides' className='overview-token-link'>
+            Learn the workflow <IconArrowUpRight aria-hidden='true' size={15} />
+          </Link>
+        </div>
+      </section>
+
+      <section className='overview-plan-band'>
+        <div className='marketing-wrap overview-plan-inner'>
+          <div>
+            <p className='marketing-kicker'>Start with the essentials</p>
+            <h2>Free gives you a useful first pass.</h2>
+            <p>
+              Build palettes up to six colors, run a basic contrast check, mix colors, make simple
+              gradients, extract from images, and export foundational formats.
+            </p>
+          </div>
+          <div className='overview-plan-links'>
+            <Link to='/pricing' className='marketing-secondary-link'>
+              Compare plans <IconArrowRight aria-hidden='true' size={16} />
+            </Link>
+            <Link to='/' className='marketing-primary-link'>
+              Try the studio <IconArrowUpRight aria-hidden='true' size={17} />
+            </Link>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+export function ApiPage() {
+  return (
+    <main>
+      <section className='marketing-wrap marketing-hero api-hero'>
+        <div className='marketing-hero-copy'>
+          <p className='marketing-kicker'>Developer API · Pro and Team</p>
+          <h1 className='marketing-title'>
+            Color intelligence, <em>in your workflow.</em>
+          </h1>
+          <p className='marketing-lede'>
+            Put palette generation and color analysis alongside the tools your product team already
+            uses. Design tokens can move from a color decision into your build pipeline.
+          </p>
+          <div className='marketing-hero-actions'>
+            <Link to='/pricing' className='marketing-primary-link'>
+              Explore paid plans <IconArrowRight aria-hidden='true' size={16} />
+            </Link>
+            <Link to='/guides' className='marketing-secondary-link'>
+              Read developer guides <IconArrowUpRight aria-hidden='true' size={16} />
+            </Link>
+          </div>
+        </div>
+        <div className='api-hero-detail'>
+          <span className='api-detail-index'>01 / 04</span>
+          <strong>Color rules your product can reuse.</strong>
+          <div className='api-detail-flow'>
+            <span>palette</span>
+            <i aria-hidden='true' />
+            <span>analysis</span>
+            <i aria-hidden='true' />
+            <span>tokens</span>
+          </div>
+          <p>Designed for repeatable handoff between design and code.</p>
+        </div>
+      </section>
+
+      <section className='api-preview-section'>
+        <div className='marketing-wrap api-preview-grid'>
+          <div>
+            <p className='marketing-kicker'>A readable contract</p>
+            <h2 className='marketing-section-title'>Make color decisions callable.</h2>
+            <p className='api-copy'>
+              Send a seed color and a few constraints. Get back structured palette values ready for
+              review, analysis, or a token pipeline.
+            </p>
+            <ul className='api-capability-list'>
+              <li>
+                <IconCheck aria-hidden='true' size={16} /> Consistent color-space aware responses
+              </li>
+              <li>
+                <IconCheck aria-hidden='true' size={16} /> Palette generation and analysis workflows
+              </li>
+              <li>
+                <IconCheck aria-hidden='true' size={16} /> Paid access with metered usage allowances
+              </li>
+            </ul>
+          </div>
+          <div>
+            <div className='api-draft-label'>Illustrative request · proposed contract</div>
+            <ApiCodeExplorer />
+            <p className='api-contract-note'>
+              Example endpoint and response are a draft interface. Final API routes, authentication,
+              quotas, and error formats will be specified with the API release.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className='marketing-wrap marketing-section api-plan-section'>
+        <div className='api-plan-callout'>
+          <div>
+            <p className='marketing-kicker'>Part of the paid toolset</p>
+            <h2>Build on the same color engine as the studio.</h2>
+          </div>
+          <p>
+            API access is planned for Pro and Team. Pro includes an individual request allowance;
+            Team adds a larger pooled allowance. Specific quotas and overage rules will be published
+            before API usage is enabled.
+          </p>
+          <Link to='/pricing' className='marketing-primary-link'>
+            Compare plans <IconArrowRight aria-hidden='true' size={16} />
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+const GUIDE_TOPICS = [
+  {
+    id: 'palette',
+    label: 'Build a palette',
+    title: 'Find a harmony, then make it yours.',
+    intro:
+      'Start with a hue or seed, choose a harmony, and refine the result instead of treating the first generation as final.',
+    steps: [
+      'Choose a starting color or generate a palette to explore.',
+      'Select a harmony and adjust the number of palette slots.',
+      'Lock colors you want to keep, then edit, reorder, or regenerate the rest.',
+      'Save a local copy or share a URL when you want another person to review it.',
+    ],
+  },
+  {
+    id: 'contrast',
+    label: 'Check contrast',
+    title: 'Check the actual foreground and background pair.',
+    intro:
+      'Contrast is a relationship between two colors. Review intended text and surface pairings, then use the result to guide a design decision.',
+    steps: [
+      'Open Analyze and choose the accessibility or contrast view.',
+      'Compare the intended foreground against its actual background.',
+      'For WCAG 2.1 AA, target 4.5:1 for normal text and 3:1 for large text.',
+      'Recheck after adjusting either color; a palette-wide label cannot replace testing each use.',
+    ],
+  },
+  {
+    id: 'tokens',
+    label: 'Export tokens',
+    title: 'Give colors names your product can keep.',
+    intro:
+      'Turn raw swatches into roles, then export the same system in the format your codebase expects.',
+    steps: [
+      'Open Export and choose the design-system or theme tool.',
+      'Assign palette colors to semantic roles such as primary, accent, surface, and neutral.',
+      'Review light and dark variants against the preview before copying output.',
+      'Choose CSS variables, Tailwind, Figma Tokens, or Style Dictionary output.',
+    ],
+  },
+  {
+    id: 'gradients',
+    label: 'Build gradients',
+    title: 'Choose how colors travel between stops.',
+    intro:
+      'A gradient is more than two colors. Stop placement and interpolation space affect the visual transition.',
+    steps: [
+      'Open Build and choose the gradient editor.',
+      'Add, move, and edit stops to control the transition.',
+      'Compare interpolation spaces such as sRGB, OKLab, and OKLCH.',
+      'Export the CSS or SVG after checking the gradient in its intended context.',
+    ],
+  },
+] as const;
+
+type GuideTopic = (typeof GUIDE_TOPICS)[number];
+
+export function GuidesPage() {
+  const [activeGuide, setActiveGuide] = useState<GuideTopic['id']>('palette');
+  const guide = GUIDE_TOPICS.find((item) => item.id === activeGuide)!;
+
+  return (
+    <main>
+      <section className='marketing-wrap marketing-hero guides-hero'>
+        <div className='marketing-hero-copy'>
+          <p className='marketing-kicker'>Field notes for better color work</p>
+          <h1 className='marketing-title'>
+            Learn the why. <em>Then make it work.</em>
+          </h1>
+          <p className='marketing-lede'>
+            Short, practical guides for moving from palette exploration to accessible, usable color
+            systems.
+          </p>
+          <div className='marketing-hero-actions'>
+            <Link to='/' className='marketing-primary-link'>
+              Open the studio <IconArrowUpRight aria-hidden='true' size={17} />
+            </Link>
+            <Link to='/features' className='marketing-secondary-link'>
+              Browse tools <IconArrowRight aria-hidden='true' size={16} />
+            </Link>
+          </div>
+        </div>
+        <div className='guides-index-art' aria-label='Guide topics'>
+          <span>01 / Palette systems</span>
+          <span>02 / Accessible contrast</span>
+          <span>03 / Design tokens</span>
+          <span>04 / Gradient craft</span>
+        </div>
+      </section>
+
+      <section className='marketing-wrap marketing-section guide-section'>
+        <div className='marketing-section-heading'>
+          <div>
+            <p className='marketing-kicker'>Choose a workflow</p>
+            <h2 className='marketing-section-title'>Keep the next step close.</h2>
+          </div>
+          <p className='marketing-section-note'>
+            Use these guides as a working reference while you build and review a color system.
+          </p>
+        </div>
+        <div className='guide-explorer'>
+          <nav className='guide-topic-list' aria-label='Guides'>
+            {GUIDE_TOPICS.map((topic, index) => (
+              <button
+                key={topic.id}
+                type='button'
+                aria-pressed={activeGuide === topic.id}
+                onClick={() => setActiveGuide(topic.id)}>
+                <span className='guide-topic-number'>0{index + 1}</span>
+                <span>{topic.label}</span>
+                <IconArrowRight aria-hidden='true' size={15} />
+              </button>
+            ))}
+          </nav>
+          <article className='guide-article' aria-live='polite'>
+            <p className='marketing-kicker'>Guide / {guide.label}</p>
+            <h3>{guide.title}</h3>
+            <p className='guide-intro'>{guide.intro}</p>
+            <ol>
+              {guide.steps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+            {guide.id === 'contrast' && (
+              <div className='guide-standard-note'>
+                <strong>WCAG 2.1 contrast ratio</strong>
+                <span>AA normal 4.5:1</span>
+                <span>AA large 3:1</span>
+              </div>
+            )}
+            <Link to={guide.id === 'tokens' ? '/features' : '/'} className='marketing-text-link'>
+              {guide.id === 'tokens' ? 'Explore export tools' : 'Try it in the studio'}
+              <IconArrowUpRight aria-hidden='true' size={15} />
+            </Link>
+          </article>
+        </div>
+      </section>
+
+      <section className='guide-resource-band'>
+        <div className='marketing-wrap guide-resource-inner'>
+          <div>
+            <p className='marketing-kicker'>More to explore</p>
+            <h2>Need the whole workflow?</h2>
+          </div>
+          <p>
+            See how palette generation, accessibility analysis, color building, and token exports
+            fit together in Chroma.
+          </p>
+          <Link to='/features' className='marketing-primary-link'>
+            Browse features <IconArrowRight aria-hidden='true' size={16} />
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+const DATA_PRACTICES = [
+  {
+    title: 'Saved palettes and preferences',
+    label: 'Stored in your browser',
+    detail:
+      'Saved palettes and studio preferences use browser local storage. They are not currently synced to an account or another device. Clearing browser site data removes local copies.',
+  },
+  {
+    title: 'Shared palette links',
+    label: 'Color values in the URL',
+    detail:
+      'When you choose to share a palette, Chroma encodes its color values and harmony in the URL. Anyone who receives that link can load those palette values.',
+  },
+  {
+    title: 'Image extraction',
+    label: 'Processed in the browser',
+    detail:
+      'The image palette tool decodes the selected image in your browser using an image element and canvas. The current extraction flow does not upload the image to the Chroma server.',
+  },
+  {
+    title: 'Color-name lookup',
+    label: 'A limited server request',
+    detail:
+      'The current server endpoint accepts color values and returns nearest color-name matches. It is not the planned palette-generation API; avoid sending confidential project data in requests.',
+  },
+] as const;
+
+export function DataPage() {
+  return (
+    <main>
+      <section className='marketing-wrap marketing-hero data-hero'>
+        <div className='marketing-hero-copy'>
+          <p className='marketing-kicker'>Data &amp; privacy</p>
+          <h1 className='marketing-title'>
+            Know where your <em>color work lives.</em>
+          </h1>
+          <p className='marketing-lede'>
+            A plain-language snapshot of how the current Chroma studio handles palettes, shared
+            links, images, and color-name requests.
+          </p>
+        </div>
+        <div className='data-summary-mark'>
+          <span>Current studio</span>
+          <strong>Local-first</strong>
+          <i aria-hidden='true' />
+          <p>Your palettes stay in this browser unless you choose to share a link.</p>
+        </div>
+      </section>
+
+      <section className='marketing-wrap marketing-section data-practices-section'>
+        <div className='marketing-section-heading'>
+          <div>
+            <p className='marketing-kicker'>Current behavior</p>
+            <h2 className='marketing-section-title'>What happens to your data today.</h2>
+          </div>
+          <p className='marketing-section-note'>
+            These notes describe the current client-first app, not future account, billing, or API
+            services.
+          </p>
+        </div>
+        <div className='data-practices-list'>
+          {DATA_PRACTICES.map((practice, index) => (
+            <article key={practice.title} className='data-practice'>
+              <span className='data-practice-index'>0{index + 1}</span>
+              <div>
+                <h3>{practice.title}</h3>
+                <p>{practice.detail}</p>
+              </div>
+              <span className='data-practice-label'>{practice.label}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className='marketing-wrap data-policy-note'>
+        <div>
+          <p className='marketing-kicker'>Before paid services launch</p>
+          <h2>Account and API data practices will be documented separately.</h2>
+        </div>
+        <p>
+          Authentication, billing, cloud sync, and paid API usage are not connected to the current
+          studio. Their collection, retention, and deletion rules should be published before those
+          services are enabled. This product summary is not a substitute for a formal privacy
+          policy.
+        </p>
+      </section>
+
+      <div className='marketing-wrap marketing-bottom-cta'>
+        <div>
+          <h2>Want to learn more about the workflow?</h2>
+          <p>Browse practical guides or explore the studio.</p>
+        </div>
+        <Link to='/guides' className='marketing-primary-link'>
+          Open the guides <IconArrowRight aria-hidden='true' size={16} />
+        </Link>
+      </div>
+    </main>
+  );
+}
