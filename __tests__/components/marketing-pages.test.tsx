@@ -16,6 +16,7 @@ import {
   DataPage as ProductDataPage,
   GuidesPage as ProductGuidesPage,
   OverviewPage as MarketingOverviewPage,
+  SupportPage as ProductSupportPage,
 } from '@/components/marketing/marketing-content';
 import {
   createCheckoutIntent,
@@ -27,7 +28,7 @@ import {
 } from '@/components/marketing/marketing-pages';
 
 function renderMarketingPage(
-  path: '/features' | '/pricing' | '/overview' | '/api' | '/guides' | '/data',
+  path: '/features' | '/pricing' | '/overview' | '/api' | '/guides' | '/data' | '/support',
   page: ReactNode,
 ) {
   const rootRoute = createRootRoute({ component: Outlet });
@@ -113,6 +114,27 @@ describe('marketing pricing', () => {
     expect(
       screen.getByRole('heading', { name: 'Take a palette beyond swatches.' }),
     ).toBeInTheDocument();
+  });
+
+  test('filters self-service help by search and topic', async () => {
+    renderMarketingPage('/support', <ProductSupportPage />);
+
+    await screen.findByRole('heading', { name: 'Find your next step.' });
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search help topics' }), {
+      target: { value: 'contrast' },
+    });
+    expect(
+      screen.getByRole('link', { name: /How should I check text contrast/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /Where are my saved palettes/ }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Plans & API' }));
+    expect(screen.getByText('No matching help topics')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(screen.getByRole('link', { name: /How does API access work/ })).toBeInTheDocument();
   });
 
   test('shows the Free cap and reserves the complete tools and API for paid plans', async () => {

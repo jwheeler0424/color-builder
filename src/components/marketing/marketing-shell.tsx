@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { to: '/pricing', label: 'Pricing' },
   { to: '/api', label: 'API' },
   { to: '/guides', label: 'Guides' },
+  { to: '/support', label: 'Help' },
 ] as const;
 
 export function MarketingShell() {
@@ -59,6 +60,7 @@ export function MarketingShell() {
             <Link to='/pricing'>Pricing</Link>
             <Link to='/api'>API</Link>
             <Link to='/guides'>Guides</Link>
+            <Link to='/support'>Help</Link>
             <Link to='/data'>Data &amp; privacy</Link>
             <Link to='/'>Open the studio</Link>
           </nav>

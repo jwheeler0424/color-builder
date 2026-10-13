@@ -1,4 +1,11 @@
-import { IconArrowRight, IconArrowUpRight, IconCheck, IconCopy } from '@tabler/icons-react';
+import {
+  IconArrowRight,
+  IconArrowUpRight,
+  IconCheck,
+  IconCopy,
+  IconSearch,
+  IconX,
+} from '@tabler/icons-react';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
@@ -37,7 +44,10 @@ const API_EXAMPLES = {
   "colors": [
     { "hex": "#5267E8", "oklch": [0.55, 0.2, 270] },
     { "hex": "#A64DE8", "oklch": [0.58, 0.21, 315] },
-    { "hex": "#E64D89", "oklch": [0.63, 0.2, 5] }
+    { "hex": "#8D61E8", "oklch": [0.59, 0.18, 300] },
+    { "hex": "#E64D89", "oklch": [0.63, 0.2, 5] },
+    { "hex": "#E88954", "oklch": [0.7, 0.14, 42] },
+    { "hex": "#F0A620", "oklch": [0.77, 0.16, 78] }
   ],
   "space": "oklch"
 }`,
@@ -272,7 +282,8 @@ export function ApiPage() {
             <ApiCodeExplorer />
             <p className='api-contract-note'>
               Example endpoint and response are a draft interface. Final API routes, authentication,
-              quotas, and error formats will be specified with the API release.
+              quotas, and error formats will be specified with the API release. Keep API keys in
+              server-side code; never expose them in browser JavaScript.
             </p>
           </div>
         </div>
@@ -549,6 +560,150 @@ export function DataPage() {
         </div>
         <Link to='/guides' className='marketing-primary-link'>
           Open the guides <IconArrowRight aria-hidden='true' size={16} />
+        </Link>
+      </div>
+    </main>
+  );
+}
+
+const SUPPORT_CATEGORIES = [
+  'All',
+  'Studio',
+  'Accessibility',
+  'Exports',
+  'Plans & API',
+  'Data',
+] as const;
+
+type SupportCategory = (typeof SUPPORT_CATEGORIES)[number];
+
+const SUPPORT_ARTICLES = [
+  {
+    title: 'Where are my saved palettes?',
+    category: 'Data',
+    summary: 'Learn how browser-local saves work and what happens when site data is cleared.',
+    to: '/data',
+  },
+  {
+    title: 'How do I share a palette?',
+    category: 'Studio',
+    summary: 'Share a link that carries the palette colors and harmony settings.',
+    to: '/guides',
+  },
+  {
+    title: 'How should I check text contrast?',
+    category: 'Accessibility',
+    summary: 'Compare the actual foreground and background pair against WCAG targets.',
+    to: '/guides',
+  },
+  {
+    title: 'Which export format should I choose?',
+    category: 'Exports',
+    summary: 'Pick CSS, Tailwind, Figma Tokens, or Style Dictionary for your handoff.',
+    to: '/guides',
+  },
+  {
+    title: 'Which plan includes every tool?',
+    category: 'Plans & API',
+    summary: 'Compare Free, Pro, and Team tool access and palette limits.',
+    to: '/pricing',
+  },
+  {
+    title: 'How does API access work?',
+    category: 'Plans & API',
+    summary: 'Review the planned request shape, paid access, and allowance model.',
+    to: '/api',
+  },
+] as const;
+
+export function SupportPage() {
+  const [query, setQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState<SupportCategory>('All');
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const articles = SUPPORT_ARTICLES.filter((article) => {
+    const matchesCategory = activeCategory === 'All' || article.category === activeCategory;
+    const matchesQuery =
+      !normalizedQuery ||
+      `${article.title} ${article.category} ${article.summary}`
+        .toLocaleLowerCase()
+        .includes(normalizedQuery);
+    return matchesCategory && matchesQuery;
+  });
+
+  return (
+    <main>
+      <section className='marketing-wrap support-intro'>
+        <p className='marketing-kicker'>Help center</p>
+        <h1 className='marketing-title'>Find your next step.</h1>
+        <p className='marketing-lede'>
+          Search practical answers for building, checking, and shipping color systems.
+        </p>
+        <label className='support-search'>
+          <IconSearch aria-hidden='true' size={19} />
+          <span className='sr-only'>Search help topics</span>
+          <input
+            type='search'
+            aria-label='Search help topics'
+            placeholder='Try “contrast”, “API”, or “saved palettes”'
+            value={query}
+            onChange={(event) => setQuery(event.currentTarget.value)}
+          />
+          {query && (
+            <button type='button' aria-label='Clear search' onClick={() => setQuery('')}>
+              <IconX aria-hidden='true' size={16} />
+            </button>
+          )}
+        </label>
+      </section>
+
+      <section className='marketing-wrap support-content'>
+        <div className='support-category-list' role='group' aria-label='Filter help topics'>
+          {SUPPORT_CATEGORIES.map((category) => (
+            <button
+              key={category}
+              type='button'
+              aria-pressed={activeCategory === category}
+              onClick={() => setActiveCategory(category)}>
+              {category}
+            </button>
+          ))}
+        </div>
+        <div className='support-results' aria-live='polite'>
+          <p className='support-result-count'>
+            {articles.length} {articles.length === 1 ? 'answer' : 'answers'}
+          </p>
+          {articles.length > 0 ? (
+            articles.map((article) => (
+              <Link key={article.title} to={article.to} className='support-result'>
+                <span className='support-result-category'>{article.category}</span>
+                <span className='support-result-copy'>
+                  <strong>{article.title}</strong>
+                  <span>{article.summary}</span>
+                </span>
+                <IconArrowUpRight aria-hidden='true' size={17} />
+              </Link>
+            ))
+          ) : (
+            <div className='support-empty'>
+              <h2>No matching help topics</h2>
+              <p>Try a broader search or clear the current category filter.</p>
+              <button
+                type='button'
+                className='marketing-text-link'
+                onClick={() => {
+                  setQuery('');
+                  setActiveCategory('All');
+                }}>
+                Clear filters <IconX aria-hidden='true' size={15} />
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+      <div className='marketing-wrap support-guides-cta'>
+        <p>Looking for a step-by-step walkthrough?</p>
+        <Link to='/guides' className='marketing-text-link'>
+          Browse the color guides <IconArrowRight aria-hidden='true' size={15} />
         </Link>
       </div>
     </main>
