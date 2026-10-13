@@ -13,6 +13,10 @@ import {
 } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
 
+import {
+  MarketingPagesMenu,
+  MarketingPagesSubmenuItems,
+} from '@/components/marketing/marketing-menu';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -53,6 +57,7 @@ export function MainHeader({ className }: MainHeaderProps) {
           <SectionNavigation className='min-w-0 flex-1 justify-center self-stretch' />
           <nav className='flex shrink-0 items-center gap-1'>
             <SearchButton onClick={() => openCommandPalette(true)} />
+            <MarketingPagesMenu />
             <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger
@@ -88,6 +93,7 @@ export function MainHeader({ className }: MainHeaderProps) {
                   <IconKeyboard />
                   Keyboard shortcuts
                 </DropdownMenuItem>
+                <MarketingPagesSubmenuItems />
               </DropdownMenuContent>
             </DropdownMenu>
           </nav>

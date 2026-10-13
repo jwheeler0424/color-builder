@@ -7,7 +7,14 @@
   --mk-coral: #ed654f;
   --mk-green: #14806d;
   --mk-yellow: #e2bd41;
-  min-height: 100svh;
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 0%;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
   background: var(--mk-canvas);
   color: var(--mk-ink);
   font-family: 'Space Grotesk', sans-serif;
@@ -808,11 +815,14 @@
   .marketing-hero {
     min-height: auto;
     grid-template-columns: 1fr;
-    gap: 38px;
-    padding-block: 55px;
+    gap: 24px;
+    padding-block: 36px;
   }
   .marketing-hero-art {
     width: min(100%, 560px);
+  }
+  .marketing-hero-art .palette-artwork-swatches {
+    height: 160px;
   }
   .workflow-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -831,12 +841,7 @@
     gap: 18px;
   }
 }
-@media (max-width: 560px) {
-  .marketing-header-inner,
-  .marketing-footer-inner,
-  .marketing-wrap {
-    width: calc(100% - 32px);
-  }
+@media (max-width: 680px) {
   .marketing-header-inner {
     min-height: 64px;
     flex-wrap: wrap;
@@ -872,6 +877,13 @@
     padding-inline: 10px;
     font-size: 11px;
   }
+}
+@media (max-width: 560px) {
+  .marketing-header-inner,
+  .marketing-footer-inner,
+  .marketing-wrap {
+    width: calc(100% - 32px);
+  }
   .marketing-title {
     font-size: 43px;
   }
@@ -885,11 +897,11 @@
     font-size: 14px;
   }
   .marketing-hero {
-    gap: 31px;
-    padding-block: 42px 49px;
+    gap: 18px;
+    padding-block: 24px 28px;
   }
   .palette-artwork-swatches {
-    height: 190px;
+    height: 120px;
   }
   .palette-artwork-swatch {
     font-size: 7px;
@@ -961,6 +973,59 @@
   }
   .marketing-footer-inner nav {
     gap: 15px;
+  }
+}
+@media (max-width: 380px) {
+  .marketing-nav {
+    gap: 7px;
+  }
+  .marketing-wrap {
+    width: calc(100% - 24px);
+  }
+  .marketing-title {
+    font-size: 35px;
+  }
+  .marketing-section-title {
+    font-size: 28px;
+  }
+  .pricing-intro .marketing-title,
+  .support-intro .marketing-title {
+    font-size: 35px;
+  }
+  .marketing-lede {
+    font-size: 13px;
+  }
+  .marketing-hero {
+    gap: 14px;
+    padding-block: 18px 22px;
+  }
+  .marketing-hero-actions {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .marketing-hero-actions > a {
+    min-width: 0;
+    min-height: 44px;
+    flex: 1;
+    gap: 4px;
+    padding-inline: 5px;
+    font-size: 9px;
+  }
+  .marketing-hero-actions svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+  }
+  .marketing-hero-art .palette-artwork-swatches {
+    height: 70px;
+  }
+  .marketing-hero-art .palette-artwork-top,
+  .marketing-hero-art .palette-artwork-bottom {
+    padding-block: 10px;
+    padding-inline: 12px;
+  }
+  .marketing-hero-art .palette-artwork-swatch {
+    font-size: 6px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

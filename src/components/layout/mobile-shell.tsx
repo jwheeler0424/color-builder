@@ -43,6 +43,7 @@ import {
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useState, useCallback, Suspense } from 'react';
 
+import { MarketingPagesSubmenuItems } from '@/components/marketing/marketing-menu';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCommandModifier } from '@/hooks/use-command-modifier';
 import { hexToStop } from '@/lib/engine/browser';
@@ -171,6 +172,7 @@ export function MobileShell() {
                 <IconKeyboard className='size-4' />
                 Keyboard Shortcuts
               </DropdownMenuItem>
+              <MarketingPagesSubmenuItems />
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

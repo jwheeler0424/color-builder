@@ -18,6 +18,8 @@ import {
   OverviewPage as MarketingOverviewPage,
   SupportPage as ProductSupportPage,
 } from '@/components/marketing/marketing-content';
+import { MarketingPagesMenu } from '@/components/marketing/marketing-menu';
+import { MarketingPagesSubmenuItems } from '@/components/marketing/marketing-menu';
 import {
   createCheckoutIntent,
   FeaturesPage,
@@ -26,6 +28,11 @@ import {
   PricingPage,
   type CheckoutIntent,
 } from '@/components/marketing/marketing-pages';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 function renderMarketingPage(
   path: '/features' | '/pricing' | '/overview' | '/api' | '/guides' | '/data' | '/support',
@@ -54,7 +61,44 @@ function renderPricing(onPlanSelected?: (intent: CheckoutIntent) => void) {
   return renderMarketingPage('/pricing', <PricingPage onPlanSelected={onPlanSelected} />);
 }
 
+function MobileExploreMenu() {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger>More actions</DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <MarketingPagesSubmenuItems />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 describe('marketing pricing', () => {
+  test('exposes all marketing destinations from the Explore menu', async () => {
+    renderMarketingPage('/pricing', <MarketingPagesMenu />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Explore Chroma pages and resources' }),
+    );
+
+    expect(screen.getByRole('menuitem', { name: /Overview/ })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Features/ })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Pricing/ })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Developer API/ })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Guides/ })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Help center/ })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Data & privacy/ })).toBeInTheDocument();
+  });
+
+  test('exposes marketing links through the mobile More actions menu', async () => {
+    renderMarketingPage('/pricing', <MobileExploreMenu />);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'More actions' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /Explore Chroma/ }));
+
+    expect(await screen.findByRole('menuitem', { name: /Overview/ })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Pricing/ })).toBeInTheDocument();
+  });
+
   test('explains the product workflow on the overview page', async () => {
     renderMarketingPage('/overview', <MarketingOverviewPage />);
 

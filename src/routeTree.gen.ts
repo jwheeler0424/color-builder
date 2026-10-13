@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ChromaRouteImport } from './routes/_chroma'
+import { Route as MarketingRouteImport } from './routes/_marketing'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SignUpRouteImport } from './routes/sign-up'
@@ -38,6 +39,13 @@ import { Route as ChromaScaleRouteImport } from './routes/_chroma/scale'
 import { Route as ChromaScoringRouteImport } from './routes/_chroma/scoring'
 import { Route as ChromaThemeRouteImport } from './routes/_chroma/theme'
 import { Route as ChromaUtilityRouteImport } from './routes/_chroma/utility'
+import { Route as MarketingApiRouteImport } from './routes/_marketing/api'
+import { Route as MarketingDataRouteImport } from './routes/_marketing/data'
+import { Route as MarketingFeaturesRouteImport } from './routes/_marketing/features'
+import { Route as MarketingGuidesRouteImport } from './routes/_marketing/guides'
+import { Route as MarketingOverviewRouteImport } from './routes/_marketing/overview'
+import { Route as MarketingPricingRouteImport } from './routes/_marketing/pricing'
+import { Route as MarketingSupportRouteImport } from './routes/_marketing/support'
 import { Route as ApiPaletteRouteImport } from './routes/api/palette'
 import { Route as ChromaAnalyzeIndexRouteImport } from './routes/_chroma/analyze/index'
 import { Route as ChromaAnalyzeAccessibilityRouteImport } from './routes/_chroma/analyze/accessibility'
@@ -57,6 +65,10 @@ import { Route as ChromaExportUtilityRouteImport } from './routes/_chroma/export
 
 const ChromaRoute = ChromaRouteImport.update({
   id: '/_chroma',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketingRoute = MarketingRouteImport.update({
+  id: '/_marketing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -199,6 +211,41 @@ const ChromaUtilityRoute = ChromaUtilityRouteImport.update({
   path: '/utility',
   getParentRoute: () => ChromaRoute,
 } as any)
+const MarketingApiRoute = MarketingApiRouteImport.update({
+  id: '/api',
+  path: '/api',
+  getParentRoute: () => MarketingRoute,
+} as any)
+const MarketingDataRoute = MarketingDataRouteImport.update({
+  id: '/data',
+  path: '/data',
+  getParentRoute: () => MarketingRoute,
+} as any)
+const MarketingFeaturesRoute = MarketingFeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
+  getParentRoute: () => MarketingRoute,
+} as any)
+const MarketingGuidesRoute = MarketingGuidesRouteImport.update({
+  id: '/guides',
+  path: '/guides',
+  getParentRoute: () => MarketingRoute,
+} as any)
+const MarketingOverviewRoute = MarketingOverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
+  getParentRoute: () => MarketingRoute,
+} as any)
+const MarketingPricingRoute = MarketingPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => MarketingRoute,
+} as any)
+const MarketingSupportRoute = MarketingSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => MarketingRoute,
+} as any)
 const ApiPaletteRoute = ApiPaletteRouteImport.update({
   id: '/api/palette',
   path: '/api/palette',
@@ -311,6 +358,13 @@ export interface FileRoutesByFullPath {
   '/scoring': typeof ChromaScoringRoute
   '/theme': typeof ChromaThemeRoute
   '/utility': typeof ChromaUtilityRoute
+  '/api': typeof MarketingApiRoute
+  '/data': typeof MarketingDataRoute
+  '/features': typeof MarketingFeaturesRoute
+  '/guides': typeof MarketingGuidesRoute
+  '/overview': typeof MarketingOverviewRoute
+  '/pricing': typeof MarketingPricingRoute
+  '/support': typeof MarketingSupportRoute
   '/api/palette': typeof ApiPaletteRoute
   '/analyze/accessibility': typeof ChromaAnalyzeAccessibilityRoute
   '/analyze/brand': typeof ChromaAnalyzeBrandRoute
@@ -329,6 +383,7 @@ export interface FileRoutesByFullPath {
   '/export/': typeof ChromaExportIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof ChromaIndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
@@ -353,8 +408,14 @@ export interface FileRoutesByTo {
   '/scoring': typeof ChromaScoringRoute
   '/theme': typeof ChromaThemeRoute
   '/utility': typeof ChromaUtilityRoute
+  '/api': typeof MarketingApiRoute
+  '/data': typeof MarketingDataRoute
+  '/features': typeof MarketingFeaturesRoute
+  '/guides': typeof MarketingGuidesRoute
+  '/overview': typeof MarketingOverviewRoute
+  '/pricing': typeof MarketingPricingRoute
+  '/support': typeof MarketingSupportRoute
   '/api/palette': typeof ApiPaletteRoute
-  '/': typeof ChromaIndexRoute
   '/analyze/accessibility': typeof ChromaAnalyzeAccessibilityRoute
   '/analyze/brand': typeof ChromaAnalyzeBrandRoute
   '/analyze/scoring': typeof ChromaAnalyzeScoringRoute
@@ -374,6 +435,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_chroma': typeof ChromaRouteWithChildren
+  '/_marketing': typeof MarketingRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
@@ -401,6 +463,13 @@ export interface FileRoutesById {
   '/_chroma/scoring': typeof ChromaScoringRoute
   '/_chroma/theme': typeof ChromaThemeRoute
   '/_chroma/utility': typeof ChromaUtilityRoute
+  '/_marketing/api': typeof MarketingApiRoute
+  '/_marketing/data': typeof MarketingDataRoute
+  '/_marketing/features': typeof MarketingFeaturesRoute
+  '/_marketing/guides': typeof MarketingGuidesRoute
+  '/_marketing/overview': typeof MarketingOverviewRoute
+  '/_marketing/pricing': typeof MarketingPricingRoute
+  '/_marketing/support': typeof MarketingSupportRoute
   '/api/palette': typeof ApiPaletteRoute
   '/_chroma/': typeof ChromaIndexRoute
   '/_chroma/analyze/accessibility': typeof ChromaAnalyzeAccessibilityRoute
@@ -450,6 +519,13 @@ export interface FileRouteTypes {
     | '/scoring'
     | '/theme'
     | '/utility'
+    | '/api'
+    | '/data'
+    | '/features'
+    | '/guides'
+    | '/overview'
+    | '/pricing'
+    | '/support'
     | '/api/palette'
     | '/analyze/accessibility'
     | '/analyze/brand'
@@ -468,6 +544,7 @@ export interface FileRouteTypes {
     | '/export/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/forgot-password'
     | '/sign-in'
     | '/sign-up'
@@ -492,8 +569,14 @@ export interface FileRouteTypes {
     | '/scoring'
     | '/theme'
     | '/utility'
+    | '/api'
+    | '/data'
+    | '/features'
+    | '/guides'
+    | '/overview'
+    | '/pricing'
+    | '/support'
     | '/api/palette'
-    | '/'
     | '/analyze/accessibility'
     | '/analyze/brand'
     | '/analyze/scoring'
@@ -512,6 +595,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_chroma'
+    | '/_marketing'
     | '/forgot-password'
     | '/sign-in'
     | '/sign-up'
@@ -539,6 +623,13 @@ export interface FileRouteTypes {
     | '/_chroma/scoring'
     | '/_chroma/theme'
     | '/_chroma/utility'
+    | '/_marketing/api'
+    | '/_marketing/data'
+    | '/_marketing/features'
+    | '/_marketing/guides'
+    | '/_marketing/overview'
+    | '/_marketing/pricing'
+    | '/_marketing/support'
     | '/api/palette'
     | '/_chroma/'
     | '/_chroma/analyze/accessibility'
@@ -560,6 +651,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   ChromaRoute: typeof ChromaRouteWithChildren
+  MarketingRoute: typeof MarketingRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
@@ -574,6 +666,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof ChromaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_marketing': {
+      id: '/_marketing'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof MarketingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -771,6 +870,55 @@ declare module '@tanstack/react-router' {
       fullPath: '/utility'
       preLoaderRoute: typeof ChromaUtilityRouteImport
       parentRoute: typeof ChromaRoute
+    }
+    '/_marketing/api': {
+      id: '/_marketing/api'
+      path: '/api'
+      fullPath: '/api'
+      preLoaderRoute: typeof MarketingApiRouteImport
+      parentRoute: typeof MarketingRoute
+    }
+    '/_marketing/data': {
+      id: '/_marketing/data'
+      path: '/data'
+      fullPath: '/data'
+      preLoaderRoute: typeof MarketingDataRouteImport
+      parentRoute: typeof MarketingRoute
+    }
+    '/_marketing/features': {
+      id: '/_marketing/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof MarketingFeaturesRouteImport
+      parentRoute: typeof MarketingRoute
+    }
+    '/_marketing/guides': {
+      id: '/_marketing/guides'
+      path: '/guides'
+      fullPath: '/guides'
+      preLoaderRoute: typeof MarketingGuidesRouteImport
+      parentRoute: typeof MarketingRoute
+    }
+    '/_marketing/overview': {
+      id: '/_marketing/overview'
+      path: '/overview'
+      fullPath: '/overview'
+      preLoaderRoute: typeof MarketingOverviewRouteImport
+      parentRoute: typeof MarketingRoute
+    }
+    '/_marketing/pricing': {
+      id: '/_marketing/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof MarketingPricingRouteImport
+      parentRoute: typeof MarketingRoute
+    }
+    '/_marketing/support': {
+      id: '/_marketing/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof MarketingSupportRouteImport
+      parentRoute: typeof MarketingRoute
     }
     '/api/palette': {
       id: '/api/palette'
@@ -1004,8 +1152,33 @@ const ChromaRouteChildren: ChromaRouteChildren = {
 const ChromaRouteWithChildren =
   ChromaRoute._addFileChildren(ChromaRouteChildren)
 
+interface MarketingRouteChildren {
+  MarketingApiRoute: typeof MarketingApiRoute
+  MarketingDataRoute: typeof MarketingDataRoute
+  MarketingFeaturesRoute: typeof MarketingFeaturesRoute
+  MarketingGuidesRoute: typeof MarketingGuidesRoute
+  MarketingOverviewRoute: typeof MarketingOverviewRoute
+  MarketingPricingRoute: typeof MarketingPricingRoute
+  MarketingSupportRoute: typeof MarketingSupportRoute
+}
+
+const MarketingRouteChildren: MarketingRouteChildren = {
+  MarketingApiRoute: MarketingApiRoute,
+  MarketingDataRoute: MarketingDataRoute,
+  MarketingFeaturesRoute: MarketingFeaturesRoute,
+  MarketingGuidesRoute: MarketingGuidesRoute,
+  MarketingOverviewRoute: MarketingOverviewRoute,
+  MarketingPricingRoute: MarketingPricingRoute,
+  MarketingSupportRoute: MarketingSupportRoute,
+}
+
+const MarketingRouteWithChildren = MarketingRoute._addFileChildren(
+  MarketingRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   ChromaRoute: ChromaRouteWithChildren,
+  MarketingRoute: MarketingRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,

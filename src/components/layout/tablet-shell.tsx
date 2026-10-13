@@ -36,6 +36,7 @@ import {
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useState, useCallback, Suspense } from 'react';
 
+import { MarketingPagesMenu } from '@/components/marketing/marketing-menu';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCommandModifier } from '@/hooks/use-command-modifier';
 import { usePortraitViewport } from '@/hooks/use-stacked-palette';
@@ -120,6 +121,8 @@ export function TabletShell() {
             aria-label={`Open search (${commandModifier}K)`}>
             <IconSearch className='size-5' aria-hidden='true' />
           </button>
+
+          <MarketingPagesMenu compact />
 
           {/* Actions */}
           <button
