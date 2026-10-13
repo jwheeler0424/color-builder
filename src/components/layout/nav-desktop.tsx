@@ -17,14 +17,23 @@
 import type { ComponentType } from 'react';
 
 import {
+  IconCheck,
+  IconChevronDown,
   IconChartRadar,
   IconDownload,
   IconPalette,
   IconSearch,
   IconTools,
 } from '@tabler/icons-react';
-import { Link, useRouterState } from '@tanstack/react-router';
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router';
 
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 import { useCommandModifier } from '../../hooks/use-command-modifier';
@@ -149,6 +158,50 @@ function useActiveSection() {
   return { pathname, section };
 }
 
+/** Compact switcher for tools within the current primary section. */
+export function SectionToolMenu() {
+  const { pathname, section } = useActiveSection();
+  const navigate = useNavigate();
+  const tools = section ? SECTION_TOOLS[section.id] : undefined;
+  if (!section || !tools || tools.length < 2) return null;
+
+  const activeTool =
+    tools.find((tool) => pathname === tool.to || (tool.to === '/palette' && pathname === '/')) ??
+    tools[0]!;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant='ghost'
+            size='sm'
+            className='h-8 max-w-40 gap-2 px-2.5 font-mono text-[10px] text-muted-foreground hover:text-foreground'
+            aria-label={`Choose ${section.label} tool`}>
+            <span className='truncate'>{activeTool.label}</span>
+            <IconChevronDown className='size-3 shrink-0' aria-hidden='true' />
+          </Button>
+        }
+      />
+      <DropdownMenuContent align='start' className='min-w-44'>
+        {tools.map((tool) => {
+          const isActive = pathname === tool.to || (tool.to === '/palette' && pathname === '/');
+          return (
+            <DropdownMenuItem
+              key={tool.to}
+              onClick={() =>
+                void navigate({ to: tool.to as Parameters<typeof navigate>[0]['to'] })
+              }>
+              <span className='flex-1'>{tool.label}</span>
+              {isActive && <IconCheck className='size-4' aria-hidden='true' />}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 /** Palette · Analyze · Build · Export section links */
 export function SectionTabs({ className }: { className?: string }) {
   const { section: activeSection } = useActiveSection();
@@ -164,11 +217,10 @@ export function SectionTabs({ className }: { className?: string }) {
             to={section.primary as Parameters<typeof Link>[0]['to']}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'inline-flex items-center gap-1.5 px-4 text-[11px] font-bold tracking-[.07em]',
-              'border-b-2 uppercase no-underline transition-colors',
+              "relative inline-flex h-full items-center gap-1.5 px-2.5 text-[11px] font-bold tracking-[.07em] uppercase no-underline transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:content-[''] xl:px-4",
               isActive
-                ? 'border-b-primary text-foreground'
-                : 'border-b-transparent text-muted-foreground hover:border-b-border hover:text-foreground',
+                ? 'text-foreground after:bg-primary'
+                : 'text-muted-foreground after:bg-transparent hover:text-foreground hover:after:bg-border',
             )}>
             <SectionIcon className='size-4' aria-hidden='true' />
             {section.label}
@@ -227,7 +279,7 @@ export function SearchButton({ onClick }: { onClick: () => void }) {
       )}
       title={`Search tools (${commandModifier}K)`}>
       <IconSearch className='size-3.5 opacity-70' aria-hidden='true' />
-      <span className='hidden lg:inline'>Search</span>
+      <span className='hidden 2xl:inline'>Search</span>
       <Kbd className='ml-0.5 h-5 min-w-0 rounded border border-border/60 bg-background/50 px-1.5 font-mono text-[10px] font-medium text-foreground/75 shadow-none'>
         {commandModifier === '⌘' ? '⌘K' : 'Ctrl K'}
       </Kbd>

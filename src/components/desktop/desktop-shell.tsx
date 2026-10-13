@@ -1,6 +1,8 @@
+import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
 import { Suspense, useCallback, useEffect, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { ShellProvider } from '@/providers/shell.provider';
 
@@ -9,6 +11,7 @@ import { PaletteStrip } from '../layout/palette-strip';
 import { PaletteTools, type PaletteToolTab } from '../layout/palette-tools';
 import { SlotEditor } from '../layout/slot-editor';
 import { Panel, PanelContent, PanelHeader, usePanel } from '../panel';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { MainHeader } from './header';
 
 const FALLBACK = (
@@ -21,6 +24,8 @@ export function DesktopStudio() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const openPanel = usePanel((state) => state.openPanel);
+  const togglePanel = usePanel((state) => state.togglePanel);
+  const panelOpen = usePanel((state) => state.open('main-right'));
   const [editingSlotIndex, setEditingSlotIndex] = useState<number | null>(null);
   const [toolTab, setToolTab] = useState<PaletteToolTab>('generate');
   const [previousPathname, setPreviousPathname] = useState(pathname);
@@ -97,26 +102,60 @@ export function DesktopStudio() {
         )}
 
         {/* Supporting pane: palette tools */}
-        <Panel panelId={'main-right'} className='flex flex-col gap-1 bg-background'>
-          {editingSlotIndex !== null ? (
-            <PanelContent>
-              <SlotEditor index={editingSlotIndex} onClose={() => setEditingSlotIndex(null)} />
-            </PanelContent>
-          ) : (
-            <>
-              <PanelHeader className='px-3.5 pt-3.5 pb-2'>
-                <h2 className='text-base font-bold tracking-tight'>Palette Tools</h2>
-              </PanelHeader>
+        <div className='relative flex h-full min-w-0'>
+          <Panel
+            panelId='main-right'
+            style={{ width: panelOpen ? 'var(--panel-width)' : '0px' }}
+            className='flex flex-col gap-1 bg-background'>
+            {editingSlotIndex !== null ? (
               <PanelContent>
-                <PaletteTools
-                  tab={activeTab}
-                  onTabChange={handleTabChange}
-                  onSelectSlot={handleSelectSlot}
-                />
+                <SlotEditor index={editingSlotIndex} onClose={() => setEditingSlotIndex(null)} />
               </PanelContent>
-            </>
-          )}
-        </Panel>
+            ) : (
+              <>
+                <PanelHeader className='px-3.5 pt-3.5 pb-2'>
+                  <h2 className='text-base font-bold tracking-tight'>Palette Tools</h2>
+                </PanelHeader>
+                <PanelContent>
+                  <PaletteTools
+                    tab={activeTab}
+                    onTabChange={handleTabChange}
+                    onSelectSlot={handleSelectSlot}
+                  />
+                </PanelContent>
+              </>
+            )}
+          </Panel>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant='ghost'
+                  size='icon-sm'
+                  className='group absolute top-10 left-0 z-40 h-10 w-20 -translate-x-1/2 rounded-full border-0 bg-transparent p-0 shadow-none hover:bg-transparent focus-visible:ring-2 focus-visible:ring-ring active:bg-transparent'
+                  onClick={() => togglePanel('main-right')}
+                  aria-label={panelOpen ? 'Hide side panel' : 'Show side panel'}
+                  aria-expanded={panelOpen}
+                  aria-controls='panel-region-main-right'>
+                  <span
+                    className='pointer-events-none absolute top-0 left-1/2 z-0 h-10 w-10 -translate-x-1/2 rounded-full border border-border bg-background shadow-sm transition-[left,width,transform,background-color] duration-150 group-hover:left-0 group-hover:w-full group-hover:translate-x-0 group-hover:bg-accent group-focus-visible:left-0 group-focus-visible:w-full group-focus-visible:translate-x-0 group-focus-visible:bg-accent'
+                    aria-hidden='true'
+                  />
+                  <span className='pointer-events-none absolute top-0 left-1/2 z-10 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-transform duration-150 group-hover:-translate-x-full group-focus-visible:-translate-x-full'>
+                    {panelOpen ? (
+                      <IconChevronRight className='size-4' aria-hidden='true' />
+                    ) : (
+                      <IconChevronLeft className='size-4' aria-hidden='true' />
+                    )}
+                  </span>
+                </Button>
+              }
+            />
+            <TooltipContent side='top' align='end' alignOffset={32} sideOffset={6}>
+              {panelOpen ? 'Hide side panel' : 'Show side panel'}
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </main>
     </ShellProvider>
   );

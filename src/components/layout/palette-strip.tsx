@@ -41,6 +41,7 @@ import {
 import { MAX_SLOTS } from '@/lib/constants/chroma';
 import { cn } from '@/lib/utils';
 
+import { Button } from '../ui/button';
 import { SlotButton } from './slot-button';
 import { SlotCard } from './slot-card';
 
@@ -128,27 +129,27 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
             strategy={stacked ? verticalListSortingStrategy : horizontalListSortingStrategy}>
             {slots.map((slot, i) => (
               <Fragment key={slot.id}>
-                {!stacked && slots.length < MAX_SLOTS && i === 0 && (
-                  <SlotButton key={`button-${slot.id}`} index={-1} adjust={true} />
-                )}
                 <SlotCard key={slot.id} slot={slot} index={i} onEdit={onEditSlot} />
-                {!stacked && slots.length < MAX_SLOTS && (
-                  <SlotButton
-                    key={`button-after-${slot.id}`}
-                    index={i}
-                    adjust={i === slots.length - 1}
-                  />
+                {!stacked && slots.length < MAX_SLOTS && i < slots.length - 1 && (
+                  <SlotButton key={`button-after-${slot.id}`} index={i} />
                 )}
               </Fragment>
             ))}
             {stacked && slots.length < MAX_SLOTS && (
-              <button
-                type='button'
-                onClick={() => insertSlot(slots.length)}
-                className='flex h-14 w-full shrink-0 cursor-pointer items-center justify-center gap-2 border-t border-dashed border-border bg-card text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground'>
-                <PlusIcon className='size-4' />
-                Add a color
-              </button>
+              <div className='mt-3 w-full shrink-0 px-3'>
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='lg'
+                  aria-label='Add a color'
+                  onClick={() => insertSlot(slots.length)}
+                  className='palette-add-button palette-add-button--wide h-14 w-full justify-center gap-2.5 border-dashed border-border bg-card px-4 text-sm font-semibold text-foreground'>
+                  <span className='palette-add-icon grid size-7 place-items-center rounded-full bg-primary text-primary-foreground'>
+                    <PlusIcon className='size-4' aria-hidden='true' />
+                  </span>
+                  <span className='relative z-10'>Add a color</span>
+                </Button>
+              </div>
             )}
           </SortableContext>
 

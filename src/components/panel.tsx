@@ -398,7 +398,7 @@ function Panel({
       data-slot='panel'
       style={cssVars}
       className={cn(
-        'group shrink-0 overflow-hidden',
+        'group min-w-0 shrink-0 overflow-hidden',
         isHorizontal
           ? [
               `transition-[width] ${duration} ${easing}`,

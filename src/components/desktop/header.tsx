@@ -4,16 +4,29 @@
  * Main Desktop Header
  */
 
-import { IconLayoutSidebarRightCollapse as PanelRightIcon } from '@tabler/icons-react';
+import {
+  IconDotsVertical,
+  IconDownload,
+  IconHeart,
+  IconKeyboard,
+  IconShare,
+} from '@tabler/icons-react';
+import { useNavigate } from '@tanstack/react-router';
 
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useChromaStore } from '@/hooks/use-chroma-store';
 import { cn } from '@/lib/utils';
 
 import { ThemeToggle } from '../common/theme-toggle';
-import { SearchButton, SectionTabs, SectionToolTabs } from '../layout/nav-desktop';
+import { SearchButton, SectionTabs, SectionToolMenu } from '../layout/nav-desktop';
 import { BrandLockup } from '../logo-icon';
 import { ExportModal, SaveModal, ShareModal, ShortcutsModal } from '../modals';
-import { usePanel } from '../panel';
 import { Separator } from '../ui/separator';
 import { useCommandPalette } from '../views/command-palette';
 
@@ -24,9 +37,10 @@ interface MainHeaderProps {
 }
 
 export function MainHeader({ className }: MainHeaderProps) {
-  const togglePanel = usePanel((state) => state.togglePanel);
-  const panelOpen = usePanel((state) => state.panels['panel-main-right']?.open ?? false);
+  const navigate = useNavigate();
   const { setOpen: openCommandPalette } = useCommandPalette();
+  const openModal = useChromaStore((state) => state.openModal);
+  const setSaveName = useChromaStore((state) => state.setSaveName);
   return (
     <header
       className={cn(
@@ -34,48 +48,77 @@ export function MainHeader({ className }: MainHeaderProps) {
         className,
       )}>
       <div className='relative'>
-        <main className='flex h-16 items-center justify-between gap-8 border-b border-border/40 px-4'>
+        <main className='flex h-16 items-center gap-3 border-b border-border/40 px-4'>
           <BrandLockup heading />
-          <SectionTabs className='self-stretch' />
-          <nav className='flex items-center gap-4'>
-            <Separator orientation='vertical' className='bg-muted-foreground' />
+          <SectionTabs className='min-w-0 flex-1 justify-center self-stretch' />
+          <SectionToolMenu />
+          <nav className='flex shrink-0 items-center gap-1'>
+            <SearchButton onClick={() => openCommandPalette(true)} />
+            <ThemeToggle />
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant='ghost'
+                    size='icon-lg'
+                    title='More actions'
+                    aria-label='More actions'
+                    className='text-muted-foreground'>
+                    <IconDotsVertical className='size-5' />
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align='end' className='w-48'>
+                <DropdownMenuItem onClick={() => openModal('share')}>
+                  <IconShare />
+                  Share palette
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSaveName('');
+                    openModal('save');
+                  }}>
+                  <IconHeart />
+                  Save palette
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => openModal('export')}>
+                  <IconDownload />
+                  Export palette
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => openModal('shortcuts')}>
+                  <IconKeyboard />
+                  Keyboard shortcuts
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </nav>
+          <Separator orientation='vertical' className='h-8 bg-muted-foreground/60' />
+          <nav className='flex shrink-0 items-center gap-2'>
             <section className='flex items-center gap-2'>
-              <Button variant='ghost' size='lg' className={'font-semibold tracking-wide'}>
+              <Button
+                variant='ghost'
+                size='lg'
+                className='font-semibold tracking-wide'
+                onClick={() => void navigate({ to: '/sign-in' })}>
                 Sign In
               </Button>
-              <Button variant='default' size='lg' className={'font-semibold tracking-wide'}>
+              <Button
+                variant='default'
+                size='lg'
+                className='font-semibold tracking-wide'
+                onClick={() => void navigate({ to: '/sign-up' })}>
                 Sign Up
               </Button>
             </section>
           </nav>
         </main>
       </div>
-      <section className='flex h-14 items-stretch justify-between gap-4 border-b border-border/30 px-4'>
-        <SectionToolTabs />
-        <nav className='ml-auto flex shrink-0 items-center justify-end gap-4'>
-          <main className='flex h-full items-center gap-4'>
-            <SearchButton onClick={() => openCommandPalette(true)} />
-            {/* Action buttons */}
-            <ThemeToggle />
-            <ShareModal />
-            <SaveModal />
-            <ExportModal />
-            <ShortcutsModal />
-          </main>
-          <aside className='flex h-full items-center gap-4'>
-            <Button
-              variant='ghost'
-              size={'icon-lg'}
-              onClick={() => togglePanel('main-right')}
-              className='text-muted-foreground'
-              aria-label={panelOpen ? 'Hide palette panel' : 'Show palette panel'}
-              aria-expanded={panelOpen}
-              title={panelOpen ? 'Hide palette panel' : 'Show palette panel'}>
-              <PanelRightIcon className='size-5' />
-            </Button>
-          </aside>
-        </nav>
-      </section>
+      <div className='hidden' aria-hidden='true'>
+        <ShareModal />
+        <SaveModal />
+        <ExportModal />
+        <ShortcutsModal />
+      </div>
     </header>
   );
 }

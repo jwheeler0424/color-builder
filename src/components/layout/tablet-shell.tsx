@@ -37,6 +37,7 @@ import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useState, useCallback, Suspense } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
+import { useCommandModifier } from '@/hooks/use-command-modifier';
 import { usePortraitViewport } from '@/hooks/use-stacked-palette';
 import { hexToStop } from '@/lib/engine/browser';
 import { ShellProvider } from '@/providers/shell.provider';
@@ -64,6 +65,7 @@ const FALLBACK = (
 
 export function TabletShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const commandModifier = useCommandModifier();
   const { modal, slots, editSlotColor, openModal, setSaveName, generate, undo } = useChromaStore();
   const stacked = usePortraitViewport();
   const { setOpen: openCmd } = useCommandPalette();
@@ -114,7 +116,8 @@ export function TabletShell() {
           <button
             onClick={() => openCmd(true)}
             className='flex h-12 w-12 cursor-pointer items-center justify-center rounded-xl border border-transparent bg-transparent text-xl text-muted-foreground transition-colors hover:border-border hover:text-foreground'
-            title='Search (⌘K)'>
+            title={`Search (${commandModifier}K)`}
+            aria-label={`Open search (${commandModifier}K)`}>
             <IconSearch className='size-5' aria-hidden='true' />
           </button>
 

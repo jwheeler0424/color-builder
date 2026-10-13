@@ -8,7 +8,9 @@ import {
 import React, { useState, useCallback, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { useChromaStore } from '@/hooks/use-chroma-store';
+import { useCommandModifier } from '@/hooks/use-command-modifier';
 import { HARMONIES, THEMES } from '@/lib/constants/chroma';
 import { hexToStop, parseHexInput } from '@/lib/engine/browser';
 import { cn } from '@/lib/utils';
@@ -29,6 +31,7 @@ function Section({ children }: { children: React.ReactNode }) {
 }
 
 export function PalettePanel() {
+  const commandModifier = useCommandModifier();
   const {
     slots,
     seeds,
@@ -311,7 +314,12 @@ export function PalettePanel() {
           Generate
         </Button>
         <p className='mt-1.5 text-center text-[10px] text-muted-foreground'>
-          <kbd>Space</kbd> generate · <kbd>Ctrl+Z</kbd> undo · <kbd>?</kbd> shortcuts
+          <Kbd>Space</Kbd> generate ·{' '}
+          <KbdGroup>
+            <Kbd>{commandModifier}</Kbd>
+            <Kbd>Z</Kbd>
+          </KbdGroup>{' '}
+          undo · <Kbd>Shift+?</Kbd> shortcuts
         </p>
       </div>
     </aside>

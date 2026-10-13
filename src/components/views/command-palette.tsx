@@ -424,9 +424,9 @@ function CommandPalette() {
             autoComplete='off'
             spellCheck={false}
           />
-          <kbd className='shrink-0 rounded border border-border px-1.5 py-0.5 text-[9px] text-muted-foreground'>
+          <Kbd className='h-5 min-w-0 shrink-0 rounded border border-border bg-background/50 px-1.5 font-mono text-[10px] font-medium text-muted-foreground'>
             Esc
-          </kbd>
+          </Kbd>
         </div>
 
         {/* Results */}

@@ -11,6 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChromaRouteImport } from './routes/_chroma'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as SignUpRouteImport } from './routes/sign-up'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as ChromaAccessibilityRouteImport } from './routes/_chroma/accessibility'
 import { Route as ChromaAnalyzeRouteImport } from './routes/_chroma/analyze'
 import { Route as ChromaBrandRouteImport } from './routes/_chroma/brand'
@@ -59,6 +63,26 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const ChromaRoute = ChromaRouteImport.update({
   id: '/_chroma',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChromaAccessibilityRoute = ChromaAccessibilityRouteImport.update({
@@ -266,6 +290,10 @@ const ChromaExportUtilityRoute = ChromaExportUtilityRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/accessibility': typeof ChromaAccessibilityRoute
   '/analyze': typeof ChromaAnalyzeRouteWithChildren
   '/brand': typeof ChromaBrandRoute
@@ -309,6 +337,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/accessibility': typeof ChromaAccessibilityRoute
   '/brand': typeof ChromaBrandRoute
   '/colorblind': typeof ChromaColorblindRoute
@@ -351,6 +383,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_chroma': typeof ChromaRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/_chroma/accessibility': typeof ChromaAccessibilityRoute
   '/_chroma/analyze': typeof ChromaAnalyzeRouteWithChildren
   '/_chroma/brand': typeof ChromaBrandRoute
@@ -396,6 +432,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/forgot-password'
+    | '/sign-in'
+    | '/sign-up'
+    | '/verify-email'
     | '/accessibility'
     | '/analyze'
     | '/brand'
@@ -439,6 +479,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/forgot-password'
+    | '/sign-in'
+    | '/sign-up'
+    | '/verify-email'
     | '/accessibility'
     | '/brand'
     | '/colorblind'
@@ -480,6 +524,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_chroma'
+    | '/forgot-password'
+    | '/sign-in'
+    | '/sign-up'
+    | '/verify-email'
     | '/_chroma/accessibility'
     | '/_chroma/analyze'
     | '/_chroma/brand'
@@ -525,6 +573,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChromaRoute: typeof ChromaRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  SignInRoute: typeof SignInRoute
+  SignUpRoute: typeof SignUpRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
   ApiPaletteRoute: typeof ApiPaletteRoute
 }
 
@@ -542,6 +594,34 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof ChromaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_chroma/accessibility': {
@@ -947,6 +1027,10 @@ const ChromaRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChromaRoute: ChromaRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
   ApiPaletteRoute: ApiPaletteRoute,
 }
 export const routeTree = rootRouteImport

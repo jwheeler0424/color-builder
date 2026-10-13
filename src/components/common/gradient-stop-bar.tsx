@@ -3,6 +3,7 @@ import React, { useRef, useCallback } from 'react';
 
 import type { GradientStop } from '@/types';
 
+import { Kbd } from '@/components/ui/kbd';
 import { clamp, renderColor } from '@/lib/engine/browser';
 import { cn } from '@/lib/utils';
 
@@ -152,10 +153,10 @@ export default function GradientStopBar({
         ))}
       </div>
       <p className='mt-1.5 text-[10px] text-muted-foreground'>
-        Click track to add · Drag or <kbd className='rounded border border-border px-1'>←</kbd>/
-        <kbd className='rounded border border-border px-1'>→</kbd> to move ·{' '}
-        <kbd className='rounded border border-border px-1'>Del</kbd> to remove ·{' '}
-        <kbd className='rounded border border-border px-1'>Tab</kbd> to cycle
+        Click track to add · Drag or <Kbd className='h-4 min-w-0 px-1 text-[10px]'>←</Kbd>/
+        <Kbd className='h-4 min-w-0 px-1 text-[10px]'>→</Kbd> to move ·{' '}
+        <Kbd className='h-4 min-w-0 px-1 text-[10px]'>Del</Kbd> to remove ·{' '}
+        <Kbd className='h-4 min-w-0 px-1 text-[10px]'>Tab</Kbd> to cycle
       </p>
     </div>
   );

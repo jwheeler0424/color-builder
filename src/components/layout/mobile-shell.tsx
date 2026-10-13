@@ -44,6 +44,7 @@ import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useState, useCallback, Suspense } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
+import { useCommandModifier } from '@/hooks/use-command-modifier';
 import { hexToStop } from '@/lib/engine/browser';
 import { cn } from '@/lib/utils';
 import { ShellProvider } from '@/providers/shell.provider';
@@ -77,6 +78,7 @@ const FALLBACK = (
 
 export function MobileShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const commandModifier = useCommandModifier();
   const { modal, slots, editSlotColor, generate, undo, openModal, setSaveName } = useChromaStore();
   const { setOpen: openCmd } = useCommandPalette();
 
@@ -128,8 +130,8 @@ export function MobileShell() {
           <button
             onClick={() => openCmd(true)}
             className='flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-xl text-muted-foreground transition-colors hover:text-foreground'
-            title='Search (⌘K)'
-            aria-label='Open search'>
+            title={`Search (${commandModifier}K)`}
+            aria-label={`Open search (${commandModifier}K)`}>
             <IconSearch className='size-5' aria-hidden='true' />
           </button>
 
