@@ -137,7 +137,7 @@ export function SectionNavigation({ className }: SectionNavigationProps) {
           const SectionIcon = section.icon;
           const isActive = section.id === activeSection?.id;
           const linkClassName = cn(
-            "relative inline-flex h-full items-center justify-center gap-1 rounded-none border-b-2 border-transparent bg-transparent px-1 py-0 text-[11px] font-bold uppercase no-underline transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:content-[''] xl:px-3",
+            "relative inline-flex h-full items-center justify-center gap-1.5 rounded-none border-b-2 border-transparent bg-transparent px-1 py-0 text-[11px] font-bold uppercase no-underline transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:content-[''] xl:px-3",
             isActive
               ? 'border-b-primary text-foreground after:bg-primary'
               : 'text-muted-foreground after:bg-transparent hover:border-b-border hover:text-foreground hover:after:bg-border',
