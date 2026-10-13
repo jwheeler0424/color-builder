@@ -9,12 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChromaRouteImport } from './routes/_chroma'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as ChromaIndexRouteImport } from './routes/_chroma/index'
 import { Route as ChromaAccessibilityRouteImport } from './routes/_chroma/accessibility'
 import { Route as ChromaAnalyzeRouteImport } from './routes/_chroma/analyze'
 import { Route as ChromaBrandRouteImport } from './routes/_chroma/brand'
@@ -31,7 +31,6 @@ import { Route as ChromaMixerRouteImport } from './routes/_chroma/mixer'
 import { Route as ChromaMultiscaleRouteImport } from './routes/_chroma/multiscale'
 import { Route as ChromaOklchScatterRouteImport } from './routes/_chroma/oklch-scatter'
 import { Route as ChromaP3RouteImport } from './routes/_chroma/p3'
-import { Route as ChromaPaletteRouteImport } from './routes/_chroma/palette'
 import { Route as ChromaPickerRouteImport } from './routes/_chroma/picker'
 import { Route as ChromaPreviewRouteImport } from './routes/_chroma/preview'
 import { Route as ChromaSavedRouteImport } from './routes/_chroma/saved'
@@ -56,11 +55,6 @@ import { Route as ChromaExportScaleRouteImport } from './routes/_chroma/export/s
 import { Route as ChromaExportThemeRouteImport } from './routes/_chroma/export/theme'
 import { Route as ChromaExportUtilityRouteImport } from './routes/_chroma/export/utility'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ChromaRoute = ChromaRouteImport.update({
   id: '/_chroma',
   getParentRoute: () => rootRouteImport,
@@ -84,6 +78,11 @@ const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
   path: '/verify-email',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ChromaIndexRoute = ChromaIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ChromaRoute,
 } as any)
 const ChromaAccessibilityRoute = ChromaAccessibilityRouteImport.update({
   id: '/accessibility',
@@ -163,11 +162,6 @@ const ChromaOklchScatterRoute = ChromaOklchScatterRouteImport.update({
 const ChromaP3Route = ChromaP3RouteImport.update({
   id: '/p3',
   path: '/p3',
-  getParentRoute: () => ChromaRoute,
-} as any)
-const ChromaPaletteRoute = ChromaPaletteRouteImport.update({
-  id: '/palette',
-  path: '/palette',
   getParentRoute: () => ChromaRoute,
 } as any)
 const ChromaPickerRoute = ChromaPickerRouteImport.update({
@@ -289,7 +283,7 @@ const ChromaExportUtilityRoute = ChromaExportUtilityRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof ChromaIndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
@@ -310,7 +304,6 @@ export interface FileRoutesByFullPath {
   '/multiscale': typeof ChromaMultiscaleRoute
   '/oklch-scatter': typeof ChromaOklchScatterRoute
   '/p3': typeof ChromaP3Route
-  '/palette': typeof ChromaPaletteRoute
   '/picker': typeof ChromaPickerRoute
   '/preview': typeof ChromaPreviewRoute
   '/saved': typeof ChromaSavedRoute
@@ -336,7 +329,6 @@ export interface FileRoutesByFullPath {
   '/export/': typeof ChromaExportIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
@@ -354,7 +346,6 @@ export interface FileRoutesByTo {
   '/multiscale': typeof ChromaMultiscaleRoute
   '/oklch-scatter': typeof ChromaOklchScatterRoute
   '/p3': typeof ChromaP3Route
-  '/palette': typeof ChromaPaletteRoute
   '/picker': typeof ChromaPickerRoute
   '/preview': typeof ChromaPreviewRoute
   '/saved': typeof ChromaSavedRoute
@@ -363,6 +354,7 @@ export interface FileRoutesByTo {
   '/theme': typeof ChromaThemeRoute
   '/utility': typeof ChromaUtilityRoute
   '/api/palette': typeof ApiPaletteRoute
+  '/': typeof ChromaIndexRoute
   '/analyze/accessibility': typeof ChromaAnalyzeAccessibilityRoute
   '/analyze/brand': typeof ChromaAnalyzeBrandRoute
   '/analyze/scoring': typeof ChromaAnalyzeScoringRoute
@@ -381,7 +373,6 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_chroma': typeof ChromaRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/sign-in': typeof SignInRoute
@@ -403,7 +394,6 @@ export interface FileRoutesById {
   '/_chroma/multiscale': typeof ChromaMultiscaleRoute
   '/_chroma/oklch-scatter': typeof ChromaOklchScatterRoute
   '/_chroma/p3': typeof ChromaP3Route
-  '/_chroma/palette': typeof ChromaPaletteRoute
   '/_chroma/picker': typeof ChromaPickerRoute
   '/_chroma/preview': typeof ChromaPreviewRoute
   '/_chroma/saved': typeof ChromaSavedRoute
@@ -412,6 +402,7 @@ export interface FileRoutesById {
   '/_chroma/theme': typeof ChromaThemeRoute
   '/_chroma/utility': typeof ChromaUtilityRoute
   '/api/palette': typeof ApiPaletteRoute
+  '/_chroma/': typeof ChromaIndexRoute
   '/_chroma/analyze/accessibility': typeof ChromaAnalyzeAccessibilityRoute
   '/_chroma/analyze/brand': typeof ChromaAnalyzeBrandRoute
   '/_chroma/analyze/scoring': typeof ChromaAnalyzeScoringRoute
@@ -452,7 +443,6 @@ export interface FileRouteTypes {
     | '/multiscale'
     | '/oklch-scatter'
     | '/p3'
-    | '/palette'
     | '/picker'
     | '/preview'
     | '/saved'
@@ -478,7 +468,6 @@ export interface FileRouteTypes {
     | '/export/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/forgot-password'
     | '/sign-in'
     | '/sign-up'
@@ -496,7 +485,6 @@ export interface FileRouteTypes {
     | '/multiscale'
     | '/oklch-scatter'
     | '/p3'
-    | '/palette'
     | '/picker'
     | '/preview'
     | '/saved'
@@ -505,6 +493,7 @@ export interface FileRouteTypes {
     | '/theme'
     | '/utility'
     | '/api/palette'
+    | '/'
     | '/analyze/accessibility'
     | '/analyze/brand'
     | '/analyze/scoring'
@@ -522,7 +511,6 @@ export interface FileRouteTypes {
     | '/export'
   id:
     | '__root__'
-    | '/'
     | '/_chroma'
     | '/forgot-password'
     | '/sign-in'
@@ -544,7 +532,6 @@ export interface FileRouteTypes {
     | '/_chroma/multiscale'
     | '/_chroma/oklch-scatter'
     | '/_chroma/p3'
-    | '/_chroma/palette'
     | '/_chroma/picker'
     | '/_chroma/preview'
     | '/_chroma/saved'
@@ -553,6 +540,7 @@ export interface FileRouteTypes {
     | '/_chroma/theme'
     | '/_chroma/utility'
     | '/api/palette'
+    | '/_chroma/'
     | '/_chroma/analyze/accessibility'
     | '/_chroma/analyze/brand'
     | '/_chroma/analyze/scoring'
@@ -571,7 +559,6 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   ChromaRoute: typeof ChromaRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   SignInRoute: typeof SignInRoute
@@ -582,13 +569,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_chroma': {
       id: '/_chroma'
       path: ''
@@ -623,6 +603,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/verify-email'
       preLoaderRoute: typeof VerifyEmailRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_chroma/': {
+      id: '/_chroma/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof ChromaIndexRouteImport
+      parentRoute: typeof ChromaRoute
     }
     '/_chroma/accessibility': {
       id: '/_chroma/accessibility'
@@ -734,13 +721,6 @@ declare module '@tanstack/react-router' {
       path: '/p3'
       fullPath: '/p3'
       preLoaderRoute: typeof ChromaP3RouteImport
-      parentRoute: typeof ChromaRoute
-    }
-    '/_chroma/palette': {
-      id: '/_chroma/palette'
-      path: '/palette'
-      fullPath: '/palette'
-      preLoaderRoute: typeof ChromaPaletteRouteImport
       parentRoute: typeof ChromaRoute
     }
     '/_chroma/picker': {
@@ -984,7 +964,6 @@ interface ChromaRouteChildren {
   ChromaMultiscaleRoute: typeof ChromaMultiscaleRoute
   ChromaOklchScatterRoute: typeof ChromaOklchScatterRoute
   ChromaP3Route: typeof ChromaP3Route
-  ChromaPaletteRoute: typeof ChromaPaletteRoute
   ChromaPickerRoute: typeof ChromaPickerRoute
   ChromaPreviewRoute: typeof ChromaPreviewRoute
   ChromaSavedRoute: typeof ChromaSavedRoute
@@ -992,6 +971,7 @@ interface ChromaRouteChildren {
   ChromaScoringRoute: typeof ChromaScoringRoute
   ChromaThemeRoute: typeof ChromaThemeRoute
   ChromaUtilityRoute: typeof ChromaUtilityRoute
+  ChromaIndexRoute: typeof ChromaIndexRoute
 }
 
 const ChromaRouteChildren: ChromaRouteChildren = {
@@ -1011,7 +991,6 @@ const ChromaRouteChildren: ChromaRouteChildren = {
   ChromaMultiscaleRoute: ChromaMultiscaleRoute,
   ChromaOklchScatterRoute: ChromaOklchScatterRoute,
   ChromaP3Route: ChromaP3Route,
-  ChromaPaletteRoute: ChromaPaletteRoute,
   ChromaPickerRoute: ChromaPickerRoute,
   ChromaPreviewRoute: ChromaPreviewRoute,
   ChromaSavedRoute: ChromaSavedRoute,
@@ -1019,13 +998,13 @@ const ChromaRouteChildren: ChromaRouteChildren = {
   ChromaScoringRoute: ChromaScoringRoute,
   ChromaThemeRoute: ChromaThemeRoute,
   ChromaUtilityRoute: ChromaUtilityRoute,
+  ChromaIndexRoute: ChromaIndexRoute,
 }
 
 const ChromaRouteWithChildren =
   ChromaRoute._addFileChildren(ChromaRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   ChromaRoute: ChromaRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   SignInRoute: SignInRoute,

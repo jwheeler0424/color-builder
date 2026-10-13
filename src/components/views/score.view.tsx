@@ -1027,7 +1027,7 @@ function CompareTab() {
       pal.mode,
       pal.hexes.length,
     );
-    void navigate({ to: '/palette' });
+    void navigate({ to: '/' });
   };
   const swap = () => {
     const a = selA ?? '__current__';

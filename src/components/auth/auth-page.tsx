@@ -95,7 +95,7 @@ export function AuthPage({ mode, email }: { mode: AuthMode; email?: string }) {
       <header className='flex h-14 items-center justify-between border-b border-border px-4 sm:h-16 sm:px-8'>
         <BrandLockup compact />
         <Link
-          to='/palette'
+          to='/'
           className='inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground sm:text-sm'>
           <IconArrowLeft className='size-4' aria-hidden='true' />
           Back to Chroma

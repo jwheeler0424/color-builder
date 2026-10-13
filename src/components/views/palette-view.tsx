@@ -1,7 +1,7 @@
 /**
  * palette-view.tsx  — Phase 2/3 refactored
  *
- * The /palette route component. Adapts based on shell context:
+ * The / route component. Adapts based on shell context:
  *
  *   Desktop (StudioShell):
  *     - Strip + controls already visible in shell columns

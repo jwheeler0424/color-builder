@@ -517,12 +517,12 @@ test('Base UI popover exposes its label and contents', () => {
     <Popover defaultOpen>
       <PopoverTrigger>Open</PopoverTrigger>
       <PopoverContent aria-label='Tool navigation'>
-        <a href='/palette'>Palette</a>
+        <a href='/'>Palette</a>
       </PopoverContent>
     </Popover>,
   );
   expect(view.getByRole('dialog', { name: 'Tool navigation' })).toBeInTheDocument();
-  expect(view.getByRole('link', { name: 'Palette' })).toHaveAttribute('href', '/palette');
+  expect(view.getByRole('link', { name: 'Palette' })).toHaveAttribute('href', '/');
 });
 
 test('Base UI toast manager renders and dismisses a notification', () => {

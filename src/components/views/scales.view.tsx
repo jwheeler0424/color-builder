@@ -142,7 +142,7 @@ function SingleColorTab() {
     const picks = [1, 3, 5, 7, 9].map((i) => scale[i]).filter(Boolean);
     setSeeds(picks.map(({ color }) => hexToStop(color.hex)));
     generate();
-    void navigate({ to: '/palette' });
+    void navigate({ to: '/' });
   };
 
   return (

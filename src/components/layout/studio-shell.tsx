@@ -19,7 +19,7 @@
  * - LEFT RAIL: Always renders GenerateControls regardless of active route.
  * - CENTER: Always renders PaletteStrip (the draggable slot canvas).
  * - RIGHT PANEL: Renders <Outlet /> — the TanStack Router active route view.
- *   - On /palette: panel closed (strip is the full focus).
+ *   - On /: panel closed (strip is the full focus).
  *   - On all other routes: panel open, showing that tool.
  *   - On slot double-click: panel shows ColorPickerModal for that slot.
  */
@@ -40,7 +40,7 @@ import { NavDesktop, SECTIONS } from './nav-desktop';
 import { PaletteStrip } from './palette-strip';
 
 // Routes where the right panel is closed by default (strip fills full width)
-const STRIP_ONLY_ROUTES = new Set(['/palette']);
+const STRIP_ONLY_ROUTES = new Set(['/']);
 
 export function StudioShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -50,7 +50,9 @@ export function StudioShell() {
   const [prevRoute, setPrevRoute] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
 
-  const activeSection = SECTIONS.find((s) => s.routes.some((r) => pathname.startsWith(r)));
+  const activeSection = SECTIONS.find((s) =>
+    s.routes.some((r) => (r === '/' ? pathname === '/' : pathname.startsWith(r))),
+  );
   const isStripOnly = STRIP_ONLY_ROUTES.has(pathname);
   const isPicking = editingSlotIndex !== null;
 

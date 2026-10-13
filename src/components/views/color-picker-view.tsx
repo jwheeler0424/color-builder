@@ -162,7 +162,7 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
     setSeeds([hexToStop(pickerHex, pickerAlpha < 100 ? pickerAlpha : undefined)]);
     addRecent(displayHex);
     generate();
-    void navigate({ to: '/palette' });
+    void navigate({ to: '/' });
   }, [pickerHex, pickerAlpha, displayHex, setSeeds, addRecent, generate, navigate]);
 
   const addToPalette = useCallback(() => {

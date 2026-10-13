@@ -105,7 +105,7 @@ export default function ColorMixer() {
   const useMixAsSeeds = () => {
     setSeeds(blendRow.map((color) => colorToStop(stopToColor(color))));
     generate();
-    void navigate({ to: '/palette' });
+    void navigate({ to: '/' });
   };
 
   const addMidpoint = () => {

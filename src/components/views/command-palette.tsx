@@ -73,7 +73,7 @@ const TOOLS: CommandItem[] = [
     label: 'Palette',
     section: 'Palette',
     icon: IconPalette,
-    route: '/palette',
+    route: '/',
     keywords: 'generate slots colors',
   },
   // Analyze — merged views

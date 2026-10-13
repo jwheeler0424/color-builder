@@ -1,8 +1,7 @@
-import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import { IconChevronLeft } from '@tabler/icons-react';
 import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
 import { Suspense, useCallback, useEffect, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { ShellProvider } from '@/providers/shell.provider';
 
@@ -56,7 +55,7 @@ export function DesktopStudio() {
       setToolTab(tab);
       if (!isPalettePage) return;
       if (tab === 'picker' && !isPickerRoute) void navigate({ to: '/picker' });
-      else if (tab !== 'picker' && isPickerRoute) void navigate({ to: '/palette' });
+      else if (tab !== 'picker' && isPickerRoute) void navigate({ to: '/' });
     },
     [isPalettePage, isPickerRoute, navigate],
   );
@@ -105,7 +104,7 @@ export function DesktopStudio() {
         <div className='relative flex h-full min-w-0'>
           <Panel
             panelId='main-right'
-            style={{ width: panelOpen ? 'var(--panel-width)' : '0px' }}
+            style={{ width: panelOpen ? 'var(--panel-width)' : '0px', zIndex: 20 }}
             className='flex flex-col gap-1 bg-background'>
             {editingSlotIndex !== null ? (
               <PanelContent>
@@ -126,35 +125,36 @@ export function DesktopStudio() {
               </>
             )}
           </Panel>
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  variant='ghost'
-                  size='icon-sm'
-                  className='group absolute top-10 left-0 z-40 h-10 w-20 -translate-x-1/2 rounded-full border-0 bg-transparent p-0 shadow-none hover:bg-transparent focus-visible:ring-2 focus-visible:ring-ring active:bg-transparent'
-                  onClick={() => togglePanel('main-right')}
-                  aria-label={panelOpen ? 'Hide side panel' : 'Show side panel'}
-                  aria-expanded={panelOpen}
-                  aria-controls='panel-region-main-right'>
-                  <span
-                    className='pointer-events-none absolute top-0 left-1/2 z-0 h-10 w-10 -translate-x-1/2 rounded-full border border-border bg-background shadow-sm transition-[left,width,transform,background-color] duration-150 group-hover:left-0 group-hover:w-full group-hover:translate-x-0 group-hover:bg-accent group-focus-visible:left-0 group-focus-visible:w-full group-focus-visible:translate-x-0 group-focus-visible:bg-accent'
-                    aria-hidden='true'
-                  />
-                  <span className='pointer-events-none absolute top-0 left-1/2 z-10 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-transform duration-150 group-hover:-translate-x-full group-focus-visible:-translate-x-full'>
-                    {panelOpen ? (
-                      <IconChevronRight className='size-4' aria-hidden='true' />
-                    ) : (
-                      <IconChevronLeft className='size-4' aria-hidden='true' />
-                    )}
-                  </span>
-                </Button>
-              }
+          <div className='group pointer-events-none absolute top-10 -left-12 z-30 h-10 w-12 overflow-hidden'>
+            <span
+              className='pointer-events-none absolute top-0 right-0 z-10 h-10 w-0 bg-background transition-[width] duration-150 ease-out group-hover:w-5 group-hover:duration-300'
+              aria-hidden='true'
             />
-            <TooltipContent side='top' align='end' alignOffset={32} sideOffset={6}>
-              {panelOpen ? 'Hide side panel' : 'Show side panel'}
-            </TooltipContent>
-          </Tooltip>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    type='button'
+                    className='pointer-events-auto absolute inset-0 z-30 h-10 w-12 cursor-pointer rounded-full bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                    onClick={() => togglePanel('main-right')}
+                    aria-label={panelOpen ? 'Hide side panel' : 'Show side panel'}
+                    aria-expanded={panelOpen}
+                    aria-controls='panel-region-main-right'>
+                    <span
+                      className={`pointer-events-none absolute top-0 -right-5 z-30 flex size-10 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-[translate,background-color] duration-150 ease-out group-hover:-translate-x-5 group-hover:bg-accent group-hover:duration-300`}>
+                      <IconChevronLeft
+                        className={`size-4 ${panelOpen ? '-translate-x-1 rotate-180' : '-translate-x-2'} transition-[translate,rotate] duration-150 ease-out group-hover:translate-x-0 group-hover:duration-300`}
+                        aria-hidden='true'
+                      />
+                    </span>
+                  </button>
+                }
+              />
+              <TooltipContent side='top' align='end' sideOffset={6}>
+                {panelOpen ? 'Hide side panel' : 'Show side panel'}
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
       </main>
     </ShellProvider>

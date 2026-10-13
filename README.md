@@ -671,7 +671,7 @@ The four main sections are defined in `SECTIONS` and `SECTION_TOOLS`:
 ```typescript
 // SECTIONS — top-level nav links
 SECTIONS = [
-  { id: 'create',  primary: '/palette',               routes: ['/palette', '/picker', '/saved'] },
+  { id: 'create',  primary: '/',                       routes: ['/', '/picker', '/saved'] },
   { id: 'analyze', primary: '/analyze/accessibility', routes: ['/analyze/accessibility', ...] },
   { id: 'build',   primary: '/build/mixer',           routes: ['/build/mixer', ...] },
   { id: 'export',  primary: '/export/scale',          routes: ['/export/scale', ...] },

@@ -8,7 +8,7 @@
  * within that section (via prefix matching).
  *
  * Sections map to the 14 consolidated tools from Phase 1:
- *   PALETTE → /palette
+ *   PALETTE → /
  *   ANALYZE → /accessibility, /scoring, /oklch-scatter
  *   BUILD   → /mixer, /gradient, /extract
  *   EXPORT  → /scale, /designsystem, /theme, /utility, /brand
@@ -17,9 +17,9 @@
 import type { ComponentType } from 'react';
 
 import {
+  IconChartRadar,
   IconCheck,
   IconChevronDown,
-  IconChartRadar,
   IconDownload,
   IconPalette,
   IconSearch,
@@ -57,8 +57,8 @@ export const SECTIONS: SectionDef[] = [
     id: 'create',
     label: 'Palette',
     icon: IconPalette,
-    primary: '/palette',
-    routes: ['/palette', '/picker'],
+    primary: '/',
+    routes: ['/', '/picker'],
   },
   {
     id: 'analyze',
@@ -84,7 +84,7 @@ export const SECTIONS: SectionDef[] = [
 ];
 
 // Routes where the palette owns the main area instead of the route view
-export const PALETTE_ROUTES = new Set(['/', '/palette', '/picker']);
+export const PALETTE_ROUTES = new Set(['/', '/picker']);
 
 export function isPaletteRoute(pathname: string) {
   return PALETTE_ROUTES.has(pathname);
@@ -93,7 +93,7 @@ export function isPaletteRoute(pathname: string) {
 // ─── Section tools (for the dropdown sub-nav inside each section) ─────────────
 
 export const SECTION_TOOLS: Record<string, { to: string; label: string }[]> = {
-  create: [{ to: '/palette', label: 'Palette' }],
+  create: [{ to: '/', label: 'Palette' }],
   analyze: [
     { to: '/analyze/accessibility', label: 'Accessibility' },
     { to: '/analyze/scoring', label: 'Score & Compare' },
@@ -153,7 +153,7 @@ export function NavDesktop({ className }: NavDesktopProps) {
 function useActiveSection() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const section = SECTIONS.find((s) =>
-    s.routes.some((r) => pathname.startsWith(r) || (r === '/palette' && pathname === '/')),
+    s.routes.some((r) => (r === '/' ? pathname === '/' : pathname.startsWith(r))),
   );
   return { pathname, section };
 }
@@ -165,9 +165,7 @@ export function SectionToolMenu() {
   const tools = section ? SECTION_TOOLS[section.id] : undefined;
   if (!section || !tools || tools.length < 2) return null;
 
-  const activeTool =
-    tools.find((tool) => pathname === tool.to || (tool.to === '/palette' && pathname === '/')) ??
-    tools[0]!;
+  const activeTool = tools.find((tool) => pathname === tool.to) ?? tools[0]!;
 
   return (
     <DropdownMenu>
@@ -185,7 +183,7 @@ export function SectionToolMenu() {
       />
       <DropdownMenuContent align='start' className='min-w-44'>
         {tools.map((tool) => {
-          const isActive = pathname === tool.to || (tool.to === '/palette' && pathname === '/');
+          const isActive = pathname === tool.to;
           return (
             <DropdownMenuItem
               key={tool.to}
@@ -230,8 +228,6 @@ export function SectionTabs({ className }: { className?: string }) {
     </nav>
   );
 }
-
-/** Tool links for the active section; scrolls sideways when space is tight */
 export function SectionToolTabs({ className }: { className?: string }) {
   const { pathname, section: activeSection } = useActiveSection();
   const tools = activeSection ? SECTION_TOOLS[activeSection.id] : undefined;
@@ -245,7 +241,7 @@ export function SectionToolTabs({ className }: { className?: string }) {
       )}
       aria-label={`${activeSection?.label} tools`}>
       {tools.map((tool) => {
-        const isToolActive = pathname === tool.to || (tool.to === '/palette' && pathname === '/');
+        const isToolActive = pathname === tool.to;
         return (
           <Link
             key={tool.to}

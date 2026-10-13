@@ -5,7 +5,7 @@
  */
 
 import {
-  IconDotsVertical,
+  IconAdjustmentsHorizontal,
   IconDownload,
   IconHeart,
   IconKeyboard,
@@ -24,13 +24,13 @@ import { useChromaStore } from '@/hooks/use-chroma-store';
 import { cn } from '@/lib/utils';
 
 import { ThemeToggle } from '../common/theme-toggle';
-import { SearchButton, SectionTabs, SectionToolMenu } from '../layout/nav-desktop';
+import { SearchButton } from '../layout/nav-desktop';
 import { BrandLockup } from '../logo-icon';
 import { ExportModal, SaveModal, ShareModal, ShortcutsModal } from '../modals';
 import { Separator } from '../ui/separator';
 import { useCommandPalette } from '../views/command-palette';
-
 // ─── MainHeader ───────────────────────────────────────────────────────────────
+import { SectionNavigation } from './section-navigation';
 
 interface MainHeaderProps {
   className?: string;
@@ -50,8 +50,7 @@ export function MainHeader({ className }: MainHeaderProps) {
       <div className='relative'>
         <main className='flex h-16 items-center gap-3 border-b border-border/40 px-4'>
           <BrandLockup heading />
-          <SectionTabs className='min-w-0 flex-1 justify-center self-stretch' />
-          <SectionToolMenu />
+          <SectionNavigation className='min-w-0 flex-1 justify-center self-stretch' />
           <nav className='flex shrink-0 items-center gap-1'>
             <SearchButton onClick={() => openCommandPalette(true)} />
             <ThemeToggle />
@@ -61,10 +60,10 @@ export function MainHeader({ className }: MainHeaderProps) {
                   <Button
                     variant='ghost'
                     size='icon-lg'
-                    title='More actions'
-                    aria-label='More actions'
+                    title='Options'
+                    aria-label='Options'
                     className='text-muted-foreground'>
-                    <IconDotsVertical className='size-5' />
+                    <IconAdjustmentsHorizontal className='size-5' />
                   </Button>
                 }
               />
@@ -92,7 +91,11 @@ export function MainHeader({ className }: MainHeaderProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           </nav>
-          <Separator orientation='vertical' className='h-8 bg-muted-foreground/60' />
+          <Separator
+            orientation='vertical'
+            className='h-8 bg-muted-foreground/60'
+            style={{ alignSelf: 'center' }}
+          />
           <nav className='flex shrink-0 items-center gap-2'>
             <section className='flex items-center gap-2'>
               <Button
