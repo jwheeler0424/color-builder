@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { ColorValue } from '@/lib/engine/color';
 
 import HexInput from '@/components/common/hex-input';
+import { ToolEmptyState } from '@/components/global/tool-empty-state';
 import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -62,6 +63,39 @@ function themeForSlots(slots: { color: { hex: string; value?: ColorValue } }[]) 
   return deriveThemeTokens(palette, generateUtilityColors(palette));
 }
 
+test('tool empty state preserves wrapper classes, optional heading and guidance text', () => {
+  const message = 'Generate a palette first to see your theme.';
+  const view = render(
+    <ToolEmptyState
+      className='min-h-0 flex-1 overflow-auto'
+      title='Theme Generator'
+      message={message}
+    />,
+  );
+
+  expect(view.getByRole('heading', { name: 'Theme Generator' })).toBeInTheDocument();
+  expect(view.container.firstElementChild).toHaveClass('min-h-0', 'flex-1', 'overflow-auto');
+  expect(view.getByText(message)).toHaveClass('text-xs', 'text-muted-foreground');
+
+  view.rerender(
+    <ToolEmptyState
+      className='flex-1 px-4 py-4 3xl:px-6 3xl:py-5 4xl:px-7 4xl:py-6'
+      message='Generate a palette first.'
+    />,
+  );
+
+  expect(view.queryByRole('heading')).not.toBeInTheDocument();
+  expect(view.container.firstElementChild).toHaveClass(
+    'px-4',
+    'py-4',
+    '3xl:px-6',
+    '3xl:py-5',
+    '4xl:px-7',
+    '4xl:py-6',
+    'flex-1',
+  );
+});
+
 test('tool controls expose selected tabs and support arrow, Home and End navigation', () => {
   function Controls() {
     const [value, setValue] = useState<'gradient' | 'stops' | 'presets'>('gradient');
@@ -113,7 +147,7 @@ test('tool controls preserve compact button styling, selection and disabled sema
   fireEvent.click(view.getByRole('button', { name: 'OKLab' }));
   expect(change).toHaveBeenCalledWith('oklab');
   expect(view.getByRole('button', { name: 'Copy CSS' })).toBeDisabled();
-  expect(view.getByRole('button', { name: 'Copy CSS' }).className).toContain('text-[10px]');
+  expect(view.getByRole('button', { name: 'Copy CSS' }).className).toContain('text-2xs');
 });
 
 test('token hex input labels and swatches follow external mode and revert values', () => {

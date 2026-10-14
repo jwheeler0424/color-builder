@@ -11,154 +11,60 @@ src/
   index.html                                    // document shell and CSS/module entrypoint
   main.tsx                                      // React client bootstrap, initial theme, RouterProvider
   components/
-    .gitkeep                                    // keeps the folder tracked when temporarily empty
-    color-wheel.tsx                             // renders the interactive color wheel control
-    default-catch-boundary.tsx                  // shared fallback UI for route/render errors
-    elements/
-      index.ts                                  // barrel exports for element-level components
-      palette.panel.tsx                         // panel container for palette tools and actions
-    gradient-stop-bar.tsx                       // draggable gradient stop editor strip
-    hex-input.tsx                               // controlled input for HEX color values
-    layout/
-      header.tsx                                // app header with navigation/actions
-    modals/
-      color-picker.modal.tsx                    // modal wrapper for color picker interactions
-      export.modal.tsx                          // modal for exporting palettes/assets
-      index.ts                                  // barrel exports for modal components
-      save.modal.tsx                            // modal for saving palettes locally
-      share.modal.tsx                           // modal for share links or shareable output
-      shortcuts.modal.tsx                       // modal listing keyboard shortcuts
-    not-found.tsx                               // UI shown for unknown routes/pages
-    theme-toggle.tsx                            // toggle control for light/dark/system theme
-    ui/
-      accordion.tsx                             // collapsible stacked content sections
-      alert-dialog.tsx                          // confirm/destructive action dialog component
-      alert.tsx                                 // inline status/feedback alert component
-      aspect-ratio.tsx                          // enforces width-to-height ratios for content
-      avatar.tsx                                // user/avatar image with fallback rendering
-      badge.tsx                                 // compact status or label badge element
-      breadcrumb.tsx                            // hierarchical navigation breadcrumb trail
-      button-group.tsx                          // grouped button layout and behavior wrapper
-      button.tsx                                // base button component variants
-      calendar.tsx                              // calendar/date selection UI component
-      card.tsx                                  // card surface/container UI primitive
-      carousel.tsx                              // horizontally navigable carousel component
-      chart.tsx                                 // responsive TanStack Charts React host
-      checkbox.tsx                              // checkbox input component
-      collapsible.tsx                           // expandable/collapsible content primitive
-      command.tsx                               // command palette style input/list UI
-      context-menu.tsx                          // right-click context menu component
-      dialog.tsx                                // modal dialog primitive
-      drawer.tsx                                // slide-in panel/drawer component
-      dropdown-menu.tsx                         // triggerable dropdown menu component
-      empty.tsx                                 // empty-state presentation component
-      field.tsx                                 // standardized form field wrapper
-      hover-card.tsx                            // preview card shown on hover/focus
-      input-debounced.tsx                       // text input with debounced change events
-      input-group.tsx                           // grouped input and addon layout component
-      input-otp.tsx                             // segmented one-time-passcode input
-      input.tsx                                 // base text input component
-      item.tsx                                  // generic list/item row primitive
-      kbd.tsx                                   // keyboard keycap display component
-      label.tsx                                 // accessible form label component
-      menubar.tsx                               // desktop-style menubar navigation component
-      navigation-menu.tsx                       // structured navigation menu component
-      pagination.tsx                            // paginated navigation controls
-      popover.tsx                               // anchored floating content container
-      progress.tsx                              // progress indicator/bar component
-      radio-group.tsx                           // grouped radio input component
-      resizable.tsx                             // resizable panel primitives
-      router-dialog.tsx                         // route-aware dialog wrapper
-      router-sheet.tsx                          // route-aware sheet/drawer wrapper
-      scroll-area.tsx                           // styled/custom scrollable area component
-      select.tsx                                // select/dropdown form control
-      separator.tsx                             // visual divider/separator primitive
-      sheet.tsx                                 // side/bottom sheet component
-      sidebar.tsx                               // sidebar layout/navigation component
-      skeleton.tsx                              // skeleton loading placeholder component
-      slider.tsx                                // range slider input component
-      sonner.tsx                                // toast notification host/component
-      spinner.tsx                               // loading spinner indicator
-      switch.tsx                                // boolean toggle switch component
-      table.tsx                                 // table layout and utility primitives
-      tabs.tsx                                  // tabbed interface component
-      textarea-debounced.tsx                    // textarea with debounced updates
-      textarea.tsx                              // multiline text input component
-      toggle-group.tsx                          // grouped toggle button controls
-      toggle.tsx                                // single toggle button component
-      tooltip.tsx                               // hover/focus tooltip component
-    views/
-      accessibility-view.tsx                    // accessibility tools and WCAG-focused workflows
-      brand-compliance-view.tsx                 // brand rule checks for selected palettes
-      color-blind-view.tsx                      // color-vision deficiency simulation view
-      color-mixer.tsx                           // blend/mix colors with adjustable inputs
-      color-picker-view.tsx                     // main color picking and adjustment workspace
-      contrast-checker.tsx                      // contrast ratio checker between color pairs
-      converter-view.tsx                        // converts colors across supported formats
-      css-preview.tsx                           // previews generated CSS variables/styles
-      design-system-view.tsx                    // design-token/system oriented color view
-      gradient-view.tsx                         // gradient creation and editing workspace
-      image-extract-view.tsx                    // extracts palette colors from images
-      multi-scale-view.tsx                      // generates multiple related color scales
-      oklch-scatter-view.tsx                    // scatter visualization in OKLCH space
-      p3-gamut-view.tsx                         // Display-P3 gamut visualization/checking view
-      palette-comparison-view.tsx               // compares multiple palettes side by side
-      palette-scoring.tsx                       // scores palettes against quality heuristics
-      palette-view.tsx                          // primary palette organization and presentation view
-      saved-view.tsx                            // lists and manages saved palettes
-      theme-generator-view.tsx                  // generates UI themes from palette inputs
-      tint-scale-view.tsx                       // builds tints/shades scales from base colors
-      utility-colors-view.tsx                   // utility/state color set generation tools
-  docs/
-    PROJECT_STRUCTURE.md                        // living map of the src directory layout
-    ROADMAP.md                                  // planned features and implementation phases
-  hooks/
-    use-chroma-store.ts                         // shared application state hook for chroma data
-    use-theme.tsx                               // hook for reading/updating active theme
-  lib/
-    constants/
-      chroma.ts                                 // color-related constants used across the app
-      named-colors/
-        color-names.csv                         // tabular named-color source dataset
-        color-names.js                          // named-color data consumable in JS runtime
-        color-names.json                        // structured named-color lookup data
-        color-names.scss                        // SCSS variables/map for named colors
-    engine/
-      browser.ts                                // standalone browser-safe public engine API
-      index.ts                                  // full public engine API, including runtime/server modules
-      color.ts, parse.ts, formats.ts             // canonical color values, parsers and formatters
-      color-stop.ts, extract-image.ts            // stop serialization and browser image extraction
-      palette.ts, harmony.ts, compose.ts         // palette generation and harmony logic
-      theme.ts, theme-export.ts                 // utility colors, tokens and export formats
-      contrast.ts, simulate.ts, gradient.ts     // accessibility, vision simulation, and gradients
-      svg-export.ts                             // standalone labelled SVG generation
-      chart-data.ts                             // OKLCH chart points, chroma bound, score dimensions/levels
-      palette-share.ts                          // palette URL-hash encoding/decoding
-      cmyk-profile.ts                           // shared CMYK converter registry
-      colors/
-        color-names.ts                          // browser name lookup with batching and cache
-        color-names.server.ts                   // POST handler for /api/color-names
-        named-color-lookup.ts                   // Bun/SQLite nearest-name search
-    tools/
-      palette-charts.ts                         // chart rendering definitions (CSS-token styling) over engine chart data
-      .gitkeep                                  // keeps tools folder committed until populated
-    utils/
-      index.ts                                  // app-only utility barrel; no color-math exports
-      palette.utils.ts                          // localStorage persistence; URL helpers delegate to the engine
-      seo.ts                                    // SEO metadata helper utilities
-      tw.ts                                     // Tailwind-focused utility helpers
-  providers/
-    hotkey.provider.tsx                         // global keyboard shortcut provider
-    theme.provider.tsx                          // theme context/provider for the app
-  routes/
-    _chroma/
-      accessibility.tsx                         // route module for accessibility tools view
-      brand.tsx                                 // route module for brand compliance view
-      colorblind.tsx                            // route module for color-blind simulation view
-      comparison.tsx                            // route module for palette comparison view
-      contrast.tsx                              // route module for contrast checker view
-      converter.tsx                             // route module for converter view
-      designsystem.tsx                          // route module for design system view
+    auth/                                       // authentication screens
+    common/                                     // reusable color controls and domain-specific inputs
+      color-picker.panel.tsx
+      color-wheel.tsx
+      hex-input.tsx
+      sliders/
+    desktop/                                    // desktop shell, header, rails, and navigation
+    global/                                     // app-wide components; ui/ remains the low-level primitive layer
+      copy-value-row.tsx                        // copyable labeled value row shared across color pickers
+      panel-section.tsx                         // bordered panel section shared by side panels
+      section-label.tsx                         // shared compact uppercase section label
+      tool-empty-state.tsx                      // configurable empty content for palette-dependent tools
+      tool-section.tsx                           // shared section wrapper for tool controls
+    layout/                                     // responsive shells, navigation, palette tools, and slot controls
+      generate-controls.tsx
+      mobile-shell.tsx
+      palette-sheet.tsx
+      slot-card.tsx
+      tablet-shell.tsx
+    marketing/                                  // public pages and marketing-specific composition
+    modals/                                     // application dialogs and modal workflows
+    ui/                                         // customized shadcn/Base UI primitives; avoid bulk regeneration
+      button.tsx
+      card.tsx
+      dialog.tsx
+      input.tsx
+      navigation-menu.tsx
+    views/                                      // feature screens and their view-specific composition
+      accessibility.view.tsx
+      hooks/                                        // application hooks for state, viewport, hotkeys, and focus behavior
+      lib/
+        constants/                                  // chroma, color-name, and color database constants/data
+        engine/                                     // color math, palettes, accessibility, transforms, and exports
+          browser.ts                                // browser-safe public engine API
+          runtime/                                  // runtime-specific palette generation modules
+          colors/                                   // named-color lookup and database adapters
+          gamuts/, math/, spaces/                   // focused color-domain modules
+        theme.ts                                    // theme mode persistence and helpers
+        tools/palette-charts.ts                     // chart definitions for palette analysis views
+        utils/                                      // app utilities, Tailwind merge, SEO, and theme variants
+      providers/                                    // hotkey, shell, and theme providers
+      routes/
+        __root.tsx                                  // root route providers and metadata
+        _chroma.tsx                                 // studio shell route
+        _chroma/                                    // studio feature routes
+          analyze/                                  // accessibility, brand, scoring, visualization
+          build/                                    // extract, gradients, mixer, theme tools
+          export/                                   // design system, scale, theme, utility exports
+        _marketing.tsx                              // marketing shell route
+        _marketing/                                 // public product, support, legal, and documentation pages
+        api/palette.tsx                             // interactive palette API page
+        sign-in.tsx, sign-up.tsx                    // authentication routes
+        forgot-password.tsx, verify-email.tsx       // account recovery and verification routes
+      stores/chroma.store.ts                        // central palette and tool state
       extract.tsx                               // route module for image extract view
       gradient.tsx                              // route module for gradient editor view
       mixer.tsx                                 // route module for color mixer view
@@ -192,6 +98,6 @@ src/
 ```
 
 `routeTree.gen.ts` is generated by the TanStack Router CLI, not edited manually. The root route
-supplies application providers and metadata; document markup lives in `index.html`. Theme helpers in
-`lib/theme.ts` read and write the browser cookie, and `providers/theme.provider.tsx` applies
-light/dark/auto HTML classes.
+supplies application providers and metadata; document markup lives in `index.html`. The theme
+provider applies light/dark/auto mode classes, while `styles/globals.css` owns theme tokens,
+Tailwind utilities, custom animations, and shared visual recipes.

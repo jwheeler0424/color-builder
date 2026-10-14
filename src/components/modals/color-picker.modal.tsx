@@ -165,7 +165,7 @@ export default function ColorPickerModal({
             <DialogTitle className='truncate text-sm font-bold tracking-tight uppercase'>
               {title ?? 'Edit Color Swatch'}
             </DialogTitle>
-            <span className='truncate font-mono text-[10px] tracking-widest text-muted-foreground uppercase'>
+            <span className='truncate font-mono text-2xs tracking-widest text-muted-foreground uppercase'>
               {name}
             </span>
           </div>
@@ -181,7 +181,7 @@ export default function ColorPickerModal({
               <button
                 key={m.id}
                 onClick={() => setPickerMode(m.id as PickerMode)}
-                className={`flex-1 rounded-lg py-1.5 text-[9px] font-extrabold tracking-widest uppercase transition-all ${
+                className={`flex-1 rounded-lg py-1.5 text-2xs font-extrabold tracking-widest uppercase transition-all ${
                   pickerMode === m.id
                     ? 'bg-background text-foreground shadow-sm ring-1 ring-black/5'
                     : 'text-muted-foreground hover:text-foreground'
@@ -272,16 +272,16 @@ export default function ColorPickerModal({
                 </div>
                 {/* CSS output string for current mode */}
                 <div className='mt-1 flex items-center gap-1 rounded bg-muted px-1.5 py-1'>
-                  <span className='flex-1 overflow-hidden font-mono text-[9px] text-ellipsis whitespace-nowrap text-muted-foreground'>
+                  <span className='flex-1 overflow-hidden font-mono text-2xs text-ellipsis whitespace-nowrap text-muted-foreground'>
                     {cssOut}
                   </span>
                   <button
                     onClick={copyCss}
+                    className='text-2xs'
                     style={{
                       background: 'none',
                       border: 'none',
                       cursor: 'pointer',
-                      fontSize: 9,
                       color: copied ? '#4ade80' : 'var(--color-muted-foreground)',
                       padding: '0 2px',
                       flexShrink: 0,
@@ -306,7 +306,7 @@ export default function ColorPickerModal({
           </div>
 
           <div>
-            <div className='mb-3 px-1 text-[9px] font-bold tracking-widest text-muted-foreground uppercase'>
+            <div className='mb-3 px-1 text-2xs font-bold tracking-widest text-muted-foreground uppercase'>
               Hue Suggestions
             </div>
             <div className='flex justify-between px-0.5'>
@@ -334,14 +334,14 @@ export default function ColorPickerModal({
             variant='ghost'
             size='sm'
             onClick={onClose}
-            className='h-9 text-[11px] font-bold tracking-wider uppercase'>
+            className='h-9 text-xs font-bold tracking-wider uppercase'>
             Cancel
           </Button>
           <Button
             variant='default'
             size='sm'
             onClick={() => onApply(hex)}
-            className='h-9 px-8 text-[11px] font-bold tracking-wider uppercase shadow-lg shadow-primary/20'>
+            className='h-9 px-8 text-xs font-bold tracking-wider uppercase shadow-lg shadow-primary/20'>
             Apply Changes
           </Button>
         </DialogFooter>

@@ -14,6 +14,7 @@ import {
 import { useNavigate } from '@tanstack/react-router';
 import { useState, useMemo } from 'react';
 
+import { ToolEmptyState } from '@/components/global/tool-empty-state';
 import ColorPickerModal from '@/components/modals/color-picker.modal';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
@@ -149,7 +150,7 @@ function SingleColorTab() {
     <>
       <div className='@container flex min-h-0 flex-1 flex-col overflow-auto @4xl:overflow-hidden'>
         <div className='grid min-w-0 grid-cols-1 @4xl:min-h-0 @4xl:flex-1 @4xl:grid-cols-[minmax(0,1fr)_18rem]'>
-          <section className='tool-panel-space tool-panel-stack @container/shades flex min-h-0 min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:border-r @4xl:border-border'>
+          <section className='@container/shades flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space @4xl:border-r @4xl:border-border'>
             <div className='flex shrink-0 flex-wrap items-center justify-between gap-3'>
               <div className='flex min-w-0 items-center gap-3'>
                 <button
@@ -220,10 +221,10 @@ function SingleColorTab() {
                   <span
                     className={`flex min-h-24 w-full flex-1 items-start justify-between rounded-md border border-foreground/10 p-2 transition-shadow group-focus-visible:ring-2 group-focus-visible:ring-ring ${selectedStep === step ? 'ring-1 ring-foreground/30' : ''}`}
                     style={{ background: color.hex, color: textColor(color.xyz) }}>
-                    <span className='font-mono text-[11px] font-bold'>{step}</span>
+                    <span className='font-mono text-xs font-bold'>{step}</span>
                     {copiedHex === color.hex && <Check className='size-3 shrink-0' />}
                   </span>
-                  <span className='font-mono text-[10px] leading-none text-muted-foreground'>
+                  <span className='font-mono text-2xs leading-none text-muted-foreground'>
                     {color.hex.toUpperCase()}
                   </span>
                 </button>
@@ -256,7 +257,7 @@ function SingleColorTab() {
               </div>
             </div>
           </section>
-          <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-t border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:border-t-0'>
+          <aside className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @4xl:border-t-0'>
             <div className='flex shrink-0 items-center justify-between gap-2'>
               <span className={TYPE.label}>Export scale</span>
               <Button
@@ -296,7 +297,7 @@ function SingleColorTab() {
               label='Scale export format'
               items={TOKEN_TABS.map((tab) => ({ id: tab, label: tab.toUpperCase() }))}
             />
-            <pre className='max-h-80 min-h-40 min-w-0 overflow-auto rounded-md border border-border bg-secondary p-3 font-mono text-[10px] leading-relaxed whitespace-pre text-muted-foreground @4xl:max-h-none @4xl:min-h-0 @4xl:flex-1'>
+            <pre className='max-h-80 min-h-40 min-w-0 overflow-auto rounded-md border border-border bg-secondary p-3 font-mono text-2xs leading-relaxed whitespace-pre text-muted-foreground @4xl:max-h-none @4xl:min-h-0 @4xl:flex-1'>
               {tokens}
             </pre>
             <Button variant='outline' size='sm' className='w-full shrink-0' onClick={useAsSeeds}>
@@ -444,16 +445,14 @@ function FullPaletteTab() {
 
   if (!slots.length) {
     return (
-      <div className='tool-panel-space flex-1 px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
-        <p className='text-[12px] text-muted-foreground'>Generate a palette first.</p>
-      </div>
+      <ToolEmptyState className='flex-1 tool-panel-space' message='Generate a palette first.' />
     );
   }
 
   return (
     <div className='@container flex min-h-0 flex-1 flex-col overflow-auto @4xl:overflow-hidden'>
       <div className='grid grid-cols-1 @4xl:min-h-0 @4xl:flex-1 @4xl:grid-cols-[minmax(0,1fr)_18rem]'>
-        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:border-r @4xl:border-border'>
+        <section className='flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space @4xl:border-r @4xl:border-border'>
           <div className='flex shrink-0 items-center justify-between gap-3'>
             <span className={TYPE.label}>Palette scales</span>
             <span className={TYPE.mono}>
@@ -486,7 +485,7 @@ function FullPaletteTab() {
                           <th
                             key={step}
                             scope='col'
-                            className='border-b border-border px-1 py-2.5 text-center font-mono text-[10px] font-semibold text-muted-foreground'>
+                            className='border-b border-border px-1 py-2.5 text-center font-mono text-2xs font-semibold text-muted-foreground'>
                             {step}
                           </th>
                         ))}
@@ -510,11 +509,11 @@ function FullPaletteTab() {
                                 />
                                 <div className='flex min-w-0 flex-col gap-1'>
                                   <span
-                                    className='truncate text-[11px] leading-tight font-semibold'
+                                    className='truncate text-xs leading-tight font-semibold'
                                     title={scale.label}>
                                     {scale.label}
                                   </span>
-                                  <span className='font-mono text-[9px] leading-none text-muted-foreground'>
+                                  <span className='font-mono text-2xs leading-none text-muted-foreground'>
                                     {scale.hex.toUpperCase()}
                                   </span>
                                 </div>
@@ -574,7 +573,7 @@ function FullPaletteTab() {
             </div>
           )}
         </section>
-        <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-t border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:border-t-0'>
+        <aside className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @4xl:border-t-0'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
             <span className={TYPE.label}>Export all scales</span>
             <Button
@@ -603,7 +602,7 @@ function FullPaletteTab() {
               { id: 'json', label: 'JSON' },
             ]}
           />
-          <pre className='max-h-80 min-h-40 min-w-0 overflow-auto rounded-md border border-border bg-secondary p-3 font-mono text-[10px] leading-relaxed whitespace-pre text-muted-foreground @4xl:max-h-none @4xl:min-h-0 @4xl:flex-1'>
+          <pre className='max-h-80 min-h-40 min-w-0 overflow-auto rounded-md border border-border bg-secondary p-3 font-mono text-2xs leading-relaxed whitespace-pre text-muted-foreground @4xl:max-h-none @4xl:min-h-0 @4xl:flex-1'>
             {tokens}
           </pre>
           <div className={`shrink-0 border-t border-border pt-3 ${TYPE.mono}`}>

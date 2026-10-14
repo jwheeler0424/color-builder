@@ -79,62 +79,65 @@ describe('marketing pricing', () => {
     const pages: {
       path: Parameters<typeof renderMarketingPage>[0];
       page: ReactNode;
-      className: string;
+      className?: string;
       structure: string;
     }[] = [
       {
         path: '/overview',
         page: <MarketingOverviewPage />,
-        className: 'marketing-page-overview',
         structure: '.overview-masthead',
       },
       {
         path: '/features',
         page: <FeaturesPage />,
         className: 'marketing-page-features',
-        structure: '.features-masthead',
+        structure: '[data-features-masthead]',
       },
       {
         path: '/pricing',
         page: <PricingPage />,
-        className: 'marketing-page-pricing',
-        structure: '.pricing-masthead',
+        structure: '[data-pricing-masthead]',
       },
       {
         path: '/api',
         page: <DeveloperApiPage />,
-        className: 'marketing-page-api',
-        structure: '.api-masthead',
+        structure: '[data-api-masthead]',
       },
       {
         path: '/support',
         page: <ProductSupportPage />,
         className: 'marketing-page-support',
-        structure: '.support-filter-panel',
+        structure: '[data-support-filter-panel]',
       },
       {
         path: '/documentation',
         page: <DocumentationPage />,
         className: 'marketing-page-documentation',
-        structure: '.documentation-masthead',
+        structure: '[data-documentation-masthead]',
       },
       {
         path: '/privacy',
         page: <PrivacyPolicyPage />,
         className: 'marketing-page-legal',
-        structure: '.legal-page-heading + .legal-page-layout',
+        structure: '[data-legal-heading] + [data-legal-layout]',
       },
       {
         path: '/terms',
         page: <TermsOfUsePage />,
         className: 'marketing-page-legal',
-        structure: '.legal-page-heading + .legal-page-layout',
+        structure: '[data-legal-heading] + [data-legal-layout]',
       },
     ];
 
     for (const page of pages) {
       const rendered = renderMarketingPage(page.path, page.page);
-      expect(await screen.findByRole('main')).toHaveClass('marketing-page-wide', page.className);
+      const main = await screen.findByRole('main');
+      expect(main).toHaveClass(
+        'min-w-0',
+        'flex-[1_0_auto]',
+        '[--page-gutter:clamp(24px,3vw,72px)]',
+      );
+      if (page.className) expect(main).toHaveClass(page.className);
       if (rendered.container.querySelector(page.structure) === null) {
         throw new Error(`Missing ${page.structure} on ${page.path}`);
       }
@@ -330,10 +333,12 @@ describe('marketing pricing', () => {
     await screen.findByRole('heading', { name: 'Color that holds up, all the way to code.' });
     expect(screen.getByRole('link', { name: /See plans/ })).toHaveAttribute('href', '/pricing');
     expect(screen.getByRole('link', { name: /Open the studio/ })).toHaveAttribute('href', '/');
-    const workflowSteps = Array.from(document.querySelectorAll<HTMLElement>('.workflow-step'));
+    const workflowSteps = Array.from(
+      document.querySelectorAll<HTMLAnchorElement>('a[data-section]'),
+    );
     expect(workflowSteps).toHaveLength(4);
     expect(
-      workflowSteps.map((step) => step.querySelector('.workflow-number')?.textContent),
+      workflowSteps.map((step) => step.querySelector('[data-workflow-number]')?.textContent),
     ).toEqual(['01', '02', '03', '04']);
     expect(workflowSteps.map((step) => step.getAttribute('href'))).toEqual([
       '/',
@@ -615,24 +620,27 @@ describe('marketing pricing', () => {
 
     expect(cards).toHaveLength(3);
     for (const card of cards) {
-      expect(Array.from(card.children, (element) => element.className)).toEqual([
-        'plan-label-row',
-        'plan-description',
-        'plan-price-row',
-        'plan-billing-note',
-        'plan-divider',
-        'plan-includes',
-        'plan-features',
-        'plan-actions',
-      ]);
-      expect(card.querySelector('.plan-actions .plan-cta')).toBeInTheDocument();
-      expect(card.querySelector('.plan-actions .plan-cta')).toHaveAttribute('data-slot', 'button');
+      expect(Array.from(card.children, (element) => element.getAttribute('data-plan-row'))).toEqual(
+        [
+          'label',
+          'description',
+          'price',
+          'billing-note',
+          'divider',
+          'includes',
+          'features',
+          'actions',
+        ],
+      );
+      const action = card.querySelector('[data-plan-row="actions"] [data-slot="button"]');
+      expect(action).toBeInTheDocument();
+      expect(action).toHaveAttribute('data-slot', 'button');
     }
     expect(
-      screen.getByRole('group', { name: 'Team seat count' }).closest('.plan-actions'),
+      screen.getByRole('group', { name: 'Team seat count' }).closest('[data-plan-row="actions"]'),
     ).toBeInTheDocument();
     const featuredPlan = screen.getByText('Featured plan');
-    expect(featuredPlan.closest('article')).toHaveClass('is-featured');
+    expect(featuredPlan.closest('article')).toHaveAttribute('data-featured', 'true');
     expect(featuredPlan.closest('article')).toBe(
       screen.getByRole('heading', { name: 'Pro' }).closest('article'),
     );
@@ -662,7 +670,9 @@ describe('marketing pricing', () => {
 
     await screen.findByRole('heading', { name: 'Room to explore. Power to ship.' });
     fireEvent.click(screen.getByRole('button', { name: 'Add a seat' }));
-    expect(screen.getByText('3', { selector: '.seat-stepper span' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('group', { name: 'Team seat count' }).querySelector('[aria-live="polite"]'),
+    ).toHaveTextContent('3');
     expect(screen.getByText('$60 billed per month')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Choose Team' }));

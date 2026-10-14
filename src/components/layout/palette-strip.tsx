@@ -25,12 +25,11 @@ import {
 } from '@dnd-kit/core';
 import {
   SortableContext,
-  horizontalListSortingStrategy,
+  rectSortingStrategy,
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { IconPlus as PlusIcon } from '@tabler/icons-react';
-import { Fragment, useState, useCallback, useLayoutEffect, useMemo, useId, useRef } from 'react';
+import { Fragment, useState, useCallback, useMemo, useId, type CSSProperties } from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
@@ -42,11 +41,9 @@ import { MAX_SLOTS } from '@/lib/constants/chroma';
 import { cn } from '@/lib/utils';
 
 import { Button } from '../ui/button';
+import { paletteAddIconClassName, paletteAddWideButtonClassName } from './palette-add-button';
 import { SlotButton } from './slot-button';
 import { SlotCard } from './slot-card';
-
-// Narrower columns can no longer hold the buttons and rotated info, so swatches become rows
-const MIN_COLUMN_WIDTH = 72;
 
 interface PaletteStripProps {
   /** Called when a slot's edit button is pressed or double-clicked */
@@ -58,22 +55,10 @@ interface PaletteStripProps {
 export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
   const { slots, reorderSlots, insertSlot } = useChromaStore();
   const tallRows = useStackedPalette();
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
 
-  useLayoutEffect(() => {
-    const el = wrapRef.current;
-    if (!el || tallRows) return;
-    setWidth(el.getBoundingClientRect().width);
-    const observer = new ResizeObserver(([entry]) => setWidth(entry!.contentRect.width));
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [tallRows]);
-
-  const crowded = !tallRows && width > 0 && width / slots.length < MIN_COLUMN_WIDTH;
-  const layout: StripLayout = tallRows || crowded ? 'rows' : 'columns';
-  const stacked = layout === 'rows';
+  const layout: StripLayout = tallRows ? 'rows' : 'columns';
+  const stacked = tallRows;
   // Stable ID so SSR/client aria-describedby always matches
   const dndId = useId();
 
@@ -108,15 +93,8 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
   return (
     <StripLayoutContext.Provider value={layout}>
       <div
-        ref={wrapRef}
-        className={cn(
-          tallRows
-            ? 'contents'
-            : crowded
-              ? 'flex h-full w-full flex-col overflow-y-auto'
-              : 'flex h-full w-full',
-          className,
-        )}>
+        className={cn(tallRows ? 'contents' : '@container/palette-strip h-full w-full')}
+        style={tallRows ? undefined : ({ '--palette-slot-count': slots.length } as CSSProperties)}>
         <DndContext
           id={dndId}
           sensors={sensors}
@@ -124,37 +102,56 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           onDragCancel={handleDragCancel}>
-          <SortableContext
-            items={slotIds}
-            strategy={stacked ? verticalListSortingStrategy : horizontalListSortingStrategy}>
-            {slots.map((slot, i) => (
-              <Fragment key={slot.id}>
-                <SlotCard key={slot.id} slot={slot} index={i} onEdit={onEditSlot} />
-                {!stacked && slots.length < MAX_SLOTS && i < slots.length - 1 && (
-                  <SlotButton key={`button-after-${slot.id}`} index={i} />
-                )}
-              </Fragment>
-            ))}
-            {stacked && slots.length < MAX_SLOTS && (
-              <div className='mt-3 w-full shrink-0 px-3'>
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='lg'
-                  aria-label='Add a color'
-                  onClick={() => insertSlot(slots.length)}
+          <div
+            className={cn(
+              'palette-strip-items @container/palette-strip-layout flex h-full w-full min-w-0',
+              tallRows && 'flex-col overflow-y-auto',
+              className,
+            )}>
+            <SortableContext items={slotIds} strategy={rectSortingStrategy}>
+              {slots.map((slot, i) => (
+                <Fragment key={slot.id}>
+                  <SlotCard key={slot.id} slot={slot} index={i} onEdit={onEditSlot} />
+                  {!stacked && slots.length < MAX_SLOTS && i < slots.length - 1 && (
+                    <SlotButton
+                      key={`button-after-${slot.id}`}
+                      index={i}
+                      className='tablet-portrait:hidden palette-strip-crowded:hidden'
+                    />
+                  )}
+                </Fragment>
+              ))}
+              {slots.length < MAX_SLOTS && (
+                <div
                   className={cn(
-                    'palette-add-button palette-add-button--wide h-14 w-full justify-center gap-2.5 border-dashed border-border bg-card px-4 text-sm font-semibold text-foreground',
+                    'palette-strip-add mt-3 w-full shrink-0 px-3',
+                    stacked
+                      ? 'flex'
+                      : 'hidden shell-mobile:flex tablet-portrait:flex palette-strip-crowded:flex',
                   )}>
-                  <span className='grid size-7 place-items-center rounded-full bg-primary text-primary-foreground palette-add-icon'>
-                    <PlusIcon className='size-4' aria-hidden='true' />
-                  </span>
-                  <span className='relative z-10'>Add a color</span>
-                </Button>
-              </div>
-            )}
-          </SortableContext>
-
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='lg'
+                    aria-label='Add a color'
+                    onClick={() => insertSlot(slots.length)}
+                    className={cn(
+                      paletteAddWideButtonClassName,
+                      'h-14 w-full justify-center gap-2.5 border-dashed border-border bg-card px-4 text-sm font-semibold text-foreground',
+                    )}>
+                    <span
+                      className={cn(
+                        'grid size-7 place-items-center rounded-full bg-primary text-primary-foreground',
+                        paletteAddIconClassName,
+                      )}>
+                      <PlusIcon className='size-4' aria-hidden='true' />
+                    </span>
+                    <span className='relative z-10'>Add a color</span>
+                  </Button>
+                </div>
+              )}
+            </SortableContext>
+          </div>
           <DragOverlay
             dropAnimation={{
               duration: 180,

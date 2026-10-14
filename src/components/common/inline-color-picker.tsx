@@ -187,7 +187,7 @@ export function InlineColorPicker({
               }}
             />
           </div>
-          <span className='text-[12px] font-bold text-foreground'>{title}</span>
+          <span className='text-xs font-bold text-foreground'>{title}</span>
         </div>
       )}
 
@@ -202,7 +202,7 @@ export function InlineColorPicker({
           <button
             key={m.id}
             onClick={() => setPickerMode(m.id as PickerMode)}
-            className={`flex-1 rounded-lg py-1.5 text-[9px] font-extrabold tracking-widest uppercase transition-all ${
+            className={`flex-1 rounded-lg py-1.5 text-2xs font-extrabold tracking-widest uppercase transition-all ${
               pickerMode === m.id
                 ? 'bg-background text-foreground shadow-sm ring-1 ring-black/5'
                 : 'text-muted-foreground hover:text-foreground'
@@ -294,16 +294,16 @@ export function InlineColorPicker({
             </div>
             {/* CSS output string for current mode */}
             <div className='mt-1 flex items-center gap-1 rounded bg-muted px-1.5 py-1'>
-              <span className='flex-1 overflow-hidden font-mono text-[9px] overflow-ellipsis whitespace-nowrap text-muted-foreground'>
+              <span className='flex-1 overflow-hidden font-mono text-2xs overflow-ellipsis whitespace-nowrap text-muted-foreground'>
                 {cssOut}
               </span>
               <button
                 onClick={copyCss}
+                className='text-2xs'
                 style={{
                   background: 'none',
                   border: 'none',
                   cursor: 'pointer',
-                  fontSize: 9,
                   color: copied ? '#4ade80' : 'var(--color-muted-foreground)',
                   padding: '0 2px',
                   flexShrink: 0,
@@ -329,7 +329,7 @@ export function InlineColorPicker({
 
       {/* Hue suggestions */}
       <div>
-        <div className='mb-3 px-1 text-[9px] font-bold tracking-widest text-muted-foreground uppercase'>
+        <div className='mb-3 px-1 text-2xs font-bold tracking-widest text-muted-foreground uppercase'>
           Hue Suggestions
         </div>
         <div className='flex justify-between px-0.5'>
@@ -354,7 +354,7 @@ export function InlineColorPicker({
       {/* Footer actions */}
       <div className='flex items-center justify-end gap-1.5 border-t border-border pt-1'>
         {changed && (
-          <span className='flex-1 text-[10px] text-muted-foreground'>
+          <span className='flex-1 text-2xs text-muted-foreground'>
             {initialHex.toUpperCase()} → {hex.toUpperCase()}
           </span>
         )}

@@ -8,6 +8,7 @@ import {
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 
+import { ToolEmptyState } from '@/components/global/tool-empty-state';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
   buildFigmaTokens,
@@ -135,14 +136,11 @@ export default function ThemeGeneratorView() {
 
   if (!slots.length) {
     return (
-      <div className='tool-panel-space min-h-0 flex-1 overflow-auto px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
-        <div className='mb-5'>
-          <h2>Theme Generator</h2>
-        </div>
-        <p className='text-[12px] text-muted-foreground'>
-          Generate a palette first to see your theme.
-        </p>
-      </div>
+      <ToolEmptyState
+        className='min-h-0 flex-1 overflow-auto tool-panel-space'
+        title='Theme Generator'
+        message='Generate a palette first to see your theme.'
+      />
     );
   }
   const visibleModes: PreviewMode[] = previewMode === 'split' ? ['light', 'dark'] : [previewMode];
@@ -162,7 +160,7 @@ export default function ThemeGeneratorView() {
         title='Theme Generator'
         description='Palette-derived surfaces, semantic colors and light/dark theme exports.'
       />
-      <div className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
+      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border tool-panel-space'>
         <div className='flex min-w-0 flex-wrap items-center gap-3'>
           <div className='flex flex-col gap-1'>
             <span className={TYPE.label}>Source palette</span>
@@ -205,7 +203,7 @@ export default function ThemeGeneratorView() {
         </div>
       </div>
       <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto @4xl/theme:grid-cols-[minmax(0,1fr)_22rem] @4xl/theme:grid-rows-[minmax(0,1fr)] @4xl/theme:overflow-hidden @7xl/theme:grid-cols-[minmax(0,1fr)_32rem]'>
-        <section className='tool-panel-space tool-panel-stack @container/stage flex min-h-0 min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl/theme:overflow-auto @4xl/theme:border-r @4xl/theme:border-border'>
+        <section className='@container/stage flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space @4xl/theme:overflow-auto @4xl/theme:border-r @4xl/theme:border-border'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-3'>
             <span className={TYPE.label}>Live preview</span>
             <ToolSegments
@@ -254,7 +252,7 @@ export default function ThemeGeneratorView() {
             ))}
           </div>
         </section>
-        <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-t border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl/theme:border-t-0'>
+        <aside className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @4xl/theme:border-t-0'>
           <div className='flex shrink-0 items-center justify-between gap-2'>
             <span className={TYPE.label}>Theme inspector</span>
             <span className={TYPE.mono}>
@@ -310,7 +308,7 @@ export default function ThemeGeneratorView() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder='Find a token'
-                className='w-full min-w-0 bg-transparent text-[11px] outline-none'
+                className='w-full min-w-0 bg-transparent text-xs outline-none'
               />
             </label>
           )}
@@ -318,7 +316,7 @@ export default function ThemeGeneratorView() {
             key={inspector}
             className='max-h-120 min-w-0 overflow-auto @4xl/theme:max-h-none @4xl/theme:min-h-0 @4xl/theme:flex-1'>
             {inspector === 'export' && (
-              <pre className='min-h-full rounded-md border border-border bg-secondary p-3 font-mono text-[10px] leading-relaxed whitespace-pre text-muted-foreground'>
+              <pre className='min-h-full rounded-md border border-border bg-secondary p-3 font-mono text-2xs leading-relaxed whitespace-pre text-muted-foreground'>
                 {content}
               </pre>
             )}
@@ -333,7 +331,7 @@ export default function ThemeGeneratorView() {
                         key={token.name}
                         className={`flex flex-col gap-2 border-b border-border pb-3 ${tokenOverrides[token.name] ? 'bg-accent/30' : ''}`}>
                         <div className='flex min-w-0 items-center justify-between gap-2'>
-                          <code className='truncate font-mono text-[10px]' title={token.name}>
+                          <code className='truncate font-mono text-2xs' title={token.name}>
                             {token.name}
                           </code>
                           {tokenOverrides[token.name] && (
@@ -350,7 +348,7 @@ export default function ThemeGeneratorView() {
                         <div className='grid grid-cols-2 gap-3'>
                           {(['light', 'dark'] as const).map((mode) => (
                             <div key={mode} className='flex min-w-0 flex-col gap-1'>
-                              <span className='text-[9px] text-muted-foreground'>
+                              <span className='text-2xs text-muted-foreground'>
                                 {mode === 'light' ? 'Light' : 'Dark'}
                               </span>
                               <HexInput

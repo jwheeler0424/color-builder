@@ -22,11 +22,13 @@ interface GenerateControlsAccordionProps {
   onEditSeed?: (index: number) => void;
   /** Add a Generate button at the bottom */
   showFooter?: boolean;
+  footerClassName?: string;
 }
 
 export function GenerateControlsAccordion({
   onEditSeed,
   showFooter = true,
+  footerClassName,
 }: GenerateControlsAccordionProps) {
   const {
     slots,
@@ -106,7 +108,7 @@ export function GenerateControlsAccordion({
                   <div key={j} className='flex-1' style={{ background: h }} />
                 ))}
               </div>
-              <div className='bg-secondary px-2 py-1.5 text-[11px] font-semibold text-secondary-foreground'>
+              <div className='bg-secondary px-2 py-1.5 text-xs font-semibold text-secondary-foreground'>
                 {t.name}
               </div>
             </button>
@@ -133,7 +135,7 @@ export function GenerateControlsAccordion({
               <button
                 type='button'
                 aria-label={`Edit seed ${s.hex.toUpperCase()}`}
-                className='flex-1 cursor-pointer border-0 bg-transparent p-0 text-left font-mono text-[11px] tracking-wider text-muted-foreground uppercase transition-colors hover:text-foreground'
+                className='flex-1 cursor-pointer border-0 bg-transparent p-0 text-left font-mono text-xs tracking-wider text-muted-foreground uppercase transition-colors hover:text-foreground'
                 onClick={() => onEditSeed?.(i)}>
                 {s.hex.toUpperCase()}
               </button>
@@ -151,7 +153,7 @@ export function GenerateControlsAccordion({
         <div className='flex gap-2'>
           <input
             className={cn(
-              'h-11 flex-1 rounded-md border bg-muted px-3 py-2.5 font-mono text-[12px] text-foreground',
+              'h-11 flex-1 rounded-md border bg-muted px-3 py-2.5 font-mono text-xs text-foreground',
               'transition-colors outline-none placeholder:text-muted-foreground focus:border-ring',
               seedErr ? 'border-destructive' : 'border-border',
             )}
@@ -165,7 +167,7 @@ export function GenerateControlsAccordion({
           />
           <button
             onClick={handleAddSeed}
-            className='h-11 cursor-pointer rounded-md border border-border bg-secondary px-4 text-[12px] font-bold text-secondary-foreground transition-colors hover:border-input active:opacity-70'>
+            className='h-11 cursor-pointer rounded-md border border-border bg-secondary px-4 text-xs font-bold text-secondary-foreground transition-colors hover:border-input active:opacity-70'>
             + Add
           </button>
         </div>
@@ -184,7 +186,7 @@ export function GenerateControlsAccordion({
               key={id}
               onClick={() => setSeedMode(id)}
               className={cn(
-                'h-11 flex-1 cursor-pointer rounded-md border text-[12px] font-bold transition-colors',
+                'h-11 flex-1 cursor-pointer rounded-md border text-xs font-bold transition-colors',
                 seedMode === id
                   ? 'border-primary bg-primary text-primary-foreground'
                   : 'border-border bg-secondary text-muted-foreground hover:border-input hover:text-foreground',
@@ -193,7 +195,7 @@ export function GenerateControlsAccordion({
             </button>
           ))}
         </div>
-        <p className='mt-2 text-[10px] leading-relaxed text-muted-foreground'>
+        <p className='mt-2 text-2xs leading-relaxed text-muted-foreground'>
           {seedMode === 'pin'
             ? 'Seed colors appear as locked slots in the palette.'
             : 'Seed hue guides generation but the exact color may shift.'}
@@ -223,7 +225,7 @@ export function GenerateControlsAccordion({
 
       {/* ── Harmony ── */}
       <AccordionSection id='harmony' title='Harmony'>
-        <p className='mb-2 min-h-[2em] text-[11px] leading-relaxed text-muted-foreground'>
+        <p className='mb-2 min-h-[2em] text-xs leading-relaxed text-muted-foreground'>
           {HARMONIES.find((h) => h.id === mode)?.desc ?? ''}
         </p>
         <div className='grid grid-cols-2 gap-1.5'>
@@ -235,7 +237,7 @@ export function GenerateControlsAccordion({
                 generate();
               }}
               className={cn(
-                'h-11 cursor-pointer rounded-md border px-2 text-left font-mono text-[11px] transition-colors active:opacity-70',
+                'h-11 cursor-pointer rounded-md border px-2 text-left font-mono text-xs transition-colors active:opacity-70',
                 mode === h.id
                   ? 'border-primary bg-primary font-bold text-primary-foreground'
                   : 'border-border bg-secondary text-muted-foreground hover:border-input hover:text-foreground',
@@ -249,7 +251,7 @@ export function GenerateControlsAccordion({
       {/* Palette preview */}
       {slots.length > 0 && (
         <div className='border-b border-border px-4 py-3 last:border-b-0'>
-          <p className='mb-2 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+          <p className='mb-2 text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
             Preview
           </p>
           <div className='flex h-5 gap-0.5 overflow-hidden rounded'>
@@ -262,7 +264,7 @@ export function GenerateControlsAccordion({
 
       {/* Footer */}
       {showFooter && (
-        <div className='px-4 py-3'>
+        <div className={cn('px-4 py-3', footerClassName)}>
           <button
             className='h-12 w-full cursor-pointer rounded-md border-0 bg-primary text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 active:opacity-75'
             onClick={() => generate()}>

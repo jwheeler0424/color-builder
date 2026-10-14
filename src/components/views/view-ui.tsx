@@ -10,22 +10,22 @@ import { cn } from '@/lib/utils';
 export const CARD = 'rounded-md border border-muted bg-card';
 
 export const SECTION_LABEL =
-  'font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase';
+  'font-display text-2xs font-semibold tracking-widest text-muted-foreground uppercase';
 
 // The only type styles tool pages should use, largest to smallest
 export const TYPE = {
   hero: 'font-display text-5xl leading-none font-extrabold tabular-nums',
   metric: 'font-display text-2xl leading-none font-extrabold tabular-nums',
   stat: 'font-display text-lg leading-none font-extrabold tabular-nums',
-  title: 'text-[13px] leading-snug font-semibold text-foreground',
+  title: 'text-sm leading-snug font-semibold text-foreground',
   body: 'text-xs leading-relaxed text-foreground/80',
-  meta: 'text-[11px] leading-snug text-muted-foreground',
-  mono: 'font-mono text-[11px] leading-snug text-muted-foreground',
+  meta: 'text-xs leading-snug text-muted-foreground',
+  mono: 'font-mono text-xs leading-snug text-muted-foreground',
   label: SECTION_LABEL,
 };
 
 export function ToolButton({ className, ...props }: ComponentProps<typeof Button>) {
-  return <Button {...props} className={cn('font-mono text-[10px] font-semibold', className)} />;
+  return <Button {...props} className={cn('font-mono text-2xs font-semibold', className)} />;
 }
 
 type ToolOption<Value extends string> = { id: Value; label: string; title?: string };
@@ -48,7 +48,7 @@ export function ToolTabs<Value extends string>({
       <div
         role='tablist'
         aria-label={label}
-        className='flex min-w-max border-b border-border pl-4 3xl:pl-6 min-[160rem]:pl-7'>
+        className='flex min-w-max border-b border-border pl-4 3xl:pl-6 4xl:pl-7'>
         {items.map((item, index) => (
           <button
             key={item.id}
@@ -72,7 +72,7 @@ export function ToolTabs<Value extends string>({
                 [nextIndex]?.focus();
             }}
             className={cn(
-              'cursor-pointer border-r border-border px-4 py-2.5 text-[10px] font-bold tracking-[.08em] uppercase transition-colors outline-none last:border-r-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
+              'cursor-pointer border-r border-border px-4 py-2.5 text-2xs font-bold tracking-[.08em] uppercase transition-colors outline-none last:border-r-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
               stretch && 'flex-1 px-2.5',
               value === item.id
                 ? '-mb-px border-b-2 border-b-primary bg-accent/30 text-foreground'
@@ -125,7 +125,7 @@ export function ToolSegments<Value extends string>({
 
 export function ViewHeader({ title, description }: { title: string; description: string }) {
   return (
-    <div className='tool-page-header shrink-0 px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
+    <div className='shrink-0 tool-panel-space'>
       <h2 className='font-display text-xl font-bold'>{title}</h2>
       <p className={`mt-0.5 ${TYPE.meta}`}>{description}</p>
     </div>

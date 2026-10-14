@@ -1,13 +1,14 @@
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
+
+import {
+  MarketingFaq,
+  MarketingFaqContent,
+  MarketingFaqItem,
+  MarketingFaqTrigger,
+} from './marketing-primitives';
 
 type LegalSection = {
   id: string;
@@ -232,16 +233,22 @@ function LegalPage({ kind }: { kind: 'privacy' | 'terms' }) {
   const sections = privacy ? PRIVACY_SECTIONS : TERMS_SECTIONS;
   const [contentsOpen, setContentsOpen] = useState<string[]>([]);
   const contents = (
-    <ol className='legal-contents-list'>
+    <ol className='m-0 grid gap-y-[11px] pl-[18px] text-xs leading-[1.5] text-(--muted-foreground) max-[800.01px]:grid-cols-2 max-[800.01px]:gap-x-7 max-[800.01px]:gap-y-3 max-[560.01px]:grid-cols-1'>
       {sections.map((section) => (
         <li key={section.id}>
-          <a href={`#${kind}-${section.id}`} onClick={() => setContentsOpen([])}>
+          <a
+            className='text-(--muted-foreground) no-underline hover:text-(--brand-teal-ink)'
+            href={`#${kind}-${section.id}`}
+            onClick={() => setContentsOpen([])}>
             {section.title}
           </a>
         </li>
       ))}
       <li>
-        <a href={`#${kind}-contact`} onClick={() => setContentsOpen([])}>
+        <a
+          className='text-(--muted-foreground) no-underline hover:text-(--brand-teal-ink)'
+          href={`#${kind}-contact`}
+          onClick={() => setContentsOpen([])}>
           Contact
         </a>
       </li>
@@ -251,14 +258,18 @@ function LegalPage({ kind }: { kind: 'privacy' | 'terms' }) {
   return (
     <main
       className={cn(
-        'marketing-page-wide',
-        'legal-page',
+        'min-w-0 flex-[1_0_auto] [--page-gutter:clamp(24px,3vw,72px)] max-[960px]:[--page-gutter:clamp(16px,2.7vw,28px)] max-[800px]:[--page-gutter:18px]',
+        'w-full px-(--page-gutter) py-12 pb-[72px] max-[560.01px]:py-8 max-[560.01px]:pb-12',
         '[&_a]:text-(--brand-teal-ink) [&_a]:underline [&_a]:underline-offset-[3px]',
         'marketing-page-legal',
       )}>
-      <header className='legal-page-heading'>
-        <p className='marketing-kicker'>Designer's Image / Chroma ELITE</p>
-        <h1 className='mt-3.5 mb-0 font-display text-[42px] leading-[1.1] font-bold max-[560px]:text-[32px]'>
+      <header
+        data-legal-heading
+        className='mx-[calc(var(--page-gutter)*-1)] border-b border-border bg-[color-mix(in_srgb,var(--card)_94%,var(--brand-teal-ink))] px-(--page-gutter) pt-[clamp(32px,4vw,58px)] pb-8 max-[560.01px]:pt-8 max-[560.01px]:pb-6'>
+        <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+          Designer's Image / Chroma ELITE
+        </p>
+        <h1 className='mt-3.5 mb-0 font-display text-[42px] leading-[1.1] font-bold max-[560.01px]:text-[32px]'>
           {title}
         </h1>
         <p className='mt-4 mb-0 max-w-[62ch] text-[15px] leading-[1.7] text-(--muted-foreground)'>
@@ -302,47 +313,57 @@ function LegalPage({ kind }: { kind: 'privacy' | 'terms' }) {
           </Link>
         </div>
       </header>
-      <div className='legal-page-layout'>
+      <div
+        data-legal-layout
+        className='grid grid-cols-[clamp(240px,16vw,340px)_minmax(0,1fr)] items-start gap-[clamp(36px,4vw,88px)] pt-[clamp(36px,4vw,64px)] max-[800.01px]:grid-cols-1 max-[800.01px]:gap-8 max-[800.01px]:pt-7'>
         <nav
           aria-label={`${title} contents`}
-          className={cn('legal-page-contents', 'legal-desktop-contents max-[800px]:hidden')}>
-          <h2 className='mb-3.5 font-mono text-[10px] font-bold text-(--brand-teal-ink) uppercase'>
+          className='legal-desktop-contents sticky top-6 min-w-0 border-r border-border pr-[clamp(20px,2vw,36px)] max-[800.01px]:static max-[800.01px]:hidden max-[800.01px]:border-r-0 max-[800.01px]:border-b max-[800.01px]:pr-0 max-[800.01px]:pb-6'>
+          <h2 className='mb-3.5 font-mono text-2xs font-bold text-(--brand-teal-ink) uppercase'>
             On this page
           </h2>
           {contents}
         </nav>
-        <Accordion
+        <MarketingFaq
           value={contentsOpen}
           onValueChange={setContentsOpen}
-          className='legal-mobile-contents faq-list'>
-          <AccordionItem value='contents'>
-            <AccordionTrigger>On this page</AccordionTrigger>
-            <AccordionContent className='faq-answer'>
+          className='legal-mobile-contents'>
+          <MarketingFaqItem value='contents'>
+            <MarketingFaqTrigger>On this page</MarketingFaqTrigger>
+            <MarketingFaqContent>
               <nav
                 aria-label={`${title} contents`}
-                className='legal-mobile-list legal-page-contents border-0 p-0'>
+                className='legal-mobile-list min-w-0 border-0 p-0'>
                 {contents}
               </nav>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-        <article aria-label={title} className='legal-page-article'>
+            </MarketingFaqContent>
+          </MarketingFaqItem>
+        </MarketingFaq>
+        <article
+          aria-label={title}
+          className='max-w-none min-w-0 columns-[32rem] gap-x-[clamp(36px,4vw,80px)] max-[960.01px]:columns-1 [&_a]:[overflow-wrap:anywhere]'>
           {sections.map((section) => (
             <section
               key={section.id}
               id={`${kind}-${section.id}`}
-              className='legal-article-section'>
-              <h2 className='legal-article-heading'>{section.title}</h2>
+              className='mb-8 scroll-mt-6 break-inside-avoid-column'>
+              <h2 className='m-0 mb-3 [break-after:avoid] font-display text-[22px] leading-[1.3] font-bold max-[560.01px]:text-[20px]'>
+                {section.title}
+              </h2>
               {section.paragraphs.map((paragraph) => (
-                <p key={paragraph} className='legal-article-paragraph'>
+                <p
+                  key={paragraph}
+                  className='mt-0 mb-[14px] max-w-[110ch] text-sm leading-[1.85] [overflow-wrap:anywhere] text-(--muted-foreground)'>
                   {paragraph}
                 </p>
               ))}
             </section>
           ))}
-          <section id={`${kind}-contact`} className='legal-article-section'>
-            <h2 className='legal-article-heading'>Contact</h2>
-            <p className='legal-article-paragraph'>
+          <section id={`${kind}-contact`} className='mb-8 scroll-mt-6 break-inside-avoid-column'>
+            <h2 className='m-0 mb-3 [break-after:avoid] font-display text-[22px] leading-[1.3] font-bold max-[560.01px]:text-[20px]'>
+              Contact
+            </h2>
+            <p className='mt-0 mb-[14px] max-w-[110ch] text-sm leading-[1.85] [overflow-wrap:anywhere] text-(--muted-foreground)'>
               For {privacy ? 'privacy questions and requests' : 'questions about these terms'},
               contact Designer's Image at <a href={`mailto:${LEGAL_CONTACT}`}>{LEGAL_CONTACT}</a>.
               Please identify Chroma ELITE and describe your request without sending passwords or

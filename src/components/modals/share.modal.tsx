@@ -62,7 +62,7 @@ export function ShareModal() {
           value={url}
           rows={2}
           onFocus={(e) => e.target.select()}
-          className='w-full resize-none rounded border border-border bg-muted px-2.5 py-2 font-mono text-[11px] leading-relaxed text-secondary-foreground transition-colors outline-none focus:border-ring'
+          className='w-full resize-none rounded border border-border bg-muted px-2.5 py-2 font-mono text-xs leading-relaxed text-secondary-foreground transition-colors outline-none focus:border-ring'
         />
 
         <div className='flex h-6 gap-px overflow-hidden rounded'>

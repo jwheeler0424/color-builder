@@ -48,12 +48,12 @@ export function PaletteStudioPanel({ onEditSlot }: { onEditSlot?: (index: number
   const { generate, undo, slots } = useChromaStore();
 
   return (
-    <div className='tool-panel-space tool-panel-stack flex flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
+    <div className='flex flex-col tool-panel-stack tool-panel-space'>
       <div>
-        <p className='mb-1 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+        <p className='mb-1 text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
           Palette
         </p>
-        <p className='text-[11px] leading-relaxed text-muted-foreground'>
+        <p className='text-xs leading-relaxed text-muted-foreground'>
           {slots.length} colors · drag slots to reorder, lock to protect, double-click to edit
           color.
         </p>
@@ -83,13 +83,13 @@ export function PaletteStudioPanel({ onEditSlot }: { onEditSlot?: (index: number
         <button
           onClick={() => undo()}
           aria-label='Undo last generate'
-          className='h-10 cursor-pointer rounded-md border border-border bg-secondary px-4 font-mono text-[11px] text-secondary-foreground transition-colors hover:border-input'>
+          className='h-10 cursor-pointer rounded-md border border-border bg-secondary px-4 font-mono text-xs text-secondary-foreground transition-colors hover:border-input'>
           <IconArrowBackUp className='mr-1.5 inline size-4' aria-hidden='true' />
           Undo
         </button>
         <button
           onClick={() => generate()}
-          className='h-10 flex-1 cursor-pointer rounded-md border-0 bg-primary text-[12px] font-bold text-primary-foreground transition-opacity hover:opacity-90'>
+          className='h-10 flex-1 cursor-pointer rounded-md border-0 bg-primary text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90'>
           <IconRefresh className='mr-1.5 inline size-4' aria-hidden='true' />
           Generate
         </button>

@@ -31,36 +31,19 @@ import {
   IconSun,
   IconX as X,
 } from '@tabler/icons-react';
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 import type { SpaceId, DisplayGamutId } from '@/lib/engine/browser';
 import type { HarmonyMode, ColorStop } from '@/types';
 
+import { SectionLabel } from '@/components/global/section-label';
+import { ToolSection as Section } from '@/components/global/tool-section';
 import { NativeSelect } from '@/components/ui/select';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { HARMONIES, MAX_SLOTS, THEMES } from '@/lib/constants/chroma';
 import { hexToStop, renderColor, stopToColor } from '@/lib/engine/browser';
 import { computeColorPalette } from '@/lib/engine/runtime/palette-runtime';
 import { cn } from '@/lib/utils';
-
-// ─── Section helpers ────────────────────────────────────────────────────────────────
-
-// The last section drops its border: the footer below already draws one.
-function Section({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={cn('mx-1 border-b border-border py-3.5 last:border-b-0', className)}>
-      {children}
-    </div>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className='mb-2.5 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
-      {children}
-    </p>
-  );
-}
 
 // ─── Grip icon for hint ───────────────────────────────────────────────────────
 
@@ -133,7 +116,7 @@ export function HarmonyPicker({
     <div role='radiogroup' aria-label='Harmony' className='flex flex-col gap-6'>
       {groups.map((group) => (
         <div key={group.label}>
-          <p className='mb-1.5 text-[9.5px] font-semibold tracking-widest text-muted-foreground uppercase'>
+          <p className='mb-1.5 text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
             {group.label}
           </p>
           <div className='grid grid-cols-2 gap-1.5'>
@@ -160,7 +143,7 @@ export function HarmonyPicker({
                   </span>
                   <span
                     className={cn(
-                      'block px-2 py-1.5 text-[11px] font-semibold',
+                      'block px-2 py-1.5 text-xs font-semibold',
                       selected
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-secondary text-secondary-foreground',
@@ -244,24 +227,24 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
         <>
           <Section>
             <div className='mb-2.5 flex items-center justify-between gap-2'>
-              <p className='text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+              <p className='text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
                 Harmony
               </p>
               <button
                 type='button'
                 aria-expanded={harmonyOpen}
                 onClick={() => setHarmonyOpen((open) => !open)}
-                className='inline-flex cursor-pointer items-center gap-1 rounded border-0 bg-transparent p-0 text-[11px] font-semibold text-primary'>
+                className='inline-flex cursor-pointer items-center gap-1 rounded border-0 bg-transparent p-0 text-xs font-semibold text-primary'>
                 {harmonyOpen ? 'Done' : 'Change'}
                 <ChevronDown
                   className={cn('size-3 transition-transform', harmonyOpen && 'rotate-180')}
                 />
               </button>
             </div>
-            <p className='text-[13px] font-semibold text-foreground'>
+            <p className='text-sm font-semibold text-foreground'>
               {HARMONIES.find((h) => h.id === mode)?.label ?? mode}
             </p>
-            <p className='mt-0.5 text-[11px] leading-relaxed text-muted-foreground'>
+            <p className='mt-0.5 text-xs leading-relaxed text-muted-foreground'>
               {HARMONIES.find((h) => h.id === mode)?.desc ?? ''}
             </p>
             {harmonyOpen && (
@@ -323,7 +306,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
 
           <Section>
             <div className='mb-2.5 flex items-center justify-between'>
-              <p className='text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+              <p className='text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
                 Temperature
               </p>
               {temperature !== 0 && (
@@ -333,7 +316,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
                     setTemperature(0);
                     debouncedGenerate();
                   }}
-                  className='cursor-pointer border-0 bg-transparent p-0 text-[11px] font-semibold text-primary'>
+                  className='cursor-pointer border-0 bg-transparent p-0 text-xs font-semibold text-primary'>
                   Reset
                 </button>
               )}
@@ -350,7 +333,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
               }}
               className='w-full'
             />
-            <div className='mt-1 flex justify-between text-[10px] text-muted-foreground'>
+            <div className='mt-1 flex justify-between text-2xs text-muted-foreground'>
               <span>Cool</span>
               <span>Neutral</span>
               <span>Warm</span>
@@ -386,7 +369,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
             <div className='flex gap-1.5'>
               <input
                 className={cn(
-                  'min-w-0 flex-1 rounded border bg-muted px-2 py-1.5 font-mono text-[11px] text-foreground',
+                  'min-w-0 flex-1 rounded border bg-muted px-2 py-1.5 font-mono text-xs text-foreground',
                   'transition-colors outline-none placeholder:text-muted-foreground focus:border-ring',
                   seedErr ? 'border-destructive' : 'border-border',
                 )}
@@ -401,7 +384,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
               />
               <button
                 type='button'
-                className='inline-flex cursor-pointer items-center justify-center rounded border border-border bg-secondary px-3 py-1.5 text-[11px] font-bold text-secondary-foreground transition-colors hover:border-input hover:text-foreground'
+                className='inline-flex cursor-pointer items-center justify-center rounded border border-border bg-secondary px-3 py-1.5 text-xs font-bold text-secondary-foreground transition-colors hover:border-input hover:text-foreground'
                 onClick={handleAddSeed}>
                 Add
               </button>
@@ -425,7 +408,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
                       aria-checked={seedMode === id}
                       onClick={() => setSeedMode(id)}
                       className={cn(
-                        'cursor-pointer rounded border-0 px-2 py-1.5 text-[11px] font-semibold transition-colors',
+                        'cursor-pointer rounded border-0 px-2 py-1.5 text-xs font-semibold transition-colors',
                         seedMode === id
                           ? 'bg-background text-foreground shadow-sm'
                           : 'bg-transparent text-muted-foreground hover:text-foreground',
@@ -434,7 +417,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
                     </button>
                   ))}
                 </div>
-                <p className='mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground'>
+                <p className='mt-1.5 text-xs leading-relaxed text-muted-foreground'>
                   {seedMode === 'pin'
                     ? 'Seed colors appear exactly in the palette as locked slots.'
                     : 'Seed hue guides generation, but the exact color may shift.'}
@@ -449,7 +432,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
               aria-expanded={advancedOpen}
               onClick={() => setAdvancedOpen((open) => !open)}
               className='flex w-full cursor-pointer items-center justify-between border-0 bg-transparent p-0 text-left'>
-              <span className='text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+              <span className='text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
                 Advanced
               </span>
               <ChevronDown
@@ -462,7 +445,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
             {advancedOpen && (
               <div className='mt-3 flex flex-col gap-3'>
                 <label className='block'>
-                  <span className='mb-1 block text-[11px] font-semibold text-muted-foreground'>
+                  <span className='mb-1 block text-xs font-semibold text-muted-foreground'>
                     Generation color space
                   </span>
                   <NativeSelect
@@ -481,7 +464,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
                   </NativeSelect>
                 </label>
                 <label className='block'>
-                  <span className='mb-1 block text-[11px] font-semibold text-muted-foreground'>
+                  <span className='mb-1 block text-xs font-semibold text-muted-foreground'>
                     Display gamut
                   </span>
                   <NativeSelect
@@ -520,7 +503,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
             <option value='hsv'>HSV</option>
           </NativeSelect>
           <label
-            className='mt-3 block text-[10px] font-semibold text-muted-foreground'
+            className='mt-3 block text-2xs font-semibold text-muted-foreground'
             htmlFor={`display-gamut-${section ?? 'all'}`}>
             Display Gamut
           </label>
@@ -558,7 +541,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
               }}
               className='flex-1'
             />
-            <span className='text-[10px] text-muted-foreground'>{MAX_SLOTS}</span>
+            <span className='text-2xs text-muted-foreground'>{MAX_SLOTS}</span>
           </div>
         </Section>
       )}
@@ -611,7 +594,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
                     <div key={j} className='flex-1' style={{ background: h }} />
                   ))}
                 </div>
-                <div className='bg-secondary px-2 py-1.5 text-[11px] font-semibold text-secondary-foreground'>
+                <div className='bg-secondary px-2 py-1.5 text-xs font-semibold text-secondary-foreground'>
                   {t.name}
                 </div>
               </button>
@@ -639,7 +622,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
                   type='button'
                   aria-label={`Edit seed ${s.hex.toUpperCase()}`}
                   title={`Edit seed ${s.hex.toUpperCase()}`}
-                  className='flex-1 cursor-pointer font-mono text-[10px] tracking-[.05em] text-muted-foreground uppercase transition-colors hover:text-foreground'
+                  className='flex-1 cursor-pointer font-mono text-2xs tracking-wider text-muted-foreground uppercase transition-colors hover:text-foreground'
                   onClick={() => onEditSeed?.(i)}>
                   {s.hex.toUpperCase()}
                 </button>
@@ -657,7 +640,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
           <div className='flex gap-1.5'>
             <input
               className={cn(
-                'flex-1 rounded border bg-muted px-2 py-1.5 font-mono text-[11px] text-foreground',
+                'flex-1 rounded border bg-muted px-2 py-1.5 font-mono text-xs text-foreground',
                 'transition-colors outline-none placeholder:text-muted-foreground focus:border-ring',
                 seedErr ? 'border-destructive' : 'border-border',
               )}
@@ -670,7 +653,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
               autoComplete='off'
             />
             <button
-              className='inline-flex cursor-pointer items-center justify-center rounded border border-border bg-secondary px-3 py-1.5 font-mono text-[11px] font-bold text-secondary-foreground transition-colors hover:border-input hover:text-foreground'
+              className='inline-flex cursor-pointer items-center justify-center rounded border border-border bg-secondary px-3 py-1.5 font-mono text-xs font-bold text-secondary-foreground transition-colors hover:border-input hover:text-foreground'
               onClick={handleAddSeed}>
               + Add
             </button>
@@ -702,7 +685,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
                 title={title}
                 onClick={() => setSeedMode(id)}
                 className={cn(
-                  'inline-flex cursor-pointer items-center justify-center rounded border px-3 py-1.5 font-mono text-[11px] font-bold transition-colors',
+                  'inline-flex cursor-pointer items-center justify-center rounded border px-3 py-1.5 font-mono text-xs font-bold transition-colors',
                   seedMode === id
                     ? 'border-primary bg-primary text-primary-foreground'
                     : 'border-border bg-secondary text-muted-foreground hover:border-input hover:text-foreground',
@@ -711,7 +694,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
               </button>
             ))}
           </div>
-          <p className='text-[9.5px] leading-relaxed text-muted-foreground'>
+          <p className='text-2xs leading-relaxed text-muted-foreground'>
             {seedMode === 'pin'
               ? 'Seed colors appear exactly in the palette as locked slots.'
               : 'Seed hue guides generation but the exact color may shift.'}
@@ -723,7 +706,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
       {show('harmony') && (
         <Section>
           <SectionLabel>Harmony</SectionLabel>
-          <p className='mb-3 min-h-[2.4em] text-[11px] leading-relaxed text-muted-foreground'>
+          <p className='mb-3 min-h-[2.4em] text-xs leading-relaxed text-muted-foreground'>
             {HARMONIES.find((h) => h.id === mode)?.desc ?? ''}
           </p>
           <HarmonyPicker
@@ -741,7 +724,7 @@ export function GenerateControls({ onEditSeed, section, onPreviewSelect }: Gener
       {show('colors') && (
         <Section>
           <SectionLabel>Token Names</SectionLabel>
-          <p className='text-[9.5px] leading-relaxed text-muted-foreground'>
+          <p className='text-2xs leading-relaxed text-muted-foreground'>
             Click any color name to rename it as a design token. Use the <GripInline /> handle to
             drag and reorder. Arrow keys work when a slot is focused.
           </p>
@@ -801,7 +784,7 @@ export function GenerateFooter() {
           <Undo2 className='size-4' aria-hidden='true' />
         </button>
         <button
-          className='h-10 flex-1 cursor-pointer rounded border-0 bg-primary text-[12px] font-bold text-primary-foreground transition-opacity hover:opacity-90'
+          className='h-10 flex-1 cursor-pointer rounded border-0 bg-primary text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90'
           aria-busy={pending}
           title='Generate (Space)'
           onClick={() => generate()}>

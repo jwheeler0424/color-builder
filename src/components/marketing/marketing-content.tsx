@@ -18,6 +18,18 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
+import {
+  MarketingHero,
+  MarketingHeroActions,
+  MarketingHeroArt,
+  MarketingHeroCopy,
+  MarketingLede,
+  MarketingSectionHeading,
+  MarketingSectionNote,
+  MarketingSectionTitle,
+  MarketingTitle,
+} from './marketing-primitives';
+
 const API_EXAMPLES = {
   curl: `curl --request POST "$CHROMA_API_BASE/v1/palettes" \\
   --header "Authorization: Bearer $CHROMA_API_KEY" \\
@@ -104,9 +116,12 @@ function ApiCodeExplorer() {
   const [activeExample, setActiveExample] = useState<ApiExample>('curl');
 
   return (
-    <div className='api-code-explorer'>
-      <div className='api-code-topbar'>
-        <div className='api-example-tabs' role='group' aria-label='API example language'>
+    <div className='overflow-hidden rounded-lg border border-border bg-card text-foreground shadow-[0_14px_34px_color-mix(in_srgb,var(--foreground)_12%,transparent)]'>
+      <div className='flex min-h-12 flex-wrap items-center justify-between gap-3 border-b border-border px-[13px] py-[6px] max-[560.01px]:p-[9px]'>
+        <div
+          className='flex flex-wrap gap-[3px] max-[560.01px]:flex-none'
+          role='group'
+          aria-label='API example language'>
           {(Object.keys(API_EXAMPLES) as ApiExample[]).map((example) => (
             <Button
               key={example}
@@ -122,7 +137,9 @@ function ApiCodeExplorer() {
         </div>
         <CopyExample code={API_EXAMPLES[activeExample]} />
       </div>
-      <pre className='api-code-block' aria-live='polite'>
+      <pre
+        className='mt-0 mb-0 max-h-[360px] min-h-[220px] overflow-auto p-[22px] font-mono text-xs leading-[1.75] whitespace-pre [tab-size:2] text-foreground max-[800.01px]:min-h-[190px] max-[800.01px]:p-4 max-[800.01px]:text-2xs'
+        aria-live='polite'>
         <code>{API_EXAMPLES[activeExample]}</code>
       </pre>
     </div>
@@ -131,20 +148,22 @@ function ApiCodeExplorer() {
 
 export function OverviewPage() {
   return (
-    <main className={cn('marketing-page-wide', 'marketing-page-overview')}>
-      <section className='overview-masthead marketing-page-masthead'>
-        <div className={cn('marketing-wrap', 'marketing-hero', 'overview-hero')}>
-          <div className='marketing-hero-copy'>
-            <p className='marketing-kicker'>A workspace for color systems</p>
-            <h1 className='marketing-title'>
+    <main className='min-w-0 flex-[1_0_auto] [--page-gutter:clamp(24px,3vw,72px)] max-[960px]:[--page-gutter:clamp(16px,2.7vw,28px)] max-[800px]:[--page-gutter:18px]'>
+      <section className='overview-masthead border-b border-border bg-[color-mix(in_srgb,var(--card)_92%,var(--primary-link))]'>
+        <MarketingHero className='mx-auto min-h-[400px] w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none grid-cols-[minmax(0,0.82fr)_minmax(460px,1.18fr)] gap-[clamp(40px,5vw,120px)] max-[960.01px]:min-h-0 max-[960.01px]:grid-cols-1 max-[560.01px]:gap-4 max-[560.01px]:py-5 max-[380.01px]:gap-y-[14px] max-[380.01px]:pt-[14px] max-[380.01px]:pb-[18px] min-[1600px]:min-h-[560px] min-[1600px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] min-[1600px]:gap-[clamp(80px,6vw,144px)]'>
+          <MarketingHeroCopy>
+            <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+              A workspace for color systems
+            </p>
+            <MarketingTitle className='mt-[22px] max-w-[13ch] text-[46px] leading-[1.08] max-[560.01px]:max-w-[14ch] max-[560.01px]:text-[34px] min-[1600px]:max-w-[16ch] min-[1600px]:text-[56px]'>
               Color that holds up, <em>all the way to code.</em>
-            </h1>
-            <p className='marketing-lede'>
+            </MarketingTitle>
+            <MarketingLede className='mt-[22px] max-w-[54ch] text-base leading-[1.7] max-[560.01px]:text-[14px] min-[1600px]:max-w-[48ch] min-[1600px]:text-[17px]'>
               Explore a palette, test how it works, and build a system your team can ship. Chroma
               brings perceptual color tools and implementation-ready exports into one focused
               studio.
-            </p>
-            <div className='marketing-hero-actions'>
+            </MarketingLede>
+            <MarketingHeroActions className='max-[560.01px]:mt-5 max-[380.01px]:mt-3'>
               <Link
                 to='/'
                 data-slot='button'
@@ -163,19 +182,21 @@ export function OverviewPage() {
                 )}>
                 See plans <IconArrowRight aria-hidden='true' size={16} />
               </Link>
-            </div>
-            <p className='overview-free-note'>Start free · no account required</p>
-          </div>
-          <div className='marketing-hero-art'>
+            </MarketingHeroActions>
+            <p className='mt-[13px] font-mono text-2xs text-muted-foreground max-[380.01px]:hidden'>
+              Start free · no account required
+            </p>
+          </MarketingHeroCopy>
+          <MarketingHeroArt className='min-[1600px]:w-[min(100%,1180px)] min-[1600px]:justify-self-end'>
             <PaletteArtwork variant='overview' />
-          </div>
-        </div>
+          </MarketingHeroArt>
+        </MarketingHero>
       </section>
 
       <section
         className='workflow-section border-y border-border bg-card'
         aria-label='The Chroma workflow'>
-        <div className='overview-workflow-grid marketing-wrap'>
+        <div className='mx-auto grid w-full max-w-none grid-cols-4 px-(--page-gutter) max-[800.01px]:grid-cols-2 max-[380.01px]:grid-cols-1'>
           {[
             {
               number: '01',
@@ -209,38 +230,72 @@ export function OverviewPage() {
               icon: IconDownload,
               to: '/export/scale',
             },
-          ].map((step) => (
+          ].map((step, index) => (
             <Link
               key={step.number}
               to={step.to}
-              className='workflow-step overview-workflow-step'
+              className={cn(
+                'group relative grid min-h-[220px] min-w-0 grid-cols-[minmax(0,1fr)_20px] grid-rows-[auto_1fr] items-stretch gap-x-3 gap-y-[6px] rounded-none border-0 bg-transparent px-[clamp(18px,2vw,40px)] py-[26px] text-(--foreground) no-underline transition-[background] duration-150 max-[800.01px]:min-h-[190px] max-[800.01px]:p-[22px] max-[560.01px]:min-h-[190px] max-[560.01px]:px-[14px] max-[560.01px]:py-[18px]',
+                index > 0 && 'border-l border-border',
+                index >= 2 && 'max-[800.01px]:border-t max-[800.01px]:border-border',
+                index > 0 && index % 2 === 0 && 'max-[800.01px]:border-l-0',
+                index > 0 &&
+                  'max-[380.01px]:border-t max-[380.01px]:border-l-0 max-[380.01px]:border-border',
+                'data-[section=create]:[--workflow-accent:var(--section-create-accent)] data-[section=create]:[--workflow-ink:var(--section-create-ink)]',
+                'data-[section=analyze]:[--workflow-accent:var(--section-analyze-accent)] data-[section=analyze]:[--workflow-ink:var(--section-analyze-ink)]',
+                'data-[section=build]:[--workflow-accent:var(--section-build-accent)] data-[section=build]:[--workflow-ink:var(--section-build-ink)]',
+                'data-[section=export]:[--workflow-accent:var(--section-export-accent)] data-[section=export]:[--workflow-ink:var(--section-export-ink)]',
+                'hover:bg-[color-mix(in_srgb,var(--card)_94%,var(--workflow-accent))] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-[var(--workflow-accent)]',
+              )}
               data-section={step.section}>
-              <step.icon className='overview-workflow-watermark' aria-hidden='true' stroke={1.25} />
-              <span className='workflow-number overview-workflow-number'>{step.number}</span>
-              <span className='overview-workflow-content'>
-                <span className='overview-workflow-title'>{step.title}</span>
-                <span className='overview-workflow-description'>{step.description}</span>
+              <step.icon
+                className='pointer-events-none absolute top-3 right-3 z-0 size-[108px] rotate-[14deg] text-(--workflow-accent) opacity-[0.055]'
+                aria-hidden='true'
+                stroke={1.25}
+              />
+              <span
+                data-workflow-number={step.number}
+                className='relative z-[1] col-span-full font-mono text-[36px] leading-none font-bold text-(--workflow-ink) max-[800.01px]:text-[30px] max-[560.01px]:text-[28px]'>
+                {step.number}
               </span>
-              <IconArrowUpRight className='overview-workflow-arrow' aria-hidden='true' size={18} />
+              <span className='relative z-[1] col-start-1 row-start-2 grid min-w-0 content-start gap-2'>
+                <span className='font-display text-[22px] leading-[1.15] font-bold text-(--foreground) max-[800.01px]:text-[19px] max-[560.01px]:text-[18px]'>
+                  {step.title}
+                </span>
+                <span className='max-w-[34ch] text-sm leading-[1.6] text-(--muted-foreground) max-[800.01px]:text-xs'>
+                  {step.description}
+                </span>
+              </span>
+              <IconArrowUpRight
+                className='relative z-[1] col-start-2 row-start-2 self-end text-(--workflow-ink) transition-transform duration-150 group-hover:translate-x-0.5 group-hover:-translate-y-0.5'
+                aria-hidden='true'
+                size={18}
+              />
             </Link>
           ))}
         </div>
       </section>
 
-      <section className={cn('marketing-wrap', ' overview-detail-grid marketing-section')}>
+      <section className='mx-auto grid w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] items-center gap-[clamp(32px,4vw,96px)] max-[960.01px]:grid-cols-1 max-[960.01px]:gap-[30px] max-[560.01px]:gap-[25px] max-[560px]:py-8 [&>*]:min-w-0'>
         <article>
-          <p className='marketing-kicker'>Perceptual color, practical checks</p>
-          <h2 className='marketing-section-title'>See the system, not just the swatches.</h2>
-          <p>
+          <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+            Perceptual color, practical checks
+          </p>
+          <MarketingSectionTitle>See the system, not just the swatches.</MarketingSectionTitle>
+          <p className='mt-[17px] mb-[22px] max-w-[500px] text-[14px] leading-[1.75] text-muted-foreground'>
             Work in OKLCH, inspect gamut, compare harmony, and check accessibility as part of the
             same design decision. Keep exploration connected to the output you will actually use.
           </p>
-          <Link to='/features' className='marketing-text-link'>
+          <Link
+            to='/features'
+            className='inline-flex min-h-9 items-center gap-2 text-xs font-bold text-brand-teal-ink hover:underline hover:underline-offset-4'>
             Explore the tools <IconArrowRight aria-hidden='true' size={15} />
           </Link>
         </article>
-        <div className='overview-token-preview' aria-label='Example design tokens'>
-          <div className='overview-token-heading'>
+        <div
+          className='overflow-hidden rounded-md border border-border bg-card'
+          aria-label='Example design tokens'>
+          <div className='grid grid-cols-[minmax(0,1fr)_auto] items-center gap-[14px] bg-muted px-[17px] py-[14px] font-mono text-2xs text-muted-foreground uppercase'>
             <span>semantic / light</span>
             <span>CSS variables</span>
           </div>
@@ -250,29 +305,41 @@ export function OverviewPage() {
             ['--color-success', '#0FA987'],
             ['--color-caution', '#F0A620'],
           ].map(([name, color]) => (
-            <div className='overview-token-row' key={name}>
-              <span className='overview-token-swatch' style={{ backgroundColor: color }} />
-              <code>{name}</code>
-              <code>{color}</code>
+            <div
+              className='grid grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-[14px] border-t border-border px-[17px] py-[14px] max-[560.01px]:grid-cols-[16px_minmax(0,1fr)]'
+              key={name}>
+              <span className='size-4 rounded-[3px]' style={{ backgroundColor: color }} />
+              <code className='overflow-hidden font-mono text-2xs text-ellipsis whitespace-nowrap text-foreground'>
+                {name}
+              </code>
+              <code className='overflow-hidden font-mono text-2xs text-ellipsis whitespace-nowrap text-foreground max-[560.01px]:col-start-2 max-[560.01px]:text-muted-foreground'>
+                {color}
+              </code>
             </div>
           ))}
-          <Link to='/guides' className='overview-token-link'>
+          <Link
+            to='/guides'
+            className='flex items-center justify-between border-t border-border px-[17px] py-3 text-xs font-bold text-brand-teal-ink'>
             Learn the workflow <IconArrowUpRight aria-hidden='true' size={15} />
           </Link>
         </div>
       </section>
 
-      <section className='overview-plan-band'>
-        <div className={cn('marketing-wrap', ' overview-plan-inner')}>
+      <section className='border-y border-border bg-card py-8 text-foreground max-[560.01px]:py-10'>
+        <div className='mx-auto flex w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none items-center justify-between gap-10 max-[960.01px]:flex-wrap max-[960.01px]:gap-6 max-[800.01px]:flex-col max-[800.01px]:items-start max-[800.01px]:gap-[22px] [&>*]:min-w-0'>
           <div>
-            <p className='marketing-kicker'>Start with the essentials</p>
-            <h2>Free gives you a useful first pass.</h2>
-            <p>
+            <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-brand-teal-ink text-muted-foreground uppercase'>
+              Start with the essentials
+            </p>
+            <h2 className='mt-[11px] mb-0 max-w-[570px] font-display text-[28px] leading-[1.08] max-[800.01px]:text-2xl'>
+              Free gives you a useful first pass.
+            </h2>
+            <p className='mt-[14px] mb-0 max-w-[580px] text-sm leading-[1.7] text-muted-foreground'>
               Build palettes up to six colors, run a basic contrast check, mix colors, make simple
               gradients, extract from images, and export foundational formats.
             </p>
           </div>
-          <div className='overview-plan-links'>
+          <div className='flex flex-none flex-wrap gap-[9px] max-[800.01px]:w-full [&>a]:max-[800.01px]:min-h-11 [&>a]:max-[800.01px]:flex-[1_1_150px]'>
             <Link
               to='/pricing'
               data-slot='button'
@@ -300,19 +367,23 @@ export function OverviewPage() {
 
 export function ApiPage() {
   return (
-    <main className={cn('marketing-page-wide', 'marketing-page-api')}>
-      <section className='marketing-page-masthead api-masthead'>
-        <div className={cn('marketing-wrap', 'marketing-hero', 'api-hero')}>
-          <div className='marketing-hero-copy'>
-            <p className='marketing-kicker'>Developer API · Pro and Team</p>
-            <h1 className='marketing-title'>
+    <main className='min-w-0 flex-[1_0_auto] [--page-gutter:clamp(24px,3vw,72px)] max-[960px]:[--page-gutter:clamp(16px,2.7vw,28px)] max-[800px]:[--page-gutter:18px]'>
+      <section
+        data-api-masthead
+        className='border-b border-border bg-[color-mix(in_srgb,var(--card)_91%,var(--warning))]'>
+        <MarketingHero className='mx-auto min-h-0 w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none grid-cols-[minmax(0,0.95fr)_minmax(440px,1.05fr)] max-[960.01px]:min-h-0 max-[960.01px]:grid-cols-1'>
+          <MarketingHeroCopy>
+            <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+              Developer API · Pro and Team
+            </p>
+            <MarketingTitle>
               Color intelligence, <em>in your workflow.</em>
-            </h1>
-            <p className='marketing-lede'>
+            </MarketingTitle>
+            <MarketingLede>
               Put palette generation and color analysis alongside the tools your product team
               already uses. Design tokens can move from a color decision into your build pipeline.
-            </p>
-            <div className='marketing-hero-actions'>
+            </MarketingLede>
+            <MarketingHeroActions className='max-[800.01px]:[&>a]:min-h-11 max-[800.01px]:[&>a]:flex-[1_1_200px]'>
               <Link
                 to='/pricing'
                 data-slot='button'
@@ -331,47 +402,58 @@ export function ApiPage() {
                 )}>
                 Read developer guides <IconArrowUpRight aria-hidden='true' size={16} />
               </Link>
-            </div>
-          </div>
-          <div className='api-hero-detail'>
-            <strong>Color rules your product can reuse.</strong>
-            <div className='api-detail-flow'>
+            </MarketingHeroActions>
+          </MarketingHeroCopy>
+          <div className='relative flex min-h-[310px] flex-col justify-center overflow-hidden rounded-md border border-l-4 border-border border-l-primary-link bg-background p-[clamp(28px,3.5vw,52px)] text-foreground max-[960.01px]:min-h-[230px] max-[560.01px]:min-h-[190px]'>
+            <strong className='mt-[25px] max-w-[15ch] font-display text-[34px] leading-[1.1] [overflow-wrap:anywhere] max-[560.01px]:text-[25px]'>
+              Color rules your product can reuse.
+            </strong>
+            <div className='mt-[25px] flex flex-wrap items-center gap-[11px] font-mono text-2xs text-muted-foreground uppercase max-[380.01px]:mt-[13px] max-[380.01px]:gap-[7px]'>
               <span>palette</span>
-              <i aria-hidden='true' />
+              <i className='h-px w-7 bg-border max-[380.01px]:w-4' aria-hidden='true' />
               <span>analysis</span>
-              <i aria-hidden='true' />
+              <i className='h-px w-7 bg-border max-[380.01px]:w-4' aria-hidden='true' />
               <span>tokens</span>
             </div>
-            <p>Designed for repeatable handoff between design and code.</p>
+            <p className='mt-[15px] mb-0 text-xs leading-[1.6] text-muted-foreground max-[380.01px]:mt-[9px] max-[380.01px]:text-2xs'>
+              Designed for repeatable handoff between design and code.
+            </p>
           </div>
-        </div>
+        </MarketingHero>
       </section>
 
-      <section className='api-preview-section'>
-        <div className={cn('marketing-wrap', ' api-preview-grid')}>
+      <section className='bg-card py-10 max-[800.01px]:py-14'>
+        <div className='mx-auto grid w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none grid-cols-[minmax(320px,0.7fr)_minmax(0,1.3fr)] items-start gap-[clamp(36px,5vw,112px)] max-[960.01px]:grid-cols-1 max-[960.01px]:gap-[34px] max-[800.01px]:gap-[26px] [&>*]:min-w-0'>
           <div>
-            <p className='marketing-kicker'>A readable contract</p>
-            <h2 className='marketing-section-title'>Make color decisions callable.</h2>
-            <p className='api-copy'>
+            <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+              A readable contract
+            </p>
+            <MarketingSectionTitle>Make color decisions callable.</MarketingSectionTitle>
+            <p className='mt-[15px] mb-[22px] max-w-[430px] text-sm leading-[1.75] text-muted-foreground'>
               Send a seed color and a few constraints. Get back structured palette values ready for
               review, analysis, or a token pipeline.
             </p>
-            <ul className='api-capability-list'>
-              <li>
-                <IconCheck aria-hidden='true' size={16} /> Consistent color-space aware responses
+            <ul className='m-0 grid list-none gap-[13px] p-0'>
+              <li className='flex items-start gap-[9px] text-xs leading-[1.5] text-foreground'>
+                <IconCheck className='flex-none text-brand-teal-ink' aria-hidden='true' size={16} />{' '}
+                Consistent color-space aware responses
               </li>
-              <li>
-                <IconCheck aria-hidden='true' size={16} /> Palette generation and analysis workflows
+              <li className='flex items-start gap-[9px] text-xs leading-[1.5] text-foreground'>
+                <IconCheck className='flex-none text-brand-teal-ink' aria-hidden='true' size={16} />{' '}
+                Palette generation and analysis workflows
               </li>
-              <li>
-                <IconCheck aria-hidden='true' size={16} /> Paid access with metered usage allowances
+              <li className='flex items-start gap-[9px] text-xs leading-[1.5] text-foreground'>
+                <IconCheck className='flex-none text-brand-teal-ink' aria-hidden='true' size={16} />{' '}
+                Paid access with metered usage allowances
               </li>
             </ul>
           </div>
           <div>
-            <div className='api-draft-label'>Illustrative request · proposed contract</div>
+            <div className='mb-2 font-mono text-2xs font-bold tracking-[0] text-brand-teal-ink uppercase'>
+              Illustrative request · proposed contract
+            </div>
             <ApiCodeExplorer />
-            <p className='api-contract-note'>
+            <p className='mt-[9px] mb-0 text-2xs leading-[1.6] text-muted-foreground'>
               Example endpoint and response are a draft interface. Final API routes, authentication,
               quotas, and error formats will be specified with the API release. Keep API keys in
               server-side code; never expose them in browser JavaScript.
@@ -380,13 +462,17 @@ export function ApiPage() {
         </div>
       </section>
 
-      <section className={cn('marketing-wrap', ' api-plan-section marketing-section')}>
-        <div className='api-plan-callout'>
+      <section className='mx-auto w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none py-8 pb-10 max-[560.01px]:pt-10 max-[560.01px]:pb-14'>
+        <div className='grid grid-cols-2 items-center gap-x-10 gap-y-5 rounded-md border border-border bg-card p-[34px] text-foreground max-[800.01px]:grid-cols-1 max-[800.01px]:gap-5 max-[800.01px]:px-5 max-[800.01px]:py-6 [&>*]:min-w-0'>
           <div>
-            <p className='marketing-kicker'>Part of the paid toolset</p>
-            <h2>Build on the same color engine as the studio.</h2>
+            <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-brand-teal-ink text-muted-foreground uppercase'>
+              Part of the paid toolset
+            </p>
+            <h2 className='text-2xl max-[560.01px]:text-2xl'>
+              Build on the same color engine as the studio.
+            </h2>
           </div>
-          <p>
+          <p className='m-0 text-sm leading-[1.7] text-muted-foreground'>
             API access is planned for Pro and Team. Pro includes an individual request allowance;
             Team adds a larger pooled allowance. Specific quotas and overage rules will be published
             before API usage is enabled.
@@ -396,7 +482,7 @@ export function ApiPage() {
             data-slot='button'
             className={cn(
               buttonVariants({ size: 'lg', className: 'text-sm' }),
-              'marketing-primary-link',
+              'marketing-primary-link col-start-2 justify-self-start max-[800.01px]:col-start-1',
             )}>
             Compare plans <IconArrowRight aria-hidden='true' size={16} />
           </Link>
@@ -473,39 +559,51 @@ function GuideExplorer({
   const guide = GUIDE_TOPICS.find((item) => item.id === activeGuide)!;
 
   return (
-    <div className='guide-explorer'>
-      <nav className='guide-topic-list' aria-label='Guides'>
+    <div className='grid grid-cols-[290px_minmax(0,1fr)] overflow-hidden rounded-md border border-border bg-card max-[800.01px]:grid-cols-1 [&>*]:min-w-0'>
+      <nav
+        className='flex flex-col gap-1 border-r border-border p-3 max-[800.01px]:grid max-[800.01px]:grid-cols-2 max-[800.01px]:border-r-0 max-[800.01px]:border-b max-[800.01px]:border-border max-[560.01px]:flex-row max-[560.01px]:overflow-x-auto max-[560.01px]:border-r-0 max-[560.01px]:border-b max-[560.01px]:border-border'
+        aria-label='Guides'>
         {GUIDE_TOPICS.map((topic, index) => (
           <Button
             key={topic.id}
             type='button'
             variant={activeGuide === topic.id ? 'secondary' : 'ghost'}
-            className='grid min-h-10 min-w-0 grid-cols-[28px_minmax(0,1fr)_16px] items-center gap-2 px-2.5 py-2 text-left text-xs font-medium whitespace-normal'
+            className='grid min-h-10 min-w-0 grid-cols-[28px_minmax(0,1fr)_16px] items-center gap-2 px-2.5 py-2 text-left text-xs font-medium whitespace-normal max-[560.01px]:flex-none max-[560.01px]:grid-cols-[20px_minmax(0,1fr)] max-[560.01px]:[&_svg]:hidden'
             aria-pressed={activeGuide === topic.id}
             onClick={() => onGuideChange(topic.id)}>
-            <span className='guide-topic-number'>0{index + 1}</span>
+            <span className='font-mono text-2xs text-primary-link'>0{index + 1}</span>
             <span>{topic.label}</span>
             <IconArrowRight aria-hidden='true' size={15} />
           </Button>
         ))}
       </nav>
-      <article className='guide-article' aria-live='polite'>
-        <p className='marketing-kicker'>Guide / {guide.label}</p>
-        <h3>{guide.title}</h3>
-        <p className='guide-intro'>{guide.intro}</p>
-        <ol>
+      <article
+        className='min-h-[280px] p-6 max-[800.01px]:min-h-0 max-[560.01px]:min-h-0 max-[560.01px]:px-[19px] max-[560.01px]:py-6'
+        aria-live='polite'>
+        <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+          Guide / {guide.label}
+        </p>
+        <h3 className='mt-[13px] mb-[10px] max-w-[570px] font-display text-[22px] leading-[1.25]'>
+          {guide.title}
+        </h3>
+        <p className='m-0 max-w-[620px] text-sm leading-[1.7] text-muted-foreground'>
+          {guide.intro}
+        </p>
+        <ol className='my-[23px] grid gap-3 pl-[21px] text-xs leading-[1.6] text-foreground [&>li::marker]:font-mono [&>li::marker]:font-bold [&>li::marker]:text-brand-teal-ink'>
           {guide.steps.map((step) => (
             <li key={step}>{step}</li>
           ))}
         </ol>
         {guide.id === 'contrast' && (
-          <div className='guide-standard-note'>
-            <strong>WCAG 2.1 contrast ratio</strong>
-            <span>AA normal 4.5:1</span>
-            <span>AA large 3:1</span>
+          <div className='my-[18px] flex flex-wrap items-center gap-x-[17px] gap-y-[9px] border-l-[3px] border-brand-teal-ink bg-muted px-[14px] py-3 text-2xs text-foreground'>
+            <strong className='w-full font-mono uppercase'>WCAG 2.1 contrast ratio</strong>
+            <span className='font-bold'>AA normal 4.5:1</span>
+            <span className='font-bold'>AA large 3:1</span>
           </div>
         )}
-        <Link to={guide.id === 'tokens' ? '/features' : '/'} className='marketing-text-link'>
+        <Link
+          to={guide.id === 'tokens' ? '/features' : '/'}
+          className='inline-flex min-h-9 items-center gap-2 text-xs font-bold text-brand-teal-ink hover:underline hover:underline-offset-4'>
           {guide.id === 'tokens' ? 'Explore export tools' : 'Try it in the studio'}
           <IconArrowUpRight aria-hidden='true' size={15} />
         </Link>
@@ -518,18 +616,20 @@ export function GuidesPage() {
   const [activeGuide, setActiveGuide] = useState<GuideTopic['id']>('palette');
 
   return (
-    <main className='marketing-page-wide'>
-      <section className={cn('marketing-wrap', 'marketing-hero', 'guides-hero')}>
-        <div className='marketing-hero-copy'>
-          <p className='marketing-kicker'>Field notes for better color work</p>
-          <h1 className='marketing-title'>
+    <main className='min-w-0 flex-[1_0_auto] [--page-gutter:clamp(24px,3vw,72px)] max-[960px]:[--page-gutter:clamp(16px,2.7vw,28px)] max-[800px]:[--page-gutter:18px]'>
+      <section className='mx-auto grid w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] items-start gap-[clamp(32px,4vw,96px)] py-[clamp(44px,5vw,88px)] max-[960px]:grid-cols-1 max-[960px]:gap-6 max-[960px]:py-9 max-[800px]:gap-y-[18px] max-[800px]:pt-6 max-[800px]:pb-7 max-[380px]:gap-y-[14px] max-[380px]:pt-[18px] max-[380px]:pb-[22px]'>
+        <MarketingHeroCopy>
+          <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+            Field notes for better color work
+          </p>
+          <MarketingTitle>
             Learn the why. <em>Then make it work.</em>
-          </h1>
-          <p className='marketing-lede'>
+          </MarketingTitle>
+          <MarketingLede>
             Short, practical guides for moving from palette exploration to accessible, usable color
             systems.
-          </p>
-          <div className='marketing-hero-actions'>
+          </MarketingLede>
+          <MarketingHeroActions>
             <Link
               to='/'
               data-slot='button'
@@ -548,36 +648,52 @@ export function GuidesPage() {
               )}>
               Browse tools <IconArrowRight aria-hidden='true' size={16} />
             </Link>
-          </div>
-        </div>
-        <div className='guides-index-art' aria-label='Guide topics'>
-          <span>01 / Palette systems</span>
-          <span>02 / Accessible contrast</span>
-          <span>03 / Design tokens</span>
-          <span>04 / Gradient craft</span>
+          </MarketingHeroActions>
+        </MarketingHeroCopy>
+        <div
+          className='grid [grid-auto-rows:minmax(64px,auto)] content-start border-l-[3px] border-primary-link max-[560.01px]:[grid-auto-rows:minmax(48px,auto)]'
+          aria-label='Guide topics'>
+          <span className='flex items-center border-b border-border px-6 py-4 font-mono text-xs leading-[1.6] text-foreground first:border-t max-[560.01px]:px-[18px] max-[560.01px]:py-3'>
+            01 / Palette systems
+          </span>
+          <span className='flex items-center border-b border-border px-6 py-4 font-mono text-xs leading-[1.6] text-foreground max-[560.01px]:px-[18px] max-[560.01px]:py-3'>
+            02 / Accessible contrast
+          </span>
+          <span className='flex items-center border-b border-border px-6 py-4 font-mono text-xs leading-[1.6] text-foreground max-[560.01px]:px-[18px] max-[560.01px]:py-3'>
+            03 / Design tokens
+          </span>
+          <span className='flex items-center border-b border-border px-6 py-4 font-mono text-xs leading-[1.6] text-foreground max-[560.01px]:px-[18px] max-[560.01px]:py-3'>
+            04 / Gradient craft
+          </span>
         </div>
       </section>
 
-      <section className={cn('marketing-wrap', ' marketing-section guide-section')}>
-        <div className='marketing-section-heading'>
+      <section className='mx-auto w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none pt-[54px] max-[560.01px]:py-8'>
+        <MarketingSectionHeading>
           <div>
-            <p className='marketing-kicker'>Choose a workflow</p>
-            <h2 className='marketing-section-title'>Keep the next step close.</h2>
+            <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+              Choose a workflow
+            </p>
+            <MarketingSectionTitle>Keep the next step close.</MarketingSectionTitle>
           </div>
-          <p className='marketing-section-note'>
+          <MarketingSectionNote>
             Use these guides as a working reference while you build and review a color system.
-          </p>
-        </div>
+          </MarketingSectionNote>
+        </MarketingSectionHeading>
         <GuideExplorer activeGuide={activeGuide} onGuideChange={setActiveGuide} />
       </section>
 
-      <section className='guide-resource-band'>
-        <div className={cn('marketing-wrap', ' guide-resource-inner')}>
+      <section className='bg-card py-[38px] text-foreground'>
+        <div className='mx-auto grid w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none grid-cols-[0.9fr_1fr_auto] items-center gap-7 max-[800.01px]:grid-cols-1 max-[800.01px]:gap-[18px] max-[560.01px]:gap-4 [&>*]:min-w-0'>
           <div>
-            <p className='marketing-kicker'>More to explore</p>
-            <h2>Need the whole workflow?</h2>
+            <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-brand-teal-ink text-muted-foreground uppercase'>
+              More to explore
+            </p>
+            <h2 className='mt-[11px] mb-0 max-w-[570px] font-display text-[27px] leading-[1.08]'>
+              Need the whole workflow?
+            </h2>
           </div>
-          <p>
+          <p className='m-0 text-xs leading-[1.7] text-muted-foreground'>
             See how palette generation, accessibility analysis, color building, and token exports
             fit together in Chroma.
           </p>
@@ -586,7 +702,7 @@ export function GuidesPage() {
             data-slot='button'
             className={cn(
               buttonVariants({ size: 'lg', className: 'text-sm' }),
-              'marketing-primary-link',
+              'marketing-primary-link max-[800.01px]:justify-self-start',
             )}>
             Browse features <IconArrowRight aria-hidden='true' size={16} />
           </Link>
@@ -640,43 +756,65 @@ export function DocumentationPage() {
   ];
 
   return (
-    <main className={cn('marketing-page-wide', 'marketing-page-documentation')}>
-      <section className='marketing-page-masthead documentation-masthead'>
-        <div className={cn('marketing-wrap', 'marketing-hero', 'documentation-hero')}>
-          <div className='marketing-hero-copy'>
-            <p className='marketing-kicker'>Documentation</p>
-            <h1 className='marketing-title'>A field guide to Chroma ELITE.</h1>
-            <p className='marketing-lede'>
-              Foundations for the application shell, design system, and visual styles.
+    <main
+      className={cn(
+        'min-w-0 flex-[1_0_auto] [--page-gutter:clamp(24px,3vw,72px)] max-[960px]:[--page-gutter:clamp(16px,2.7vw,28px)] max-[800px]:[--page-gutter:18px]',
+        'marketing-page-documentation',
+      )}>
+      <section
+        data-documentation-masthead
+        className='border-b border-border bg-[color-mix(in_srgb,var(--card)_94%,var(--brand-teal-ink))]'>
+        <MarketingHero className='mx-auto min-h-[320px] w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] max-[960.01px]:grid-cols-1'>
+          <MarketingHeroCopy>
+            <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+              Documentation
             </p>
-          </div>
-          <div className='documentation-index-mark' aria-label='Three foundation topics'>
+            <MarketingTitle>A field guide to Chroma ELITE.</MarketingTitle>
+            <MarketingLede>
+              Foundations for the application shell, design system, and visual styles.
+            </MarketingLede>
+          </MarketingHeroCopy>
+          <div
+            className='flex min-h-[210px] flex-col justify-between rounded-md border border-l-4 border-brand-teal-ink bg-background p-7 font-mono text-2xs text-muted-foreground uppercase max-[560.01px]:min-h-[155px] max-[560.01px]:p-5'
+            aria-label='Three foundation topics'>
             <span>Foundation topics</span>
-            <strong>03</strong>
+            <strong className='font-display text-[72px] leading-none font-medium text-foreground max-[560.01px]:text-[56px]'>
+              03
+            </strong>
             <span>Index / 001</span>
           </div>
-        </div>
+        </MarketingHero>
       </section>
 
-      <section className={cn('marketing-wrap', ' documentation-index marketing-section')}>
-        <div className='marketing-section-heading'>
+      <section className='mx-auto w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none pb-[clamp(56px,7vw,112px)] max-[560px]:pt-8 max-[560px]:pb-8'>
+        <MarketingSectionHeading>
           <div>
-            <p className='marketing-kicker'>Start here</p>
-            <h2 className='marketing-section-title'>Interface foundations</h2>
+            <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+              Start here
+            </p>
+            <MarketingSectionTitle>Interface foundations</MarketingSectionTitle>
           </div>
-          <p className='marketing-section-note'>
+          <MarketingSectionNote>
             The core references for building with Chroma ELITE.
-          </p>
-        </div>
-        <div className='documentation-topic-list'>
+          </MarketingSectionNote>
+        </MarketingSectionHeading>
+        <div className='grid grid-cols-3 gap-[clamp(12px,1.5vw,24px)] border-t-0 max-[960.01px]:grid-cols-2 max-[800.01px]:grid-cols-1'>
           {topics.map((topic, index) => (
-            <article key={topic.title} className='documentation-topic'>
-              <span className='documentation-topic-index'>0{index + 1}</span>
-              <div>
-                <h3>{topic.title}</h3>
-                <p>{topic.summary}</p>
+            <article
+              key={topic.title}
+              className='grid min-h-[245px] grid-cols-[1fr_auto] grid-rows-[auto_1fr_auto] content-start items-start gap-x-[14px] gap-y-[18px] rounded-lg border border-border bg-card p-[clamp(20px,2vw,32px)] shadow-[0_10px_28px_color-mix(in_srgb,var(--foreground)_7%,transparent)] max-[800.01px]:min-h-0 max-[800.01px]:grid-cols-[30px_minmax(0,1fr)] max-[800.01px]:gap-x-4 max-[800.01px]:gap-y-[10px] max-[800.01px]:p-5 [&:nth-child(2)]:border-t-[3px] [&:nth-child(2)]:border-t-warning [&:nth-child(3)]:border-t-[3px] [&:nth-child(3)]:border-t-brand-teal-ink'>
+              <span className='col-span-full font-mono text-2xs text-primary-link max-[800.01px]:col-start-1'>
+                0{index + 1}
+              </span>
+              <div className='col-span-full min-w-0 max-[800.01px]:col-start-2'>
+                <h3 className='m-0 font-display text-[18px]'>{topic.title}</h3>
+                <p className='mt-[7px] mb-0 max-w-[650px] text-xs leading-[1.7] text-muted-foreground'>
+                  {topic.summary}
+                </p>
               </div>
-              <span className='documentation-topic-status'>Coming next</span>
+              <span className='col-span-full mt-1 justify-self-start rounded border border-border px-2 py-[6px] text-center font-mono text-2xs text-muted-foreground uppercase max-[800.01px]:col-start-2 max-[800.01px]:mt-0'>
+                Coming next
+              </span>
             </article>
           ))}
         </div>
@@ -764,22 +902,30 @@ export function SupportPage() {
   });
 
   return (
-    <main className={cn('marketing-page-wide', 'marketing-page-support')}>
-      <section className='marketing-page-masthead support-masthead'>
-        <div className={cn('marketing-wrap', ' support-intro')}>
-          <p className='marketing-kicker'>Help center</p>
-          <h1 className='marketing-title'>Find your next step.</h1>
-          <p className='marketing-lede'>
-            Search practical answers for building, checking, and shipping color systems.
+    <main
+      className={cn(
+        'min-w-0 flex-[1_0_auto] [--page-gutter:clamp(24px,3vw,72px)] max-[960px]:[--page-gutter:clamp(16px,2.7vw,28px)] max-[800px]:[--page-gutter:18px]',
+        'marketing-page-support',
+      )}>
+      <section className='border-b border-border bg-[color-mix(in_srgb,var(--card)_93%,var(--primary-link))]'>
+        <div className='mx-auto grid min-h-[280px] w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] content-center items-center gap-x-[clamp(24px,4vw,88px)] py-[clamp(40px,5vw,72px)] max-[800.01px]:block max-[800.01px]:min-h-0 max-[800.01px]:pt-8 max-[800.01px]:pb-6'>
+          <p className='col-start-1 m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+            Help center
           </p>
-          <label className='support-search'>
-            <IconSearch aria-hidden='true' size={19} />
+          <MarketingTitle className='col-start-1 mt-[18px] max-w-[13ch] text-[46px] max-[560.01px]:text-[32px]'>
+            Find your next step.
+          </MarketingTitle>
+          <MarketingLede className='col-start-1 mt-4 max-w-[52ch] text-[15px]'>
+            Search practical answers for building, checking, and shipping color systems.
+          </MarketingLede>
+          <label className='relative col-start-2 row-span-3 row-start-1 mt-0 flex min-h-[58px] w-[min(680px,100%)] items-center gap-3 rounded-[7px] border border-border bg-card px-[18px] text-muted-foreground transition-none focus-within:border-brand-teal-ink focus-within:shadow-[0_0_0_2px_color-mix(in_oklab,var(--primary)_20%,transparent)] max-[800.01px]:col-start-1 max-[800.01px]:row-auto max-[800.01px]:mt-6 max-[560.01px]:mt-5'>
+            <IconSearch className='flex-none' aria-hidden='true' size={19} />
             <span className='sr-only'>Search help topics</span>
             <Input
               type='search'
               aria-label='Search help topics'
               placeholder='Search by topic or keyword'
-              className='min-h-11 border-0 shadow-none focus-visible:ring-0'
+              className='min-h-11 w-full min-w-0 border-0 bg-transparent text-[15px] text-foreground shadow-none outline-hidden placeholder:text-muted-foreground focus-visible:ring-0 md:text-[15px]'
               value={query}
               onChange={(event) => setQuery(event.currentTarget.value)}
             />
@@ -798,10 +944,17 @@ export function SupportPage() {
         </div>
       </section>
 
-      <section className={cn('marketing-wrap', ' support-content')}>
-        <div className='support-filter-panel'>
-          <p className='support-filter-label'>Filter by topic</p>
-          <div className='support-category-list' role='group' aria-label='Filter help topics'>
+      <section className='mx-auto grid w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none grid-cols-[clamp(220px,17vw,320px)_minmax(0,1fr)] items-start gap-x-[clamp(32px,4vw,80px)] gap-y-[10px] pt-[clamp(32px,4vw,56px)] pb-[70px] max-[960.01px]:grid-cols-[200px_minmax(0,1fr)] max-[800.01px]:grid-cols-1 max-[800.01px]:gap-3 max-[800.01px]:pt-[22px] max-[560.01px]:pb-12'>
+        <div
+          data-support-filter-panel
+          className='sticky top-6 col-start-1 row-start-1 self-start max-[800.01px]:static max-[800.01px]:col-start-1 max-[800.01px]:row-auto'>
+          <p className='m-0 pb-3 font-mono text-2xs text-muted-foreground uppercase'>
+            Filter by topic
+          </p>
+          <div
+            className='mt-1 flex flex-col items-stretch gap-1 max-[800.01px]:mt-0 max-[800.01px]:mb-3 max-[800.01px]:grid max-[800.01px]:grid-cols-3 max-[560.01px]:mb-0 max-[560.01px]:flex max-[560.01px]:[scrollbar-width:none] max-[560.01px]:flex-row max-[560.01px]:flex-nowrap max-[560.01px]:overflow-x-auto max-[560.01px]:pb-1 max-[560.01px]:[&::-webkit-scrollbar]:hidden'
+            role='group'
+            aria-label='Filter help topics'>
             {SUPPORT_CATEGORIES.map((category) => (
               <Button
                 key={category}
@@ -816,8 +969,10 @@ export function SupportPage() {
             ))}
           </div>
         </div>
-        <div className='support-results' aria-live='polite'>
-          <p className='support-result-count'>
+        <div
+          className='col-start-2 row-start-1 grid grid-cols-2 content-start gap-3 gap-x-[clamp(20px,3vw,56px)] border-0 max-[960.01px]:grid-cols-1 max-[800.01px]:col-start-1 max-[800.01px]:row-auto max-[800.01px]:block max-[800.01px]:border-t max-[800.01px]:border-border'
+          aria-live='polite'>
+          <p className='col-span-full m-0 border-t border-border px-1 pt-[14px] pb-[2px] font-mono text-2xs text-muted-foreground uppercase max-[800.01px]:border-t-0 max-[800.01px]:pt-3'>
             {articles.length} {articles.length === 1 ? 'answer' : 'answers'}
           </p>
           {articles.length > 0 ? (
@@ -825,20 +980,32 @@ export function SupportPage() {
               const guideId = 'guideId' in article ? article.guideId : null;
               const content = (
                 <>
-                  <span className='support-result-category'>{article.category}</span>
-                  <span className='support-result-copy'>
-                    <strong>{article.title}</strong>
-                    <span>{article.summary}</span>
+                  <span className='font-mono text-2xs text-brand-teal-ink uppercase max-[560.01px]:col-start-1 max-[560.01px]:row-start-1'>
+                    {article.category}
                   </span>
-                  <IconArrowUpRight aria-hidden='true' size={17} />
+                  <span className='grid gap-[5px] max-[560.01px]:col-start-1 max-[560.01px]:row-start-2'>
+                    <strong className='font-display text-[17px] leading-[1.3] [overflow-wrap:anywhere]'>
+                      {article.title}
+                    </strong>
+                    <span className='text-xs leading-[1.6] text-muted-foreground'>
+                      {article.summary}
+                    </span>
+                  </span>
+                  <IconArrowUpRight
+                    className='max-[560.01px]:col-start-2 max-[560.01px]:row-start-2'
+                    aria-hidden='true'
+                    size={17}
+                  />
                 </>
               );
+              const resultClassName =
+                'grid min-h-[138px] grid-cols-[minmax(78px,0.25fr)_minmax(0,1fr)_20px] items-start gap-3 rounded-md border border-border bg-card p-5 transition-[background,border-color,transform] duration-[140ms] hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--brand-teal-ink)_55%,var(--border))] hover:bg-accent hover:shadow-none max-[800.01px]:min-h-0 max-[800.01px]:grid-cols-[100px_minmax(0,1fr)_20px] max-[800.01px]:rounded-none max-[800.01px]:border-0 max-[800.01px]:border-b max-[800.01px]:border-border max-[800.01px]:bg-transparent max-[800.01px]:px-2 max-[800.01px]:py-[18px] max-[800.01px]:hover:translate-y-0 max-[800.01px]:hover:shadow-[inset_0_-1px_0_var(--border)] max-[560.01px]:grid-cols-[minmax(0,1fr)_20px] max-[560.01px]:gap-x-[9px] max-[560.01px]:gap-y-1 max-[560.01px]:px-1 max-[560.01px]:py-4';
 
               return guideId ? (
                 <a
                   key={article.title}
                   href='#guides'
-                  className='support-result'
+                  className={resultClassName}
                   onClick={() => setActiveGuide(guideId)}>
                   {content}
                 </a>
@@ -847,15 +1014,17 @@ export function SupportPage() {
                   key={article.title}
                   to={article.to}
                   hash={'hash' in article ? article.hash : undefined}
-                  className='support-result'>
+                  className={resultClassName}>
                   {content}
                 </Link>
               );
             })
           ) : (
-            <div className='support-empty'>
-              <h2>No matching help topics</h2>
-              <p>Try a broader search or clear the current category filter.</p>
+            <div className='p-[38px_10px]'>
+              <h2 className='m-0 font-display text-[22px]'>No matching help topics</h2>
+              <p className='text-xs text-muted-foreground'>
+                Try a broader search or clear the current category filter.
+              </p>
               <Button
                 type='button'
                 variant='ghost'
@@ -874,69 +1043,87 @@ export function SupportPage() {
       <section
         id='guides'
         aria-labelledby='support-guides-title'
-        className={cn('marketing-wrap', ' marketing-section guide-section support-guide-section')}>
-        <div className='marketing-section-heading'>
+        className='mx-auto w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none pt-6 max-[560.01px]:pb-8'>
+        <MarketingSectionHeading>
           <div>
-            <p className='marketing-kicker'>Step-by-step references</p>
-            <h2 id='support-guides-title' className='marketing-section-title'>
-              Color guides
-            </h2>
+            <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+              Step-by-step references
+            </p>
+            <MarketingSectionTitle id='support-guides-title'>Color guides</MarketingSectionTitle>
           </div>
-          <p className='marketing-section-note'>
+          <MarketingSectionNote>
             Build a palette, check contrast, prepare tokens, or refine a gradient.
-          </p>
-        </div>
+          </MarketingSectionNote>
+        </MarketingSectionHeading>
         <GuideExplorer activeGuide={activeGuide} onGuideChange={setActiveGuide} />
       </section>
 
       <section
         id='data'
         aria-labelledby='support-data-title'
-        className={cn('marketing-wrap', ' marketing-section data-practices-section')}>
-        <div className='marketing-section-heading'>
+        className='mx-auto w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none pt-12 max-[560px]:py-8 max-[560.01px]:pt-9'>
+        <MarketingSectionHeading>
           <div>
-            <p className='marketing-kicker'>Data &amp; privacy</p>
-            <h2 id='support-data-title' className='marketing-section-title'>
+            <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+              Data &amp; privacy
+            </p>
+            <MarketingSectionTitle id='support-data-title'>
               Know where your color work lives.
-            </h2>
+            </MarketingSectionTitle>
           </div>
-          <p className='marketing-section-note'>
+          <MarketingSectionNote>
             A plain-language snapshot of how the current Chroma studio handles palettes, shared
             links, images, and color-name requests.
-          </p>
-        </div>
-        <div className='data-overview-summary'>
-          <div className='data-summary-mark'>
-            <span>Current studio</span>
-            <strong>Local-first</strong>
-            <i aria-hidden='true' />
-            <p>Your palettes stay in this browser unless you choose to share a link.</p>
+          </MarketingSectionNote>
+        </MarketingSectionHeading>
+        <div className='mb-[26px] grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)] items-center gap-6 max-[800.01px]:grid-cols-1 max-[800.01px]:gap-5'>
+          <div className='relative flex min-h-0 flex-col justify-center overflow-hidden rounded-md border border-border bg-accent px-5 py-4'>
+            <span className='font-mono text-2xs text-brand-teal-ink uppercase'>Current studio</span>
+            <strong className='relative z-[1] mt-[7px] font-display text-[22px]'>
+              Local-first
+            </strong>
+            <p className='relative z-[1] mt-[5px] mb-0 max-w-none text-xs leading-[1.65] text-muted-foreground'>
+              Your palettes stay in this browser unless you choose to share a link.
+            </p>
           </div>
-          <p className='data-overview-note'>
+          <p className='m-0 max-w-[460px] text-xs leading-[1.7] text-muted-foreground'>
             These notes describe the current client-first app, not future account, billing, or API
             services.
           </p>
         </div>
-        <div className='data-practices-list'>
+        <div className='border-t border-border'>
           {DATA_PRACTICES.map((practice, index) => (
-            <article key={practice.title} className='data-practice'>
-              <span className='data-practice-index'>0{index + 1}</span>
+            <article
+              key={practice.title}
+              className='grid min-w-0 grid-cols-[42px_minmax(0,1fr)_minmax(160px,0.4fr)] items-start gap-[17px] border-b border-border py-[22px] max-[800.01px]:grid-cols-[30px_minmax(0,1fr)] max-[800.01px]:gap-x-4 max-[800.01px]:gap-y-[10px] max-[560.01px]:gap-x-[10px] [&>*]:min-w-0'>
+              <span className='pt-1 font-mono text-2xs text-primary-link'>0{index + 1}</span>
               <div>
-                <h3>{practice.title}</h3>
-                <p>{practice.detail}</p>
+                <h3 className='m-0 font-display text-lg'>{practice.title}</h3>
+                <p className='mt-2 mb-0 max-w-[650px] text-xs leading-[1.7] text-muted-foreground'>
+                  {practice.detail}
+                </p>
               </div>
-              <span className='data-practice-label'>{practice.label}</span>
+              <span className='justify-self-end rounded border border-border px-2 py-[6px] text-center font-mono text-2xs text-muted-foreground max-[800.01px]:col-start-2 max-[800.01px]:justify-self-start'>
+                {practice.label}
+              </span>
             </article>
           ))}
         </div>
       </section>
 
-      <section className={cn('marketing-wrap', ' data-policy-note')}>
+      <section
+        className={cn(
+          'mx-auto mb-[72px] grid w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none grid-cols-2 gap-[35px] rounded-md border border-border bg-card p-[29px] max-[800.01px]:grid-cols-1 max-[800.01px]:gap-5 max-[560.01px]:mb-14 max-[560.01px]:gap-[18px] max-[560.01px]:px-[19px] max-[560.01px]:py-[23px]',
+        )}>
         <div>
-          <p className='marketing-kicker'>Before paid services launch</p>
-          <h2>Account and API data practices will be documented separately.</h2>
+          <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
+            Before paid services launch
+          </p>
+          <h2 className='text-[27px] max-[560.01px]:text-2xl'>
+            Account and API data practices will be documented separately.
+          </h2>
         </div>
-        <p>
+        <p className='m-0 self-center text-xs leading-[1.75] text-muted-foreground'>
           Authentication, billing, cloud sync, and paid API usage are not connected to the current
           studio. Their collection, retention, and deletion rules should be published before those
           services are enabled. Read the <Link to='/privacy'>Privacy Policy</Link> for the full

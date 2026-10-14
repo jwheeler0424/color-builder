@@ -53,7 +53,6 @@ import { ShellProvider } from '@/providers/shell.provider';
 import { InlineColorPicker } from '../common/inline-color-picker';
 import { ThemeToggle } from '../common/theme-toggle';
 import { BrandLockup } from '../logo-icon';
-import { ExportModal, ShareModal, SaveModal, ShortcutsModal } from '../modals';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -72,15 +71,13 @@ import { PaletteStrip } from './palette-strip';
 import { SlotActions } from './slot-editor';
 
 const FALLBACK = (
-  <div className='flex items-center justify-center p-8 text-[12px] text-muted-foreground'>
-    Loading…
-  </div>
+  <div className='flex items-center justify-center p-8 text-xs text-muted-foreground'>Loading…</div>
 );
 
 export function MobileShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const commandModifier = useCommandModifier();
-  const { modal, slots, editSlotColor, generate, undo, openModal, setSaveName } = useChromaStore();
+  const { slots, editSlotColor, generate, undo, openModal, setSaveName } = useChromaStore();
   const { setOpen: openCmd } = useCommandPalette();
 
   const [editingSlotIndex, setEditingSlotIndex] = useState<number | null>(null);
@@ -178,7 +175,7 @@ export function MobileShell() {
             <div className='sticky top-0 z-10 flex gap-2 bg-background px-4 py-2'>
               <button
                 onClick={undo}
-                className='h-12 shrink-0 cursor-pointer rounded-xl border-0 bg-secondary px-4 font-mono text-[11px] text-secondary-foreground transition-colors outline-none hover:bg-secondary/80'
+                className='h-12 shrink-0 cursor-pointer rounded-xl border-0 bg-secondary px-4 font-mono text-xs text-secondary-foreground transition-colors outline-none hover:bg-secondary/80'
                 title='Undo (Ctrl+Z)'
                 aria-label='Undo generate'>
                 <IconArrowBackUp className='size-4' aria-hidden='true' />
@@ -250,14 +247,6 @@ export function MobileShell() {
             <PaletteSheetBody onEditSlot={handleEditSlot} showFooter={false} />
           </SheetContent>
         </Sheet>
-
-        {/* Modals render their own trigger buttons; keep those out of the layout */}
-        <div className='hidden'>
-          {modal === 'export' && <ExportModal />}
-          {modal === 'share' && <ShareModal />}
-          {modal === 'save' && <SaveModal />}
-          {modal === 'shortcuts' && <ShortcutsModal />}
-        </div>
       </div>
     </ShellProvider>
   );

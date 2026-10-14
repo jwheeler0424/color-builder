@@ -154,11 +154,11 @@ export function MarketingResourcesMenuItem({
           countLabel={`${String(group.pages.length).padStart(2, '0')} pages`}
           sidebarFooter={
             <>
-              <div className='flex items-center justify-between font-mono text-[10px] text-foreground/65'>
+              <div className='flex items-center justify-between font-mono text-2xs text-foreground/65'>
                 <span>Current page</span>
                 <span>{currentPage ? 'Product site' : 'Studio'}</span>
               </div>
-              <div className='mt-2 flex h-8 items-center gap-2 rounded border border-border/70 px-2 font-mono text-[10px] text-foreground/65'>
+              <div className='mt-2 flex h-8 items-center gap-2 rounded border border-border/70 px-2 font-mono text-2xs text-foreground/65'>
                 <MenuIcon className={cn('size-3.5 shrink-0', accent)} aria-hidden='true' />
                 <span className='truncate'>{currentPage?.label ?? 'Color studio'}</span>
               </div>
@@ -233,14 +233,14 @@ export function MarketingResourcesNavigation({
         <MarketingResourcesMenuItem
           compact={compact}
           className={
-            variant === 'marketing' ? 'text-[13px] text-foreground normal-case' : undefined
+            variant === 'marketing' ? 'text-sm text-foreground normal-case' : undefined
           }
         />
         <MarketingResourcesMenuItem
           kind='support'
           compact={compact}
           className={
-            variant === 'marketing' ? 'text-[13px] text-foreground normal-case' : undefined
+            variant === 'marketing' ? 'text-sm text-foreground normal-case' : undefined
           }
         />
       </NavigationMenuList>

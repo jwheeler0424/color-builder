@@ -30,10 +30,10 @@ function PaletteSummary({ onSelect }: { onSelect: (index: number) => void }) {
   return (
     <div className='mx-1 pt-1 pb-4'>
       <div className='mb-2 flex items-baseline justify-between gap-2'>
-        <p className='text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+        <p className='text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
           Palette
         </p>
-        <p className='truncate text-[11px] text-muted-foreground'>
+        <p className='truncate text-xs text-muted-foreground'>
           {slots.length} colors · {harmony}
           {locked > 0 && ` · ${locked} locked`}
         </p>
@@ -54,7 +54,7 @@ function PaletteSummary({ onSelect }: { onSelect: (index: number) => void }) {
           </button>
         ))}
       </div>
-      <p className='mt-2 text-[10.5px] leading-relaxed text-muted-foreground'>
+      <p className='mt-2 text-xs leading-relaxed text-muted-foreground'>
         Click a color to edit it. Drag to reorder, lock to keep it when generating.
       </p>
     </div>
@@ -82,7 +82,7 @@ export function PaletteTools({ tab, onTabChange, onSelectSlot }: PaletteToolsPro
                 aria-controls='palette-tabpanel'
                 onClick={() => onTabChange(id)}
                 className={cn(
-                  'flex-1 cursor-pointer border-0 px-2.5 py-2.5 text-[11px] font-bold tracking-[.06em] uppercase transition-colors',
+                  'flex-1 cursor-pointer border-0 px-2.5 py-2.5 text-xs font-bold tracking-[.06em] uppercase transition-colors',
                   tab === id
                     ? '-mb-px border-b-2 border-b-primary bg-accent/30 text-foreground'
                     : 'text-muted-foreground hover:text-foreground',

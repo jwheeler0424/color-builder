@@ -180,7 +180,7 @@ export function ExportModal() {
             value={content}
             rows={10}
             onFocus={(e) => e.target.select()}
-            className='w-full resize-none rounded border border-border bg-muted px-3 py-2.5 font-mono text-[11px] leading-relaxed text-foreground transition-colors outline-none focus:border-ring'
+            className='w-full resize-none rounded border border-border bg-muted px-3 py-2.5 font-mono text-xs leading-relaxed text-foreground transition-colors outline-none focus:border-ring'
           />
         )}
 

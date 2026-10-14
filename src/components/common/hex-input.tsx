@@ -60,7 +60,7 @@ export default function HexInput({
   return (
     <div className={cn('flex min-w-0 flex-1 flex-col gap-0.5', className)} style={style}>
       {label && (
-        <div className='text-[9px] font-bold tracking-[.07em] text-muted-foreground uppercase'>
+        <div className='text-2xs font-bold tracking-[.07em] text-muted-foreground uppercase'>
           {label}
         </div>
       )}
@@ -81,7 +81,7 @@ export default function HexInput({
           spellCheck={false}
           autoComplete='off'
           className={cn(
-            'h-8 min-w-0 flex-1 rounded border bg-muted px-2 py-1.5 font-mono text-[12px] text-foreground',
+            'h-8 min-w-0 flex-1 rounded border bg-muted px-2 py-1.5 font-mono text-xs text-foreground',
             'tracking-[.06em] transition-colors outline-none',
             'placeholder:text-muted-foreground',
             'focus:border-ring',

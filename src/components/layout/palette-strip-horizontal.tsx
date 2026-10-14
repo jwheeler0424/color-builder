@@ -75,7 +75,7 @@ function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
       style={{ width: slotWidth, background: bg }}>
       {/* Lock badge */}
       {slot.locked && (
-        <div className='absolute top-2 right-2 text-[10px] opacity-70' style={{ color: tc }}>
+        <div className='absolute top-2 right-2 text-2xs opacity-70' style={{ color: tc }}>
           <IconLock className='size-3' aria-hidden='true' />
         </div>
       )}
@@ -86,14 +86,14 @@ function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
       <div className='flex flex-col gap-1 p-2'>
         {/* Name */}
         <div
-          className='truncate font-mono text-[9px] leading-none font-semibold opacity-60'
+          className='truncate font-mono text-2xs leading-none font-semibold opacity-60'
           style={{ color: tc }}>
           {slot.name || autoName}
         </div>
 
         {/* Hex */}
         <button
-          className='text-left font-mono text-[11px] leading-none font-bold tracking-wider uppercase transition-opacity hover:opacity-80'
+          className='text-left font-mono text-xs leading-none font-bold tracking-wider uppercase transition-opacity hover:opacity-80'
           style={{ color: tc }}
           onClick={handleCopy}
           title='Copy hex'>
@@ -101,7 +101,7 @@ function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
         </button>
 
         {/* HSL */}
-        <div className='font-mono text-[9px] leading-none opacity-45' style={{ color: tc }}>
+        <div className='font-mono text-2xs leading-none opacity-45' style={{ color: tc }}>
           {Math.round(hsl.h)}° {Math.round(hsl.l * 100)}%
         </div>
 
@@ -121,7 +121,7 @@ function HSlotCard({ slot, index, onEdit, active, slotWidth }: HSlotCardProps) {
       {/* Copied toast */}
       {copied && (
         <div className='pointer-events-none absolute inset-0 flex items-center justify-center'>
-          <span className='rounded-full bg-black/80 px-2 py-1 font-mono text-[10px] text-white'>
+          <span className='rounded-full bg-black/80 px-2 py-1 font-mono text-2xs text-white'>
             Copied!
           </span>
         </div>

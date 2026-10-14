@@ -123,11 +123,11 @@ export function MainHeader({ className, brandVariant = 'studio' }: MainHeaderPro
         className,
       )}>
       <div className='relative'>
-        <div className='hidden h-16 items-center gap-3 border-b border-border/40 px-4 min-[1024px]:flex'>
+        <div className='hidden h-16 items-center gap-3 border-b border-border/40 px-4 lg:flex'>
           <BrandLockup heading={brandVariant === 'studio'} variant={brandVariant} to='/' />
           <SectionNavigation className='min-w-0 flex-1 justify-center self-stretch' />
           <nav className='flex shrink-0 items-center gap-1'>
-            <div className='hidden min-[1360px]:block'>
+            <div className='hidden wide:block'>
               <SearchButton onClick={() => openCommandPalette(true)} />
             </div>
             <Button
@@ -135,7 +135,7 @@ export function MainHeader({ className, brandVariant = 'studio' }: MainHeaderPro
               size='icon-lg'
               title='Search tools'
               aria-label='Search tools'
-              className='text-muted-foreground min-[1360px]:hidden'
+              className='text-muted-foreground wide:hidden'
               onClick={() => openCommandPalette(true)}>
               <IconSearch className='size-4' aria-hidden='true' />
             </Button>
@@ -166,19 +166,21 @@ export function MainHeader({ className, brandVariant = 'studio' }: MainHeaderPro
             </section>
           </nav>
         </div>
-        <div className='flex h-13 items-center gap-1 border-b border-border bg-background px-2 min-[1024px]:hidden'>
+        <div className='flex h-13 items-center gap-1 border-b border-border bg-background px-2 lg:hidden'>
           <BrandLockup compact variant={brandVariant} to='/' />
           <div className='flex-1' />
           <MarketingResourcesNavigation compact />
           <HeaderOptions compact />
         </div>
       </div>
-      <div className='hidden' aria-hidden='true'>
-        <ShareModal />
-        <SaveModal />
-        <ExportModal />
-        <ShortcutsModal />
-      </div>
+      {brandVariant === 'marketing' && (
+        <div className='hidden' aria-hidden='true'>
+          <ShareModal />
+          <SaveModal />
+          <ExportModal />
+          <ShortcutsModal />
+        </div>
+      )}
     </header>
   );
 }

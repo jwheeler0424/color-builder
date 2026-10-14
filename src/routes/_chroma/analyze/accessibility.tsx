@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_chroma/analyze/accessibility")({
   component: () => (
     <Suspense
       fallback={
-        <div className="p-8 text-[12px] text-muted-foreground">Loading…</div>
+        <div className="p-8 text-xs text-muted-foreground">Loading…</div>
       }
     >
       <AccessibilityView />

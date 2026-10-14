@@ -1,7 +1,7 @@
 /**
  * tablet-shell.tsx  — Phase 4 layout component
  *
- * Tablet Adaptive Layout (640–1023px):
+ * Tablet Adaptive Layout (600–1023px):
  *
  *   ┌──────────────────────────────────────────────────────┐
  *   │  HEADER (56px — taller for touch targets)             │
@@ -39,14 +39,12 @@ import { useState, useCallback, Suspense } from 'react';
 import { MarketingResourcesNavigation } from '@/components/marketing/marketing-menu';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCommandModifier } from '@/hooks/use-command-modifier';
-import { usePortraitViewport } from '@/hooks/use-stacked-palette';
 import { hexToStop } from '@/lib/engine/browser';
 import { ShellProvider } from '@/providers/shell.provider';
 
 import { InlineColorPicker } from '../common/inline-color-picker';
 import { ThemeToggle } from '../common/theme-toggle';
 import { BrandLockup } from '../logo-icon';
-import { ExportModal, ShareModal, SaveModal, ShortcutsModal } from '../modals';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../ui/sheet';
 import ColorPickerView from '../views/color-picker-view';
 import { useCommandPalette } from '../views/command-palette';
@@ -59,7 +57,7 @@ import { PaletteStrip } from './palette-strip';
 import { SlotActions } from './slot-editor';
 
 const FALLBACK = (
-  <div className='flex flex-1 items-center justify-center p-8 text-[12px] text-muted-foreground'>
+  <div className='flex flex-1 items-center justify-center p-8 text-xs text-muted-foreground'>
     Loading…
   </div>
 );
@@ -67,8 +65,7 @@ const FALLBACK = (
 export function TabletShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const commandModifier = useCommandModifier();
-  const { modal, slots, editSlotColor, openModal, setSaveName, generate, undo } = useChromaStore();
-  const stacked = usePortraitViewport();
+  const { slots, editSlotColor, openModal, setSaveName, generate, undo } = useChromaStore();
   const { setOpen: openCmd } = useCommandPalette();
 
   const [editingSlotIndex, setEditingSlotIndex] = useState<number | null>(null);
@@ -166,40 +163,38 @@ export function TabletShell() {
             {isPalettePage ? (
               /* Palette page: full swatch strip (all slot actions) + controls, scrolling together */
               <div className='min-h-0 flex-1 [scrollbar-width:thin] overflow-y-auto'>
-                {stacked ? (
-                  <>
-                    <div className='flex min-h-[calc(100dvh-8rem)] flex-col'>
-                      <PaletteStrip onEditSlot={handleEditSlot} />
-                    </div>
-                    <div className='sticky bottom-0 z-10 flex gap-2 bg-background px-4 py-2'>
-                      <button
-                        onClick={undo}
-                        className='h-12 shrink-0 cursor-pointer rounded-xl border-0 bg-secondary px-4 font-mono text-[11px] text-secondary-foreground transition-colors outline-none hover:bg-secondary/80'
-                        title='Undo (Ctrl+Z)'
-                        aria-label='Undo generate'>
-                        <IconArrowBackUp className='size-4' aria-hidden='true' />
-                        Undo
-                      </button>
-                      <button
-                        onClick={() => generate()}
-                        className='flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-0 bg-primary text-sm font-bold tracking-[.03em] text-primary-foreground transition-opacity outline-none active:opacity-80'
-                        aria-label='Generate new palette'>
-                        <IconRefresh className='size-4' aria-hidden='true' />
-                        Generate Palette
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <div className='relative h-[64dvh] min-h-[34rem]'>
-                    <div className='flex h-full'>
-                      <PaletteStrip onEditSlot={handleEditSlot} />
-                    </div>
+                <div className='relative h-[64dvh] min-h-[34rem] tablet-portrait:h-auto tablet-portrait:min-h-[calc(100dvh-8rem)]'>
+                  <div className='flex h-full tablet-portrait:min-h-[calc(100dvh-8rem)] tablet-portrait:flex-col'>
+                    <PaletteStrip
+                      onEditSlot={handleEditSlot}
+                      className='tablet-portrait:flex-col'
+                    />
                   </div>
-                )}
+                </div>
+                <div className='sticky bottom-0 z-10 hidden gap-2 bg-background px-4 py-2 tablet-portrait:flex'>
+                  <button
+                    onClick={undo}
+                    className='h-12 shrink-0 cursor-pointer rounded-xl border-0 bg-secondary px-4 font-mono text-xs text-secondary-foreground transition-colors outline-none hover:bg-secondary/80'
+                    title='Undo (Ctrl+Z)'
+                    aria-label='Undo generate'>
+                    <IconArrowBackUp className='size-4' aria-hidden='true' />
+                    Undo
+                  </button>
+                  <button
+                    onClick={() => generate()}
+                    className='flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-0 bg-primary text-sm font-bold tracking-[.03em] text-primary-foreground transition-opacity outline-none active:opacity-80'
+                    aria-label='Generate new palette'>
+                    <IconRefresh className='size-4' aria-hidden='true' />
+                    Generate Palette
+                  </button>
+                </div>
                 {pathname === '/picker' ? (
                   <ColorPickerView />
                 ) : (
-                  <GenerateControlsAccordion onEditSeed={handleEditSlot} showFooter={!stacked} />
+                  <GenerateControlsAccordion
+                    onEditSeed={handleEditSlot}
+                    footerClassName='tablet-portrait:hidden'
+                  />
                 )}
               </div>
             ) : (
@@ -245,14 +240,6 @@ export function TabletShell() {
             <PaletteSheetBody onEditSlot={handleEditSlot} showFooter />
           </SheetContent>
         </Sheet>
-
-        {/* Modals render their own trigger buttons; keep those out of the layout */}
-        <div className='hidden'>
-          {modal === 'export' && <ExportModal />}
-          {modal === 'share' && <ShareModal />}
-          {modal === 'save' && <SaveModal />}
-          {modal === 'shortcuts' && <ShortcutsModal />}
-        </div>
       </div>
     </ShellProvider>
   );

@@ -73,7 +73,7 @@ export function ShortcutsModal() {
         <div className='flex min-w-85 flex-col gap-5'>
           {Object.entries(groups).map(([group, keys]) => (
             <div key={group}>
-              <div className='mb-2 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+              <div className='mb-2 font-display text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
                 {group}
               </div>
               <div className='flex flex-col gap-1.5'>
@@ -81,12 +81,12 @@ export function ShortcutsModal() {
                   <div
                     key={hk.key + (hk.ctrl ? 'c' : '') + (hk.shift ? 's' : '')}
                     className='flex items-center justify-between gap-4'>
-                    <span className='text-[12px] text-secondary-foreground'>{hk.label}</span>
+                    <span className='text-xs text-secondary-foreground'>{hk.label}</span>
                     <KbdGroup className='shrink-0 gap-1' aria-label={`${hk.label} shortcut`}>
                       {keyParts(hk).map((part, index) => (
                         <Kbd
                           key={`${part}-${index}`}
-                          className='h-5 min-w-0 rounded border border-border bg-background px-1.5 font-mono text-[10px] font-semibold text-foreground shadow-sm'>
+                          className='h-5 min-w-0 rounded border border-border bg-background px-1.5 font-mono text-2xs font-semibold text-foreground shadow-sm'>
                           {part}
                         </Kbd>
                       ))}
@@ -97,7 +97,7 @@ export function ShortcutsModal() {
             </div>
           ))}
           {hotkeys.length === 0 && (
-            <p className='text-[12px] text-muted-foreground'>
+            <p className='text-xs text-muted-foreground'>
               Navigate to a view to see its shortcuts.
             </p>
           )}

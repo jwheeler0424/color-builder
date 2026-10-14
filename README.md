@@ -605,17 +605,18 @@ deleteSavedPalette(id)
 
 ## Responsive Layout System
 
-`chroma-shell.tsx` dispatches to one of three layout shells based on viewport width using Tailwind's
-responsive prefix strategy (CSS-only, no JS media query listeners):
+`ChromaShell` uses a named size container and CSS container queries to select the visible shell at
+600px and 1024px. Feature views use container queries when their layout depends on available panel
+width:
 
-| Breakpoint   | Shell         | Layout                                                         |
-| ------------ | ------------- | -------------------------------------------------------------- |
-| `< 640px`    | `MobileShell` | Bottom tab bar, horizontal scroll strip, FAB, bottom sheets    |
-| `640–1023px` | `TabletShell` | Icon nav rail, horizontal palette strip, collapsible accordion |
-| `≥ 1024px`   | `StudioShell` | 3-column: left rail + palette strip, main panel, right outlet  |
+| Breakpoint   | Shell           | Layout                                                         |
+| ------------ | --------------- | -------------------------------------------------------------- |
+| `< 600px`    | `MobileShell`   | Bottom tab bar, horizontal scroll strip, FAB, bottom sheets    |
+| `600–1023px` | `TabletShell`   | Icon nav rail, horizontal palette strip, collapsible accordion |
+| `≥ 1024px`   | `DesktopStudio` | Palette strip, main tool panel, and supporting panel           |
 
-All three shells render simultaneously in the DOM — Tailwind `hidden`/`flex` classes toggle which is
-visible. This avoids hydration mismatches from JS-based media queries.
+All three shell variants remain mounted, while CSS displays exactly one at a time. Shared studio
+dialogs are hosted outside the shell variants to avoid duplicate modal portals.
 
 ### Desktop Studio Layout
 

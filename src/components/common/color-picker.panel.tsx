@@ -1,6 +1,8 @@
-import { IconCheck } from '@tabler/icons-react';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
+import { CopyValueRow } from '@/components/global/copy-value-row';
+import { PanelSection as Section } from '@/components/global/panel-section';
+import { SectionLabel } from '@/components/global/section-label';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCmykProfile } from '@/hooks/use-cmyk-profile';
 import {
@@ -19,58 +21,6 @@ import { CmykProfileControl } from './cmyk-profile-control';
 
 // ─── Section helpers ──────────────────────────────────────────────────────────
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className='mb-2.5 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
-      {children}
-    </p>
-  );
-}
-
-function Section({ children }: { children: React.ReactNode }) {
-  return <div className='border-b border-border px-4 py-3.5'>{children}</div>;
-}
-
-function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  const [copied, setCopied] = React.useState(false);
-  const copy = () => {
-    navigator.clipboard.writeText(value).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1000);
-  };
-  return (
-    <div className='flex items-center justify-between gap-1.5'>
-      <span className='min-w-9.5 shrink-0 text-muted-foreground'>{label}</span>
-      <button
-        type='button'
-        aria-label={copied ? `${label} copied` : `Copy ${label}: ${value}`}
-        className='min-w-0 flex-1 cursor-pointer border-0 bg-transparent p-0 text-right outline-none focus-visible:ring-2 focus-visible:ring-ring'
-        style={{
-          fontFamily: mono ? 'var(--font-mono)' : undefined,
-          fontSize: mono ? 9.5 : undefined,
-          color: 'var(--color-foreground)',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          flex: 1,
-          textAlign: 'right',
-          cursor: 'pointer',
-        }}
-        title={`Click to copy: ${value}`}
-        onClick={copy}>
-        {copied ? (
-          <>
-            <IconCheck className='mr-1 inline size-3' aria-hidden='true' />
-            Copied
-          </>
-        ) : (
-          value
-        )}
-      </button>
-    </div>
-  );
-}
-
 export function ColorPickerPanel() {
   const { pickerHex, pickerAlpha, setPickerHex, setPickerAlpha, recentColors, slots } =
     useChromaStore();
@@ -87,7 +37,7 @@ export function ColorPickerPanel() {
   const displayHex = formatColor(color, 'hex');
 
   return (
-    <aside className='flex h-full w-[320px] shrink-0 flex-col border-l border-border bg-card'>
+    <aside className='flex h-full w-80 shrink-0 flex-col border-l border-border bg-card'>
       {/* Recent colors */}
       {recentColors.length > 0 && (
         <Section>
@@ -116,19 +66,19 @@ export function ColorPickerPanel() {
       {/* Color info — all formats */}
       <Section>
         <SectionLabel>Color Values</SectionLabel>
-        <div className='text-[11px] leading-[2.1] text-muted-foreground'>
-          <InfoRow label='Name' value={lookupColorName(color, renderColor(color).hex)} />
-          <InfoRow label='HEX' value={displayHex.toUpperCase()} mono />
-          <InfoRow label='RGB' value={formatColor(color, 'rgb')} mono />
-          <InfoRow label='HSL' value={formatColor(color, 'hsl')} mono />
-          <InfoRow label='HSV' value={formatColor(color, 'hsv')} mono />
-          <InfoRow label='OKLCH' value={formatColor(color, 'oklch')} mono />
-          <InfoRow label='OKLab' value={formatColor(color, 'oklab')} mono />
-          <InfoRow
+        <div className='text-xs leading-[2.1] text-muted-foreground'>
+          <CopyValueRow label='Name' value={lookupColorName(color, renderColor(color).hex)} />
+          <CopyValueRow label='HEX' value={displayHex.toUpperCase()} mono />
+          <CopyValueRow label='RGB' value={formatColor(color, 'rgb')} mono />
+          <CopyValueRow label='HSL' value={formatColor(color, 'hsl')} mono />
+          <CopyValueRow label='HSV' value={formatColor(color, 'hsv')} mono />
+          <CopyValueRow label='OKLCH' value={formatColor(color, 'oklch')} mono />
+          <CopyValueRow label='OKLab' value={formatColor(color, 'oklab')} mono />
+          <CopyValueRow
             label='CMYK'
             value={cmyk ? `${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%` : 'ICC profile required'}
           />
-          <InfoRow label='Lum.' value={`${(luminance(color.xyz) * 100).toFixed(1)}%`} />
+          <CopyValueRow label='Lum.' value={`${(luminance(color.xyz) * 100).toFixed(1)}%`} />
         </div>
       </Section>
 

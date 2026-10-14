@@ -1,33 +1,11 @@
-import { createContext, useContext, useSyncExternalStore } from 'react';
+import { createContext, useContext } from 'react';
 
 import { useShell } from '@/providers/shell.provider';
 
-// Square counts as landscape, so only strictly taller-than-wide viewports match
-const PORTRAIT_QUERY = '(aspect-ratio < 1)';
-
-function subscribe(onChange: () => void) {
-  const mql = window.matchMedia(PORTRAIT_QUERY);
-  mql.addEventListener('change', onChange);
-  window.addEventListener('resize', onChange);
-  return () => {
-    mql.removeEventListener('change', onChange);
-    window.removeEventListener('resize', onChange);
-  };
-}
-
-export function usePortraitViewport(): boolean {
-  return useSyncExternalStore(
-    subscribe,
-    () => window.matchMedia(PORTRAIT_QUERY).matches,
-    () => false,
-  );
-}
-
-/** Rows on phones and portrait tablets; tall columns on square or landscape viewports. */
+/** Phones use rows; tablet orientation is handled by the app-shell container query. */
 export function useStackedPalette(): boolean {
   const shell = useShell();
-  const portrait = usePortraitViewport();
-  return shell === 'mobile' || (shell === 'tablet' && portrait);
+  return shell === 'mobile';
 }
 
 /** How the palette strip lays out its swatches. */

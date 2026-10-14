@@ -6,52 +6,28 @@
  *
  *   < 600px   → MobileShell  (Phase 5: bottom nav, snap strip, full-screen sheet)
  *   600–1023px → TabletShell  (Phase 4: nav rail, horizontal strip, bottom sheet)
- *   ≥ 1024px  → StudioShell  (Phase 3: 3-column, left rail, right panel)
+ *   ≥ 1024px  → DesktopStudio  (Phase 3: palette, tool, and supporting panels)
  *
- * Only the shell matching the viewport is mounted, so route views and hotkeys
- * run once. App-wide palette hotkeys are registered here so they work on every
- * page and device.
+ * Container queries select the visible shell before client-side layout logic
+ * runs. All shell variants remain mounted; shared studio dialogs live here so
+ * only one global modal layer responds to the palette store.
  *
  * Wrappers: HotkeyProvider → CommandPaletteProvider → layout shell
  */
 
-import { useEffect, useSyncExternalStore } from 'react';
+import { useEffect } from 'react';
 
 import { MobileShell } from '@/components/layout/mobile-shell';
 import { TabletShell } from '@/components/layout/tablet-shell';
+import { ExportModal, SaveModal, ShareModal, ShortcutsModal } from '@/components/modals';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { subscribeColorNames } from '@/lib/engine/colors/color-names';
 import { useRegisterHotkey } from '@/providers/hotkey.provider';
 
 import { DesktopStudio } from './desktop/desktop-shell';
 
-type ShellKind = 'mobile' | 'tablet' | 'desktop';
-
-// Tablet starts at 600px (the common tablet breakpoint); desktop mirrors Tailwind's lg (64rem)
-const DESKTOP_QUERY = '(min-width: 64rem)';
-const TABLET_QUERY = '(min-width: 37.5rem)';
-
-function getShellKind(): ShellKind {
-  if (typeof window === 'undefined') return 'desktop';
-  if (window.matchMedia(DESKTOP_QUERY).matches) return 'desktop';
-  if (window.matchMedia(TABLET_QUERY).matches) return 'tablet';
-  return 'mobile';
-}
-
-function subscribeShellKind(onChange: () => void) {
-  const queries = [DESKTOP_QUERY, TABLET_QUERY].map((q) => window.matchMedia(q));
-  queries.forEach((mql) => mql.addEventListener('change', onChange));
-  // Device emulation and some embedded browsers resize without firing media-query change events
-  window.addEventListener('resize', onChange);
-  return () => {
-    queries.forEach((mql) => mql.removeEventListener('change', onChange));
-    window.removeEventListener('resize', onChange);
-  };
-}
-
 export function ChromaShell() {
   const { modal, closeModal, openModal, generate, undo, setSaveName } = useChromaStore();
-  const shellKind = useSyncExternalStore(subscribeShellKind, getShellKind, () => 'desktop');
 
   useRegisterHotkey({
     key: 'space',
@@ -134,24 +110,22 @@ export function ChromaShell() {
   }, [modal, closeModal]);
 
   return (
-    <main className='flex min-h-0 w-full flex-1 flex-col'>
-      {shellKind === 'mobile' && (
-        <section className='flex min-h-0 flex-1 flex-col'>
-          <MobileShell />
-        </section>
-      )}
-
-      {shellKind === 'tablet' && (
-        <section className='flex min-h-0 flex-1 flex-col'>
-          <TabletShell />
-        </section>
-      )}
-
-      {shellKind === 'desktop' && (
-        <section className='flex min-h-0 flex-1 flex-col'>
-          <DesktopStudio />
-        </section>
-      )}
+    <main className='app-shell-container flex min-h-0 w-full flex-1 flex-col'>
+      <section className='hidden min-h-0 flex-1 flex-col shell-mobile:flex'>
+        <MobileShell />
+      </section>
+      <section className='hidden min-h-0 flex-1 flex-col shell-tablet:flex'>
+        <TabletShell />
+      </section>
+      <section className='hidden min-h-0 flex-1 flex-col shell-desktop:flex'>
+        <DesktopStudio />
+      </section>
+      <div className='hidden'>
+        {modal === 'export' && <ExportModal />}
+        {modal === 'share' && <ShareModal />}
+        {modal === 'save' && <SaveModal />}
+        {modal === 'shortcuts' && <ShortcutsModal />}
+      </div>
     </main>
   );
 }

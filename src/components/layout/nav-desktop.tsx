@@ -184,7 +184,7 @@ export function SectionToolMenu() {
           <Button
             variant='ghost'
             size='sm'
-            className='h-8 max-w-40 gap-2 px-2.5 font-mono text-[10px] text-(--section-accent-ink) hover:text-foreground dark:text-(--section-accent)'
+            className='h-8 max-w-40 gap-2 px-2.5 font-mono text-2xs text-(--section-accent-ink) hover:text-foreground dark:text-(--section-accent)'
             style={
               {
                 '--section-accent': colors.light,
@@ -238,7 +238,7 @@ export function SectionTabs({ className }: { className?: string }) {
               } as CSSProperties
             }
             className={cn(
-              "relative inline-flex h-full items-center gap-1.5 px-2.5 text-[11px] font-bold tracking-[.07em] uppercase no-underline transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:content-[''] xl:px-4",
+              "relative inline-flex h-full items-center gap-1.5 px-2.5 text-xs font-bold tracking-[.07em] uppercase no-underline transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:content-[''] xl:px-4",
               isActive
                 ? 'text-(--section-accent-ink) after:bg-(--section-accent) dark:text-(--section-accent)'
                 : 'text-muted-foreground after:bg-transparent hover:text-(--section-accent-ink) hover:after:bg-(--section-accent) dark:hover:text-(--section-accent)',
@@ -278,7 +278,7 @@ export function SectionToolTabs({ className }: { className?: string }) {
             to={tool.to as Parameters<typeof Link>[0]['to']}
             aria-current={isToolActive ? 'page' : undefined}
             className={cn(
-              'inline-flex shrink-0 items-center rounded px-2 py-1 font-mono text-[10px]',
+              'inline-flex shrink-0 items-center rounded px-2 py-1 font-mono text-2xs',
               'tracking-[.04em] whitespace-nowrap no-underline transition-colors',
               isToolActive
                 ? 'bg-(--section-accent)/10 text-(--section-accent-ink) dark:text-(--section-accent)'
@@ -300,14 +300,14 @@ export function SearchButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       aria-label='Search tools'
       className={cn(
-        'inline-flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-[10px]',
+        'inline-flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-2xs',
         'cursor-pointer tracking-[.04em] whitespace-nowrap transition-colors',
         'border-border bg-muted text-muted-foreground hover:border-input hover:text-foreground',
       )}
       title={`Search tools (${commandModifier}K)`}>
       <IconSearch className='size-3.5 opacity-70' aria-hidden='true' />
       <span className='hidden 2xl:inline'>Search</span>
-      <Kbd className='ml-0.5 h-5 min-w-0 rounded border border-border/60 bg-background/50 px-1.5 font-mono text-[10px] font-medium text-foreground/75 shadow-none'>
+      <Kbd className='ml-0.5 h-5 min-w-0 rounded border border-border/60 bg-background/50 px-1.5 font-mono text-2xs font-medium text-foreground/75 shadow-none'>
         {commandModifier === '⌘' ? '⌘K' : 'Ctrl K'}
       </Kbd>
     </button>

@@ -24,7 +24,7 @@ export function SliderRow({
 }) {
   return (
     <div className='flex flex-col gap-1.5'>
-      <div className='flex items-center justify-between px-0.5 text-[11px] font-medium'>
+      <div className='flex items-center justify-between px-0.5 text-xs font-medium'>
         <span className='tracking-tight text-muted-foreground uppercase'>{label}</span>
         <span className='rounded bg-secondary/30 px-1.5 py-0.5 font-mono leading-none text-foreground tabular-nums'>
           {display}

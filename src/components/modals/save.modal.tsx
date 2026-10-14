@@ -60,7 +60,7 @@ export function SaveModal() {
         </div>
 
         <input
-          className='w-full rounded border border-border bg-muted px-2 py-1.5 font-mono text-[12px] tracking-[.06em] text-foreground transition-colors outline-none placeholder:text-muted-foreground focus:border-ring'
+          className='w-full rounded border border-border bg-muted px-2 py-1.5 font-mono text-xs tracking-[.06em] text-foreground transition-colors outline-none placeholder:text-muted-foreground focus:border-ring'
           value={saveName}
           onChange={(e) => setSaveName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSave()}

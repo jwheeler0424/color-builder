@@ -95,12 +95,12 @@ export function AccordionSection({
           'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset',
         )}
         aria-expanded={open}>
-        <span className='text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+        <span className='text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
           {title}
         </span>
         <span
           className={cn(
-            'text-[10px] text-muted-foreground transition-transform duration-200',
+            'text-2xs text-muted-foreground transition-transform duration-200',
             open ? 'rotate-180' : 'rotate-0',
           )}
           aria-hidden>

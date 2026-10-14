@@ -8,14 +8,16 @@ import { useChromaStore } from '@/hooks/use-chroma-store';
 import { cn } from '@/lib/utils/tw';
 
 import { Button } from '../ui/button';
+import { paletteAddIconClassName, paletteAddSlotButtonClassName } from './palette-add-button';
 
 export interface SlotButtonProps {
   index: number;
+  className?: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function SlotButton({ index }: SlotButtonProps) {
+export function SlotButton({ index, className }: SlotButtonProps) {
   const hoverSlot = useChromaStore((state) => state.hoverSlot);
   const [isHovering, setIsHovering] = useState(false);
   const isHoveringSlot = hoverSlot === index;
@@ -24,7 +26,10 @@ export function SlotButton({ index }: SlotButtonProps) {
 
   return (
     <aside
-      className={cn('relative z-10 flex h-full w-0 shrink-0 flex-col items-center justify-center')}>
+      className={cn(
+        'relative z-10 flex h-full w-0 shrink-0 flex-col items-center justify-center',
+        className,
+      )}>
       <Tooltip>
         <TooltipContent
           onMouseOver={() => setIsHovering(true)}
@@ -38,13 +43,14 @@ export function SlotButton({ index }: SlotButtonProps) {
               variant='secondary'
               size='icon-lg'
               className={cn(
-                'palette-add-button palette-add-button--slot top-1/2 z-20 size-12 -translate-y-1/2 scale-70 rounded-full bg-black/55 opacity-0',
+                paletteAddSlotButtonClassName,
+                'top-1/2 z-20 size-12 -translate-y-1/2 scale-70 rounded-full opacity-0',
                 (isHovering || isHoveringSlot) && 'scale-100 opacity-100',
               )}
               onPointerEnter={() => setIsHovering(true)}
               onPointerLeave={() => setIsHovering(false)}
               onClick={() => insertSlot(insertAt)}>
-              <PlusIcon className='size-6 palette-add-icon' aria-hidden='true' />
+              <PlusIcon className={cn('size-6', paletteAddIconClassName)} aria-hidden='true' />
             </Button>
           }
         />

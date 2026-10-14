@@ -173,7 +173,7 @@ function EasingChoice({
       onClick={() => onSelect(option.id)}
       className={`relative min-w-0 flex-col rounded-md border p-1.5 ${caption ? 'h-14 gap-1' : 'h-10'} ${selected ? 'border-primary bg-accent/30 text-primary' : 'border-border text-muted-foreground hover:text-foreground'}`}>
       <EasingCurve mode={option.id} />
-      {caption && <span className='text-[9px] leading-none'>{caption}</span>}
+      {caption && <span className='text-2xs leading-none'>{caption}</span>}
       {selected && <Check className='absolute top-1 right-1 size-2.5' />}
     </Button>
   );
@@ -271,10 +271,10 @@ export default function GradientView() {
         description='Color stops, interpolation and CSS gradients.'
       />
       <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto border-t border-border @4xl:auto-rows-auto @4xl:grid-cols-[minmax(0,1fr)_17rem] @4xl:grid-rows-[minmax(0,1fr)] @4xl:overflow-hidden'>
-        <div className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:overflow-auto'>
+        <div className='flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space @4xl:overflow-auto'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
             <span className={TYPE.label}>Preview</span>
-            <label className='flex cursor-pointer items-center gap-2 text-[11px] text-muted-foreground'>
+            <label className='flex cursor-pointer items-center gap-2 text-xs text-muted-foreground'>
               <input
                 type='checkbox'
                 checked={showCvd}
@@ -338,7 +338,7 @@ export default function GradientView() {
         </div>
 
         {/* Side panel */}
-        <div className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-t border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:overflow-auto @4xl:border-t-0 @4xl:border-l'>
+        <div className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @4xl:overflow-auto @4xl:border-t-0 @4xl:border-l'>
           <ToolTabs
             value={panel}
             onValueChange={setPanel}
@@ -360,7 +360,7 @@ export default function GradientView() {
             <>
               {/* Type */}
               <div>
-                <div className='mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                <div className='mb-2.5 font-display text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
                   Type
                 </div>
                 <ToolSegments
@@ -383,7 +383,7 @@ export default function GradientView() {
               {/* Direction (linear only) */}
               {g.type === 'linear' && (
                 <div>
-                  <div className='mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                  <div className='mb-2.5 font-display text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
                     Direction
                   </div>
                   <div className='flex flex-wrap gap-1'>
@@ -406,7 +406,7 @@ export default function GradientView() {
               {/* Conic from angle */}
               {g.type === 'conic' && (
                 <div>
-                  <div className='mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                  <div className='mb-2.5 font-display text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
                     Starting Angle
                   </div>
                   <input
@@ -442,7 +442,7 @@ export default function GradientView() {
                   />
                 ))}
               </div>
-              <div className='mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+              <div className='mb-2.5 font-display text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
                 Selected Stop ({g.selectedStop + 1} of {g.stops.length})
               </div>
               <div className='mb-2.5 flex items-center gap-2'>
@@ -456,7 +456,7 @@ export default function GradientView() {
                 <input
                   key={`${g.selectedStop}-${JSON.stringify(selectedStop?.value ?? selectedStop?.hex)}`}
                   aria-label='Selected stop hex'
-                  className='w-full rounded border border-border bg-muted px-2 py-1.5 font-mono text-[12px] tracking-[.06em] text-foreground transition-colors outline-none placeholder:text-muted-foreground focus:border-ring'
+                  className='w-full rounded border border-border bg-muted px-2 py-1.5 font-mono text-xs tracking-[.06em] text-foreground transition-colors outline-none placeholder:text-muted-foreground focus:border-ring'
                   defaultValue={
                     selectedStop?.value &&
                     (selectedStop.value.display !== 'srgb' || selectedStop.value.alpha < 1)
@@ -483,7 +483,7 @@ export default function GradientView() {
                   autoComplete='off'
                 />
               </div>
-              <div className='flex items-center justify-between gap-3 text-[11px] text-muted-foreground'>
+              <div className='flex items-center justify-between gap-3 text-xs text-muted-foreground'>
                 <label htmlFor='gradient-stop-position'>Position (%)</label>
                 <input
                   id='gradient-stop-position'
@@ -533,7 +533,7 @@ export default function GradientView() {
           {/* Interpolation space */}
           {panel === 'gradient' && (
             <div>
-              <div className='mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+              <div className='mb-2.5 font-display text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
                 Interpolation Space
               </div>
               <ToolSegments
@@ -589,7 +589,7 @@ export default function GradientView() {
                 <div className='flex flex-col gap-2'>
                   <div className='grid grid-cols-[4rem_minmax(0,1fr)] gap-2'>
                     <span />
-                    <div className='grid grid-cols-3 gap-1.5 text-center text-[9px] font-semibold text-muted-foreground'>
+                    <div className='grid grid-cols-3 gap-1.5 text-center text-2xs font-semibold text-muted-foreground'>
                       <span>In</span>
                       <span>Out</span>
                       <span>In-Out</span>
@@ -607,7 +607,7 @@ export default function GradientView() {
                       <div
                         key={group}
                         className='grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-2'>
-                        <span className='text-[10px] text-muted-foreground'>{group}</span>
+                        <span className='text-2xs text-muted-foreground'>{group}</span>
                         <div
                           role='group'
                           aria-label={`${group} easing`}
@@ -636,7 +636,7 @@ export default function GradientView() {
           {/* Presets */}
           {panel === 'presets' && (
             <div>
-              <div className='mb-2.5 font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+              <div className='mb-2.5 font-display text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
                 Presets
               </div>
               <div className='grid grid-cols-2 gap-2'>

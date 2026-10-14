@@ -112,7 +112,7 @@ export default function UtilityColorsView() {
         title='Utility Colors'
         description='Semantic role colors and theme-aware state surfaces.'
       />
-      <div className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
+      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border tool-panel-space'>
         <div className='flex flex-col gap-1'>
           <span className={TYPE.label}>Palette-derived roles</span>
           <span className={TYPE.meta}>
@@ -137,7 +137,7 @@ export default function UtilityColorsView() {
         </Button>
       </div>
       <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto @4xl/utilities:grid-cols-[10rem_minmax(0,1fr)_17rem] @4xl/utilities:grid-rows-[minmax(0,1fr)] @4xl/utilities:overflow-hidden @7xl/utilities:grid-cols-[11rem_minmax(0,1fr)_22rem]'>
-        <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-b border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl/utilities:border-r @4xl/utilities:border-b-0'>
+        <aside className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-b border-border tool-panel-space @4xl/utilities:border-r @4xl/utilities:border-b-0'>
           <span className={`hidden ${TYPE.label} @4xl/utilities:block`}>Roles</span>
           <div
             role='group'
@@ -168,8 +168,8 @@ export default function UtilityColorsView() {
                     <RoleIcon className='size-3.5' />
                   </span>
                   <span className='flex min-w-0 flex-1 flex-col gap-1'>
-                    <span className='text-[11px] font-semibold'>{current.label}</span>
-                    <span className='hidden font-mono text-[9px] text-muted-foreground @4xl/utilities:block'>
+                    <span className='text-xs font-semibold'>{current.label}</span>
+                    <span className='hidden font-mono text-2xs text-muted-foreground @4xl/utilities:block'>
                       {current.hex.toUpperCase()}
                     </span>
                   </span>
@@ -182,7 +182,7 @@ export default function UtilityColorsView() {
           </div>
           {!slots.length && <p className={TYPE.meta}>Default utility colors</p>}
         </aside>
-        <section className='tool-panel-space tool-panel-stack @container/editor flex min-h-0 min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl/utilities:overflow-auto @4xl/utilities:border-r @4xl/utilities:border-border'>
+        <section className='@container/editor flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space @4xl/utilities:overflow-auto @4xl/utilities:border-r @4xl/utilities:border-border'>
           <div className='flex shrink-0 items-start justify-between gap-3'>
             <div className='flex min-w-0 items-center gap-3'>
               <span
@@ -264,7 +264,7 @@ export default function UtilityColorsView() {
                   <span className={TYPE.label}>{label}</span>
                   <span className={TYPE.mono}>{ratio.toFixed(2)}:1</span>
                   <span
-                    className='text-[9px] font-semibold'
+                    className='text-2xs font-semibold'
                     style={{
                       color:
                         ratio >= 4.5
@@ -311,7 +311,7 @@ export default function UtilityColorsView() {
                     ) : (
                       <Moon className='size-3.5' />
                     )}
-                    <h4 className='text-[11px] font-semibold'>
+                    <h4 className='text-xs font-semibold'>
                       {mode === 'light' ? 'Light theme' : 'Dark theme'}
                     </h4>
                   </div>
@@ -325,7 +325,7 @@ export default function UtilityColorsView() {
                       }}>
                       <Icon className='size-4 shrink-0' />
                       <div className='flex min-w-0 flex-col gap-1'>
-                        <span className='text-[11px] font-semibold'>
+                        <span className='text-xs font-semibold'>
                           {selectedRole === 'success'
                             ? 'Changes saved'
                             : selectedRole === 'warning'
@@ -338,25 +338,25 @@ export default function UtilityColorsView() {
                                     ? 'Pending update'
                                     : 'Project update'}
                         </span>
-                        <span className='text-[10px]'>
+                        <span className='text-2xs'>
                           {selectedRole === 'error' ? 'Please try again.' : 'Workspace status'}
                         </span>
                       </div>
                     </div>
                     <div className='flex flex-wrap items-center gap-2'>
                       <span
-                        className='inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-[10px] font-semibold'
+                        className='inline-flex items-center gap-1.5 rounded-sm px-2 py-1 text-2xs font-semibold'
                         style={{ background: accent, color: textColor(parseColor(accent).xyz) }}>
                         <Icon className='size-3' />
                         {utility.label}
                       </span>
                       <span
-                        className='rounded-sm border px-2 py-1 text-[10px] font-semibold'
+                        className='rounded-sm border px-2 py-1 text-2xs font-semibold'
                         style={{ color: accent, borderColor: accent }}>
                         Aa
                       </span>
                     </div>
-                    <label className='flex flex-col gap-1.5 text-[10px]'>
+                    <label className='flex flex-col gap-1.5 text-2xs'>
                       Project name
                       <input
                         aria-label={`${mode} utility focus sample`}
@@ -364,7 +364,7 @@ export default function UtilityColorsView() {
                         readOnly
                         onFocus={() => setFocusedMode(mode)}
                         onBlur={() => setFocusedMode(null)}
-                        className='h-8 w-full min-w-0 rounded-md border px-2 text-[11px] outline-none'
+                        className='h-8 w-full min-w-0 rounded-md border px-2 text-xs outline-none'
                         style={{
                           background: get('--input', mode),
                           color: get('--foreground', mode),
@@ -392,11 +392,11 @@ export default function UtilityColorsView() {
                           }}
                           className='flex cursor-pointer items-center justify-between gap-2 rounded-sm text-left outline-none focus-visible:ring-2 focus-visible:ring-ring'>
                           <span
-                            className='text-[9px]'
+                            className='text-2xs'
                             style={{ color: get('--muted-foreground', mode) }}>
                             {value.label}
                           </span>
-                          <span className='inline-flex items-center gap-1.5 font-mono text-[9px]'>
+                          <span className='inline-flex items-center gap-1.5 font-mono text-2xs'>
                             {value.hex.toUpperCase()}
                             {copiedKey === `${mode}-${value.label}` ? (
                               <Check className='size-3' />
@@ -435,7 +435,7 @@ export default function UtilityColorsView() {
               { id: 'themed', label: 'Theme CSS' },
             ]}
           />
-          <pre className='max-h-96 min-h-40 min-w-0 overflow-auto rounded-md border border-border bg-secondary p-3 font-mono text-[10px] leading-relaxed whitespace-pre text-muted-foreground @4xl/utilities:max-h-none @4xl/utilities:min-h-0 @4xl/utilities:flex-1'>
+          <pre className='max-h-96 min-h-40 min-w-0 overflow-auto rounded-md border border-border bg-secondary p-3 font-mono text-2xs leading-relaxed whitespace-pre text-muted-foreground @4xl/utilities:max-h-none @4xl/utilities:min-h-0 @4xl/utilities:flex-1'>
             {css}
           </pre>
           <div className='flex shrink-0 flex-col gap-3 border-t border-border pt-3'>

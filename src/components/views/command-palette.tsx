@@ -424,7 +424,7 @@ function CommandPalette() {
             autoComplete='off'
             spellCheck={false}
           />
-          <Kbd className='h-5 min-w-0 shrink-0 rounded border border-border bg-background/50 px-1.5 font-mono text-[10px] font-medium text-muted-foreground'>
+          <Kbd className='h-5 min-w-0 shrink-0 rounded border border-border bg-background/50 px-1.5 font-mono text-2xs font-medium text-muted-foreground'>
             Esc
           </Kbd>
         </div>
@@ -432,13 +432,13 @@ function CommandPalette() {
         {/* Results */}
         <div ref={listRef} className='max-h-100 overflow-y-auto py-1'>
           {grouped.size === 0 && (
-            <div className='py-10 text-center text-[12px] text-muted-foreground'>
+            <div className='py-10 text-center text-xs text-muted-foreground'>
               No results for &ldquo;{query}&rdquo;
             </div>
           )}
           {[...grouped.entries()].map(([section, items]) => (
             <div key={section}>
-              <div className='px-4 py-1.5 text-[9px] font-bold tracking-[0.12em] text-muted-foreground uppercase'>
+              <div className='px-4 py-1.5 text-2xs font-bold tracking-[0.12em] text-muted-foreground uppercase'>
                 {section}
               </div>
               {items.map((item) => {
@@ -459,7 +459,7 @@ function CommandPalette() {
                       aria-hidden='true'
                     />
                     <span className='flex-1 text-sm text-foreground'>{item.label}</span>
-                    <span className='shrink-0 rounded bg-muted px-1.5 py-0.5 text-[9px] font-bold tracking-[0.08em] text-muted-foreground uppercase'>
+                    <span className='shrink-0 rounded bg-muted px-1.5 py-0.5 text-2xs font-bold tracking-[0.08em] text-muted-foreground uppercase'>
                       {item.section}
                     </span>
                   </button>
@@ -471,14 +471,14 @@ function CommandPalette() {
 
         {/* Footer hint */}
         <div className='flex h-9 items-center gap-3 border-t border-border px-4'>
-          <span className='text-[9px] text-muted-foreground'>↑↓ navigate</span>
-          <span className='text-[9px] text-muted-foreground'>↵ select</span>
-          <span className='flex-1 text-[9px] text-muted-foreground'>esc close</span>
+          <span className='text-2xs text-muted-foreground'>↑↓ navigate</span>
+          <span className='text-2xs text-muted-foreground'>↵ select</span>
+          <span className='flex-1 text-2xs text-muted-foreground'>esc close</span>
           <KbdGroup className='gap-1'>
-            <Kbd className='h-4 min-w-0 rounded border border-border bg-background/50 px-1 font-mono text-[9px] font-medium text-muted-foreground'>
+            <Kbd className='h-4 min-w-0 rounded border border-border bg-background/50 px-1 font-mono text-2xs font-medium text-muted-foreground'>
               {commandModifier}
             </Kbd>
-            <Kbd className='h-4 min-w-0 rounded border border-border bg-background/50 px-1 font-mono text-[9px] font-medium text-muted-foreground'>
+            <Kbd className='h-4 min-w-0 rounded border border-border bg-background/50 px-1 font-mono text-2xs font-medium text-muted-foreground'>
               K
             </Kbd>
           </KbdGroup>

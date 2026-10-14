@@ -65,7 +65,7 @@ export default function GradientStopBar({
 
   const handleTrackClick = useCallback(
     (e: React.MouseEvent) => {
-      if ((e.target as HTMLElement).classList.contains('grad-stop-handle')) return;
+      if ((e.target as HTMLElement).hasAttribute('data-gradient-stop')) return;
       onAddStop(posFromEvent(e.clientX));
     },
     [posFromEvent, onAddStop],
@@ -121,7 +121,11 @@ export default function GradientStopBar({
         {stops.map((stop, i) => (
           <div
             key={i}
-            className={cn('grad-stop-handle', i === selectedStop && 'selected')}
+            data-gradient-stop=''
+            className={cn(
+              'absolute top-1/2 z-[2] h-7 w-5 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-[var(--radius)] border-2 border-white/50 shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] transition-[border-color,box-shadow] duration-100 active:cursor-grabbing data-[selected=true]:z-[3] data-[selected=true]:border-white data-[selected=true]:shadow-[0_0_0_2px_var(--color-primary),0_2px_8px_rgba(0,0,0,0.5)]',
+            )}
+            data-selected={i === selectedStop}
             style={{
               left: `${stop.pos}%`,
               background: stop.value ? renderColor(stop.value).css : stop.hex,
@@ -144,7 +148,7 @@ export default function GradientStopBar({
                   onRemoveStop(i);
                 }}
                 title='Remove stop (or press Delete)'
-                className='absolute -top-2.5 -right-2.5 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border-none bg-destructive p-0 text-[10px] leading-none text-white'
+                className='absolute -top-2.5 -right-2.5 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border-none bg-destructive p-0 text-2xs leading-none text-white'
                 tabIndex={-1}>
                 <IconX className='size-3' aria-hidden='true' />
               </button>
@@ -152,11 +156,11 @@ export default function GradientStopBar({
           </div>
         ))}
       </div>
-      <p className='mt-1.5 text-[10px] text-muted-foreground'>
-        Click track to add · Drag or <Kbd className='h-4 min-w-0 px-1 text-[10px]'>←</Kbd>/
-        <Kbd className='h-4 min-w-0 px-1 text-[10px]'>→</Kbd> to move ·{' '}
-        <Kbd className='h-4 min-w-0 px-1 text-[10px]'>Del</Kbd> to remove ·{' '}
-        <Kbd className='h-4 min-w-0 px-1 text-[10px]'>Tab</Kbd> to cycle
+      <p className='mt-1.5 text-2xs text-muted-foreground'>
+        Click track to add · Drag or <Kbd className='h-4 min-w-0 px-1 text-2xs'>←</Kbd>/
+        <Kbd className='h-4 min-w-0 px-1 text-2xs'>→</Kbd> to move ·{' '}
+        <Kbd className='h-4 min-w-0 px-1 text-2xs'>Del</Kbd> to remove ·{' '}
+        <Kbd className='h-4 min-w-0 px-1 text-2xs'>Tab</Kbd> to cycle
       </p>
     </div>
   );

@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 
 import type { ColorValue } from '@/lib/engine/color';
 
+import { ToolEmptyState } from '@/components/global/tool-empty-state';
 import { Chart } from '@/components/ui/chart';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
@@ -59,18 +60,10 @@ function TabBar({ active, setActive }: { active: Tab; setActive: (t: Tab) => voi
   );
 }
 
-function EmptyState({ title }: { title: string }) {
-  return (
-    <div className='tool-panel-space flex-1 px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
-      <p className='text-[12px] text-muted-foreground'>Generate a palette first to use {title}.</p>
-    </div>
-  );
-}
-
 function FittedChart(props: ComponentProps<typeof Chart<PaletteChartPoint, number, number>>) {
   const { className, style, ...chartProps } = props;
   return (
-    <div className='h-60 min-h-0 w-full max-w-88 self-center lg:h-auto lg:max-h-60 lg:flex-1'>
+    <div className='h-60 min-h-0 w-full max-w-88 self-center @min-[42rem]:h-auto @min-[42rem]:max-h-60 @min-[42rem]:flex-1'>
       <Chart
         {...chartProps}
         className={`${className ?? ''} h-full`}
@@ -116,7 +109,7 @@ function ColorProfile({
                 }}
               />
             </div>
-            <span className='text-right font-mono text-[10px] leading-none tabular-nums'>
+            <span className='text-right font-mono text-2xs leading-none tabular-nums'>
               {point[dimension].toFixed(dimension === 'lightness' ? 2 : 3)}
             </span>
           </div>
@@ -188,7 +181,13 @@ function OklchTab() {
     };
   }, [points]);
 
-  if (!slots.length) return <EmptyState title='OKLCH visualizer' />;
+  if (!slots.length)
+    return (
+      <ToolEmptyState
+        className='flex-1 tool-panel-space'
+        message='Generate a palette first to use OKLCH visualizer.'
+      />
+    );
 
   const statItems = stats
     ? [
@@ -200,8 +199,8 @@ function OklchTab() {
       ]
     : [];
   return (
-    <div className='@container flex min-h-0 flex-1 flex-col overflow-auto lg:overflow-hidden'>
-      <div className='tool-inline-space grid shrink-0 grid-cols-2 gap-x-4 gap-y-3 border-b border-border px-4 py-3 sm:grid-cols-3 lg:grid-cols-5 3xl:px-6 min-[160rem]:px-7'>
+    <div className='@container flex min-h-0 flex-1 flex-col overflow-auto'>
+      <div className='grid shrink-0 grid-cols-2 gap-x-4 gap-y-3 border-b border-border px-4 py-3 3xl:px-6 4xl:px-7 @min-[40rem]:grid-cols-3 @5xl:grid-cols-5'>
         {statItems.map(([label, value]) => (
           <div key={label} className='flex flex-col gap-1.5'>
             <span className={TYPE.label}>{label}</span>
@@ -209,8 +208,8 @@ function OklchTab() {
           </div>
         ))}
       </div>
-      <div className='grid grid-cols-1 lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:grid-rows-[minmax(0,1fr)_auto] @4xl:grid-cols-3 @4xl:grid-rows-[minmax(0,1fr)]'>
-        <section className='tool-panel-space tool-panel-stack grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] gap-4 px-4 py-4 lg:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)] 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:border-r @4xl:border-border'>
+      <div className='grid grid-cols-1 @min-[42rem]:min-h-0 @min-[42rem]:flex-1 @min-[42rem]:grid-cols-2 @min-[42rem]:grid-rows-[minmax(0,1fr)_auto] @min-[42rem]:overflow-hidden @4xl:grid-cols-3 @4xl:grid-rows-[minmax(0,1fr)]'>
+        <section className='grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] tool-panel-stack tool-panel-space @min-[42rem]:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)] @4xl:border-r @4xl:border-border'>
           <div className='flex h-6 items-center justify-between gap-2'>
             <div className={TYPE.label}>Lightness vs chroma</div>
             <div className={TYPE.mono}>L / C</div>
@@ -226,7 +225,7 @@ function OklchTab() {
           <ColorProfile points={points} dimension='lightness' activeId={activeId} />
         </section>
 
-        <section className='tool-panel-space tool-panel-stack grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] gap-4 px-4 py-4 lg:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)] 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
+        <section className='grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] tool-panel-stack tool-panel-space @min-[42rem]:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)]'>
           <div className='flex h-6 items-center justify-between gap-2'>
             <div className={TYPE.label}>Hue distribution</div>
             <div className={TYPE.mono}>H / C</div>
@@ -241,7 +240,7 @@ function OklchTab() {
           </div>
           <ColorProfile points={points} dimension='chroma' activeId={activeId} />
         </section>
-        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-t border-border px-4 py-4 lg:col-span-2 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:col-span-1 @4xl:border-t-0 @4xl:border-l'>
+        <section className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @min-[42rem]:col-span-2 @4xl:col-span-1 @4xl:border-t-0 @4xl:border-l'>
           <div className='flex h-6 shrink-0 items-center justify-between gap-2'>
             <div className={TYPE.label}>Color values</div>
             <Button
@@ -278,11 +277,11 @@ function OklchTab() {
                   className='flex min-w-0 cursor-pointer items-center gap-2 text-left outline-none'>
                   <div className='flex min-w-0 flex-1 flex-col gap-1 @min-[17rem]/reading:flex-row @min-[17rem]/reading:items-baseline @min-[17rem]/reading:justify-between @min-[17rem]/reading:gap-3'>
                     <span
-                      className='truncate text-[12px] leading-none font-semibold text-foreground'
+                      className='truncate text-xs leading-none font-semibold text-foreground'
                       title={pt.name}>
                       {pt.name}
                     </span>
-                    <span className='shrink-0 font-mono text-[10px] leading-none text-muted-foreground'>
+                    <span className='shrink-0 font-mono text-2xs leading-none text-muted-foreground'>
                       {pt.hex.toUpperCase()}
                     </span>
                   </div>
@@ -309,12 +308,12 @@ function OklchTab() {
                     <div key={title} className='flex min-w-0 flex-col gap-1'>
                       <div className='flex items-baseline justify-between gap-0.5'>
                         <dt
-                          className='text-[9px] leading-none font-semibold text-muted-foreground'
+                          className='text-2xs leading-none font-semibold text-muted-foreground'
                           title={title}>
                           {label}
                           <span className='sr-only'> {title}</span>
                         </dt>
-                        <dd className='font-mono text-[10px] leading-none text-foreground/80 tabular-nums'>
+                        <dd className='font-mono text-2xs leading-none text-foreground/80 tabular-nums'>
                           {value}
                         </dd>
                       </div>
@@ -360,7 +359,7 @@ function P3SwatchCard({ value, showP3 }: { value: ColorValue; showP3: boolean })
 
   return (
     <div className='flex min-h-0 min-w-0 flex-col gap-2'>
-      <div className='relative flex h-24 shrink-0 gap-1 lg:h-auto lg:min-h-8 lg:flex-1'>
+      <div className='relative flex h-24 shrink-0 gap-1 @4xl:h-auto @4xl:min-h-8 @4xl:flex-1'>
         <div
           className='flex min-w-0 flex-1 items-end rounded-md border border-border p-3'
           style={{ background: hex }}>
@@ -415,12 +414,18 @@ function P3Tab() {
       ? `:root {\n${colors.map((color, index) => `  --palette-${index + 1}: ${formatColor(color, 'hex')};`).join('\n')}\n}`
       : `@supports (color: color(display-p3 0 0 0)) {\n  :root {\n${colors.map((color, index) => `    --palette-${index + 1}: ${p3CssColor(color)};`).join('\n')}\n  }\n}`;
 
-  if (!slots.length) return <EmptyState title='P3 Gamut viewer' />;
+  if (!slots.length)
+    return (
+      <ToolEmptyState
+        className='flex-1 tool-panel-space'
+        message='Generate a palette first to use P3 Gamut viewer.'
+      />
+    );
 
   return (
-    <div className='@container flex min-h-0 flex-1 flex-col overflow-auto lg:overflow-hidden'>
-      <div className='grid grid-cols-1 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[auto_minmax(0,1fr)]'>
-        <section className='tool-panel-space grid grid-cols-1 items-center gap-4 border-b border-border px-4 py-4 lg:col-span-2 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @3xl:grid-cols-[auto_minmax(0,1fr)]'>
+    <div className='@container flex min-h-0 flex-1 flex-col overflow-auto'>
+      <div className='grid grid-cols-1 @min-[42rem]:min-h-0 @min-[42rem]:flex-1 @min-[42rem]:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] @min-[42rem]:grid-rows-[auto_minmax(0,1fr)] @min-[42rem]:overflow-hidden'>
+        <section className='grid grid-cols-1 items-center gap-4 border-b border-border tool-panel-space @min-[42rem]:col-span-2 @min-[42rem]:grid-cols-[auto_minmax(0,1fr)]'>
           <div className='flex gap-10'>
             <div className='flex flex-col gap-1.5'>
               <span
@@ -448,7 +453,7 @@ function P3Tab() {
           </div>
         </section>
 
-        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-b border-border px-4 py-4 lg:border-r lg:border-b-0 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
+        <section className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-b border-border tool-panel-space @min-[42rem]:border-r @min-[42rem]:border-b-0'>
           <div className='flex flex-wrap items-center justify-between gap-2'>
             <div className={TYPE.label}>Colors</div>
             <ToolSegments
@@ -461,7 +466,7 @@ function P3Tab() {
               ]}
             />
           </div>
-          <div className='grid grid-cols-2 gap-8 lg:min-h-0 lg:flex-1 lg:auto-rows-fr'>
+          <div className='grid grid-cols-2 gap-8 @min-[42rem]:min-h-0 @min-[42rem]:flex-1 @min-[42rem]:auto-rows-fr'>
             {slots.map((slot) => (
               <P3SwatchCard
                 key={slot.id}
@@ -472,7 +477,7 @@ function P3Tab() {
           </div>
         </section>
 
-        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
+        <section className='flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space'>
           <div className='flex flex-wrap items-center justify-between gap-2'>
             <div className={TYPE.label}>CSS with P3 fallback</div>
             <Button
@@ -501,7 +506,7 @@ function P3Tab() {
             ]}
           />
           <pre
-            className={`min-h-0 rounded-md border border-border bg-secondary p-3 break-all whitespace-pre-wrap lg:flex-1 ${TYPE.mono}`}>
+            className={`min-h-0 rounded-md border border-border bg-secondary p-3 break-all whitespace-pre-wrap @min-[42rem]:flex-1 ${TYPE.mono}`}>
             {cssPreview}
           </pre>
         </section>

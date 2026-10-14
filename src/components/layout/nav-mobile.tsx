@@ -57,7 +57,7 @@ export function NavMobile({ className }: NavMobileProps) {
             )}
             aria-current={isActive ? 'page' : undefined}>
             <SectionIcon className='mb-1 size-5' aria-hidden='true' />
-            <span className='text-[9px] font-bold tracking-[.04em]'>{section.label}</span>
+            <span className='text-2xs font-bold tracking-[.04em]'>{section.label}</span>
           </Link>
         );
       })}
@@ -80,7 +80,7 @@ export function NavMobile({ className }: NavMobileProps) {
           <IconRefresh className='size-5' aria-hidden='true' />
         </button>
       </div>
-      <span className='absolute bottom-2 left-1/2 -translate-x-1/2 text-[9px] leading-3 font-bold tracking-[.04em] text-foreground'>
+      <span className='absolute bottom-2 left-1/2 -translate-x-1/2 text-2xs leading-3 font-bold tracking-[.04em] text-foreground'>
         GEN
       </span>
 
@@ -101,7 +101,7 @@ export function NavMobile({ className }: NavMobileProps) {
             )}
             aria-current={isActive ? 'page' : undefined}>
             <SectionIcon className='mb-1 size-5' aria-hidden='true' />
-            <span className='text-[9px] font-bold tracking-[.04em]'>{section.label}</span>
+            <span className='text-2xs font-bold tracking-[.04em]'>{section.label}</span>
           </Link>
         );
       })}

@@ -1,7 +1,7 @@
 /**
  * nav-rail.tsx  — Phase 4 layout component
  *
- * Material Design 3 navigation rail for the tablet layout (640–1023px).
+ * Material Design 3 navigation rail for the tablet layout (600–1023px).
  * Left-side, 64px wide, icons + labels.
  *
  * Shows 4 sections: Palette · Analyze · Build · Export
@@ -78,7 +78,7 @@ export function NavRail({ className, onSectionChange }: NavRailProps) {
             {/* Label */}
             <span
               className={cn(
-                'text-center text-[9px] leading-none font-bold tracking-[.03em]',
+                'text-center text-2xs leading-none font-bold tracking-[.03em]',
                 isActive ? 'text-primary' : 'text-muted-foreground',
               )}>
               {section.label}

@@ -127,14 +127,14 @@ export function SlotCard({ slot, index, onEdit, overlay = false }: SlotCardProps
         ref={setNodeRef}
         style={style}
         className={cn(
-          'group slot-item relative flex min-h-28 w-full flex-1 items-start px-3 py-3 select-none',
+          'palette-strip-card group relative flex min-h-28 w-full min-w-9.5 flex-1 items-start px-3 py-3 select-none [transition:flex_140ms_cubic-bezier(0.16,1,0.3,1)] hover:flex-[1.18]',
           isOver && !isDragging && 'ring-2 ring-white/60 ring-inset',
           overlay && 'shadow-2xl',
         )}
         onDoubleClick={() => onEdit(index)}
         {...attributes}>
         <div className='flex w-[58%] max-w-md min-w-0 flex-col gap-2 rounded-lg bg-black/35 px-3 py-2.5'>
-          <span className='font-mono text-xs leading-snug font-medium break-words text-white'>
+          <span className='font-mono text-xs leading-snug font-medium wrap-break-word text-white'>
             {displayName}
           </span>
           <button
@@ -144,7 +144,7 @@ export function SlotCard({ slot, index, onEdit, overlay = false }: SlotCardProps
             title='Copy hex'>
             {slot.color.hex.toUpperCase()}
           </button>
-          <span className='truncate font-mono text-[11px] leading-none text-white opacity-90 [word-spacing:0.3em]'>
+          <span className='truncate font-mono text-xs leading-none text-white opacity-90 [word-spacing:0.3em]'>
             {contrastVsWhite.toFixed(1)}:1 · H&ensp;{Math.round(hsl.h)}° S&ensp;
             {Math.round(hsl.s * 100)}% L&ensp;
             {Math.round(hsl.l * 100)}%
@@ -199,7 +199,7 @@ export function SlotCard({ slot, index, onEdit, overlay = false }: SlotCardProps
           <div
             className='pointer-events-none absolute inset-0 flex items-center justify-center'
             aria-live='polite'>
-            <span className='rounded-full bg-black/80 px-3 py-1.5 font-mono text-[11px] text-white'>
+            <span className='rounded-full bg-black/80 px-3 py-1.5 font-mono text-xs text-white'>
               Copied!
             </span>
           </div>
@@ -213,24 +213,26 @@ export function SlotCard({ slot, index, onEdit, overlay = false }: SlotCardProps
       ref={setNodeRef}
       style={style}
       className={cn(
-        'group slot-item @container relative -mr-px flex h-full flex-1 justify-between select-none',
+        'palette-strip-card group @container relative -mr-px flex h-full min-w-9.5 flex-1 justify-between select-none [transition:flex_140ms_cubic-bezier(0.16,1,0.3,1)] hover:flex-[1.18] tablet-portrait:relative tablet-portrait:mr-0 tablet-portrait:h-auto tablet-portrait:min-h-28 tablet-portrait:w-full tablet-portrait:items-start tablet-portrait:justify-between tablet-portrait:px-3 tablet-portrait:py-3 palette-strip-crowded:relative palette-strip-crowded:mr-0 palette-strip-crowded:h-auto palette-strip-crowded:min-h-28 palette-strip-crowded:w-full palette-strip-crowded:min-w-0 palette-strip-crowded:flex-none palette-strip-crowded:items-start palette-strip-crowded:justify-between palette-strip-crowded:px-3 palette-strip-crowded:py-3',
         isOver && !isDragging && 'ring-2 ring-white/60 ring-inset',
         overlay && 'shadow-2xl',
       )}
       onDoubleClick={() => onEdit(index)}
       {...attributes}>
       <div
-        className='absolute top-0 bottom-0 left-0 h-full w-12 flex-1'
+        className='absolute top-0 bottom-0 left-0 h-full w-12 flex-1 tablet-portrait:hidden'
         onPointerEnter={() => setHoverSlot(index - 1)}
         onPointerLeave={() => setHoverSlot(null)}></div>
-      <main className='flex h-full w-full flex-1 flex-col items-center gap-4 py-3 @[6.5rem]:py-5 @[11rem]:gap-4'>
-        <div className='flex flex-1 flex-col items-center justify-start gap-2 @[11rem]:justify-center @[11rem]:gap-4'>
+      <main className='flex h-full w-full flex-1 flex-col items-center gap-4 py-3 @[6.5rem]:py-5 @[11rem]:gap-4 tablet-portrait:order-2 tablet-portrait:h-auto tablet-portrait:w-auto tablet-portrait:flex-none tablet-portrait:flex-row tablet-portrait:gap-2 tablet-portrait:py-0 palette-strip-crowded:order-2 palette-strip-crowded:h-auto palette-strip-crowded:w-auto palette-strip-crowded:flex-none palette-strip-crowded:flex-row palette-strip-crowded:gap-2 palette-strip-crowded:py-0'>
+        <div
+          data-slot-card-controls
+          className='flex flex-1 flex-col items-center justify-start gap-2 @[11rem]:justify-center @[11rem]:gap-4 tablet-portrait:flex-none tablet-portrait:flex-row tablet-portrait:items-center tablet-portrait:gap-2 palette-strip-crowded:flex-none palette-strip-crowded:flex-row palette-strip-crowded:items-center palette-strip-crowded:gap-2'>
           {/* Lock Button */}
           <Button
             variant={'ghost'}
             size='icon-lg'
             className={cn(
-              'bg-black/20 transition-all duration-200 hover:bg-black/50 dark:hover:bg-black/50',
+              'bg-black/20 transition-all duration-200 hover:bg-black/50 dark:hover:bg-black/50 palette-strip-crowded:hidden',
               slot.locked && 'text-primary',
             )}
             onClick={(e) => {
@@ -246,7 +248,7 @@ export function SlotCard({ slot, index, onEdit, overlay = false }: SlotCardProps
             variant={'ghost'}
             size='icon-lg'
             className={
-              'bg-black/20 transition-all duration-200 hover:bg-black/50 dark:hover:bg-black/50'
+              'bg-black/20 transition-all duration-200 hover:bg-black/50 dark:hover:bg-black/50 palette-strip-crowded:hidden'
             }
             title='Copy hex to clipboard'
             onClick={handleCopy}>
@@ -266,7 +268,8 @@ export function SlotCard({ slot, index, onEdit, overlay = false }: SlotCardProps
             title='Drag to reorder'
             {...listeners}
             onClick={(e) => e.stopPropagation()}>
-            <ArrowLeftRight />
+            <ArrowLeftRight className='size-4 tablet-portrait:hidden palette-strip-crowded:hidden' />
+            <ArrowUpDown className='hidden size-4 tablet-portrait:block palette-strip-crowded:block' />
           </Button>
 
           {/* Remove Button */}
@@ -274,17 +277,42 @@ export function SlotCard({ slot, index, onEdit, overlay = false }: SlotCardProps
             variant={'ghost'}
             size='icon-lg'
             className={
-              'bg-black/20 transition-all duration-200 hover:bg-black/50 dark:hover:bg-black/50'
+              'bg-black/20 transition-all duration-200 hover:bg-black/50 dark:hover:bg-black/50 palette-strip-crowded:hidden'
             }
             title='Remove Color'
             onClick={() => removeSlot(index)}>
             <XIcon />
           </Button>
+
+          <div className='hidden palette-strip-crowded:flex'>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className='flex size-11 cursor-pointer items-center justify-center rounded-lg border-0 bg-black/20 text-white'
+                title='More actions'
+                aria-label='More actions'>
+                <EllipsisVertical />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end' className='w-44'>
+                <DropdownMenuItem onClick={() => onEdit(index)}>Edit color</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleCopy}>Copy hex</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => toggleLock(index)}>
+                  {slot.locked ? 'Unlock color' : 'Lock color'}
+                </DropdownMenuItem>
+                <DropdownMenuItem variant='destructive' onClick={() => removeSlot(index)}>
+                  Remove color
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* ── Bottom info ── */}
-        <div className='relative h-60 w-full shrink-0 @[15rem]:h-auto @[15rem]:w-full @[15rem]:px-2'>
-          <div className='absolute top-1/2 left-1/2 flex w-60 min-w-0 -translate-x-1/2 -translate-y-1/2 -rotate-90 flex-col gap-0.5 overflow-hidden rounded-md bg-black/35 px-2 py-1 @[5rem]:gap-1.5 @[5rem]:px-3 @[5rem]:py-2 @[6rem]:gap-2 @[6rem]:px-3.5 @[6rem]:py-2.5 @[15rem]:static @[15rem]:mx-auto @[15rem]:w-full @[15rem]:max-w-64 @[15rem]:translate-x-0 @[15rem]:translate-y-0 @[15rem]:rotate-0 @[15rem]:gap-3 @[15rem]:px-3 @[15rem]:py-3'>
+        <div
+          data-slot-card-info
+          className='relative h-60 w-full shrink-0 @[15rem]:h-auto @[15rem]:w-full @[15rem]:px-2 tablet-portrait:order-1 tablet-portrait:h-auto tablet-portrait:w-auto tablet-portrait:min-w-0 tablet-portrait:flex-1 tablet-portrait:shrink palette-strip-crowded:order-1 palette-strip-crowded:h-auto palette-strip-crowded:w-auto palette-strip-crowded:min-w-0 palette-strip-crowded:flex-1 palette-strip-crowded:shrink'>
+          <div
+            data-slot-card-info-content
+            className='absolute top-1/2 left-1/2 flex w-60 min-w-0 -translate-x-1/2 -translate-y-1/2 -rotate-90 flex-col gap-0.5 overflow-hidden rounded-md bg-black/35 px-2 py-1 @[5rem]:gap-1.5 @[5rem]:px-3 @[5rem]:py-2 @[6rem]:gap-2 @[6rem]:px-3.5 @[6rem]:py-2.5 @[15rem]:static @[15rem]:mx-auto @[15rem]:w-full @[15rem]:max-w-64 @[15rem]:translate-x-0 @[15rem]:translate-y-0 @[15rem]:rotate-0 @[15rem]:gap-3 @[15rem]:px-3 @[15rem]:py-3 palette-strip-crowded:static palette-strip-crowded:mx-0 palette-strip-crowded:w-full palette-strip-crowded:max-w-64 palette-strip-crowded:translate-x-0 palette-strip-crowded:translate-y-0 palette-strip-crowded:rotate-0 palette-strip-crowded:gap-3 palette-strip-crowded:px-3 palette-strip-crowded:py-3'>
             {/* Token name */}
             <span className='w-full cursor-text overflow-hidden py-0 text-left font-mono text-xs leading-none font-medium text-ellipsis whitespace-nowrap text-white @[15rem]:py-0'>
               {displayName}
@@ -299,17 +327,17 @@ export function SlotCard({ slot, index, onEdit, overlay = false }: SlotCardProps
               {slot.color.hex.toUpperCase()}
             </Button>
 
-            <span className='truncate font-mono text-[10px] leading-none font-medium text-white opacity-95 [word-spacing:0.3em] @[15rem]:hidden'>
+            <span className='truncate font-mono text-2xs leading-none font-medium text-white opacity-95 [word-spacing:0.3em] @[15rem]:hidden'>
               {contrastVsWhite.toFixed(1)}:1 · H&ensp;{Math.round(hsl.h)}° S&ensp;
               {Math.round(hsl.s * 100)}% L&ensp;
               {Math.round(hsl.l * 100)}%
             </span>
             <div className='hidden flex-col items-end gap-1 @[15rem]:flex'>
-              <span className='font-mono text-[10px] leading-none font-medium text-white opacity-95'>
+              <span className='font-mono text-2xs leading-none font-medium text-white opacity-95'>
                 RATIO {contrastVsWhite.toFixed(1)}:1
               </span>
               {/* HSL */}
-              <span className='font-mono text-[10px] leading-none font-medium text-white opacity-95'>
+              <span className='font-mono text-2xs leading-none font-medium text-white opacity-95'>
                 HSL {Math.round(hsl.h)}° {Math.round(hsl.s * 100)}% {Math.round(hsl.l * 100)}%
                 {slot.color.a !== undefined && slot.color.a < 100 && (
                   <span className='ml-1'>· {slot.color.a}%</span>
@@ -324,14 +352,14 @@ export function SlotCard({ slot, index, onEdit, overlay = false }: SlotCardProps
           <div
             className='pointer-events-none absolute inset-0 flex items-center justify-center'
             aria-live='polite'>
-            <span className='rounded-full bg-black/80 px-3 py-1.5 font-mono text-[11px] text-white backdrop-blur-sm'>
+            <span className='rounded-full bg-black/80 px-3 py-1.5 font-mono text-xs text-white backdrop-blur-sm'>
               Copied!
             </span>
           </div>
         )}
       </main>
       <div
-        className='absolute top-0 right-0 bottom-0 h-full w-12 flex-1'
+        className='absolute top-0 right-0 bottom-0 h-full w-12 flex-1 tablet-portrait:hidden'
         onPointerEnter={() => setHoverSlot(index)}
         onPointerLeave={() => setHoverSlot(null)}></div>
     </section>

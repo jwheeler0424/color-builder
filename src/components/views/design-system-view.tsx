@@ -10,6 +10,7 @@ import { useMemo, useState, useCallback } from 'react';
 
 import type { SemanticToken, UtilityColorSet, UtilityRole } from '@/types';
 
+import { ToolEmptyState } from '@/components/global/tool-empty-state';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
   buildFigmaTokens,
@@ -142,8 +143,8 @@ function TokenRow({
     <div
       className={`grid min-w-120 ${TOKEN_ROW_COLUMNS} items-center gap-1.5 border-b border-border py-2 last:border-b-0 ${isOverridden ? 'bg-accent/30' : ''}`}>
       <div className='flex min-w-0 items-center gap-1'>
-        {isOverridden && <span className='text-[8px] font-bold text-primary'>✎</span>}
-        <code className='truncate font-mono text-[10px] text-foreground/80' title={token.name}>
+        {isOverridden && <span className='text-2xs font-bold text-primary'>✎</span>}
+        <code className='truncate font-mono text-2xs text-foreground/80' title={token.name}>
           {token.name}
         </code>
       </div>
@@ -168,9 +169,8 @@ function TokenRow({
 
       {/* Contrast badge */}
       <span
+        className='text-2xs font-bold'
         style={{
-          fontSize: 8.5,
-          fontWeight: 700,
           padding: '2px 5px',
           borderRadius: 3,
           textAlign: 'center',
@@ -280,7 +280,7 @@ export function UtilityThemeCard({
                 className='flex min-h-12 flex-1 items-center justify-between gap-2 rounded-md border border-foreground/10 p-2'
                 style={{ background: surface, color: accent }}>
                 <span
-                  className='rounded-sm px-2 py-1 text-[10px] font-semibold capitalize'
+                  className='rounded-sm px-2 py-1 text-2xs font-semibold capitalize'
                   style={{ background: accent, color: textColor(parseColor(accent).xyz) }}>
                   {colorRole}
                 </span>
@@ -309,8 +309,8 @@ export function UtilityThemeCard({
                   void copyColor(surface, `${theme}-subtle`);
                 }}
                 className='flex min-w-0 cursor-pointer items-center justify-between gap-1 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring'>
-                <span className='text-[9px] text-muted-foreground'>Subtle</span>
-                <span className='font-mono text-[9px] text-muted-foreground'>
+                <span className='text-2xs text-muted-foreground'>Subtle</span>
+                <span className='font-mono text-2xs text-muted-foreground'>
                   {copied === `${theme}-subtle` ? 'Copied' : surface.toUpperCase()}
                 </span>
               </button>
@@ -475,24 +475,24 @@ export function AccessibilityPanel({ tokens, mode }: { tokens: SemanticToken[]; 
                   Aa
                 </span>
                 <div className='flex min-w-0 flex-col gap-1'>
-                  <span className='truncate text-[11px] font-semibold' title={label}>
+                  <span className='truncate text-xs font-semibold' title={label}>
                     {label}
                   </span>
                   <span
-                    className='truncate font-mono text-[9px] text-muted-foreground'
+                    className='truncate font-mono text-2xs text-muted-foreground'
                     title={`${fgHex.toUpperCase()} on ${bgHex.toUpperCase()}`}>
                     {fgHex.toUpperCase()} / {bgHex.toUpperCase()}
                   </span>
                 </div>
               </div>
-              <span className='text-right font-mono text-[10px] tabular-nums'>
+              <span className='text-right font-mono text-2xs tabular-nums'>
                 {ratio.toFixed(2)}:1
               </span>
-              <span className='text-right font-mono text-[10px] text-muted-foreground tabular-nums'>
+              <span className='text-right font-mono text-2xs text-muted-foreground tabular-nums'>
                 {Math.round(lc)}
               </span>
               <span
-                className='justify-self-end rounded-sm px-1.5 py-1 text-[9px] leading-none font-semibold'
+                className='justify-self-end rounded-sm px-1.5 py-1 text-2xs leading-none font-semibold'
                 style={{
                   color: `color-mix(in oklch, ${status} 55%, ${inspectorText})`,
                   background: `color-mix(in oklch, ${status} 12%, transparent)`,
@@ -579,7 +579,7 @@ function ExportPanel({
         </Button>
       </div>
       <p className={`shrink-0 ${TYPE.meta}`}>{DESCRIPTIONS[fmt]}</p>
-      <pre className='min-h-64 min-w-0 overflow-auto rounded-md border border-border bg-secondary p-4 font-mono text-[10px] leading-relaxed whitespace-pre text-muted-foreground @4xl/design:min-h-0 @4xl/design:flex-1'>
+      <pre className='min-h-64 min-w-0 overflow-auto rounded-md border border-border bg-secondary p-4 font-mono text-2xs leading-relaxed whitespace-pre text-muted-foreground @4xl/design:min-h-0 @4xl/design:flex-1'>
         {content}
       </pre>
     </div>
@@ -651,14 +651,11 @@ export default function DesignSystemView() {
 
   if (!slots.length) {
     return (
-      <div className='tool-panel-space min-h-0 flex-1 overflow-auto px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
-        <div className='mb-5'>
-          <h2>Design System Studio</h2>
-        </div>
-        <p className='text-[12px] text-muted-foreground'>
-          Generate a palette first to build your design system.
-        </p>
-      </div>
+      <ToolEmptyState
+        className='min-h-0 flex-1 overflow-auto tool-panel-space'
+        title='Design System Studio'
+        message='Generate a palette first to build your design system.'
+      />
     );
   }
 
@@ -679,7 +676,7 @@ export default function DesignSystemView() {
 
   return (
     <div className='@container/design flex min-h-0 flex-1 flex-col overflow-hidden'>
-      <div className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
+      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border tool-panel-space'>
         <div className='flex min-w-0 flex-wrap items-center gap-3'>
           <div className='flex flex-col gap-1'>
             <span className={TYPE.label}>Source palette</span>
@@ -729,7 +726,7 @@ export default function DesignSystemView() {
       <div
         key={activePanel}
         data-design-panel={activePanel}
-        className={`min-h-0 min-w-0 flex-1 ${activePanel === 'tokens' || activePanel === 'export' ? 'flex flex-col overflow-hidden' : activePanel === 'utility' || activePanel === 'accessibility' ? 'flex flex-col overflow-auto @4xl/design:overflow-hidden' : activePanel === 'preview' ? 'tool-panel-space flex flex-col overflow-auto px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @4xl/design:overflow-hidden' : 'overflow-auto p-4'}`}>
+        className={`min-h-0 min-w-0 flex-1 ${activePanel === 'tokens' || activePanel === 'export' ? 'flex flex-col overflow-hidden' : activePanel === 'utility' || activePanel === 'accessibility' ? 'flex flex-col overflow-auto @4xl/design:overflow-hidden' : activePanel === 'preview' ? 'flex flex-col overflow-auto tool-panel-space @4xl/design:overflow-hidden' : 'overflow-auto p-4'}`}>
         {/* ── Preview panel ── */}
         {activePanel === 'preview' && (
           <div className='grid grid-cols-1 gap-4 @4xl/design:min-h-0 @4xl/design:flex-1 @4xl/design:grid-cols-2'>
@@ -757,7 +754,7 @@ export default function DesignSystemView() {
         {/* ── Token editor panel ── */}
         {activePanel === 'tokens' && (
           <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto @3xl/design:grid-cols-[14rem_minmax(0,1fr)] @3xl/design:grid-rows-[minmax(0,1fr)] @3xl/design:overflow-hidden @min-[56rem]/design:grid-cols-[16rem_minmax(0,1fr)] @min-[100rem]/design:grid-cols-[20rem_minmax(0,1fr)]'>
-            <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-b border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @3xl/design:border-r @3xl/design:border-b-0'>
+            <aside className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-b border-border tool-panel-space @3xl/design:border-r @3xl/design:border-b-0'>
               <span className={`hidden ${TYPE.label} @3xl/design:block`}>Token groups</span>
               <div
                 role='group'
@@ -774,14 +771,14 @@ export default function DesignSystemView() {
                     <span className='truncate' title={group.label}>
                       {group.label}
                     </span>
-                    <span className='text-[9px]'>
+                    <span className='text-2xs'>
                       {tokens.semantic.filter((token) => group.ids.includes(token.name)).length}
                     </span>
                   </Button>
                 ))}
               </div>
             </aside>
-            <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
+            <section className='flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space'>
               <div className='flex shrink-0 flex-wrap items-start justify-between gap-3'>
                 <div className='flex min-w-0 flex-col gap-1'>
                   <h3 className={TYPE.title}>{activeGroup?.label}</h3>

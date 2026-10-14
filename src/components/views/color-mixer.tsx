@@ -120,7 +120,7 @@ export default function ColorMixer() {
         description='Two colors, seven blend steps and three interpolation spaces.'
       />
       <div className='flex min-h-0 flex-1 flex-col overflow-auto border-t border-border'>
-        <div className='tool-panel-space grid shrink-0 grid-cols-1 items-center gap-4 border-b border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'>
+        <div className='grid shrink-0 grid-cols-1 items-center gap-4 border-b border-border tool-panel-space @xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'>
           {[
             { label: 'Color A', value: colorA, set: setColorA },
             { label: 'Color B', value: colorB, set: setColorB },
@@ -186,7 +186,7 @@ export default function ColorMixer() {
           </Button>
         </div>
         <div className='grid grid-cols-1 @4xl:min-h-0 @4xl:flex-1 @4xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]'>
-          <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-b border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:border-r @4xl:border-b-0'>
+          <section className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-b border-border tool-panel-space @4xl:border-r @4xl:border-b-0'>
             <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
               <span className={TYPE.label}>Blend</span>
               <ToolSegments
@@ -213,8 +213,8 @@ export default function ColorMixer() {
                     }}
                     className='flex min-w-0 cursor-pointer flex-col justify-between rounded-md border border-foreground/10 px-1 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring'
                     style={{ background: paint, color: textColor(value.xyz) }}>
-                    <span className='font-mono text-[10px]'>{Math.round(t * 100)}%</span>
-                    <span className='flex min-h-4 items-center justify-center font-mono text-[9px]'>
+                    <span className='font-mono text-2xs'>{Math.round(t * 100)}%</span>
+                    <span className='flex min-h-4 items-center justify-center font-mono text-2xs'>
                       {copiedHex === paint ? <Check className='size-3' /> : hex.toUpperCase()}
                     </span>
                   </button>
@@ -238,7 +238,7 @@ export default function ColorMixer() {
               <span className={TYPE.mono}>{blendRow[3].hex.toUpperCase()}</span>
             </div>
           </section>
-          <section className='tool-panel-space tool-panel-stack flex min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
+          <section className='flex min-w-0 flex-col tool-panel-stack tool-panel-space'>
             <div className={TYPE.label}>Space comparison</div>
             <div className='grid flex-1 grid-rows-3 gap-4'>
               {allSpaces.map((space) => (
@@ -269,7 +269,7 @@ export default function ColorMixer() {
             </div>
           </section>
         </div>
-        <div className='tool-inline-space flex shrink-0 flex-wrap items-center gap-2 border-t border-border px-4 py-3 3xl:px-6 min-[160rem]:px-7'>
+        <div className='flex shrink-0 flex-wrap items-center gap-2 border-t border-border px-4 py-3 3xl:px-6 4xl:px-7'>
           <Button size='sm' onClick={useMixAsSeeds}>
             <Sprout className='size-3.5' />
             Use blend as seeds

@@ -207,10 +207,10 @@ function ImageTab() {
         className='grid min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start @min-[56rem]/extract-view:grid-cols-[minmax(0,3fr)_minmax(22rem,2fr)] @min-[56rem]/extract-view:grid-rows-[minmax(0,1fr)] @min-[56rem]/extract-view:content-stretch @min-[56rem]/extract-view:overflow-hidden'>
         <section
           data-extract-source
-          className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-b border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @min-[56rem]/extract-view:grid @min-[56rem]/extract-view:grid-rows-[auto_minmax(0,1fr)] @min-[56rem]/extract-view:border-r @min-[56rem]/extract-view:border-b-0'>
+          className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-b border-border tool-panel-space @min-[56rem]/extract-view:grid @min-[56rem]/extract-view:grid-rows-[auto_minmax(0,1fr)] @min-[56rem]/extract-view:border-r @min-[56rem]/extract-view:border-b-0'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
             <span className='flex items-center gap-2'>
-              <span className='font-mono text-[10px] text-primary'>01</span>
+              <span className='font-mono text-2xs text-primary'>01</span>
               <span className={TYPE.label}>Source image</span>
             </span>
             {imgSrc && (
@@ -279,7 +279,7 @@ function ImageTab() {
                   <Upload className='size-3.5' />
                   Choose image
                 </Button>
-                <span className='text-[10px] text-muted-foreground'>
+                <span className='text-2xs text-muted-foreground'>
                   PNG, JPG, or WebP · or drag and drop
                 </span>
               </div>
@@ -299,10 +299,10 @@ function ImageTab() {
             </p>
           )}
         </section>
-        <section className='extract-results tool-panel-space tool-panel-stack @container/extracted-colors flex min-h-0 min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @min-[56rem]/extract-view:overflow-y-auto [@min-[56rem]/extract-view]:[scrollbar-gutter:stable]'>
+        <section className='extract-results @container/extracted-colors flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space @min-[56rem]/extract-view:overflow-y-auto [@min-[56rem]/extract-view]:[scrollbar-gutter:stable]'>
           <div className='flex shrink-0 items-center justify-between gap-2'>
             <div className='flex min-w-0 items-center gap-2'>
-              <span className='font-mono text-[10px] text-primary'>02</span>
+              <span className='font-mono text-2xs text-primary'>02</span>
               <span className={TYPE.label}>Extracted colors</span>
             </div>
             <span className={TYPE.mono}>{extractedColors.length}</span>
@@ -339,10 +339,10 @@ function ImageTab() {
                       )}
                     </span>
                     <span className='flex min-w-0 flex-col gap-0.5 border-t border-border bg-card px-1.5 py-1.5 @min-[32rem]/extracted-colors:px-2 @min-[32rem]/extracted-colors:py-2'>
-                      <span className='truncate font-mono text-[9px] leading-none text-muted-foreground @min-[32rem]/extracted-colors:text-[10px]'>
+                      <span className='truncate font-mono text-2xs leading-none text-muted-foreground @min-[32rem]/extracted-colors:text-2xs'>
                         {hex.toUpperCase()}
                       </span>
-                      <span className='truncate text-[10px] leading-snug font-semibold text-card-foreground @min-[32rem]/extracted-colors:text-xs'>
+                      <span className='truncate text-2xs leading-snug font-semibold text-card-foreground @min-[32rem]/extracted-colors:text-xs'>
                         {name}
                       </span>
                     </span>
@@ -396,7 +396,7 @@ function ImageTab() {
                 <span className='text-xs font-medium text-foreground'>
                   Color samples will appear here
                 </span>
-                <span className='text-[11px] text-muted-foreground'>
+                <span className='text-xs text-muted-foreground'>
                   Extracted from your source image
                 </span>
               </div>
@@ -408,10 +408,10 @@ function ImageTab() {
             <div className='flex items-start justify-between gap-3'>
               <div className='min-w-0'>
                 <span className='flex items-center gap-2'>
-                  <span className='font-mono text-[10px] text-primary'>03</span>
+                  <span className='font-mono text-2xs text-primary'>03</span>
                   <span className={TYPE.label}>Build your app palette</span>
                 </span>
-                <p className='mt-1 text-[11px] text-muted-foreground'>
+                <p className='mt-1 text-xs text-muted-foreground'>
                   {hasImagePalette
                     ? 'Choose a harmony and palette size.'
                     : 'Upload an image above to unlock generation.'}
@@ -424,9 +424,7 @@ function ImageTab() {
                   <label htmlFor='extract-palette-size' className='text-xs font-medium'>
                     Palette size
                   </label>
-                  <p className='text-[10px] text-muted-foreground'>
-                    Choose 4 to {MAX_SLOTS} colors
-                  </p>
+                  <p className='text-2xs text-muted-foreground'>Choose 4 to {MAX_SLOTS} colors</p>
                 </div>
                 <div className='flex shrink-0 items-center gap-3'>
                   <ActionButton
@@ -472,10 +470,10 @@ function ImageTab() {
                 <div className='flex items-start justify-between gap-2'>
                   <div className='min-w-0'>
                     <p className={TYPE.label}>Harmony</p>
-                    <p className='mt-1 text-[13px] font-semibold text-foreground'>
+                    <p className='mt-1 text-sm font-semibold text-foreground'>
                       {selectedHarmony.label}
                     </p>
-                    <p className='mt-0.5 text-[11px] leading-relaxed text-muted-foreground'>
+                    <p className='mt-0.5 text-xs leading-relaxed text-muted-foreground'>
                       {selectedHarmony.desc}
                     </p>
                   </div>
@@ -483,7 +481,7 @@ function ImageTab() {
                     type='button'
                     aria-expanded={harmonyOpen}
                     onClick={() => setHarmonyOpen((open) => !open)}
-                    className='inline-flex shrink-0 cursor-pointer items-center gap-1 rounded border-0 bg-transparent p-0 text-[11px] font-semibold text-primary'>
+                    className='inline-flex shrink-0 cursor-pointer items-center gap-1 rounded border-0 bg-transparent p-0 text-xs font-semibold text-primary'>
                     {harmonyOpen ? 'Done' : 'Change'}
                     <ChevronDown
                       className={`size-3 transition-transform ${harmonyOpen ? 'rotate-180' : ''}`}
@@ -540,10 +538,10 @@ function ImageTab() {
                           style={{ background: slot.color.css ?? hex }}
                         />
                         <span className='flex min-w-0 flex-col gap-0.5 border-t border-border bg-card px-1.5 py-1.5 @min-[32rem]/extracted-colors:px-2 @min-[32rem]/extracted-colors:py-2'>
-                          <span className='truncate font-mono text-[9px] leading-none text-muted-foreground @min-[32rem]/extracted-colors:text-[10px]'>
+                          <span className='truncate font-mono text-2xs leading-none text-muted-foreground @min-[32rem]/extracted-colors:text-2xs'>
                             {hex.toUpperCase()}
                           </span>
-                          <span className='truncate text-[10px] leading-snug font-semibold text-card-foreground @min-[32rem]/extracted-colors:text-xs'>
+                          <span className='truncate text-2xs leading-snug font-semibold text-card-foreground @min-[32rem]/extracted-colors:text-xs'>
                             {name}
                           </span>
                         </span>
@@ -602,7 +600,7 @@ function ConvCard({
       <div className='flex min-w-0 flex-1 flex-col gap-1.5'>
         <div className={TYPE.label}>{label}</div>
         <div className='font-mono text-xs wrap-anywhere'>{disabled ? '-' : value}</div>
-        {sub && !disabled && <div className='text-[10px] text-muted-foreground'>{sub}</div>}
+        {sub && !disabled && <div className='text-2xs text-muted-foreground'>{sub}</div>}
       </div>
       <Button
         variant='ghost'
@@ -652,7 +650,7 @@ function ConvertTab() {
     <>
       <div className='@container flex min-h-0 flex-1 flex-col overflow-auto'>
         <div className='grid min-h-0 flex-1 grid-cols-1 @3xl:grid-cols-[16rem_minmax(0,1fr)]'>
-          <section className='tool-panel-space tool-panel-stack flex min-w-0 flex-col gap-4 border-b border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @3xl:border-r @3xl:border-b-0'>
+          <section className='flex min-w-0 flex-col tool-panel-stack border-b border-border tool-panel-space @3xl:border-r @3xl:border-b-0'>
             <label htmlFor='convert-source' className={TYPE.label}>
               Source color
             </label>
@@ -668,7 +666,7 @@ function ConvertTab() {
               autoComplete='off'
             />
             {!valid && (
-              <p id='convert-error' role='alert' className='text-[11px] text-destructive'>
+              <p id='convert-error' role='alert' className='text-xs text-destructive'>
                 Enter a valid color value.
               </p>
             )}
@@ -698,7 +696,7 @@ function ConvertTab() {
               ))}
             </div>
           </section>
-          <section className='tool-inline-space grid min-w-0 auto-rows-fr px-4 3xl:px-6 min-[160rem]:px-7 @3xl:min-h-0'>
+          <section className='grid min-w-0 auto-rows-fr px-4 3xl:px-6 4xl:px-7 @3xl:min-h-0'>
             <ConvCard disabled={!valid} label='HEX' value={hex} />
             <ConvCard
               disabled={!valid}

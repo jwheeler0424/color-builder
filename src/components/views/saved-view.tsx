@@ -50,7 +50,7 @@ export default function SavedView() {
 
   if (!palettes.length) {
     return (
-      <div className='tool-panel-space min-h-0 flex-1 overflow-auto px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
+      <div className='min-h-0 flex-1 overflow-auto tool-panel-space'>
         <div className='mb-5'>
           <h2>Saved Palettes</h2>
         </div>
@@ -58,14 +58,14 @@ export default function SavedView() {
           <div className='mb-2 font-display text-lg font-bold text-secondary-foreground'>
             No saved palettes yet
           </div>
-          <p className='text-[12px]'>Generate a palette you love, then use Save to keep it.</p>
+          <p className='text-xs'>Generate a palette you love, then use Save to keep it.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className='tool-panel-space min-h-0 flex-1 overflow-auto px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
+    <div className='min-h-0 flex-1 overflow-auto tool-panel-space'>
       <div className='min-w-0'>
         <div className='mb-4 flex items-center justify-between'>
           <h2 className='font-display text-xl font-extrabold'>Saved Palettes</h2>
@@ -85,7 +85,7 @@ export default function SavedView() {
               </div>
               <div style={{ padding: '10px 12px' }}>
                 <div className='mb-0.5 font-display text-sm font-bold'>{p.name || 'Unnamed'}</div>
-                <div className='mb-2 text-[10px] tracking-[.06em] text-muted-foreground uppercase'>
+                <div className='mb-2 text-2xs tracking-[.06em] text-muted-foreground uppercase'>
                   {p.mode} · {p.hexes.length} colors
                 </div>
                 <div className='flex gap-1.5'>

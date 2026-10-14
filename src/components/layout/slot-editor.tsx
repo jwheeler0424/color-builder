@@ -76,10 +76,10 @@ export function SlotEditor({ index, onClose }: { index: number; onClose: () => v
       <div className='flex shrink-0 items-center gap-3 border-b border-border px-4 py-2.5'>
         <button
           onClick={onClose}
-          className='inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[11px] text-muted-foreground transition-colors hover:text-foreground'>
+          className='inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-xs text-muted-foreground transition-colors hover:text-foreground'>
           ← Back
         </button>
-        <span className='flex-1 text-[11px] font-bold text-foreground'>
+        <span className='flex-1 text-xs font-bold text-foreground'>
           Slot {index + 1} — Edit Color
         </span>
         <SlotActions index={index} onRemoved={onClose} />

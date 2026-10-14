@@ -239,7 +239,7 @@ export function SectionNavigation({ className }: SectionNavigationProps) {
                   countLabel={`${String(tools.length).padStart(2, '0')} ${isPalette ? 'actions' : 'tools'}`}
                   sidebarFooter={
                     <>
-                      <div className='flex items-center justify-between font-mono text-[10px] text-foreground/65'>
+                      <div className='flex items-center justify-between font-mono text-2xs text-foreground/65'>
                         <span>Active palette</span>
                         <span>{slots.length} colors</span>
                       </div>
@@ -255,7 +255,7 @@ export function SectionNavigation({ className }: SectionNavigationProps) {
                               />
                             ))
                         ) : (
-                          <span className='flex flex-1 items-center justify-center bg-muted/50 font-mono text-[10px] text-muted-foreground'>
+                          <span className='flex flex-1 items-center justify-center bg-muted/50 font-mono text-2xs text-muted-foreground'>
                             No colors yet
                           </span>
                         )}

@@ -193,7 +193,7 @@ export function SidebarGroup({
       {label && (
         <div
           className={cn(
-            `px-5 pt-1.5 pb-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase`,
+            `px-5 pt-1.5 pb-1 font-mono text-2xs tracking-widest text-muted-foreground uppercase`,
             className,
           )}>
           {label}
@@ -243,14 +243,12 @@ export function SidebarItem({
       </span>
       {badge !== undefined && (
         <span
+          className='font-mono text-xs font-semibold'
           style={{
-            fontSize: 11,
-            fontWeight: 600,
             padding: '1px 6px',
             borderRadius: 10,
             background: active ? 'var(--sidebar-accent, #6366f1)' : '#23262f',
             color: active ? '#fff' : '#9ca3af',
-            fontFamily: 'monospace',
           }}>
           {badge}
         </span>

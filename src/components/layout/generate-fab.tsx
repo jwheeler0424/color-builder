@@ -51,7 +51,7 @@ export function GenerateFab({ className }: GenerateFabProps) {
         className={cn(
           'inline-flex h-9 items-center gap-2 px-4',
           'rounded-full bg-primary text-primary-foreground',
-          'font-mono text-[12px] font-bold tracking-[.04em]',
+          'font-mono text-xs font-bold tracking-[.04em]',
           'shadow-lg shadow-primary/30 hover:opacity-90 hover:shadow-primary/50',
           'cursor-pointer border-0 transition-all',
           'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:outline-none',

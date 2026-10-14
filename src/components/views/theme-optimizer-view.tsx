@@ -116,7 +116,7 @@ function PaletteRecommendation({
           />
           <div className='min-w-0'>
             <div className={cn(TYPE.title, 'truncate')}>{label}</div>
-            <div className='font-mono text-[10px] text-muted-foreground'>
+            <div className='font-mono text-2xs text-muted-foreground'>
               {slot.color.hex.toUpperCase()}
             </div>
           </div>
@@ -143,10 +143,10 @@ function PaletteRecommendation({
             style={{ background: candidateRendition.css }}
             title={`Suggested ${displayedLabel}`}
           />
-          <span className='truncate font-mono text-[10px] text-foreground' title={displayedLabel}>
+          <span className='truncate font-mono text-2xs text-foreground' title={displayedLabel}>
             {displayedLabel}
           </span>
-          <span className='text-[10px] text-muted-foreground'>
+          <span className='text-2xs text-muted-foreground'>
             {applied
               ? 'Applied'
               : recommendation.direction === 'none'
@@ -156,14 +156,14 @@ function PaletteRecommendation({
         </div>
         <span
           className={cn(
-            'font-mono text-[10px]',
+            'font-mono text-2xs',
             passes ? 'text-foreground' : 'text-muted-foreground',
           )}>
           {formatScore(score, target.standard)}
         </span>
       </div>
       {recommendation.direction !== 'none' && (
-        <div className='mt-0.5 text-[10px] leading-snug text-muted-foreground'>
+        <div className='mt-0.5 text-2xs leading-snug text-muted-foreground'>
           💡{' '}
           {recommendation.reachable
             ? `${recommendation.direction === 'darken' ? 'Darken' : 'Lighten'} to `
@@ -183,7 +183,7 @@ function PaletteRecommendation({
         <span className={TYPE.meta}>White {formatScore(whiteScore, target.standard)}</span>
         <span className={TYPE.meta}>Black {formatScore(blackScore, target.standard)}</span>
         {!recommendation.reachable && !applied && (
-          <span className='text-[10px] font-semibold text-destructive'>Target unreachable</span>
+          <span className='text-2xs font-semibold text-destructive'>Target unreachable</span>
         )}
       </div>
 
@@ -251,7 +251,7 @@ function ThemeModePanel({
   const passes = rows.filter((row) => row.recommendation.meetsTarget).length;
 
   return (
-    <section className='tool-panel-space tool-panel-stack flex min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
+    <section className='flex min-w-0 flex-col tool-panel-stack tool-panel-space'>
       <header className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border pb-3'>
         <div className='flex items-center gap-2'>
           <span
@@ -260,13 +260,13 @@ function ThemeModePanel({
             title={`${mode} theme background`}
           />
           <div>
-            <h3 className='text-[13px] font-semibold text-foreground capitalize'>{mode} theme</h3>
+            <h3 className='text-sm font-semibold text-foreground capitalize'>{mode} theme</h3>
             <p className={TYPE.meta}>
               {slots.length} slots · {passes} recommendations meet target
             </p>
           </div>
         </div>
-        <span className='font-mono text-[10px] text-muted-foreground'>
+        <span className='font-mono text-2xs text-muted-foreground'>
           {backgroundRendition.hex.toUpperCase()} surface
         </span>
       </header>
@@ -313,7 +313,7 @@ export default function ThemeOptimizerView() {
         title='Theme Optimizer'
         description='Review and apply light and dark palette variants without changing the source palette.'
       />
-      <div className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
+      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border tool-panel-space'>
         <ToolSegments
           value={standard}
           onValueChange={setStandard}
@@ -324,7 +324,7 @@ export default function ThemeOptimizerView() {
           ]}
         />
         {standard === 'apca' && (
-          <label className='flex items-center gap-2 text-[11px] text-muted-foreground'>
+          <label className='flex items-center gap-2 text-xs text-muted-foreground'>
             APCA target
             <select
               aria-label='APCA target'
@@ -332,7 +332,7 @@ export default function ThemeOptimizerView() {
               onChange={(event) =>
                 setApcaTarget(Number(event.target.value) as (typeof APCA_TARGETS)[number])
               }
-              className='h-8 rounded-md border border-border bg-background px-2 font-mono text-[11px] text-foreground'>
+              className='h-8 rounded-md border border-border bg-background px-2 font-mono text-xs text-foreground'>
               {APCA_TARGETS.map((value) => (
                 <option key={value} value={value}>
                   Lc {value}
@@ -343,7 +343,7 @@ export default function ThemeOptimizerView() {
         )}
       </div>
       {!slots.length ? (
-        <div className='tool-panel-space flex-1 px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
+        <div className='flex-1 tool-panel-space'>
           <p className={TYPE.body}>Generate a palette to optimize light and dark variants.</p>
         </div>
       ) : (

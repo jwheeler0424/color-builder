@@ -61,7 +61,7 @@ function Avatar({
   t,
   index,
   initials,
-  className = 'size-6 text-[9px]',
+  className = 'size-6 text-2xs',
 }: {
   t: Theme;
   index: number;
@@ -287,12 +287,12 @@ function PageHeader({
     <div className='flex flex-wrap items-end justify-between gap-3'>
       <div className='min-w-0'>
         <div
-          className='mb-1 hidden text-[10px] @min-[34rem]/workspace:block'
+          className='mb-1 hidden text-2xs @min-[34rem]/workspace:block'
           style={{ color: get('--muted-foreground') }}>
           Workspace / {crumb}
         </div>
         <h3 className='font-display text-xl leading-tight font-bold'>{title}</h3>
-        <p className='mt-1 text-[11px]' style={{ color: get('--muted-foreground') }}>
+        <p className='mt-1 text-xs' style={{ color: get('--muted-foreground') }}>
           {subtitle}
         </p>
       </div>
@@ -338,7 +338,7 @@ function ProductMockup({ t }: { t: Theme }) {
           />
         ))}
         <span
-          className='mx-auto rounded px-6 py-0.5 text-[9px]'
+          className='mx-auto rounded px-6 py-0.5 text-2xs'
           style={{ background: hair, color: get('--muted-foreground') }}>
           orbit.app/roadmap
         </span>
@@ -360,9 +360,9 @@ function ProductMockup({ t }: { t: Theme }) {
         </div>
         <div className='flex min-w-0 flex-1 flex-col gap-3 p-3 text-left'>
           <div className='flex items-center justify-between'>
-            <span className='font-display text-[12px] font-bold'>Q4 roadmap</span>
+            <span className='font-display text-xs font-bold'>Q4 roadmap</span>
             <span
-              className='rounded px-1.5 py-0.5 text-[9px] font-semibold'
+              className='rounded px-1.5 py-0.5 text-2xs font-semibold'
               style={pillStyle(t, 'success')}>
               On track
             </span>
@@ -377,11 +377,11 @@ function ProductMockup({ t }: { t: Theme }) {
                 key={stat.label}
                 className='rounded-md border p-2'
                 style={{ background: get('--card'), borderColor: get('--border') }}>
-                <div className='text-[8px]' style={{ color: get('--muted-foreground') }}>
+                <div className='text-2xs' style={{ color: get('--muted-foreground') }}>
                   {stat.label}
                 </div>
                 <div className='font-display text-sm leading-tight font-bold'>{stat.value}</div>
-                <div className='text-[8px] font-semibold' style={{ color: utility.success[mode] }}>
+                <div className='text-2xs font-semibold' style={{ color: utility.success[mode] }}>
                   {stat.delta}
                 </div>
               </div>
@@ -406,7 +406,7 @@ function ProductMockup({ t }: { t: Theme }) {
             {rows.map((row) => (
               <div
                 key={row.label}
-                className='flex items-center gap-2 border-t py-1.5 text-[10px]'
+                className='flex items-center gap-2 border-t py-1.5 text-2xs'
                 style={{ borderColor: get('--border') }}>
                 <span
                   className='grid size-3.5 place-items-center rounded-full'
@@ -419,11 +419,11 @@ function ProductMockup({ t }: { t: Theme }) {
                 </span>
                 <span className='min-w-0 flex-1 truncate'>{row.label}</span>
                 <span
-                  className='rounded px-1.5 py-0.5 text-[8px] font-semibold'
+                  className='rounded px-1.5 py-0.5 text-2xs font-semibold'
                   style={pillStyle(t, row.role)}>
                   {row.pill}
                 </span>
-                <Avatar t={t} index={row.person} initials='' className='size-4 text-[7px]' />
+                <Avatar t={t} index={row.person} initials='' className='size-4 text-2xs' />
               </div>
             ))}
           </div>
@@ -516,7 +516,7 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
         </div>
         <div className='flex flex-col items-center px-5 pt-8 text-center @min-[36rem]/workspace:px-10 @min-[36rem]/workspace:pt-12'>
           <span
-            className='inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold'
+            className='inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-2xs font-semibold'
             style={{
               borderColor: mix(onContainer, 'transparent', 28),
               background: mix(onContainer, 'transparent', 8),
@@ -527,7 +527,7 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
           <h3 className='mt-4 max-w-lg font-display text-3xl leading-[1.05] font-extrabold text-balance @min-[36rem]/workspace:text-5xl'>
             Keep every project in orbit
           </h3>
-          <p className='mt-3 max-w-md text-[12px] leading-relaxed text-balance @min-[36rem]/workspace:text-sm'>
+          <p className='mt-3 max-w-md text-xs leading-relaxed text-balance @min-[36rem]/workspace:text-sm'>
             Orbit brings plans, conversations and progress together, so your team spends less time
             coordinating and more time doing its best work.
           </p>
@@ -556,12 +556,12 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
               View pricing
             </button>
           </div>
-          <div className='mt-5 mb-8 flex items-center gap-2 text-[10px]'>
+          <div className='mt-5 mb-8 flex items-center gap-2 text-2xs'>
             <span className='flex -space-x-1.5'>
               {['AJ', 'NL', 'EC', 'JK'].map((who, i) => (
                 <span
                   key={who}
-                  className='grid size-5 place-items-center rounded-full text-[8px] font-bold ring-2'
+                  className='grid size-5 place-items-center rounded-full text-2xs font-bold ring-2'
                   style={
                     {
                       background: accent(i),
@@ -585,7 +585,7 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
       </section>
 
       <div className='flex flex-col items-center gap-3 text-center'>
-        <span className='text-[10px] tracking-widest uppercase' style={muted}>
+        <span className='text-2xs tracking-widest uppercase' style={muted}>
           Trusted by teams at
         </span>
         <div
@@ -608,7 +608,7 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
 
       <section className='flex flex-col gap-4'>
         <div className='flex flex-col gap-1'>
-          <span className='text-[10px] font-semibold tracking-widest uppercase' style={muted}>
+          <span className='text-2xs font-semibold tracking-widest uppercase' style={muted}>
             Features
           </span>
           <h4 className='font-display text-xl font-bold'>
@@ -623,12 +623,12 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
                 style={{ background: accent(i), color: ink(accent(i)) }}>
                 <Icon className='size-4.5' />
               </span>
-              <span className='text-[13px] font-semibold'>{name}</span>
-              <p className='text-[11px] leading-relaxed' style={muted}>
+              <span className='text-sm font-semibold'>{name}</span>
+              <p className='text-xs leading-relaxed' style={muted}>
                 {copy}
               </p>
               <span
-                className='mt-auto inline-flex items-center gap-1 text-[11px] font-semibold'
+                className='mt-auto inline-flex items-center gap-1 text-xs font-semibold'
                 style={{ color: get('--primary') }}>
                 Learn more
                 <ArrowUpRight className='size-3' />
@@ -659,7 +659,7 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
               style={{ color: get('--primary') }}>
               {stat.value}
             </span>
-            <span className='text-[10px]' style={muted}>
+            <span className='text-2xs' style={muted}>
               {stat.label}
             </span>
           </div>
@@ -673,10 +673,10 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
           finally look at the same plan.
         </p>
         <div className='flex items-center gap-3'>
-          <Avatar t={t} index={4} initials='MR' className='size-8 text-[10px]' />
+          <Avatar t={t} index={4} initials='MR' className='size-8 text-2xs' />
           <div className='flex flex-col'>
-            <span className='text-[12px] font-semibold'>Maya Reyes</span>
-            <span className='text-[10px]' style={muted}>
+            <span className='text-xs font-semibold'>Maya Reyes</span>
+            <span className='text-2xs' style={muted}>
               Head of Design, Northstar
             </span>
           </div>
@@ -686,13 +686,13 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
       <section id={`preview-pricing-${mode}`} className='flex flex-col gap-4'>
         <div className='flex flex-wrap items-end justify-between gap-3'>
           <div className='flex flex-col gap-1'>
-            <span className='text-[10px] font-semibold tracking-widest uppercase' style={muted}>
+            <span className='text-2xs font-semibold tracking-widest uppercase' style={muted}>
               Pricing
             </span>
             <h4 className='font-display text-xl font-bold'>A plan for every team</h4>
           </div>
           <div className='flex items-center gap-2'>
-            <span className='text-[10px] font-semibold' style={{ color: get('--primary') }}>
+            <span className='text-2xs font-semibold' style={{ color: get('--primary') }}>
               Save 25%
             </span>
             <div
@@ -706,7 +706,7 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
                   type='button'
                   aria-pressed={annual === yearly}
                   onClick={() => setAnnual(yearly)}
-                  className='h-6 cursor-pointer rounded-sm px-2.5 text-[10px] font-semibold'
+                  className='h-6 cursor-pointer rounded-sm px-2.5 text-2xs font-semibold'
                   style={
                     annual === yearly
                       ? { background: get('--primary'), color: get('--primary-foreground') }
@@ -734,7 +734,7 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
               }>
               {plan.popular && (
                 <span
-                  className='absolute -top-2.5 left-4 rounded-full px-2 py-0.5 text-[9px] font-bold'
+                  className='absolute -top-2.5 left-4 rounded-full px-2 py-0.5 text-2xs font-bold'
                   style={t.primary}>
                   Most popular
                 </span>
@@ -745,16 +745,16 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
                   {plan.price}
                 </span>
                 {plan.unit && (
-                  <span className='text-[10px]' style={muted}>
+                  <span className='text-2xs' style={muted}>
                     {plan.unit}
                   </span>
                 )}
               </div>
-              <p className='text-[10px] leading-relaxed' style={muted}>
+              <p className='text-2xs leading-relaxed' style={muted}>
                 {plan.details}
               </p>
               <div
-                className='flex flex-col gap-2 border-t pt-3 text-[11px]'
+                className='flex flex-col gap-2 border-t pt-3 text-xs'
                 style={{ borderColor: get('--border') }}>
                 {plan.features.map((feature) => (
                   <span key={feature} className='flex items-center gap-2'>
@@ -795,7 +795,7 @@ function LandingPage({ t, onStart }: { t: Theme; onStart: () => void }) {
         />
         <div className='flex min-w-0 flex-col gap-1'>
           <h4 className='font-display text-lg font-bold'>Ready to bring your team into orbit?</h4>
-          <span className='text-[11px]'>Set up your workspace in minutes. No card required.</span>
+          <span className='text-xs'>Set up your workspace in minutes. No card required.</span>
         </div>
         <button
           type='button'
@@ -876,7 +876,7 @@ function ProjectsPage({
       <div className='grid grid-cols-3 gap-2'>
         {kpis.map((kpi) => (
           <Card t={t} key={kpi.label} className='flex min-w-0 flex-col gap-2 p-3'>
-            <span className='truncate text-[10px]' style={muted}>
+            <span className='truncate text-2xs' style={muted}>
               {kpi.label}
             </span>
             <div className='flex items-end justify-between gap-2'>
@@ -888,7 +888,7 @@ function ProjectsPage({
               </span>
             </div>
             <span
-              className='w-fit rounded px-1.5 py-0.5 text-[9px] font-semibold'
+              className='w-fit rounded px-1.5 py-0.5 text-2xs font-semibold'
               style={pillStyle(t, 'success')}>
               {kpi.delta} this week
             </span>
@@ -914,7 +914,7 @@ function ProjectsPage({
               type='button'
               aria-pressed={filter === item.id}
               onClick={() => setFilter(item.id)}
-              className='h-6 cursor-pointer rounded-sm px-2.5 text-[10px] font-semibold'
+              className='h-6 cursor-pointer rounded-sm px-2.5 text-2xs font-semibold'
               style={
                 filter === item.id
                   ? {
@@ -946,14 +946,14 @@ function ProjectsPage({
             onChange={(event) => setSearch(event.target.value)}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
-            className='w-full min-w-0 bg-transparent text-[11px] outline-none'
+            className='w-full min-w-0 bg-transparent text-xs outline-none'
           />
         </div>
       </div>
 
       {selected.length > 0 && (
         <div
-          className='flex items-center justify-between gap-3 rounded-md border p-2.5 text-[11px]'
+          className='flex items-center justify-between gap-3 rounded-md border p-2.5 text-xs'
           style={{
             background: get('--destructive-subtle'),
             color: get('--destructive'),
@@ -972,7 +972,7 @@ function ProjectsPage({
 
       <Card t={t} className='shrink-0 overflow-hidden'>
         <div
-          className={`grid ${columns} items-center gap-2 border-b px-3 py-2 text-[9px] font-semibold tracking-wider uppercase`}
+          className={`grid ${columns} items-center gap-2 border-b px-3 py-2 text-2xs font-semibold tracking-wider uppercase`}
           style={{
             background: get('--card-raised'),
             color: get('--muted-foreground'),
@@ -1027,18 +1027,18 @@ function ProjectsPage({
               />
               <div className='flex min-w-0 items-center gap-2.5'>
                 <span
-                  className='grid size-8 shrink-0 place-items-center rounded-md font-display text-[12px] font-bold'
+                  className='grid size-8 shrink-0 place-items-center rounded-md font-display text-xs font-bold'
                   style={{ background: tile, color: ink(tile) }}>
                   {project.name[0]}
                 </span>
                 <div className='flex min-w-0 flex-1 flex-col gap-1'>
                   <span
-                    className='truncate text-[12px] leading-tight font-semibold'
+                    className='truncate text-xs leading-tight font-semibold'
                     title={project.name}>
                     {project.name}
                   </span>
                   <div className='flex min-w-0 items-center gap-2'>
-                    <span className='min-w-0 truncate text-[10px] leading-none' style={muted}>
+                    <span className='min-w-0 truncate text-2xs leading-none' style={muted}>
                       {project.category}
                     </span>
                     <div
@@ -1049,7 +1049,7 @@ function ProjectsPage({
                         style={{ width: `${project.progress}%`, background: get('--primary') }}
                       />
                     </div>
-                    <span className='text-[9px] tabular-nums' style={muted}>
+                    <span className='text-2xs tabular-nums' style={muted}>
                       {project.progress}%
                     </span>
                   </div>
@@ -1059,16 +1059,16 @@ function ProjectsPage({
                     t={t}
                     index={person.index}
                     initials={project.owner}
-                    className='size-6 text-[8px]'
+                    className='size-6 text-2xs'
                   />
                 </span>
               </div>
               <span
-                className='inline-flex items-center justify-center gap-1 rounded-full px-2 py-1 text-[9px] font-semibold'
+                className='inline-flex items-center justify-center gap-1 rounded-full px-2 py-1 text-2xs font-semibold'
                 style={pillStyle(t, STATUS_ROLE[project.status])}>
                 {STATUS_LABEL[project.status]}
               </span>
-              <span className='hidden text-[10px] @min-[30rem]/workspace:block' style={muted}>
+              <span className='hidden text-2xs @min-[30rem]/workspace:block' style={muted}>
                 {project.due}
               </span>
               <Popover
@@ -1093,14 +1093,14 @@ function ProjectsPage({
                     type='button'
                     disabled={project.status === 'Complete'}
                     onClick={() => completeProject(project.id)}
-                    className='flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-2 text-left text-[11px] disabled:opacity-50'>
+                    className='flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-2 text-left text-xs disabled:opacity-50'>
                     <CheckCircle2 className='size-3.5' />
                     Mark complete
                   </button>
                   <button
                     type='button'
                     onClick={() => removeProjects([project.id])}
-                    className='flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-2 text-left text-[11px]'
+                    className='flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-2 text-left text-xs'
                     style={{ color: get('--destructive') }}>
                     <Trash2 className='size-3.5' />
                     Delete project
@@ -1118,7 +1118,7 @@ function ProjectsPage({
               <Search className='size-4' />
             </span>
             <span className='text-xs font-semibold'>No projects found</span>
-            <span className='text-[10px]' style={muted}>
+            <span className='text-2xs' style={muted}>
               Try a different search or filter.
             </span>
           </div>
@@ -1135,15 +1135,15 @@ function ProjectsPage({
           }}>
           <Clock3 className='mt-0.5 size-4 shrink-0' />
           <div className='flex min-w-0 flex-1 flex-col gap-1'>
-            <span className='text-[12px] font-semibold'>Next team review</span>
-            <span className='text-[10px]'>Today at 2:30 PM · Product and design</span>
+            <span className='text-xs font-semibold'>Next team review</span>
+            <span className='text-2xs'>Today at 2:30 PM · Product and design</span>
           </div>
           <ArrowUpRight className='size-3.5 shrink-0' />
         </div>
         <Card t={t} className='flex flex-col gap-3 p-3'>
           <div className='flex items-center justify-between'>
-            <span className='text-[12px] font-semibold'>Workload by owner</span>
-            <span className='text-[10px]' style={muted}>
+            <span className='text-xs font-semibold'>Workload by owner</span>
+            <span className='text-2xs' style={muted}>
               {projects.length} projects
             </span>
           </div>
@@ -1156,7 +1156,7 @@ function ProjectsPage({
               />
             ))}
           </div>
-          <div className='flex flex-wrap gap-x-3 gap-y-1 text-[10px]'>
+          <div className='flex flex-wrap gap-x-3 gap-y-1 text-2xs'>
             {owners.map((owner) => (
               <span key={owner.key} className='inline-flex items-center gap-1.5'>
                 <span
@@ -1199,8 +1199,8 @@ function ActivityPage({ t, projects }: { t: Theme; projects: PreviewProject[] })
     <>
       <Card t={t} className='flex flex-col gap-3 p-3'>
         <div className='flex items-center justify-between'>
-          <span className='text-[12px] font-semibold'>This week</span>
-          <span className='text-[10px]' style={muted}>
+          <span className='text-xs font-semibold'>This week</span>
+          <span className='text-2xs' style={muted}>
             {WEEK.reduce((sum, entry) => sum + entry.value, 0)} updates
           </span>
         </div>
@@ -1215,7 +1215,7 @@ function ActivityPage({ t, projects }: { t: Theme; projects: PreviewProject[] })
                   opacity: entry.value === peak ? 1 : 0.55,
                 }}
               />
-              <span className='text-[8px]' style={muted}>
+              <span className='text-2xs' style={muted}>
                 {entry.day}
               </span>
             </div>
@@ -1228,7 +1228,7 @@ function ActivityPage({ t, projects }: { t: Theme; projects: PreviewProject[] })
         if (!items.length) return null;
         return (
           <section key={group} className='flex flex-col gap-3'>
-            <span className='text-[10px] font-semibold tracking-widest uppercase' style={muted}>
+            <span className='text-2xs font-semibold tracking-widest uppercase' style={muted}>
               {group}
             </span>
             <div className='relative flex flex-col gap-4 pl-0.5'>
@@ -1248,22 +1248,22 @@ function ActivityPage({ t, projects }: { t: Theme; projects: PreviewProject[] })
                       t={t}
                       index={person.index}
                       initials={event.person}
-                      className='size-7 text-[9px]'
+                      className='size-7 text-2xs'
                     />
                     <div className='flex min-w-0 flex-1 flex-col gap-2'>
                       <div className='flex flex-wrap items-baseline justify-between gap-x-3'>
-                        <span className='text-[12px] leading-snug'>
+                        <span className='text-xs leading-snug'>
                           <b className='font-semibold'>{person.name}</b>{' '}
                           <span style={muted}>{event.verb}</span>{' '}
                           <b className='font-semibold'>{project.name}</b>
                         </span>
-                        <span className='text-[10px]' style={muted}>
+                        <span className='text-2xs' style={muted}>
                           {event.when}
                         </span>
                       </div>
                       {event.note && (
                         <div
-                          className='rounded-lg rounded-tl-none border px-3 py-2 text-[11px] leading-relaxed'
+                          className='rounded-lg rounded-tl-none border px-3 py-2 text-xs leading-relaxed'
                           style={{
                             background: get('--card-raised'),
                             color: get('--card-raised-foreground'),
@@ -1274,7 +1274,7 @@ function ActivityPage({ t, projects }: { t: Theme; projects: PreviewProject[] })
                       )}
                       {(done || blocked) && (
                         <span
-                          className='inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold'
+                          className='inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold'
                           style={{
                             background: pillStyle(t, done ? 'success' : 'error').background,
                             color: utility[done ? 'success' : 'error'][mode],
@@ -1327,8 +1327,8 @@ function SettingsSection({
   return (
     <Card t={t} className='flex flex-col gap-4 p-4'>
       <div className='flex flex-col gap-1'>
-        <h4 className='text-[13px] font-semibold'>{title}</h4>
-        <p className='text-[10px]' style={{ color: t.get('--muted-foreground') }}>
+        <h4 className='text-sm font-semibold'>{title}</h4>
+        <p className='text-2xs' style={{ color: t.get('--muted-foreground') }}>
           {desc}
         </p>
       </div>
@@ -1384,13 +1384,13 @@ function SettingsPage({
             <Avatar t={t} index={0} initials='AJ' className='size-16 text-lg ring-4' />
             <div className='flex flex-col gap-0.5 pb-1'>
               <h3 className='font-display text-xl leading-tight font-bold'>Workspace settings</h3>
-              <span className='text-[10px]' style={muted}>
+              <span className='text-2xs' style={muted}>
                 {settings.workspace} · {settings.email}
               </span>
             </div>
           </div>
           <span
-            className='rounded-full px-2.5 py-1 text-[10px] font-semibold'
+            className='rounded-full px-2.5 py-1 text-2xs font-semibold'
             style={{
               background: get('--primary-container'),
               color: get('--primary-container-foreground'),
@@ -1412,9 +1412,7 @@ function SettingsPage({
               { label: 'Workspace name', key: 'workspace', type: 'text' },
             ] as const
           ).map((field) => (
-            <label
-              key={field.key}
-              className='flex min-w-0 flex-col gap-1.5 text-[11px] font-medium'>
+            <label key={field.key} className='flex min-w-0 flex-col gap-1.5 text-xs font-medium'>
               {field.label}
               <input
                 type={field.type}
@@ -1446,8 +1444,8 @@ function SettingsPage({
               className={`flex cursor-pointer items-center justify-between gap-3 py-3 ${index ? 'border-t' : ''}`}
               style={{ borderColor: get('--border') }}>
               <span className='flex flex-col gap-1'>
-                <span className='text-[12px] font-medium'>{option.label}</span>
-                <span className='text-[10px]' style={muted}>
+                <span className='text-xs font-medium'>{option.label}</span>
+                <span className='text-2xs' style={muted}>
                   {option.detail}
                 </span>
               </span>
@@ -1483,7 +1481,7 @@ function SettingsPage({
         style={{ background: get('--card-raised'), borderColor: get('--border') }}>
         <span
           role='status'
-          className='inline-flex items-center gap-1.5 text-[11px]'
+          className='inline-flex items-center gap-1.5 text-xs'
           style={{ color: saved ? utility.success[mode] : get('--muted-foreground') }}>
           {saved && <CheckCircle2 className='size-3.5' />}
           {saved ? 'Preferences saved' : 'Changes apply to this workspace'}
@@ -1500,10 +1498,10 @@ function SettingsPage({
           borderColor: mix(get('--destructive'), 'transparent', 55),
         }}>
         <div className='flex flex-col gap-1'>
-          <h4 className='text-[13px] font-semibold' style={{ color: get('--destructive') }}>
+          <h4 className='text-sm font-semibold' style={{ color: get('--destructive') }}>
             Danger zone
           </h4>
-          <span className='text-[10px]' style={muted}>
+          <span className='text-2xs' style={muted}>
             Restore the sample projects and defaults.
           </span>
         </div>
@@ -1660,7 +1658,7 @@ export function WorkspacePreview({
           </span>
           <span className='font-display text-base font-bold'>Orbit</span>
           <span
-            className='ml-1 hidden rounded-full border px-2 py-0.5 text-[10px] @min-[40rem]/workspace:block'
+            className='ml-1 hidden rounded-full border px-2 py-0.5 text-2xs @min-[40rem]/workspace:block'
             style={{ color: get('--muted-foreground'), borderColor: get('--border') }}>
             Team workspace
           </span>
@@ -1672,7 +1670,7 @@ export function WorkspacePreview({
               type='button'
               aria-pressed={view === item.id}
               onClick={() => setView(item.id)}
-              className='h-7 cursor-pointer rounded-md px-2.5 text-[11px] font-medium outline-none focus-visible:ring-2'
+              className='h-7 cursor-pointer rounded-md px-2.5 text-xs font-medium outline-none focus-visible:ring-2'
               style={ringStyle(
                 t,
                 view === item.id
@@ -1683,11 +1681,11 @@ export function WorkspacePreview({
             </button>
           ))}
           <span className='ml-1.5'>
-            <Avatar t={t} index={0} initials='AJ' className='size-7 text-[9px]' />
+            <Avatar t={t} index={0} initials='AJ' className='size-7 text-2xs' />
           </span>
         </nav>
       </header>
-      <main className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col gap-4 overflow-auto px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
+      <main className='flex min-h-0 flex-1 flex-col tool-panel-stack overflow-auto tool-panel-space'>
         {view === 'landing' && <LandingPage t={t} onStart={startProject} />}
         {view === 'settings' && (
           <SettingsPage
@@ -1757,7 +1755,7 @@ export function WorkspacePreview({
                     <X className='size-3.5' />
                   </button>
                 </div>
-                <label className='flex flex-col gap-1.5 text-[11px]'>
+                <label className='flex flex-col gap-1.5 text-xs'>
                   Project name
                   <input
                     value={projectName}
@@ -1815,7 +1813,7 @@ export function WorkspacePreview({
         )}
       </main>
       <footer
-        className='flex shrink-0 items-center justify-between gap-3 border-t px-4 py-2.5 text-[10px]'
+        className='flex shrink-0 items-center justify-between gap-3 border-t px-4 py-2.5 text-2xs'
         style={{
           background: get('--surface-dim'),
           color: get('--muted-foreground'),

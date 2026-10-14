@@ -38,7 +38,7 @@ function TabBar({ active, setActive }: { active: Tab; setActive: (t: Tab) => voi
 }
 
 const fallback = (
-  <div className='flex flex-1 items-center justify-center text-[12px] text-muted-foreground'>
+  <div className='flex flex-1 items-center justify-center text-xs text-muted-foreground'>
     Loading…
   </div>
 );

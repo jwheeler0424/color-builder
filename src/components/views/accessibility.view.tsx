@@ -10,6 +10,7 @@ import { Fragment, useMemo, useState } from 'react';
 
 import type { ColorValue } from '@/lib/engine/color';
 
+import { ToolEmptyState } from '@/components/global/tool-empty-state';
 import ColorPickerModal from '@/components/modals/color-picker.modal';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
@@ -53,9 +54,9 @@ const APCA_BADGE: Record<ApcaLevel, { bg: string; fg: string }> = {
   Fail: { bg: 'rgba(239,68,68,.13)', fg: '#dc2626' },
 };
 
-type BadgeSize = 'xs' | 'sm' | 'lg';
-const BADGE_PAD: Record<BadgeSize, string> = { xs: '1px 4px', sm: '2px 6px', lg: '4px 12px' };
-const BADGE_FONT: Record<BadgeSize, number> = { xs: 8.5, sm: 10, lg: 14 };
+type BadgeSize = 'sm' | 'lg';
+const BADGE_PAD: Record<BadgeSize, string> = { sm: '2px 6px', lg: '4px 12px' };
+const BADGE_FONT: Record<BadgeSize, number> = { sm: 10, lg: 14 };
 
 function WcagBadge({ level, size = 'sm' }: { level: WcagLevel; size?: BadgeSize }) {
   const s = WCAG_BADGE[level];
@@ -108,7 +109,7 @@ function ApcaBadge({
 }
 
 const SECTION_LABEL =
-  'font-display text-[10px] font-semibold tracking-widest text-muted-foreground uppercase';
+  'font-display text-2xs font-semibold tracking-widest text-muted-foreground uppercase';
 
 function ModeToggle({
   useApca,
@@ -132,7 +133,7 @@ function ModeToggle({
 
 function ApcaNote() {
   return (
-    <div className='rounded-md border border-muted bg-card px-3 py-2 text-[10.5px] leading-relaxed text-muted-foreground'>
+    <div className='rounded-md border border-muted bg-card px-3 py-2 text-xs leading-relaxed text-muted-foreground'>
       <strong>APCA (WCAG 3 draft)</strong> — more perceptually accurate. Lc ≥ 75 preferred · Lc ≥ 60
       body text · Lc ≥ 45 large text / UI · Lc ≥ 30 non-text.
     </div>
@@ -186,7 +187,7 @@ function BackgroundResult({
           )}
         </div>
         {fix && (
-          <div className='mt-0.5 text-[10px] leading-snug text-muted-foreground'>
+          <div className='mt-0.5 text-2xs leading-snug text-muted-foreground'>
             💡 {fix.direction === 'darken' ? 'Darken' : 'Lighten'} to{' '}
             <span className='font-mono font-bold' style={{ color: fix.hex }}>
               {fix.hex}
@@ -215,9 +216,9 @@ function ColorRow({ hex, index, useApca }: { hex: string; index: number; useApca
           style={{ background: hex }}
         />
         <div className='min-w-0'>
-          <div className='font-mono text-[12px] font-bold text-foreground'>{hex.toUpperCase()}</div>
-          <div className='truncate text-[11px] text-muted-foreground'>{name}</div>
-          <div className='text-[10px] text-muted-foreground'>Color {index + 1}</div>
+          <div className='font-mono text-xs font-bold text-foreground'>{hex.toUpperCase()}</div>
+          <div className='truncate text-xs text-muted-foreground'>{name}</div>
+          <div className='text-2xs text-muted-foreground'>Color {index + 1}</div>
         </div>
       </div>
       <BackgroundResult hex={hex} against='white' useApca={useApca} />
@@ -244,7 +245,7 @@ function PairMatrix({ hexes, useApca }: { hexes: string[]; useApca: boolean }) {
     <section className='flex shrink-0 flex-col gap-3'>
       <div className='flex flex-wrap items-baseline justify-between gap-2'>
         <div className={SECTION_LABEL}>Palette color pairs</div>
-        <div className='text-[10.5px] text-muted-foreground'>
+        <div className='text-xs text-muted-foreground'>
           {passing} of {total} combinations pass{' '}
           {useApca ? 'APCA Large (Lc ≥ 45)' : 'WCAG AA (4.5:1)'} · rows are text, columns are
           backgrounds · faded cells fail
@@ -320,7 +321,7 @@ function PairMatrix({ hexes, useApca }: { hexes: string[]; useApca: boolean }) {
                             style={{ color: selectedText }}>
                             {useBlackText ? 'B Aa' : 'W Aa'}
                           </span>
-                          <span className='rounded bg-card px-1 font-mono text-[9px] text-foreground'>
+                          <span className='rounded bg-card px-1 font-mono text-2xs text-foreground'>
                             {selectedLabel}
                           </span>
                         </div>
@@ -347,7 +348,7 @@ function PairMatrix({ hexes, useApca }: { hexes: string[]; useApca: boolean }) {
                         <span className='text-sm leading-none font-extrabold' style={{ color: fg }}>
                           Aa
                         </span>
-                        <span className='rounded bg-card px-1 font-mono text-[9px] text-foreground'>
+                        <span className='rounded bg-card px-1 font-mono text-2xs text-foreground'>
                           {label}
                         </span>
                       </div>
@@ -385,12 +386,18 @@ function WcagSlotsTab() {
     return { aaOnWhite, aaOnBlack, aaAny, aaaAny, pairsAA, pairsTotal };
   }, [hexes]);
 
-  if (!slots.length) return <EmptyState title='Accessibility' />;
+  if (!slots.length)
+    return (
+      <ToolEmptyState
+        className='min-h-0 flex-1 overflow-auto p-6'
+        message='Generate a palette first to use Accessibility.'
+      />
+    );
 
   return (
-    <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col gap-4 overflow-hidden px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
+    <div className='flex min-h-0 flex-1 flex-col tool-panel-stack overflow-hidden tool-panel-space'>
       <div className='flex flex-wrap items-center justify-between gap-2.5'>
-        <p className='max-w-3xl text-[11px] text-muted-foreground'>
+        <p className='max-w-3xl text-xs text-muted-foreground'>
           How each palette color performs as text or UI against white and black backgrounds.
         </p>
         <ModeToggle useApca={useApca} setUseApca={setUseApca} />
@@ -434,16 +441,16 @@ function WcagSlotsTab() {
               }}>
               {val}
             </div>
-            <div className='mt-0.5 text-[9px] tracking-wider text-muted-foreground uppercase'>
+            <div className='mt-0.5 text-2xs tracking-wider text-muted-foreground uppercase'>
               {label}
             </div>
           </div>
         ))}
       </div>
 
-      <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col gap-4 overflow-auto px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
+      <div className='flex min-h-0 flex-1 flex-col tool-panel-stack overflow-auto tool-panel-space'>
         <section className='flex flex-1 flex-col gap-2'>
-          <div className={cn('hidden shrink-0 gap-3 px-3 md:grid', ROW_GRID)}>
+          <div className={cn('hidden shrink-0 gap-3 px-3 @2xl/accessibility:grid', ROW_GRID)}>
             <div className={SECTION_LABEL}>Color</div>
             <div className={SECTION_LABEL}>Against white</div>
             <div className={SECTION_LABEL}>Against black</div>
@@ -491,7 +498,7 @@ function ColorField({
           aria-label={`Pick ${label.toLowerCase()} color`}
         />
         <input
-          className='w-full min-w-0 rounded border border-border bg-muted px-2 py-1.5 font-mono text-[12px] tracking-[.06em] text-foreground transition-colors outline-none focus:border-ring'
+          className='w-full min-w-0 rounded border border-border bg-muted px-2 py-1.5 font-mono text-xs tracking-[.06em] text-foreground transition-colors outline-none focus:border-ring'
           value={value}
           onChange={(e) => onChange(e.target.value)}
           maxLength={7}
@@ -500,9 +507,7 @@ function ColorField({
           aria-label={`${label} hex`}
         />
       </div>
-      <div className='text-[10px] text-muted-foreground'>
-        {lookupColorName(color, rendition.hex)}
-      </div>
+      <div className='text-2xs text-muted-foreground'>{lookupColorName(color, rendition.hex)}</div>
       {palette.length > 0 && (
         <div className='flex flex-wrap gap-1' aria-label={`Use a palette color as ${label}`}>
           {palette.map((hex, i) => (
@@ -530,7 +535,7 @@ function PassPill({ pass }: { pass: boolean }) {
   const s = WCAG_BADGE[pass ? 'AAA' : 'Fail'];
   return (
     <span
-      className='shrink-0 rounded-[3px] px-1.5 py-0.5 text-[10px] font-bold tracking-[.03em]'
+      className='shrink-0 rounded-[3px] px-1.5 py-0.5 text-2xs font-bold tracking-[.03em]'
       style={{ background: s.bg, color: s.fg }}>
       {pass ? 'Pass' : 'Fail'}
     </span>
@@ -542,7 +547,7 @@ function CheckRow({ label, detail, pass }: { label: string; detail: string; pass
     <div className='flex items-center justify-between gap-3 border-b border-muted py-1.5 last:border-b-0'>
       <div className='min-w-0'>
         <div className='text-sm text-secondary-foreground'>{label}</div>
-        <div className='text-[10px] text-muted-foreground'>{detail}</div>
+        <div className='text-2xs text-muted-foreground'>{detail}</div>
       </div>
       <PassPill pass={pass} />
     </div>
@@ -597,7 +602,7 @@ function ContrastCheckerTab() {
 
   return (
     <>
-      <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col items-center gap-4 overflow-auto px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
+      <div className='flex min-h-0 flex-1 flex-col items-center tool-panel-stack overflow-auto tool-panel-space'>
         {/* Colors: identical cards either side of the swap control, so they line up */}
         <div className='grid w-full max-w-360 grid-cols-1 items-stretch gap-3 @2xl/accessibility:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'>
           <ColorField
@@ -653,8 +658,8 @@ function ContrastCheckerTab() {
                   role='row'
                   className='grid min-h-0 flex-1 grid-cols-[5.5rem_minmax(0,1fr)_minmax(0,1fr)] border-t border-muted'>
                   <div role='rowheader' className='flex min-w-0 flex-col justify-center gap-1 px-3'>
-                    <span className='text-[11px] font-semibold text-foreground'>{label}</span>
-                    <span className='text-[10px] text-muted-foreground'>{detail}</span>
+                    <span className='text-xs font-semibold text-foreground'>{label}</span>
+                    <span className='text-2xs text-muted-foreground'>{detail}</span>
                   </div>
                   {(['forward', 'reverse'] as const).map((direction) => {
                     const reversed = direction === 'reverse';
@@ -674,24 +679,24 @@ function ContrastCheckerTab() {
                           </span>
                         )}
                         {id === 'body' && (
-                          <span className='text-[13px] leading-relaxed'>
+                          <span className='text-sm leading-relaxed'>
                             The quick brown fox jumps over the lazy dog
                           </span>
                         )}
                         {id === 'muted' && (
-                          <span className='text-[13px] leading-relaxed opacity-70'>
+                          <span className='text-sm leading-relaxed opacity-70'>
                             Secondary copy at 70% opacity
                           </span>
                         )}
                         {id === 'controls' && (
                           <div className='flex flex-wrap items-center gap-2'>
                             <span
-                              className='rounded px-2.5 py-1.5 text-[10px] font-bold'
+                              className='rounded px-2.5 py-1.5 text-2xs font-bold'
                               style={{ background: controlBackground, color: controlColor }}>
                               Solid
                             </span>
                             <span
-                              className='rounded border px-2.5 py-1.5 text-[10px] font-bold'
+                              className='rounded border px-2.5 py-1.5 text-2xs font-bold'
                               style={{ borderColor: controlColor }}>
                               Outline
                             </span>
@@ -729,9 +734,7 @@ function ContrastCheckerTab() {
             </div>
             {(fixFg || fixBg) && (
               <div className='flex flex-col gap-2 rounded border border-muted px-3 py-2.5'>
-                <div className='text-[10.5px] text-muted-foreground'>
-                  💡 Closest colors that reach AA
-                </div>
+                <div className='text-xs text-muted-foreground'>💡 Closest colors that reach AA</div>
                 {(
                   [
                     ['Foreground', fixFg, setFg],
@@ -739,7 +742,7 @@ function ContrastCheckerTab() {
                   ] as const
                 ).map(([role, fix, apply]) =>
                   fix ? (
-                    <div key={role} className='flex items-center gap-2 text-[10.5px]'>
+                    <div key={role} className='flex items-center gap-2 text-xs'>
                       <span
                         className='h-4 w-4 shrink-0 rounded border border-border'
                         style={{ background: fix.hex }}
@@ -824,12 +827,18 @@ function ColorBlindTab() {
     });
   }, [slots]);
 
-  if (!slots.length) return <EmptyState title='Color Blindness Simulator' />;
+  if (!slots.length)
+    return (
+      <ToolEmptyState
+        className='min-h-0 flex-1 overflow-auto p-6'
+        message='Generate a palette first to use Color Blindness Simulator.'
+      />
+    );
 
   return (
     <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4'>
       <div className='flex shrink-0 flex-wrap items-center justify-between gap-2.5'>
-        <p className='max-w-3xl text-[11px] text-muted-foreground'>
+        <p className='max-w-3xl text-xs text-muted-foreground'>
           How your palette appears under each type of color vision deficiency. Colors stay in the
           same columns so you can compare each one down the page; flagged pairs become hard to tell
           apart.
@@ -865,7 +874,7 @@ function ColorBlindTab() {
                       style={{ background: s.color.hex }}
                       title={s.color.hex.toUpperCase()}
                     />
-                    <span className='text-[10px] text-muted-foreground'>{i + 1}</span>
+                    <span className='text-2xs text-muted-foreground'>{i + 1}</span>
                   </div>
                 </th>
               ))}
@@ -885,7 +894,7 @@ function ColorBlindTab() {
                         colSpan={sim.length + 1}
                         scope='colgroup'
                         className={cn(
-                          'h-6 px-2 text-left text-[9.5px] font-semibold tracking-widest text-muted-foreground uppercase',
+                          'h-6 px-2 text-left text-2xs font-semibold tracking-widest text-muted-foreground uppercase',
                           r > 0 && 'pt-1',
                         )}>
                         {group}
@@ -895,9 +904,9 @@ function ColorBlindTab() {
                   <tr>
                     <th scope='row' className='px-2 py-0.5 text-left align-middle font-normal'>
                       <div className='font-display text-sm font-bold'>{cbType.name}</div>
-                      <div className='text-[10px] text-muted-foreground'>{cbType.desc}</div>
+                      <div className='text-2xs text-muted-foreground'>{cbType.desc}</div>
                       <span
-                        className='mt-1 inline-block rounded-[3px] px-1.5 py-0.5 text-[10px] font-bold tracking-[.03em] whitespace-nowrap'
+                        className='mt-1 inline-block rounded-[3px] px-1.5 py-0.5 text-2xs font-bold tracking-[.03em] whitespace-nowrap'
                         style={{ background: badge.bg, color: badge.fg }}
                         title={
                           ok
@@ -930,7 +939,7 @@ function ColorBlindTab() {
                             )}
                             {showHex && (
                               <span
-                                className='font-sans text-[13px] leading-none font-bold'
+                                className='font-sans text-sm leading-none font-bold'
                                 style={{ color: tc }}>
                                 {hex.toUpperCase()}
                               </span>
@@ -951,14 +960,6 @@ function ColorBlindTab() {
 }
 
 // ─── Shared: empty state ──────────────────────────────────────────────────────
-
-function EmptyState({ title }: { title: string }) {
-  return (
-    <div className='min-h-0 flex-1 overflow-auto p-6'>
-      <p className='text-[12px] text-muted-foreground'>Generate a palette first to use {title}.</p>
-    </div>
-  );
-}
 
 // ─── Tab bar ──────────────────────────────────────────────────────────────────
 

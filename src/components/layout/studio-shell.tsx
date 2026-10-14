@@ -118,7 +118,7 @@ export function StudioShell() {
             className='desktop-right [grid-area:2/3/3/4]'>
             <div className='flex h-full min-h-0 flex-col overflow-hidden'>
               <div className='flex shrink-0 items-center justify-between gap-3 border-b border-border px-3 py-2'>
-                <span className='truncate text-[11px] font-bold text-foreground'>
+                <span className='truncate text-xs font-bold text-foreground'>
                   {isPicking ? `Slot ${editingSlotIndex! + 1} — Edit Color` : panelTitle}
                 </span>
                 <button
@@ -139,10 +139,10 @@ export function StudioShell() {
                     <div className='flex shrink-0 items-center gap-3 border-b border-border px-4 py-2.5'>
                       <button
                         onClick={handlePickerBack}
-                        className='inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[11px] text-muted-foreground transition-colors hover:text-foreground'>
+                        className='inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-xs text-muted-foreground transition-colors hover:text-foreground'>
                         ← Back
                       </button>
-                      <span className='text-[11px] font-bold text-foreground'>
+                      <span className='text-xs font-bold text-foreground'>
                         Slot {editingSlotIndex + 1} — Edit Color
                       </span>
                     </div>

@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { MainHeader } from './header';
 
 const FALLBACK = (
-  <div className='flex flex-1 items-center justify-center p-8 text-[12px] text-muted-foreground'>
+  <div className='flex flex-1 items-center justify-center p-8 text-xs text-muted-foreground'>
     Loading…
   </div>
 );

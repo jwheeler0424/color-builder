@@ -20,7 +20,7 @@ export function PaletteBar({ onOpen }: { onOpen: () => void }) {
             <span key={s.id} className='flex-1' style={{ background: s.color.hex }} />
           ))}
         </span>
-        <span className='shrink-0 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+        <span className='shrink-0 text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
           Palette ›
         </span>
       </button>

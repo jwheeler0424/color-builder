@@ -15,6 +15,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 
 import type { SavedPalette } from '@/types';
 
+import { ToolEmptyState } from '@/components/global/tool-empty-state';
 import { Chart } from '@/components/ui/chart';
 import { NativeSelect } from '@/components/ui/select';
 import { useChromaStore } from '@/hooks/use-chroma-store';
@@ -186,7 +187,13 @@ function ScoreTab() {
     return () => observer.disconnect();
   }, [slots.length]);
 
-  if (!slots.length) return <EmptyState />;
+  if (!slots.length)
+    return (
+      <ToolEmptyState
+        className='min-h-0 flex-1 overflow-auto tool-panel-space'
+        message='Generate a palette first.'
+      />
+    );
 
   const { balance, accessibility, harmony, uniqueness, overall } = score;
   const radarRatio =
@@ -248,16 +255,16 @@ function ScoreTab() {
   const levelName = (v: number) => (v >= 75 ? 'Strong' : v >= 50 ? 'Fair' : 'Weak');
 
   return (
-    <div className='@container flex min-h-0 flex-1 scrollbar-gutter-stable flex-col overflow-auto'>
+    <div className='@container/score flex min-h-0 flex-1 scrollbar-gutter-stable flex-col overflow-auto'>
       {/* The palette itself is already previewed in the side panel, so it isn't repeated here. */}
       <div className='contents @7xl:grid @7xl:min-h-min @7xl:flex-1 @7xl:grid-cols-3 @7xl:grid-rows-[max-content_auto_minmax(0,1fr)] @7xl:content-start @7xl:gap-x-0 @7xl:gap-y-[clamp(0.375rem,1vh,0.75rem)] @7xl:pt-[clamp(0.75rem,2vh,1.5rem)] @7xl:pb-[clamp(0.75rem,2vh,1.5rem)]'>
-        <div className='grid grid-cols-1 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]! @min-[35rem]:grid-cols-[minmax(0,1fr)_minmax(17rem,1fr)] @min-[48rem]:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] @7xl:contents'>
-          <section className='tool-panel-space grid grid-cols-1 gap-x-4 gap-y-8 px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @min-[48rem]:col-span-2 @min-[48rem]:grid-cols-[minmax(0,4fr)_minmax(0,6fr)] @min-[48rem]:items-stretch @min-[48rem]:gap-x-6 @min-[48rem]:gap-y-4 @min-[48rem]:border-b @min-[48rem]:border-border @5xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] @5xl:items-center @5xl:gap-8 @7xl:col-span-1 @7xl:col-start-1 @7xl:row-start-1 @7xl:grid-cols-1 @7xl:content-evenly @7xl:items-start @7xl:gap-y-0 @7xl:border-b-0'>
+        <div className='grid grid-cols-1 @min-[35rem]:grid-cols-[minmax(0,1fr)_minmax(17rem,1fr)] @min-[48rem]:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] @7xl:contents @min-[80rem]/score:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]!'>
+          <section className='grid grid-cols-1 gap-x-4 gap-y-8 tool-panel-space @min-[48rem]:col-span-2 @min-[48rem]:grid-cols-[minmax(0,4fr)_minmax(0,6fr)] @min-[48rem]:items-stretch @min-[48rem]:gap-x-6 @min-[48rem]:gap-y-4 @min-[48rem]:border-b @min-[48rem]:border-border @5xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] @5xl:items-center @5xl:gap-8 @7xl:col-span-1 @7xl:col-start-1 @7xl:row-start-1 @7xl:grid-cols-1 @7xl:content-evenly @7xl:items-start @7xl:gap-y-0 @7xl:border-b-0'>
             <div className='flex min-w-0 items-center gap-4 @5xl:justify-center @5xl:gap-6 @7xl:justify-start'>
               <ScoreRing value={overall} size='lg' />
               <div className='flex min-w-0 flex-col gap-2 @5xl:self-center @7xl:self-center'>
                 <div className={TYPE.label}>Overall score</div>
-                <div className={`${TYPE.title} xl:text-[16px] @5xl:text-[18px]`}>
+                <div className={`${TYPE.title} @5xl:text-[18px] @min-[80rem]/score:text-[16px]`}>
                   {verdict(overall)}
                 </div>
                 <div className={TYPE.meta}>Equal-weight average across 4 dimensions</div>
@@ -289,13 +296,13 @@ function ScoreTab() {
 
           <section
             data-score-divider-column
-            className='tool-panel-space tool-panel-stack flex min-w-0 flex-col gap-4 px-4 py-4 xl:col-start-2 xl:row-start-2 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @min-[48rem]:self-start @7xl:col-start-3 @7xl:row-start-1 @7xl:self-stretch @7xl:border-l @7xl:border-border @min-[80rem]:ps-[calc(1rem-1px)] @min-[120rem]:ps-[calc(1.5rem-1px)] @min-[160rem]:ps-[calc(1.75rem-1px)]'>
+            className='flex min-w-0 flex-col tool-panel-stack tool-panel-space @min-[48rem]:self-start @7xl:col-start-3 @7xl:row-start-1 @7xl:self-stretch @7xl:border-l @7xl:border-border @min-[80rem]:ps-3.75 @min-[120rem]:ps-5.75 @min-[160rem]:ps-6.75'>
             <div className='flex flex-wrap items-baseline justify-between gap-2'>
               <div className={TYPE.label}>Score profile</div>
               <div className={TYPE.mono}>0 – 100</div>
             </div>
             <div ref={radarAreaRef} className='flex min-w-0 flex-1 items-center justify-center'>
-              <div className='aspect-square w-full max-w-64 lg:max-w-72! xl:max-w-96! @min-[35rem]:max-w-56 @min-[40rem]:max-w-64 @min-[48rem]:max-w-80 @7xl:max-w-[clamp(14rem,31vh,32rem)]! @min-[120rem]:max-w-76!'>
+              <div className='aspect-square w-full max-w-64 @min-[35rem]:max-w-56 @min-[40rem]:max-w-64 @min-[48rem]:max-w-80 @min-[64rem]/score:max-w-72! @7xl:max-w-[clamp(14rem,31vh,32rem)]! @min-[120rem]:max-w-76!'>
                 <Chart
                   initialWidth={320}
                   height={320}
@@ -313,7 +320,7 @@ function ScoreTab() {
 
           <section
             data-score-divider-column
-            className='tool-panel-space flex min-w-0 flex-col border-t border-border px-4 py-4 xl:col-span-1 xl:col-start-1 xl:row-start-2 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @min-[35rem]:col-span-2 @min-[48rem]:col-span-1 @min-[48rem]:border-t-0 @7xl:col-span-1 @7xl:col-start-2 @7xl:row-start-1 @7xl:border-l @7xl:border-border @min-[80rem]:ps-[calc(1rem-1px)] @min-[120rem]:ps-[calc(1.5rem-1px)] @min-[160rem]:ps-[calc(1.75rem-1px)]'>
+            className='flex min-w-0 flex-col border-t border-border tool-panel-space @min-[35rem]:col-span-2 @min-[48rem]:col-span-1 @min-[48rem]:border-t-0 @7xl:col-span-1 @7xl:col-start-2 @7xl:row-start-1 @7xl:border-l @7xl:border-border @min-[80rem]:ps-3.75 @min-[120rem]:ps-5.75 @min-[160rem]:ps-6.75'>
             <div className='flex flex-wrap items-baseline justify-between gap-2'>
               <div className={TYPE.label}>Dimensions</div>
               <div className={TYPE.meta}>4 dimensions</div>
@@ -322,7 +329,7 @@ function ScoreTab() {
               {feedback.map(({ label, measures, value, note }) => (
                 <div
                   key={label}
-                  className='flex min-w-0 flex-col gap-2 border-b border-border py-3 last:border-b-0 @min-[35rem]:gap-1 @min-[35rem]:border-0 @min-[35rem]:py-2 @xl:gap-4 @xl:py-5 @min-[48rem]:py-1.5'>
+                  className='flex min-w-0 flex-col gap-2 border-b border-border py-3 last:border-b-0 @min-[35rem]:gap-1 @min-[35rem]:border-0 @min-[35rem]:py-2 @min-[48rem]:py-1.5 @min-[80rem]/score:gap-4 @min-[80rem]/score:py-5'>
                   <div className='flex min-w-0 flex-col gap-1'>
                     <div className={TYPE.title}>{label}</div>
                     <div className={TYPE.meta}>{measures}</div>
@@ -350,13 +357,13 @@ function ScoreTab() {
           aria-hidden='true'
           className='hidden border-t border-border @7xl:col-span-3 @7xl:row-start-2 @7xl:block'
         />
-        <div className='grid min-w-0 grid-cols-1 gap-y-5 xl:grid-cols-2 xl:items-start xl:gap-x-6 xl:gap-y-6 xl:border-t xl:border-border xl:pt-6 @7xl:contents'>
-          <section className='tool-panel-space tool-panel-stack @container/color-detail col-span-full flex min-w-0 flex-col gap-4 border-t border-border px-4 py-4 xl:col-span-1 xl:col-start-1 xl:row-start-1 xl:self-start xl:border-t-0 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @7xl:col-span-1 @7xl:col-start-1 @7xl:row-start-3 @7xl:self-stretch'>
+        <div className='grid min-w-0 grid-cols-1 gap-y-5 @7xl:contents @min-[80rem]/score:grid-cols-2 @min-[80rem]/score:items-start @min-[80rem]/score:gap-x-6 @min-[80rem]/score:gap-y-6 @min-[80rem]/score:border-t @min-[80rem]/score:border-border @min-[80rem]/score:pt-6'>
+          <section className='@container/color-detail col-span-full flex min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @7xl:col-span-1 @min-[80rem]/score:col-span-1 @7xl:col-start-1 @min-[80rem]/score:col-start-1 @7xl:row-start-3 @min-[80rem]/score:row-start-1 @7xl:self-stretch @min-[80rem]/score:self-start @min-[80rem]/score:border-t-0'>
             <div className='flex flex-wrap items-baseline justify-between gap-2'>
               <div className={TYPE.label}>Color detail</div>
               <div className={TYPE.meta}>OKLCH and text contrast on white / black</div>
             </div>
-            <div className='grid grid-cols-1 gap-x-6 gap-y-3 xl:hidden @min-[32rem]/color-detail:hidden'>
+            <div className='grid grid-cols-1 gap-x-6 gap-y-3 @min-[32rem]/color-detail:hidden'>
               {slots.map((slot, index) => {
                 const xyz = colors[index]!;
                 const { l, c, h } = xyzToLch(OKLAB, xyz);
@@ -413,8 +420,8 @@ function ScoreTab() {
                 );
               })}
             </div>
-            <div className='hidden overflow-x-auto xl:block @min-[32rem]/color-detail:block'>
-              <table className='w-full min-w-0 table-fixed border-collapse text-left text-[11px]'>
+            <div className='hidden overflow-x-auto @min-[32rem]/color-detail:block'>
+              <table className='w-full min-w-0 table-fixed border-collapse text-left text-xs'>
                 <thead>
                   <tr className='border-b border-border text-muted-foreground'>
                     <th scope='col' className='w-[24%] py-2 pr-2 font-medium'>
@@ -498,7 +505,7 @@ function ScoreTab() {
 
           <section
             data-score-divider-column
-            className='tool-panel-space tool-panel-stack flex min-w-0 flex-col gap-4 border-t border-border px-4 py-4 xl:col-span-2 xl:row-start-2 xl:border-t 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @7xl:col-span-1 @7xl:col-start-3 @7xl:row-start-3 @7xl:border-t-0 @7xl:border-l @7xl:border-border @min-[80rem]:ps-[calc(1rem-1px)] @min-[120rem]:ps-[calc(1.5rem-1px)] @min-[160rem]:ps-[calc(1.75rem-1px)]'>
+            className='flex min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @7xl:col-span-1 @min-[80rem]/score:col-span-2 @7xl:col-start-3 @7xl:row-start-3 @min-[80rem]/score:row-start-2 @7xl:border-t-0 @min-[80rem]/score:border-t @7xl:border-l @7xl:border-border @min-[80rem]:ps-3.75 @min-[120rem]:ps-5.75 @min-[160rem]:ps-6.75'>
             <div className='flex flex-wrap items-baseline justify-between gap-2'>
               <div className={TYPE.label}>Pair contrast</div>
               <div className={TYPE.meta}>WCAG text contrast ratios · opaque color pairs</div>
@@ -553,7 +560,7 @@ function ScoreTab() {
                   </ul>
                 </div>
                 <div className='hidden overflow-x-auto @min-[35rem]:block'>
-                  <table className='w-full min-w-0 border-collapse text-center text-[11px]'>
+                  <table className='w-full min-w-0 border-collapse text-center text-xs'>
                     <caption className='sr-only'>
                       WCAG contrast ratio for each palette color pair
                     </caption>
@@ -638,7 +645,7 @@ function ScoreTab() {
 
           <section
             data-score-divider-column
-            className='tool-panel-space tool-panel-stack @container/vision flex min-w-0 flex-col gap-4 border-t border-border px-4 py-4 xl:col-start-2 xl:row-start-1 xl:self-start xl:border-t-0 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @7xl:col-span-1 @7xl:col-start-2 @7xl:row-start-3 @7xl:self-stretch @7xl:border-l @7xl:border-border @min-[80rem]:ps-[calc(1rem-1px)] @min-[120rem]:ps-[calc(1.5rem-1px)] @min-[160rem]:ps-[calc(1.75rem-1px)]'>
+            className='@container/vision flex min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @7xl:col-span-1 @7xl:col-start-2 @min-[80rem]/score:col-start-2 @7xl:row-start-3 @min-[80rem]/score:row-start-1 @7xl:self-stretch @min-[80rem]/score:self-start @min-[80rem]/score:border-t-0 @7xl:border-l @7xl:border-border @min-[80rem]:ps-3.75 @min-[120rem]:ps-5.75 @min-[160rem]:ps-6.75'>
             <div className='flex flex-wrap items-baseline justify-between gap-2'>
               <div className={TYPE.label}>Color-vision distinction</div>
               <div className={TYPE.meta}>Closest pair · simulated appearance · ΔE00</div>
@@ -693,7 +700,7 @@ function ScoreTab() {
               </ul>
             </div>
             <div className='hidden overflow-x-auto @xl/vision:block'>
-              <table className='w-full min-w-0 table-fixed border-collapse text-left text-[11px]'>
+              <table className='w-full min-w-0 table-fixed border-collapse text-left text-xs'>
                 <thead>
                   <tr className='border-b border-border text-muted-foreground'>
                     <th scope='col' className='w-[28%] py-3 pr-3 font-medium'>
@@ -822,10 +829,10 @@ function PaletteCard({
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
   const { tag, color } = SERIES[side];
   return (
-    <section className='grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3'>
+    <section className='grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-3 compare-compact:gap-y-2 compare-short:gap-y-1'>
       <div className='flex min-w-0 items-center gap-2'>
         <span
-          className='grid h-5 w-5 place-items-center rounded-full text-[10px] font-bold text-background'
+          className='grid h-5 w-5 place-items-center rounded-full text-2xs font-bold text-background'
           style={{ background: color }}>
           {tag}
         </span>
@@ -840,14 +847,14 @@ function PaletteCard({
         onChange={(e) => onChange(e.target.value)}
         aria-label={`Palette ${tag}`}
         containerClassName='col-span-full'
-        className='text-xs'>
+        className='text-xs compare-short:py-1.5'>
         {options.map((p) => (
           <option key={p.id} value={p.id}>
             {p.name} ({p.hexes.length} colors · {p.mode})
           </option>
         ))}
       </NativeSelect>
-      <div className='col-span-full flex h-11 min-w-0 overflow-hidden rounded-sm border border-border'>
+      <div className='col-span-full flex h-11 min-w-0 overflow-hidden rounded-sm border border-border compare-compact:h-9 compare-short:h-7'>
         {palette.hexes.map((hex, i) => (
           <button
             key={i}
@@ -863,7 +870,7 @@ function PaletteCard({
             }}>
             {copiedIdx === i && (
               <span
-                className='text-[10px] font-bold'
+                className='text-2xs font-bold'
                 style={{ color: textColor(parseColor(hex).xyz) }}>
                 <IconCheck className='size-3' aria-hidden='true' />
               </span>
@@ -890,11 +897,13 @@ function CompareMetricCards({
   metrics,
   className,
   showScale = true,
+  layout,
 }: {
   label: string;
   metrics: ComparisonMetric[];
   className: string;
   showScale?: boolean;
+  layout: 'metrics' | 'properties';
 }) {
   return (
     <div role='list' aria-label={`${label} comparisons`} className={className}>
@@ -918,19 +927,25 @@ function CompareMetricCards({
             key={metric.label}
             role='listitem'
             data-compare-metric-card
-            className='min-w-0 py-3'>
+            className={`min-w-0 py-3 compare-tablet:py-1 ${layout === 'metrics' ? 'compare-short:flex compare-short:flex-col compare-short:justify-center compare-short:py-3 compare-tall:flex compare-tall:flex-col compare-tall:justify-center compare-tall:border-t compare-tall:border-border compare-tall:py-5' : 'compare-short:py-1.5 compare-tall:py-5'}`}>
             <div className='flex min-w-0 flex-wrap items-baseline justify-between gap-x-2 gap-y-1'>
-              <h3 className='min-w-0 text-sm leading-snug font-semibold'>{metric.label}</h3>
+              <h3
+                className={`min-w-0 text-sm leading-snug font-semibold ${layout === 'metrics' ? 'compare-tall:text-base' : ''}`}>
+                {metric.label}
+              </h3>
               <span
-                className='shrink-0 text-[10px] font-semibold'
+                className={`shrink-0 text-2xs font-semibold ${layout === 'metrics' ? 'compare-tall:text-xs' : ''}`}
                 style={{
                   color: winner ? SERIES[winner].color : undefined,
                 }}>
                 {result}
               </span>
             </div>
-            <p className='mt-1 text-xs leading-snug text-muted-foreground'>{metric.description}</p>
-            <div className='mt-3 flex flex-col gap-2'>
+            <p
+              className={`mt-1 text-xs leading-snug text-muted-foreground compare-tablet:mt-0.5 compare-tablet:text-2xs compare-tablet:leading-[1.2] compare-short:mt-0.5 ${layout === 'metrics' ? 'compare-tall:text-sm' : ''}`}>
+              {metric.description}
+            </p>
+            <div className='mt-3 flex flex-col gap-2 compare-tablet:mt-1 compare-tablet:gap-y-0.5 compare-short:mt-1.5 compare-short:gap-y-1'>
               {(['a', 'b'] as const).map((side) => {
                 const value = side === 'a' ? metric.a : metric.b;
                 const isWinner = winner === side;
@@ -938,7 +953,7 @@ function CompareMetricCards({
                   <div
                     key={side}
                     className='grid min-w-0 grid-cols-[1rem_minmax(0,1fr)_3.75rem] items-center gap-2'>
-                    <span className='text-[11px] font-bold' style={{ color: SERIES[side].color }}>
+                    <span className='text-xs font-bold' style={{ color: SERIES[side].color }}>
                       {SERIES[side].tag}
                     </span>
                     <ScoreBar
@@ -956,7 +971,7 @@ function CompareMetricCards({
               })}
             </div>
             {showScale && (
-              <div className='mt-1.5 flex justify-between pr-17 pl-6 text-[9px] text-muted-foreground'>
+              <div className='mt-1.5 flex justify-between pr-17 pl-6 text-2xs text-muted-foreground'>
                 <span>0</span>
                 <span>{metric.format(metric.max)}</span>
               </div>
@@ -1006,7 +1021,7 @@ function CompareTab() {
 
   if (saved.length === 0)
     return (
-      <div className='tool-panel-space min-h-0 flex-1 overflow-auto px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
+      <div className='min-h-0 flex-1 overflow-auto tool-panel-space'>
         <section className='w-full'>
           <div className='max-w-xl'>
             <div className={SECTION_LABEL}>Compare palettes</div>
@@ -1099,12 +1114,12 @@ function CompareTab() {
     },
   ];
   return (
-    <div className='@container compare-page flex min-h-0 flex-1 scrollbar-gutter-stable flex-col overflow-auto'>
+    <div className='@container/compare-page flex min-h-0 flex-1 scrollbar-gutter-stable flex-col overflow-auto'>
       {palA && palB && statsA && statsB && (
         <>
           <div
             data-compare-palette-header
-            className='tool-panel-space grid grid-cols-1 items-stretch gap-x-4 gap-y-2 border-b border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] @xl:gap-6'>
+            className='grid grid-cols-1 items-stretch gap-x-4 gap-y-2 border-b border-border tool-panel-space @xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] @xl:gap-6 compare-compact:py-3 compare-short:py-2 compare-tall:py-5'>
             <PaletteCard
               side='a'
               value={selA ?? '__current__'}
@@ -1136,10 +1151,10 @@ function CompareTab() {
           <div className='grid min-w-0 grid-cols-1 @min-[56rem]:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] @min-[56rem]:grid-rows-[auto_auto] @min-[80rem]:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)]! @min-[120rem]:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]!'>
             <section
               data-compare-profile-section
-              className='tool-panel-space tool-panel-stack flex min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @min-[56rem]:col-start-1 @min-[56rem]:row-start-1 @min-[56rem]:border-r @min-[56rem]:border-border'>
+              className='flex min-w-0 flex-col tool-panel-stack tool-panel-space @min-[56rem]:col-start-1 @min-[56rem]:row-start-1 @min-[56rem]:border-r @min-[56rem]:border-border'>
               <div className='flex flex-wrap items-baseline justify-between gap-2'>
                 <div className={SECTION_LABEL}>Score profile</div>
-                <div className='flex flex-wrap items-center gap-3 text-[10px] text-muted-foreground'>
+                <div className='flex flex-wrap items-center gap-3 text-2xs text-muted-foreground'>
                   {(['a', 'b'] as const).map((side) => (
                     <span key={side} className='flex items-center gap-1.5'>
                       <span
@@ -1157,7 +1172,7 @@ function CompareTab() {
               <div className='flex min-h-0 items-center justify-center @min-[56rem]:flex-1'>
                 <div
                   data-compare-profile-chart
-                  className='grid aspect-square w-full max-w-64 place-items-center @min-[40rem]:@max-[56rem]:max-w-[26rem] @min-[56rem]:max-w-80 @min-[64rem]:max-w-[22rem] @min-[64rem]:@max-[80rem]:max-w-64 [@media(min-width:120rem)_and_(max-height:70rem)]:max-w-[22rem] [@media(min-width:144rem)_and_(min-height:70.01rem)]:max-w-[32rem]'>
+                  className='grid aspect-square w-full max-w-64 place-items-center @min-[40rem]:@max-[56rem]:max-w-104 @min-[56rem]:max-w-80 @min-[64rem]:max-w-88 @min-[64rem]:@max-[80rem]:max-w-64 compare-short:max-w-88 compare-tall:max-w-lg'>
                   <Chart
                     className='h-full w-full font-display'
                     definition={createCompareChart(scoreA, scoreB, { a: palA.name, b: palB.name })}
@@ -1172,12 +1187,12 @@ function CompareTab() {
 
             <section
               data-compare-practical-section
-              className='tool-panel-space @container/practical-checks min-w-0 border-t border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @min-[56rem]:col-start-1 @min-[56rem]:row-start-2 @min-[56rem]:border-r @min-[56rem]:border-border'>
+              className='@container/practical-checks min-w-0 border-t border-border tool-panel-space @min-[56rem]:col-start-1 @min-[56rem]:row-start-2 @min-[56rem]:border-r @min-[56rem]:border-border compare-short:py-2 compare-tall:py-5'>
               <div className='mb-3 flex flex-wrap items-end justify-between gap-2'>
                 <div className={SECTION_LABEL}>Practical checks</div>
               </div>
               <div className='grid grid-cols-1 gap-x-8 gap-y-3 @min-[32rem]/practical-checks:grid-cols-2'>
-                <div className='py-2'>
+                <div className='py-2 compare-tall:py-5'>
                   <div className={TYPE.meta}>Colors passing AA against white or black</div>
                   <div className='mt-1 grid grid-cols-2 text-sm font-semibold tabular-nums'>
                     <span style={{ color: SERIES.a.color }}>
@@ -1188,7 +1203,7 @@ function CompareTab() {
                     </span>
                   </div>
                 </div>
-                <div className='py-2'>
+                <div className='py-2 compare-tall:py-5'>
                   <div className={TYPE.meta}>Palette size</div>
                   <div className='mt-1 grid grid-cols-2 text-sm font-semibold tabular-nums'>
                     <span style={{ color: SERIES.a.color }}>A · {statsA.total} colors</span>
@@ -1201,11 +1216,11 @@ function CompareTab() {
             <section
               data-compare-tablet-metrics
               data-compare-metrics-section
-              className='tool-panel-space @container/score-metrics min-w-0 border-t border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @min-[56rem]:col-start-2 @min-[56rem]:row-start-1 @min-[56rem]:border-t-0'>
+              className='@container/score-metrics min-w-0 border-t border-border tool-panel-space @min-[56rem]:col-start-2 @min-[56rem]:row-start-1 @min-[56rem]:border-t-0 compare-short:flex compare-short:flex-col compare-tall:flex compare-tall:flex-col'>
               <div className='mb-3 flex flex-wrap items-end justify-between gap-2'>
                 <div>
                   <div className={SECTION_LABEL}>Score metrics</div>
-                  <p className='mt-1 text-[10px] text-muted-foreground'>
+                  <p className='mt-1 text-2xs text-muted-foreground'>
                     Scores out of 100 · higher is stronger
                   </p>
                 </div>
@@ -1213,18 +1228,19 @@ function CompareTab() {
               <CompareMetricCards
                 label='Score metrics'
                 metrics={scoreMetrics}
-                className='grid grid-cols-1 gap-x-8 gap-y-3 @min-[28rem]/score-metrics:grid-cols-2 @min-[64rem]/score-metrics:grid-cols-3 @min-[80rem]/score-metrics:grid-cols-2'
+                className='grid grid-cols-1 gap-x-8 gap-y-3 @min-[28rem]/score-metrics:grid-cols-2 @min-[64rem]/score-metrics:grid-cols-3 @min-[80rem]/score-metrics:grid-cols-2 compare-short:flex-1 compare-short:auto-rows-auto compare-short:content-center compare-short:gap-y-6 compare-tall:flex-1 compare-tall:auto-rows-fr compare-tall:content-stretch'
                 showScale={false}
+                layout='metrics'
               />
             </section>
 
             <section
               data-compare-properties-section
-              className='tool-panel-space @container/palette-properties min-w-0 border-t border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @min-[56rem]:col-start-2 @min-[56rem]:row-start-2'>
+              className='@container/palette-properties min-w-0 border-t border-border tool-panel-space @min-[56rem]:col-start-2 @min-[56rem]:row-start-2 compare-short:py-2 compare-tall:py-5'>
               <div className='mb-3 flex flex-wrap items-end justify-between gap-2'>
                 <div>
                   <div className={SECTION_LABEL}>Palette properties</div>
-                  <p className='mt-1 text-[10px] text-muted-foreground'>
+                  <p className='mt-1 text-2xs text-muted-foreground'>
                     Descriptive traits; there is no single best profile.
                   </p>
                 </div>
@@ -1233,13 +1249,14 @@ function CompareTab() {
                 label='Palette properties'
                 metrics={paletteMetrics}
                 className='grid grid-cols-1 gap-x-8 gap-y-3 @min-[38rem]/palette-properties:grid-cols-2 @min-[50rem]/palette-properties:grid-cols-3'
+                layout='properties'
               />
             </section>
           </div>
 
           <div
             data-compare-actions
-            className='tool-panel-space tool-panel-stack flex flex-wrap gap-4 border-t border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
+            className='flex flex-wrap tool-panel-stack border-t border-border tool-panel-space compare-short:py-2 compare-tall:py-5'>
             <Button variant='ghost' size='sm' onClick={() => load(palA)}>
               <ArrowDownToLine className='size-3.5' /> Load A into editor
             </Button>
@@ -1249,14 +1266,6 @@ function CompareTab() {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className='tool-panel-space min-h-0 flex-1 overflow-auto px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
-      <p className='text-[12px] text-muted-foreground'>Generate a palette first.</p>
     </div>
   );
 }

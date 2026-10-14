@@ -6,10 +6,13 @@ import {
   IconPlus,
 } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import type { RGB, HSL, HSV, OKLCH } from '@/types';
 
+import { CopyValueRow } from '@/components/global/copy-value-row';
+import { SectionLabel } from '@/components/global/section-label';
+import { ToolSection as Section } from '@/components/global/tool-section';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCmykProfile } from '@/hooks/use-cmyk-profile';
 import {
@@ -41,18 +44,6 @@ import { OklabSliders } from '../common/sliders/oklab-sliders';
 import { OklchSliders } from '../common/sliders/oklch-sliders';
 import { RgbSliders } from '../common/sliders/rgb-sliders';
 import { ToolButton as Button, ToolSegments } from './view-ui';
-
-function Section({ children }: { children: React.ReactNode }) {
-  return <div className='mx-1 border-b border-border py-3.5 last:border-b-0'>{children}</div>;
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className='mb-2.5 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
-      {children}
-    </p>
-  );
-}
 
 // EyeDropper is a browser API not yet in lib.dom.d.ts
 interface EyeDropper {
@@ -202,7 +193,7 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
     <div
       className={
         showPalette
-          ? 'tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'
+          ? 'flex min-h-0 flex-1 flex-col tool-panel-stack overflow-y-auto tool-panel-space'
           : 'flex flex-col'
       }>
       <Section>
@@ -281,7 +272,7 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
 
         <div className='mt-3 flex w-full max-w-100 flex-col gap-4 pb-2'>
           <div className='grid w-full min-w-0 grid-cols-[4.5rem_minmax(0,1fr)] gap-x-3'>
-            <div className='col-start-2 mb-0.5 text-[9px] font-bold tracking-[.07em] text-muted-foreground uppercase'>
+            <div className='col-start-2 mb-0.5 text-2xs font-bold tracking-[.07em] text-muted-foreground uppercase'>
               HEX CODE
             </div>
             <div
@@ -298,7 +289,7 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
               />
               {/* CSS output string for current mode */}
               <div className='flex h-8 min-w-0 items-center gap-1 rounded bg-muted px-1.5'>
-                <span className='min-w-0 flex-1 overflow-hidden font-mono text-[9px] text-ellipsis whitespace-nowrap text-muted-foreground'>
+                <span className='min-w-0 flex-1 overflow-hidden font-mono text-2xs text-ellipsis whitespace-nowrap text-muted-foreground'>
                   {cssOut}
                 </span>
                 <Button
@@ -365,19 +356,19 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
       {/* Color info — all formats */}
       <Section>
         <SectionLabel>Color Values</SectionLabel>
-        <div className='pb-2 text-[11px] leading-[2.1] text-muted-foreground'>
-          <InfoRow label='Name' value={name} />
-          <InfoRow label='HEX' value={displayHex.toUpperCase()} mono />
-          <InfoRow label='RGB' value={formatPickerColor(pickerColor, 'rgb')} mono />
-          <InfoRow label='HSL' value={formatPickerColor(pickerColor, 'hsl')} mono />
-          <InfoRow label='HSV' value={formatPickerColor(pickerColor, 'hsv')} mono />
-          <InfoRow label='OKLCH' value={formatPickerColor(pickerColor, 'oklch')} mono />
-          <InfoRow label='OKLab' value={formatPickerColor(pickerColor, 'oklab')} mono />
-          <InfoRow
+        <div className='pb-2 text-xs leading-[2.1] text-muted-foreground'>
+          <CopyValueRow label='Name' value={name} />
+          <CopyValueRow label='HEX' value={displayHex.toUpperCase()} mono />
+          <CopyValueRow label='RGB' value={formatPickerColor(pickerColor, 'rgb')} mono />
+          <CopyValueRow label='HSL' value={formatPickerColor(pickerColor, 'hsl')} mono />
+          <CopyValueRow label='HSV' value={formatPickerColor(pickerColor, 'hsv')} mono />
+          <CopyValueRow label='OKLCH' value={formatPickerColor(pickerColor, 'oklch')} mono />
+          <CopyValueRow label='OKLab' value={formatPickerColor(pickerColor, 'oklab')} mono />
+          <CopyValueRow
             label='CMYK'
             value={cmyk ? `${cmyk.c}% ${cmyk.m}% ${cmyk.y}% ${cmyk.k}%` : 'ICC profile required'}
           />
-          <InfoRow label='Lum.' value={`${(luminance(pickerColor.xyz) * 100).toFixed(1)}%`} />
+          <CopyValueRow label='Lum.' value={`${(luminance(pickerColor.xyz) * 100).toFixed(1)}%`} />
         </div>
       </Section>
 
@@ -400,46 +391,6 @@ export default function ColorPickerView({ showPalette = true }: { showPalette?: 
           </div>
         </Section>
       )}
-    </div>
-  );
-}
-
-function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  const [copied, setCopied] = React.useState(false);
-  const copy = () => {
-    navigator.clipboard.writeText(value).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1000);
-  };
-  return (
-    <div className='flex items-center justify-between gap-1.5'>
-      <span className='min-w-9.5 shrink-0 text-muted-foreground'>{label}</span>
-      <button
-        type='button'
-        aria-label={copied ? `${label} copied` : `Copy ${label}: ${value}`}
-        className='min-w-0 flex-1 cursor-pointer border-0 bg-transparent p-0 text-right outline-none focus-visible:ring-2 focus-visible:ring-ring'
-        style={{
-          fontFamily: mono ? 'var(--font-mono)' : undefined,
-          fontSize: mono ? 9.5 : undefined,
-          color: 'var(--color-foreground)',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          flex: 1,
-          textAlign: 'right',
-          cursor: 'pointer',
-        }}
-        title={`Click to copy: ${value}`}
-        onClick={copy}>
-        {copied ? (
-          <>
-            <IconCheck className='mr-1 inline size-3' aria-hidden='true' />
-            Copied
-          </>
-        ) : (
-          value
-        )}
-      </button>
     </div>
   );
 }

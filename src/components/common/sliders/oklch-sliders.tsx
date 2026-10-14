@@ -61,7 +61,7 @@ export function OklchSliders({
       />
       <AlphaSlider alpha={alpha} hex={hex} onChange={onAlpha} />
       <div
-        className='rounded px-2 py-1.25 text-[9.5px] leading-normal text-muted-foreground'
+        className='rounded px-2 py-1.25 text-2xs leading-normal text-muted-foreground'
         style={{
           background: 'rgba(99,102,241,.08)',
           border: '1px solid rgba(99,102,241,.18)',

@@ -13,6 +13,7 @@ import {
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 
+import { ToolEmptyState } from '@/components/global/tool-empty-state';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { buildThemeCss, deriveThemeTokens, parseColor, textColor } from '@/lib/engine/browser';
 
@@ -52,7 +53,7 @@ export function TokenLegend({
       {groups.length === 0 && <p className={TYPE.meta}>No matching tokens.</p>}
       {groups.map(({ label, tokens: groupTokens }) => (
         <div key={label} className='min-w-0'>
-          <div className='mb-1.5 text-[9px] font-bold tracking-[.07em] text-muted-foreground uppercase'>
+          <div className='mb-1.5 text-2xs font-bold tracking-[.07em] text-muted-foreground uppercase'>
             {label}
           </div>
           <div className='flex flex-col gap-2'>
@@ -77,10 +78,10 @@ export function TokenLegend({
                       border: '1px solid rgba(128,128,128,.2)',
                     }}
                   />
-                  <span className='truncate font-mono text-[10px] text-foreground/80'>
+                  <span className='truncate font-mono text-2xs text-foreground/80'>
                     {id.replace('--', '')}
                   </span>
-                  <span className='font-mono text-[9px] text-muted-foreground'>
+                  <span className='font-mono text-2xs text-muted-foreground'>
                     {hex.toUpperCase()}
                   </span>
                   {copiedKey === `${mode}:${id}` ? (
@@ -125,7 +126,7 @@ function UtilityPanel({
     <div className='grid grid-cols-1 gap-4'>
       {[mode].map((m) => (
         <div key={m}>
-          <div className='mb-2 text-[9.5px] font-bold tracking-[.07em] text-muted-foreground uppercase'>
+          <div className='mb-2 text-2xs font-bold tracking-[.07em] text-muted-foreground uppercase'>
             {m === 'light' ? '☀ Light' : '☾ Dark'}
           </div>
           <div className='flex flex-col gap-1.5'>
@@ -152,11 +153,11 @@ function UtilityPanel({
                     gap: 8,
                   }}>
                   <div
-                    className='flex shrink-0 items-center justify-center rounded-full text-[10px]'
+                    className='flex shrink-0 items-center justify-center rounded-full text-2xs'
                     style={{ width: 20, height: 20, background: color }}>
                     <Icon className='size-3' style={{ color: textColor(parseColor(color).xyz) }} />
                   </div>
-                  <span className='flex-1 text-[10px] font-bold capitalize'>{role}</span>
+                  <span className='flex-1 text-2xs font-bold capitalize'>{role}</span>
                   <div className='flex items-center gap-1'>
                     <div
                       title='filled'
@@ -176,7 +177,7 @@ function UtilityPanel({
                         border: `1px solid ${color}`,
                       }}
                     />
-                    <span className='ml-0.5 font-mono text-[8.5px]'>{color}</span>
+                    <span className='ml-0.5 font-mono text-2xs'>{color}</span>
                     {copiedKey === `${m}:utility:${role}` && <Check className='size-3' />}
                   </div>
                 </button>
@@ -218,14 +219,11 @@ export default function CssPreview() {
 
   if (!slots.length) {
     return (
-      <div className='tool-panel-space min-h-0 flex-1 overflow-auto px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
-        <div className='mb-5'>
-          <h2>Live CSS Preview</h2>
-        </div>
-        <p className='text-[12px] text-muted-foreground'>
-          Generate a palette first to see the preview.
-        </p>
-      </div>
+      <ToolEmptyState
+        className='min-h-0 flex-1 overflow-auto tool-panel-space'
+        title='Live CSS Preview'
+        message='Generate a palette first to see the preview.'
+      />
     );
   }
 
@@ -235,7 +233,7 @@ export default function CssPreview() {
 
   return (
     <div className='@container/css flex min-h-0 flex-1 flex-col overflow-auto @4xl/tokens:overflow-hidden'>
-      <div className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
+      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border tool-panel-space'>
         <div className='flex flex-col gap-1'>
           <span className={TYPE.label}>Live theme comparison</span>
           <span className={TYPE.meta}>
@@ -253,7 +251,7 @@ export default function CssPreview() {
           ]}
         />
       </div>
-      <div className='tool-inline-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 3xl:px-6 min-[160rem]:px-7'>
+      <div className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 3xl:px-6 4xl:px-7'>
         <ToolSegments
           value={page}
           onValueChange={setPage}
@@ -274,7 +272,7 @@ export default function CssPreview() {
         </span>
       </div>
       <div className='grid auto-rows-max grid-cols-1 @4xl/css:min-h-0 @4xl/css:flex-1 @4xl/css:grid-cols-[minmax(0,1fr)_16rem] @4xl/css:grid-rows-[minmax(0,1fr)]'>
-        <section className='tool-panel-space @container/previews flex min-h-0 min-w-0 flex-col px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @4xl/tokens:overflow-auto @4xl/tokens:border-r @4xl/tokens:border-border'>
+        <section className='@container/previews flex min-h-0 min-w-0 flex-col tool-panel-space @4xl/tokens:overflow-auto @4xl/tokens:border-r @4xl/tokens:border-border'>
           <div
             className={`grid min-w-0 grid-cols-1 gap-4 @4xl/tokens:min-h-0 @4xl/tokens:flex-1 ${showLight && showDark ? '@min-[45rem]/previews:grid-cols-2' : ''}`}>
             {(['light', 'dark'] as const)
@@ -317,7 +315,7 @@ export default function CssPreview() {
               ))}
           </div>
         </section>
-        <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-t border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl/css:border-t-0'>
+        <aside className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @4xl/css:border-t-0'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
             <span className={TYPE.label}>Token inspector</span>
             {previewMode === 'split' && (
@@ -352,7 +350,7 @@ export default function CssPreview() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder='Find a token'
-                className='w-full min-w-0 bg-transparent text-[11px] outline-none'
+                className='w-full min-w-0 bg-transparent text-xs outline-none'
               />
             </label>
           )}
@@ -391,7 +389,7 @@ export default function CssPreview() {
                 }}
               />
             ) : (
-              <pre className='min-h-full rounded-md border border-border bg-secondary p-3 font-mono text-[10px] leading-relaxed whitespace-pre text-muted-foreground'>
+              <pre className='min-h-full rounded-md border border-border bg-secondary p-3 font-mono text-2xs leading-relaxed whitespace-pre text-muted-foreground'>
                 {css}
               </pre>
             )}

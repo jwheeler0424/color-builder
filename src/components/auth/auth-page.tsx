@@ -104,13 +104,13 @@ export function AuthPage({ mode, email }: { mode: AuthMode; email?: string }) {
 
       <div className='grid min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-4rem)] lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)]'>
         <aside className='relative hidden min-h-0 flex-col justify-between overflow-hidden border-r border-border bg-card p-8 lg:flex lg:p-12 xl:p-16'>
-          <div className='flex items-center gap-2 font-mono text-[10px] font-semibold tracking-[0.16em] text-muted-foreground uppercase'>
+          <div className='flex items-center gap-2 font-mono text-2xs font-semibold tracking-[0.16em] text-muted-foreground uppercase'>
             <span className='size-2 rounded-full bg-primary' />
             Chroma / Color workspace
           </div>
 
           <div className='my-12 max-w-xl'>
-            <p className='font-mono text-[10px] font-semibold tracking-[0.18em] text-primary uppercase'>
+            <p className='font-mono text-2xs font-semibold tracking-[0.18em] text-primary uppercase'>
               Space to explore
             </p>
             <h2 className='mt-5 font-display text-5xl leading-[1.02] font-bold xl:text-6xl'>
@@ -129,7 +129,7 @@ export function AuthPage({ mode, email }: { mode: AuthMode; email?: string }) {
                 <div key={color} className='rounded-sm' style={{ backgroundColor: color }} />
               ))}
             </div>
-            <div className='mt-3 flex items-center justify-between border-t border-border pt-3 font-mono text-[9px] tracking-[0.12em] text-muted-foreground uppercase'>
+            <div className='mt-3 flex items-center justify-between border-t border-border pt-3 font-mono text-2xs tracking-[0.12em] text-muted-foreground uppercase'>
               <span>Palette study / 001</span>
               <span>Six hues</span>
             </div>
@@ -146,7 +146,7 @@ export function AuthPage({ mode, email }: { mode: AuthMode; email?: string }) {
               ))}
             </div>
 
-            <p className='font-mono text-[10px] font-semibold tracking-[0.16em] text-primary uppercase'>
+            <p className='font-mono text-2xs font-semibold tracking-[0.16em] text-primary uppercase'>
               {eyebrow}
             </p>
             <h1 className='mt-3 font-display text-3xl leading-tight font-bold sm:text-4xl'>
@@ -175,7 +175,7 @@ export function AuthPage({ mode, email }: { mode: AuthMode; email?: string }) {
               {isVerification ? (
                 <>
                   <div className='rounded-md border border-border bg-card px-3.5 py-3'>
-                    <p className='text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
+                    <p className='text-2xs font-semibold tracking-widest text-muted-foreground uppercase'>
                       Verification address
                     </p>
                     <p className='mt-1 truncate text-sm font-medium'>

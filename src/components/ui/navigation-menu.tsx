@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 
 function studioNavigationTriggerClassName(active = false) {
   return cn(
-    "relative inline-flex h-full items-center justify-center gap-0.5 rounded-none bg-transparent px-0 py-0 text-[11px] font-bold uppercase no-underline transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:content-[''] xl:gap-1.5 xl:px-3 [&>svg:last-child]:top-0",
+    "relative inline-flex h-full items-center justify-center gap-0.5 rounded-none bg-transparent px-0 py-0 text-xs font-bold uppercase no-underline transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:content-[''] xl:gap-1.5 xl:px-3 [&>svg:last-child]:top-0",
     active
       ? 'text-(--section-accent-ink) after:bg-(--section-accent) dark:text-(--section-accent)'
       : 'text-muted-foreground after:bg-transparent hover:text-(--section-accent-ink) hover:after:bg-(--section-accent) dark:hover:text-(--section-accent)',
@@ -59,7 +59,7 @@ function NavigationMenuPanel({
       />
       <aside className='flex flex-col border-r border-border bg-muted/20 p-5 max-sm:border-r-0 max-sm:border-b'>
         <div className='flex items-center justify-between gap-4'>
-          <span className={cn('font-mono text-[10px] uppercase', accent)}>{eyebrow}</span>
+          <span className={cn('font-mono text-2xs uppercase', accent)}>{eyebrow}</span>
           <span
             className={cn(
               'grid size-9 place-items-center rounded-md border border-border/70',
@@ -71,7 +71,7 @@ function NavigationMenuPanel({
         </div>
         <div className='mt-7 max-sm:mt-3'>
           <div className='flex items-baseline gap-2'>
-            {number && <span className={cn('font-mono text-[10px]', accent)}>{number}</span>}
+            {number && <span className={cn('font-mono text-2xs', accent)}>{number}</span>}
             <h2 className='text-xl leading-tight font-semibold text-foreground'>{title}</h2>
           </div>
           <p className='mt-2 max-w-56 text-sm leading-5 text-foreground/75'>{summary}</p>
@@ -80,14 +80,14 @@ function NavigationMenuPanel({
       </aside>
       <section className='flex min-w-0 flex-col p-5'>
         <div className='flex items-center justify-between border-b border-border/70 pb-3'>
-          <p className='font-mono text-[10px] text-foreground/65 uppercase'>{contentLabel}</p>
-          <span className='font-mono text-[10px] text-foreground/55'>{countLabel}</span>
+          <p className='font-mono text-2xs text-foreground/65 uppercase'>{contentLabel}</p>
+          <span className='font-mono text-2xs text-foreground/55'>{countLabel}</span>
         </div>
         <div className='grid grid-cols-2 gap-1.5 pt-3 max-sm:grid-cols-1'>{children}</div>
         <div
           data-slot='navigation-menu-panel-footer'
           className='mt-auto flex items-center justify-between gap-3 border-t border-border/70 pt-3'>
-          <span className='font-mono text-[10px] text-muted-foreground'>
+          <span className='font-mono text-2xs text-muted-foreground'>
             CHROMA ELITE / {title.toUpperCase()}
           </span>
           {footer}

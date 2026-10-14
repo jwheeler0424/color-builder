@@ -45,7 +45,7 @@ export function NavTabs<T extends string>({ tabs, active, onChange, className }:
           title={tab.title}
           onClick={() => onChange(tab.id)}
           className={cn(
-            'inline-flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-bold',
+            'inline-flex items-center gap-1.5 px-4 py-2.5 text-2xs font-bold',
             'cursor-pointer border-r border-border tracking-[.08em] uppercase transition-colors',
             'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset',
             active === tab.id
@@ -56,7 +56,7 @@ export function NavTabs<T extends string>({ tabs, active, onChange, className }:
           {tab.badge !== undefined && (
             <span
               className={cn(
-                'inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8px] font-bold',
+                'inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-2xs font-bold',
                 active === tab.id
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground',

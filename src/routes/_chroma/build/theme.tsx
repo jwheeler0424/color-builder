@@ -5,7 +5,7 @@ const ThemeOptimizerView = lazy(() => import('@/components/views/theme-optimizer
 
 export const Route = createFileRoute('/_chroma/build/theme')({
   component: () => (
-    <Suspense fallback={<div className='p-8 text-[12px] text-muted-foreground'>Loading…</div>}>
+    <Suspense fallback={<div className='p-8 text-xs text-muted-foreground'>Loading…</div>}>
       <ThemeOptimizerView />
     </Suspense>
   ),

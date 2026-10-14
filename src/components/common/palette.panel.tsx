@@ -5,8 +5,10 @@ import {
   IconSun,
   IconX,
 } from '@tabler/icons-react';
-import React, { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
+import { PanelSection as Section } from '@/components/global/panel-section';
+import { SectionLabel } from '@/components/global/section-label';
 import { Button } from '@/components/ui/button';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { useChromaStore } from '@/hooks/use-chroma-store';
@@ -17,18 +19,6 @@ import { cn } from '@/lib/utils';
 import { useRegisterHotkey } from '@/providers/hotkey.provider';
 
 // ─── Section helpers ──────────────────────────────────────────────────────────
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className='mb-2.5 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase'>
-      {children}
-    </p>
-  );
-}
-
-function Section({ children }: { children: React.ReactNode }) {
-  return <div className='border-b border-border px-4 py-3.5'>{children}</div>;
-}
 
 export function PalettePanel() {
   const commandModifier = useCommandModifier();
@@ -110,8 +100,8 @@ export function PalettePanel() {
   }, [seedInp, addSeed]);
 
   return (
-    <aside className='flex h-full w-[320px] shrink-0 flex-col border-l border-border bg-card'>
-      <div className='h-full flex-1 [scrollbar-width:thin] overflow-y-auto'>
+    <aside className='flex h-full w-80 shrink-0 flex-col border-l border-border bg-card'>
+      <div className='h-full flex-1 scrollbar-thin overflow-y-auto'>
         <Section>
           <SectionLabel>Colors</SectionLabel>
           <div className='flex items-center gap-2.5'>
@@ -129,7 +119,7 @@ export function PalettePanel() {
               }}
               className='flex-1'
             />
-            <span className='text-[10px] text-muted-foreground'>12</span>
+            <span className='text-2xs text-muted-foreground'>12</span>
           </div>
         </Section>
 
@@ -152,7 +142,7 @@ export function PalettePanel() {
                     <div key={j} className='flex-1' style={{ background: h }} />
                   ))}
                 </div>
-                <div className='bg-secondary px-2 py-1.5 text-[11px] font-semibold text-secondary-foreground'>
+                <div className='bg-secondary px-2 py-1.5 text-xs font-semibold text-secondary-foreground'>
                   {t.name}
                 </div>
               </button>
@@ -170,7 +160,7 @@ export function PalettePanel() {
                   className='h-4 w-4 shrink-0 rounded-sm border border-white/10'
                   style={{ background: s.hex }}
                 />
-                <span className='flex-1 font-mono text-[10px] tracking-[.05em] text-muted-foreground uppercase'>
+                <span className='flex-1 font-mono text-2xs tracking-wider text-muted-foreground uppercase'>
                   {s.hex.toUpperCase()}
                 </span>
                 <button
@@ -186,7 +176,7 @@ export function PalettePanel() {
           <div className='flex gap-1.5'>
             <input
               className={cn(
-                'flex-1 rounded border bg-muted px-2 py-1.5 font-mono text-[11px] text-foreground',
+                'flex-1 rounded border bg-muted px-2 py-1.5 font-mono text-xs text-foreground',
                 'transition-colors outline-none placeholder:text-muted-foreground focus:border-ring',
                 seedErr ? 'border-destructive' : 'border-border',
               )}
@@ -231,7 +221,7 @@ export function PalettePanel() {
               </Button>
             ))}
           </div>
-          <p className='text-[9.5px] leading-relaxed text-muted-foreground'>
+          <p className='text-2xs leading-relaxed text-muted-foreground'>
             {seedMode === 'pin'
               ? 'Seed colors appear exactly in the palette as locked slots.'
               : 'Seed hue guides generation but the exact color may shift.'}
@@ -264,7 +254,7 @@ export function PalettePanel() {
 
         <Section>
           <SectionLabel>Harmony</SectionLabel>
-          <p className='mb-2 min-h-[2.4em] text-[11px] leading-relaxed text-muted-foreground'>
+          <p className='mb-2 min-h-[2.4em] text-xs leading-relaxed text-muted-foreground'>
             {HARMONIES.find((h) => h.id === mode)?.desc ?? ''}
           </p>
           <div className='grid grid-cols-2 gap-1'>
@@ -276,7 +266,7 @@ export function PalettePanel() {
                   generate();
                 }}
                 className={cn(
-                  'cursor-pointer rounded border px-2 py-1.5 text-left font-mono text-[11px] transition-all',
+                  'cursor-pointer rounded border px-2 py-1.5 text-left font-mono text-xs transition-all',
                   mode === h.id
                     ? 'border-primary bg-primary font-bold text-primary-foreground'
                     : 'border-border bg-secondary text-muted-foreground hover:border-input hover:text-foreground',
@@ -289,7 +279,7 @@ export function PalettePanel() {
 
         <Section>
           <SectionLabel>Token Names</SectionLabel>
-          <p className='text-[9.5px] leading-relaxed text-muted-foreground'>
+          <p className='text-2xs leading-relaxed text-muted-foreground'>
             Click any color name to rename it as a design token. Use the{' '}
             <GripVertical size={10} className='inline' /> handle to drag and reorder. Arrow keys
             work when a slot is focused.
@@ -309,11 +299,11 @@ export function PalettePanel() {
       </div>
 
       <div className='shrink-0 border-t border-border bg-card px-4 py-3'>
-        <Button className='w-full py-2.5 text-[12px]' onClick={() => generate()}>
+        <Button className='w-full py-2.5 text-xs' onClick={() => generate()}>
           <IconRefresh className='mr-2 inline size-4' aria-hidden='true' />
           Generate
         </Button>
-        <p className='mt-1.5 text-center text-[10px] text-muted-foreground'>
+        <p className='mt-1.5 text-center text-2xs text-muted-foreground'>
           <Kbd>Space</Kbd> generate ·{' '}
           <KbdGroup>
             <Kbd>{commandModifier}</Kbd>

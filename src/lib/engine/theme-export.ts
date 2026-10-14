@@ -291,18 +291,18 @@ export function buildColorStoryHtml(
   .swatches { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 40px; }
   .swatch { border-radius: 10px; overflow: hidden; border: 1px solid rgba(0,0,0,.1); width: 140px; }
   .swatch-color { height: 100px; display: flex; align-items: flex-end; padding: 8px; }
-  .swatch-hex { font-family: monospace; font-size: 11px; font-weight: 700; }
-  .swatch-info { padding: 10px; display: flex; flex-direction: column; gap: 3px; font-size: 11px; }
-  .badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; margin-top: 3px; }
+  .swatch-hex { font-family: monospace; font-size: 12px; font-weight: 700; }
+  .swatch-info { padding: 10px; display: flex; flex-direction: column; gap: 3px; font-size: 12px; }
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 700; margin-top: 3px; }
   .badge-aaa { background: rgba(34,197,94,.15); color: #16a34a; }
   .badge-aa  { background: rgba(59,130,246,.15); color: #2563eb; }
   .badge-aal { background: rgba(234,179,8,.15);  color: #a16207; }
   .badge-fail{ background: rgba(239,68,68,.13); color: #dc2626; }
   .util-swatches { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 40px; }
-  .util-swatch { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #fff; border: 1px solid rgba(0,0,0,.08); border-radius: 6px; font-size: 11px; }
+  .util-swatch { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #fff; border: 1px solid rgba(0,0,0,.08); border-radius: 6px; font-size: 12px; }
   .util-color { width: 20px; height: 20px; border-radius: 4px; border: 1px solid rgba(0,0,0,.1); }
   code { font-size: 10px; color: #666; }
-  pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 8px; font-size: 11px; overflow-x: auto; line-height: 1.6; }
+  pre { background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 8px; font-size: 12px; overflow-x: auto; line-height: 1.6; }
 </style>
 </head>
 <body>
