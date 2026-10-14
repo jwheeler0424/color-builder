@@ -43,7 +43,7 @@ import {
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useState, useCallback, Suspense } from 'react';
 
-import { MarketingPagesSubmenuItems } from '@/components/marketing/marketing-menu';
+import { MarketingResourcesNavigation } from '@/components/marketing/marketing-menu';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCommandModifier } from '@/hooks/use-command-modifier';
 import { hexToStop } from '@/lib/engine/browser';
@@ -123,39 +123,28 @@ export function MobileShell() {
         className='flex min-h-0 flex-1 flex-col overflow-hidden'
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
         {/* ── Header (52px) ── */}
-        <header className='flex h-13 shrink-0 items-center gap-2 border-b border-border bg-card px-4'>
+        <header className='flex h-13 shrink-0 items-center gap-1 border-b border-border bg-card px-2'>
           <BrandLockup compact />
           <div className='flex-1' />
-
-          {/* Search button — 44×44px touch target */}
-          <button
-            onClick={() => openCmd(true)}
-            className='flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-xl text-muted-foreground transition-colors hover:text-foreground'
-            title={`Search (${commandModifier}K)`}
-            aria-label={`Open search (${commandModifier}K)`}>
-            <IconSearch className='size-5' aria-hidden='true' />
-          </button>
-
-          {/* Export */}
-          <button
-            onClick={() => openModal('export')}
-            className='flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-xl text-muted-foreground transition-colors hover:text-foreground'
-            title='Export palette'
-            aria-label='Export palette'>
-            <IconArrowUpRight className='size-5' aria-hidden='true' />
-          </button>
-
-          <ThemeToggle />
+          <MarketingResourcesNavigation compact />
 
           {/* Share, Save, Shortcuts */}
           <DropdownMenu>
             <DropdownMenuTrigger
-              className='flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-xl text-muted-foreground transition-colors hover:text-foreground'
+              className='flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border-0 bg-transparent text-xl text-muted-foreground transition-colors hover:text-foreground'
               title='More actions'
               aria-label='More actions'>
               <IconDots className='size-5' aria-hidden='true' />
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end' className='w-44'>
+              <DropdownMenuItem onClick={() => openCmd(true)}>
+                <IconSearch className='size-4' />
+                Search tools ({commandModifier}K)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => openModal('export')}>
+                <IconArrowUpRight className='size-4' />
+                Export palette
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => openModal('share')}>
                 <IconShare className='size-4' />
                 Share URL
@@ -172,7 +161,7 @@ export function MobileShell() {
                 <IconKeyboard className='size-4' />
                 Keyboard Shortcuts
               </DropdownMenuItem>
-              <MarketingPagesSubmenuItems />
+              <ThemeToggle menuItem />
             </DropdownMenuContent>
           </DropdownMenu>
         </header>

@@ -10,6 +10,9 @@ import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { PaletteArtwork } from '@/components/marketing/marketing-pages';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 import './marketing-content.css';
 
@@ -79,14 +82,19 @@ function CopyExample({ code }: { code: string }) {
   }
 
   return (
-    <button type='button' className='content-copy-button' onClick={() => void copyCode()}>
+    <Button
+      type='button'
+      variant='outline'
+      size='sm'
+      className='content-copy-button text-xs'
+      onClick={() => void copyCode()}>
       {copyState === 'copied' ? (
         <IconCheck aria-hidden='true' size={15} />
       ) : (
         <IconCopy aria-hidden='true' size={15} />
       )}
       {copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Copy unavailable' : 'Copy'}
-    </button>
+    </Button>
   );
 }
 
@@ -98,13 +106,16 @@ function ApiCodeExplorer() {
       <div className='api-code-topbar'>
         <div className='api-example-tabs' role='group' aria-label='API example language'>
           {(Object.keys(API_EXAMPLES) as ApiExample[]).map((example) => (
-            <button
+            <Button
               key={example}
               type='button'
+              variant={activeExample === example ? 'secondary' : 'ghost'}
+              size='sm'
+              className='text-xs'
               aria-pressed={activeExample === example}
               onClick={() => setActiveExample(example)}>
               {EXAMPLE_LABELS[example]}
-            </button>
+            </Button>
           ))}
         </div>
         <CopyExample code={API_EXAMPLES[activeExample]} />
@@ -130,10 +141,22 @@ export function OverviewPage() {
             brings perceptual color tools and implementation-ready exports into one focused studio.
           </p>
           <div className='marketing-hero-actions'>
-            <Link to='/' className='marketing-primary-link'>
+            <Link
+              to='/'
+              data-slot='button'
+              className={cn(
+                buttonVariants({ size: 'lg', className: 'text-sm' }),
+                'marketing-primary-link',
+              )}>
               Open the studio <IconArrowUpRight aria-hidden='true' size={17} />
             </Link>
-            <Link to='/pricing' className='marketing-secondary-link'>
+            <Link
+              to='/pricing'
+              data-slot='button'
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'lg', className: 'text-sm' }),
+                'marketing-secondary-link',
+              )}>
               See plans <IconArrowRight aria-hidden='true' size={16} />
             </Link>
           </div>
@@ -207,10 +230,22 @@ export function OverviewPage() {
             </p>
           </div>
           <div className='overview-plan-links'>
-            <Link to='/pricing' className='marketing-secondary-link'>
+            <Link
+              to='/pricing'
+              data-slot='button'
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'lg', className: 'text-sm' }),
+                'marketing-secondary-link',
+              )}>
               Compare plans <IconArrowRight aria-hidden='true' size={16} />
             </Link>
-            <Link to='/' className='marketing-primary-link'>
+            <Link
+              to='/'
+              data-slot='button'
+              className={cn(
+                buttonVariants({ size: 'lg', className: 'text-sm' }),
+                'marketing-primary-link',
+              )}>
               Try the studio <IconArrowUpRight aria-hidden='true' size={17} />
             </Link>
           </div>
@@ -234,16 +269,27 @@ export function ApiPage() {
             uses. Design tokens can move from a color decision into your build pipeline.
           </p>
           <div className='marketing-hero-actions'>
-            <Link to='/pricing' className='marketing-primary-link'>
+            <Link
+              to='/pricing'
+              data-slot='button'
+              className={cn(
+                buttonVariants({ size: 'lg', className: 'text-sm' }),
+                'marketing-primary-link',
+              )}>
               Explore paid plans <IconArrowRight aria-hidden='true' size={16} />
             </Link>
-            <Link to='/guides' className='marketing-secondary-link'>
+            <Link
+              to='/guides'
+              data-slot='button'
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'lg', className: 'text-sm' }),
+                'marketing-secondary-link',
+              )}>
               Read developer guides <IconArrowUpRight aria-hidden='true' size={16} />
             </Link>
           </div>
         </div>
         <div className='api-hero-detail'>
-          <span className='api-detail-index'>01 / 04</span>
           <strong>Color rules your product can reuse.</strong>
           <div className='api-detail-flow'>
             <span>palette</span>
@@ -300,7 +346,13 @@ export function ApiPage() {
             Team adds a larger pooled allowance. Specific quotas and overage rules will be published
             before API usage is enabled.
           </p>
-          <Link to='/pricing' className='marketing-primary-link'>
+          <Link
+            to='/pricing'
+            data-slot='button'
+            className={cn(
+              buttonVariants({ size: 'lg', className: 'text-sm' }),
+              'marketing-primary-link',
+            )}>
             Compare plans <IconArrowRight aria-hidden='true' size={16} />
           </Link>
         </div>
@@ -366,9 +418,59 @@ const GUIDE_TOPICS = [
 
 type GuideTopic = (typeof GUIDE_TOPICS)[number];
 
+function GuideExplorer({
+  activeGuide,
+  onGuideChange,
+}: {
+  activeGuide: GuideTopic['id'];
+  onGuideChange: (guide: GuideTopic['id']) => void;
+}) {
+  const guide = GUIDE_TOPICS.find((item) => item.id === activeGuide)!;
+
+  return (
+    <div className='guide-explorer'>
+      <nav className='guide-topic-list' aria-label='Guides'>
+        {GUIDE_TOPICS.map((topic, index) => (
+          <Button
+            key={topic.id}
+            type='button'
+            variant={activeGuide === topic.id ? 'secondary' : 'ghost'}
+            className='min-h-10 min-w-0 px-2.5 py-2 text-left text-xs font-medium whitespace-normal'
+            aria-pressed={activeGuide === topic.id}
+            onClick={() => onGuideChange(topic.id)}>
+            <span className='guide-topic-number'>0{index + 1}</span>
+            <span>{topic.label}</span>
+            <IconArrowRight aria-hidden='true' size={15} />
+          </Button>
+        ))}
+      </nav>
+      <article className='guide-article' aria-live='polite'>
+        <p className='marketing-kicker'>Guide / {guide.label}</p>
+        <h3>{guide.title}</h3>
+        <p className='guide-intro'>{guide.intro}</p>
+        <ol>
+          {guide.steps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+        {guide.id === 'contrast' && (
+          <div className='guide-standard-note'>
+            <strong>WCAG 2.1 contrast ratio</strong>
+            <span>AA normal 4.5:1</span>
+            <span>AA large 3:1</span>
+          </div>
+        )}
+        <Link to={guide.id === 'tokens' ? '/features' : '/'} className='marketing-text-link'>
+          {guide.id === 'tokens' ? 'Explore export tools' : 'Try it in the studio'}
+          <IconArrowUpRight aria-hidden='true' size={15} />
+        </Link>
+      </article>
+    </div>
+  );
+}
+
 export function GuidesPage() {
   const [activeGuide, setActiveGuide] = useState<GuideTopic['id']>('palette');
-  const guide = GUIDE_TOPICS.find((item) => item.id === activeGuide)!;
 
   return (
     <main>
@@ -383,10 +485,22 @@ export function GuidesPage() {
             systems.
           </p>
           <div className='marketing-hero-actions'>
-            <Link to='/' className='marketing-primary-link'>
+            <Link
+              to='/'
+              data-slot='button'
+              className={cn(
+                buttonVariants({ size: 'lg', className: 'text-sm' }),
+                'marketing-primary-link',
+              )}>
               Open the studio <IconArrowUpRight aria-hidden='true' size={17} />
             </Link>
-            <Link to='/features' className='marketing-secondary-link'>
+            <Link
+              to='/features'
+              data-slot='button'
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'lg', className: 'text-sm' }),
+                'marketing-secondary-link',
+              )}>
               Browse tools <IconArrowRight aria-hidden='true' size={16} />
             </Link>
           </div>
@@ -409,42 +523,7 @@ export function GuidesPage() {
             Use these guides as a working reference while you build and review a color system.
           </p>
         </div>
-        <div className='guide-explorer'>
-          <nav className='guide-topic-list' aria-label='Guides'>
-            {GUIDE_TOPICS.map((topic, index) => (
-              <button
-                key={topic.id}
-                type='button'
-                aria-pressed={activeGuide === topic.id}
-                onClick={() => setActiveGuide(topic.id)}>
-                <span className='guide-topic-number'>0{index + 1}</span>
-                <span>{topic.label}</span>
-                <IconArrowRight aria-hidden='true' size={15} />
-              </button>
-            ))}
-          </nav>
-          <article className='guide-article' aria-live='polite'>
-            <p className='marketing-kicker'>Guide / {guide.label}</p>
-            <h3>{guide.title}</h3>
-            <p className='guide-intro'>{guide.intro}</p>
-            <ol>
-              {guide.steps.map((step) => (
-                <li key={step}>{step}</li>
-              ))}
-            </ol>
-            {guide.id === 'contrast' && (
-              <div className='guide-standard-note'>
-                <strong>WCAG 2.1 contrast ratio</strong>
-                <span>AA normal 4.5:1</span>
-                <span>AA large 3:1</span>
-              </div>
-            )}
-            <Link to={guide.id === 'tokens' ? '/features' : '/'} className='marketing-text-link'>
-              {guide.id === 'tokens' ? 'Explore export tools' : 'Try it in the studio'}
-              <IconArrowUpRight aria-hidden='true' size={15} />
-            </Link>
-          </article>
-        </div>
+        <GuideExplorer activeGuide={activeGuide} onGuideChange={setActiveGuide} />
       </section>
 
       <section className='guide-resource-band'>
@@ -457,7 +536,13 @@ export function GuidesPage() {
             See how palette generation, accessibility analysis, color building, and token exports
             fit together in Chroma.
           </p>
-          <Link to='/features' className='marketing-primary-link'>
+          <Link
+            to='/features'
+            data-slot='button'
+            className={cn(
+              buttonVariants({ size: 'lg', className: 'text-sm' }),
+              'marketing-primary-link',
+            )}>
             Browse features <IconArrowRight aria-hidden='true' size={16} />
           </Link>
         </div>
@@ -548,8 +633,8 @@ export function DataPage() {
         <p>
           Authentication, billing, cloud sync, and paid API usage are not connected to the current
           studio. Their collection, retention, and deletion rules should be published before those
-          services are enabled. This product summary is not a substitute for a formal privacy
-          policy.
+          services are enabled. Read the <Link to='/privacy'>Privacy Policy</Link> for the full
+          current notice and the <Link to='/terms'>Terms of Use</Link> for service conditions.
         </p>
       </section>
 
@@ -558,7 +643,13 @@ export function DataPage() {
           <h2>Want to learn more about the workflow?</h2>
           <p>Browse practical guides or explore the studio.</p>
         </div>
-        <Link to='/guides' className='marketing-primary-link'>
+        <Link
+          to='/guides'
+          data-slot='button'
+          className={cn(
+            buttonVariants({ size: 'lg', className: 'text-sm' }),
+            'marketing-primary-link',
+          )}>
           Open the guides <IconArrowRight aria-hidden='true' size={16} />
         </Link>
       </div>
@@ -589,18 +680,21 @@ const SUPPORT_ARTICLES = [
     category: 'Studio',
     summary: 'Share a link that carries the palette colors and harmony settings.',
     to: '/guides',
+    guideId: 'palette',
   },
   {
     title: 'How should I check text contrast?',
     category: 'Accessibility',
     summary: 'Compare the actual foreground and background pair against WCAG targets.',
     to: '/guides',
+    guideId: 'contrast',
   },
   {
     title: 'Which export format should I choose?',
     category: 'Exports',
     summary: 'Pick CSS, Tailwind, Figma Tokens, or Style Dictionary for your handoff.',
     to: '/guides',
+    guideId: 'tokens',
   },
   {
     title: 'Which plan includes every tool?',
@@ -614,17 +708,27 @@ const SUPPORT_ARTICLES = [
     summary: 'Review the planned request shape, paid access, and allowance model.',
     to: '/api',
   },
+  {
+    title: 'How do I build a gradient?',
+    category: 'Studio',
+    summary: 'Choose gradient stops, compare interpolation spaces, and export the result.',
+    to: '/support',
+    guideId: 'gradients',
+  },
 ] as const;
 
 export function SupportPage() {
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<SupportCategory>('All');
+  const [activeGuide, setActiveGuide] = useState<GuideTopic['id']>('palette');
   const normalizedQuery = query.trim().toLocaleLowerCase();
   const articles = SUPPORT_ARTICLES.filter((article) => {
+    const guide =
+      'guideId' in article ? GUIDE_TOPICS.find((topic) => topic.id === article.guideId) : undefined;
     const matchesCategory = activeCategory === 'All' || article.category === activeCategory;
     const matchesQuery =
       !normalizedQuery ||
-      `${article.title} ${article.category} ${article.summary}`
+      `${article.title} ${article.category} ${article.summary} ${guide?.title ?? ''} ${guide?.steps.join(' ') ?? ''}`
         .toLocaleLowerCase()
         .includes(normalizedQuery);
     return matchesCategory && matchesQuery;
@@ -641,17 +745,24 @@ export function SupportPage() {
         <label className='support-search'>
           <IconSearch aria-hidden='true' size={19} />
           <span className='sr-only'>Search help topics</span>
-          <input
+          <Input
             type='search'
             aria-label='Search help topics'
-            placeholder='Try “contrast”, “API”, or “saved palettes”'
+            placeholder='Search by topic or keyword'
+            className='min-h-11 border-0 shadow-none focus-visible:ring-0'
             value={query}
             onChange={(event) => setQuery(event.currentTarget.value)}
           />
           {query && (
-            <button type='button' aria-label='Clear search' onClick={() => setQuery('')}>
+            <Button
+              type='button'
+              variant='ghost'
+              size='icon-sm'
+              aria-label='Clear search'
+              title='Clear search'
+              onClick={() => setQuery('')}>
               <IconX aria-hidden='true' size={16} />
-            </button>
+            </Button>
           )}
         </label>
       </section>
@@ -659,13 +770,16 @@ export function SupportPage() {
       <section className='marketing-wrap support-content'>
         <div className='support-category-list' role='group' aria-label='Filter help topics'>
           {SUPPORT_CATEGORIES.map((category) => (
-            <button
+            <Button
               key={category}
               type='button'
+              variant={activeCategory === category ? 'secondary' : 'ghost'}
+              size='sm'
+              className='h-auto min-h-9 min-w-0 justify-start px-2 text-left text-xs whitespace-normal max-sm:min-h-11 max-sm:justify-center'
               aria-pressed={activeCategory === category}
               onClick={() => setActiveCategory(category)}>
               {category}
-            </button>
+            </Button>
           ))}
         </div>
         <div className='support-results' aria-live='polite'>
@@ -673,39 +787,69 @@ export function SupportPage() {
             {articles.length} {articles.length === 1 ? 'answer' : 'answers'}
           </p>
           {articles.length > 0 ? (
-            articles.map((article) => (
-              <Link key={article.title} to={article.to} className='support-result'>
-                <span className='support-result-category'>{article.category}</span>
-                <span className='support-result-copy'>
-                  <strong>{article.title}</strong>
-                  <span>{article.summary}</span>
-                </span>
-                <IconArrowUpRight aria-hidden='true' size={17} />
-              </Link>
-            ))
+            articles.map((article) => {
+              const guideId = 'guideId' in article ? article.guideId : null;
+              const content = (
+                <>
+                  <span className='support-result-category'>{article.category}</span>
+                  <span className='support-result-copy'>
+                    <strong>{article.title}</strong>
+                    <span>{article.summary}</span>
+                  </span>
+                  <IconArrowUpRight aria-hidden='true' size={17} />
+                </>
+              );
+
+              return guideId ? (
+                <a
+                  key={article.title}
+                  href='#guides'
+                  className='support-result'
+                  onClick={() => setActiveGuide(guideId)}>
+                  {content}
+                </a>
+              ) : (
+                <Link key={article.title} to={article.to} className='support-result'>
+                  {content}
+                </Link>
+              );
+            })
           ) : (
             <div className='support-empty'>
               <h2>No matching help topics</h2>
               <p>Try a broader search or clear the current category filter.</p>
-              <button
+              <Button
                 type='button'
-                className='marketing-text-link'
+                variant='ghost'
+                size='sm'
+                className='text-xs'
                 onClick={() => {
                   setQuery('');
                   setActiveCategory('All');
                 }}>
                 Clear filters <IconX aria-hidden='true' size={15} />
-              </button>
+              </Button>
             </div>
           )}
         </div>
       </section>
-      <div className='marketing-wrap support-guides-cta'>
-        <p>Looking for a step-by-step walkthrough?</p>
-        <Link to='/guides' className='marketing-text-link'>
-          Browse the color guides <IconArrowRight aria-hidden='true' size={15} />
-        </Link>
-      </div>
+      <section
+        id='guides'
+        aria-labelledby='support-guides-title'
+        className='marketing-wrap marketing-section guide-section support-guide-section'>
+        <div className='marketing-section-heading'>
+          <div>
+            <p className='marketing-kicker'>Step-by-step references</p>
+            <h2 id='support-guides-title' className='marketing-section-title'>
+              Color guides
+            </h2>
+          </div>
+          <p className='marketing-section-note'>
+            Build a palette, check contrast, prepare tokens, or refine a gradient.
+          </p>
+        </div>
+        <GuideExplorer activeGuide={activeGuide} onGuideChange={setActiveGuide} />
+      </section>
     </main>
   );
 }

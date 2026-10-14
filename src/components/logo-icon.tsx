@@ -1,4 +1,7 @@
+import type { CSSProperties } from 'react';
+
 import { Link } from '@tanstack/react-router';
+import { useId } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -6,32 +9,36 @@ export function BrandLockup({
   className,
   compact = false,
   heading = false,
+  variant = 'studio',
+  to,
 }: {
   className?: string;
   compact?: boolean;
   heading?: boolean;
+  variant?: 'studio' | 'marketing';
+  to?: '/' | '/overview';
 }) {
   const Wordmark = heading ? 'h1' : 'span';
 
   return (
-    <Link to='/' className={cn('flex shrink-0 items-center gap-2', className)}>
-      <LogoIcon className={compact ? 'size-6' : 'size-8'} />
-      <Wordmark
-        className={cn(
-          'flex items-center gap-0.5 font-display font-black',
-          compact ? 'text-[15px] leading-none' : 'pt-1 text-3xl leading-10',
-        )}>
+    <Link
+      to={to ?? (variant === 'marketing' ? '/overview' : '/')}
+      data-brand-variant={variant}
+      style={
+        variant === 'marketing' ? ({ '--brand-accent': '#ed654f' } as CSSProperties) : undefined
+      }
+      className={cn('brand-lockup', compact && 'is-compact', className)}>
+      <LogoIcon className='brand-icon' />
+      <Wordmark className='brand-wordmark'>
         Chroma
-        <sup
-          className={cn('font-sans font-normal text-primary', compact ? 'text-[9px]' : 'text-xl')}>
-          ELITE
-        </sup>
+        <sup className='brand-elite'>ELITE</sup>
       </Wordmark>
     </Link>
   );
 }
 
 export function LogoIcon({ className }: { className?: string }) {
+  const gradientId = useId();
   return (
     <svg
       viewBox='0 0 1024 1024'
@@ -48,68 +55,68 @@ export function LogoIcon({ className }: { className?: string }) {
         <g>
           <path
             d='M667.05,360.944c4.91,2.848 10.983,2.919 16.115,0.234c5.039,-2.71 9.458,-7.889 9.942,-13.649l-0.048,-239.683c0.052,-37.824 -20.228,-57.197 -51.276,-69.621c-72.136,-28.864 -221.119,-47.055 -344.495,17.957c-18.88,9.949 -27.309,22.903 -30.403,41.58c-3.046,18.39 7.708,36.275 23.662,45.453l376.503,217.728Z'
-            style={{ fill: 'url(#_Linear1)' }}
+            style={{ fill: `url(#${gradientId}-linear-1)` }}
           />
           <path
             d='M693.107,219.952c-69.671,-66.985 -259.906,-120.865 -402.594,-76.714l377.079,218.064c5.223,2.716 11.032,2.38 16.056,-0.394c5.312,-2.933 9.276,-8.33 9.46,-13.762l-0.001,-127.193Z'
-            style={{ fill: 'url(#_Linear2)' }}
+            style={{ fill: `url(#${gradientId}-linear-2)` }}
           />
         </g>
         <g>
           <path
             d='M459.536,302.842c4.923,-2.826 8.024,-8.048 8.268,-13.834c0.176,-5.719 -2.096,-12.137 -6.84,-15.438l-207.527,-119.92c-32.72,-18.976 -59.642,-11.114 -85.937,9.546c-61.093,48.004 -151.407,167.881 -156.873,307.231c-0.836,21.324 6.159,35.106 20.781,47.132c14.397,11.841 35.262,11.482 51.193,2.264l376.934,-216.981Z'
-            style={{ fill: 'url(#_Linear3)' }}
+            style={{ fill: `url(#${gradientId}-linear-3)` }}
           />
           <path
             d='M350.515,209.718c-92.862,26.791 -234.72,164.519 -267.912,310.146l377.513,-217.312c4.965,-3.162 7.582,-8.36 7.695,-14.098c0.119,-6.067 -2.569,-12.2 -7.18,-15.078l-110.117,-63.659Z'
-            style={{ fill: 'url(#_Linear4)' }}
+            style={{ fill: `url(#${gradientId}-linear-4)` }}
           />
         </g>
         <g>
           <path
             d='M304.477,451.978c0.014,-5.676 -2.958,-10.972 -7.847,-14.078c-4.865,-3.012 -11.559,-4.253 -16.79,-1.795l-207.617,119.764c-32.794,18.848 -39.447,46.094 -34.701,79.197c11.026,76.91 69.686,215.062 187.633,289.471c18.049,11.386 33.482,12.219 51.208,5.569c17.453,-6.547 27.575,-24.797 27.557,-43.203l0.556,-434.925Z'
-            style={{ fill: 'url(#_Linear5)' }}
+            style={{ fill: `url(#${gradientId}-linear-5)` }}
           />
           <path
             d='M169.318,499.831c-23.229,93.816 25.118,285.533 134.639,387.091l0.559,-435.592c-0.256,-5.881 -3.449,-10.746 -8.361,-13.713c-5.195,-3.137 -11.85,-3.875 -16.648,-1.321l-110.189,63.534Z'
-            style={{ fill: 'url(#_Linear6)' }}
+            style={{ fill: `url(#${gradientId}-linear-6)` }}
           />
         </g>
         <g>
           <path
             d='M357.241,662.953c-4.908,-2.85 -10.981,-2.925 -16.115,-0.243c-5.041,2.707 -9.462,7.884 -9.95,13.643l-0.09,239.683c-0.074,37.824 20.196,57.209 51.236,69.65c72.119,28.906 221.093,47.181 344.506,-17.76c18.885,-9.938 27.323,-22.887 30.427,-41.563c3.056,-18.389 -7.687,-36.279 -23.636,-45.467l-376.379,-217.944Z'
-            style={{ fill: 'url(#_Linear7)' }}
+            style={{ fill: `url(#${gradientId}-linear-7)` }}
           />
           <path
             d='M331.103,803.931c69.632,67.025 259.837,121.014 402.551,76.945l-376.954,-218.28c-5.221,-2.719 -11.031,-2.386 -16.056,0.385c-5.314,2.93 -9.281,8.324 -9.468,13.757l-0.072,127.193Z'
-            style={{ fill: 'url(#_Linear8)' }}
+            style={{ fill: `url(#${gradientId}-linear-8)` }}
           />
         </g>
         <g>
           <path
             d='M564.464,721.674c-4.923,2.826 -8.024,8.048 -8.268,13.834c-0.176,5.719 2.096,12.137 6.84,15.438l207.527,119.92c32.72,18.976 59.642,11.114 85.937,-9.546c61.093,-48.004 151.407,-167.881 156.873,-307.231c0.836,-21.324 -6.159,-35.106 -20.781,-47.132c-14.397,-11.841 -35.262,-11.482 -51.193,-2.264l-376.934,216.981Z'
-            style={{ fill: 'url(#_Linear9)' }}
+            style={{ fill: `url(#${gradientId}-linear-9)` }}
           />
           <path
             d='M673.485,814.799c92.862,-26.791 234.72,-164.519 267.912,-310.146l-377.513,217.312c-4.965,3.162 -7.582,8.36 -7.695,14.098c-0.119,6.067 2.569,12.2 7.18,15.078l110.117,63.659Z'
-            style={{ fill: 'url(#_Linear10)' }}
+            style={{ fill: `url(#${gradientId}-linear-10)` }}
           />
         </g>
         <g>
           <path
             d='M719.756,571.253c-0.014,5.676 2.958,10.972 7.847,14.078c4.865,3.012 11.559,4.253 16.79,1.795l207.617,-119.764c32.794,-18.848 39.447,-46.094 34.701,-79.197c-11.026,-76.91 -69.686,-215.062 -187.633,-289.471c-18.049,-11.386 -33.482,-12.219 -51.208,-5.569c-17.453,6.547 -27.575,24.797 -27.557,43.203l-0.556,434.925Z'
-            style={{ fill: 'url(#_Linear11)' }}
+            style={{ fill: `url(#${gradientId}-linear-11)` }}
           />
           <path
             d='M854.915,523.4c23.229,-93.816 -25.118,-285.533 -134.639,-387.091l-0.559,435.592c0.256,5.881 3.449,10.746 8.361,13.713c5.195,3.137 11.85,3.875 16.648,1.321l110.189,-63.534Z'
-            style={{ fill: 'url(#_Linear12)' }}
+            style={{ fill: `url(#${gradientId}-linear-12)` }}
           />
         </g>
         <ellipse cx='512' cy='512' rx='278' ry='278' style={{ fill: 'url(#_Radial13)' }} />
       </g>
       <defs>
         <linearGradient
-          id='_Linear1'
+          id={`${gradientId}-linear-1`}
           x1='0'
           y1='0'
           x2='1'
@@ -124,7 +131,7 @@ export function LogoIcon({ className }: { className?: string }) {
           <stop offset='1' style={{ stopColor: '#f9cb0c', stopOpacity: 1 }} />
         </linearGradient>
         <linearGradient
-          id='_Linear2'
+          id={`${gradientId}-linear-2`}
           x1='0'
           y1='0'
           x2='1'
@@ -137,7 +144,7 @@ export function LogoIcon({ className }: { className?: string }) {
           <stop offset='1' style={{ stopColor: '#f4a900', stopOpacity: 1 }} />
         </linearGradient>
         <linearGradient
-          id='_Linear3'
+          id={`${gradientId}-linear-3`}
           x1='0'
           y1='0'
           x2='1'
@@ -148,7 +155,7 @@ export function LogoIcon({ className }: { className?: string }) {
           <stop offset='1' style={{ stopColor: '#38d2cc', stopOpacity: 1 }} />
         </linearGradient>
         <linearGradient
-          id='_Linear4'
+          id={`${gradientId}-linear-4`}
           x1='0'
           y1='0'
           x2='1'
@@ -161,7 +168,7 @@ export function LogoIcon({ className }: { className?: string }) {
           <stop offset='1' style={{ stopColor: '#0bb38d', stopOpacity: 1 }} />
         </linearGradient>
         <linearGradient
-          id='_Linear5'
+          id={`${gradientId}-linear-5`}
           x1='0'
           y1='0'
           x2='1'
@@ -172,7 +179,7 @@ export function LogoIcon({ className }: { className?: string }) {
           <stop offset='1' style={{ stopColor: '#bd45d9', stopOpacity: 1 }} />
         </linearGradient>
         <linearGradient
-          id='_Linear6'
+          id={`${gradientId}-linear-6`}
           x1='0'
           y1='0'
           x2='1'
@@ -184,7 +191,7 @@ export function LogoIcon({ className }: { className?: string }) {
           <stop offset='1' style={{ stopColor: '#9307c2', stopOpacity: 1 }} />
         </linearGradient>
         <linearGradient
-          id='_Linear7'
+          id={`${gradientId}-linear-7`}
           x1='0'
           y1='0'
           x2='1'
@@ -198,7 +205,7 @@ export function LogoIcon({ className }: { className?: string }) {
           <stop offset='1' style={{ stopColor: '#4b89db', stopOpacity: 1 }} />
         </linearGradient>
         <linearGradient
-          id='_Linear8'
+          id={`${gradientId}-linear-8`}
           x1='0'
           y1='0'
           x2='1'
@@ -209,7 +216,7 @@ export function LogoIcon({ className }: { className?: string }) {
           <stop offset='1' style={{ stopColor: '#1956c1', stopOpacity: 1 }} />
         </linearGradient>
         <linearGradient
-          id='_Linear9'
+          id={`${gradientId}-linear-9`}
           x1='0'
           y1='0'
           x2='1'
@@ -220,7 +227,7 @@ export function LogoIcon({ className }: { className?: string }) {
           <stop offset='1' style={{ stopColor: '#79def0', stopOpacity: 1 }} />
         </linearGradient>
         <linearGradient
-          id='_Linear10'
+          id={`${gradientId}-linear-10`}
           x1='0'
           y1='0'
           x2='1'
@@ -233,7 +240,7 @@ export function LogoIcon({ className }: { className?: string }) {
           <stop offset='1' style={{ stopColor: '#049fc9', stopOpacity: 1 }} />
         </linearGradient>
         <linearGradient
-          id='_Linear11'
+          id={`${gradientId}-linear-11`}
           x1='0'
           y1='0'
           x2='1'
@@ -246,7 +253,7 @@ export function LogoIcon({ className }: { className?: string }) {
           <stop offset='1' style={{ stopColor: '#f97fa4', stopOpacity: 1 }} />
         </linearGradient>
         <linearGradient
-          id='_Linear12'
+          id={`${gradientId}-linear-12`}
           x1='0'
           y1='0'
           x2='1'

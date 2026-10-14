@@ -45,7 +45,9 @@ import { Route as MarketingFeaturesRouteImport } from './routes/_marketing/featu
 import { Route as MarketingGuidesRouteImport } from './routes/_marketing/guides'
 import { Route as MarketingOverviewRouteImport } from './routes/_marketing/overview'
 import { Route as MarketingPricingRouteImport } from './routes/_marketing/pricing'
+import { Route as MarketingPrivacyRouteImport } from './routes/_marketing/privacy'
 import { Route as MarketingSupportRouteImport } from './routes/_marketing/support'
+import { Route as MarketingTermsRouteImport } from './routes/_marketing/terms'
 import { Route as ApiPaletteRouteImport } from './routes/api/palette'
 import { Route as ChromaAnalyzeIndexRouteImport } from './routes/_chroma/analyze/index'
 import { Route as ChromaAnalyzeAccessibilityRouteImport } from './routes/_chroma/analyze/accessibility'
@@ -241,9 +243,19 @@ const MarketingPricingRoute = MarketingPricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => MarketingRoute,
 } as any)
+const MarketingPrivacyRoute = MarketingPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => MarketingRoute,
+} as any)
 const MarketingSupportRoute = MarketingSupportRouteImport.update({
   id: '/support',
   path: '/support',
+  getParentRoute: () => MarketingRoute,
+} as any)
+const MarketingTermsRoute = MarketingTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => MarketingRoute,
 } as any)
 const ApiPaletteRoute = ApiPaletteRouteImport.update({
@@ -364,7 +376,9 @@ export interface FileRoutesByFullPath {
   '/guides': typeof MarketingGuidesRoute
   '/overview': typeof MarketingOverviewRoute
   '/pricing': typeof MarketingPricingRoute
+  '/privacy': typeof MarketingPrivacyRoute
   '/support': typeof MarketingSupportRoute
+  '/terms': typeof MarketingTermsRoute
   '/api/palette': typeof ApiPaletteRoute
   '/analyze/accessibility': typeof ChromaAnalyzeAccessibilityRoute
   '/analyze/brand': typeof ChromaAnalyzeBrandRoute
@@ -414,7 +428,9 @@ export interface FileRoutesByTo {
   '/guides': typeof MarketingGuidesRoute
   '/overview': typeof MarketingOverviewRoute
   '/pricing': typeof MarketingPricingRoute
+  '/privacy': typeof MarketingPrivacyRoute
   '/support': typeof MarketingSupportRoute
+  '/terms': typeof MarketingTermsRoute
   '/api/palette': typeof ApiPaletteRoute
   '/analyze/accessibility': typeof ChromaAnalyzeAccessibilityRoute
   '/analyze/brand': typeof ChromaAnalyzeBrandRoute
@@ -469,7 +485,9 @@ export interface FileRoutesById {
   '/_marketing/guides': typeof MarketingGuidesRoute
   '/_marketing/overview': typeof MarketingOverviewRoute
   '/_marketing/pricing': typeof MarketingPricingRoute
+  '/_marketing/privacy': typeof MarketingPrivacyRoute
   '/_marketing/support': typeof MarketingSupportRoute
+  '/_marketing/terms': typeof MarketingTermsRoute
   '/api/palette': typeof ApiPaletteRoute
   '/_chroma/': typeof ChromaIndexRoute
   '/_chroma/analyze/accessibility': typeof ChromaAnalyzeAccessibilityRoute
@@ -525,7 +543,9 @@ export interface FileRouteTypes {
     | '/guides'
     | '/overview'
     | '/pricing'
+    | '/privacy'
     | '/support'
+    | '/terms'
     | '/api/palette'
     | '/analyze/accessibility'
     | '/analyze/brand'
@@ -575,7 +595,9 @@ export interface FileRouteTypes {
     | '/guides'
     | '/overview'
     | '/pricing'
+    | '/privacy'
     | '/support'
+    | '/terms'
     | '/api/palette'
     | '/analyze/accessibility'
     | '/analyze/brand'
@@ -629,7 +651,9 @@ export interface FileRouteTypes {
     | '/_marketing/guides'
     | '/_marketing/overview'
     | '/_marketing/pricing'
+    | '/_marketing/privacy'
     | '/_marketing/support'
+    | '/_marketing/terms'
     | '/api/palette'
     | '/_chroma/'
     | '/_chroma/analyze/accessibility'
@@ -913,11 +937,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketingPricingRouteImport
       parentRoute: typeof MarketingRoute
     }
+    '/_marketing/privacy': {
+      id: '/_marketing/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof MarketingPrivacyRouteImport
+      parentRoute: typeof MarketingRoute
+    }
     '/_marketing/support': {
       id: '/_marketing/support'
       path: '/support'
       fullPath: '/support'
       preLoaderRoute: typeof MarketingSupportRouteImport
+      parentRoute: typeof MarketingRoute
+    }
+    '/_marketing/terms': {
+      id: '/_marketing/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof MarketingTermsRouteImport
       parentRoute: typeof MarketingRoute
     }
     '/api/palette': {
@@ -1159,7 +1197,9 @@ interface MarketingRouteChildren {
   MarketingGuidesRoute: typeof MarketingGuidesRoute
   MarketingOverviewRoute: typeof MarketingOverviewRoute
   MarketingPricingRoute: typeof MarketingPricingRoute
+  MarketingPrivacyRoute: typeof MarketingPrivacyRoute
   MarketingSupportRoute: typeof MarketingSupportRoute
+  MarketingTermsRoute: typeof MarketingTermsRoute
 }
 
 const MarketingRouteChildren: MarketingRouteChildren = {
@@ -1169,7 +1209,9 @@ const MarketingRouteChildren: MarketingRouteChildren = {
   MarketingGuidesRoute: MarketingGuidesRoute,
   MarketingOverviewRoute: MarketingOverviewRoute,
   MarketingPricingRoute: MarketingPricingRoute,
+  MarketingPrivacyRoute: MarketingPrivacyRoute,
   MarketingSupportRoute: MarketingSupportRoute,
+  MarketingTermsRoute: MarketingTermsRoute,
 }
 
 const MarketingRouteWithChildren = MarketingRoute._addFileChildren(

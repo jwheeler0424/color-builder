@@ -17,7 +17,7 @@ import { useSyncExternalStore } from 'react';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { cn } from '@/lib/utils';
 
-import { LogoIcon } from '../logo-icon';
+import { BrandLockup } from '../logo-icon';
 import { GenerateControls, GenerateFooter } from './generate-controls';
 
 const COLLAPSE_KEY = 'chroma:rail-collapsed';
@@ -78,19 +78,7 @@ export function LeftRail({ onEditSeed, className }: LeftRailProps) {
           collapsed ? 'justify-center px-0' : 'justify-between px-4',
         )}>
         {/* Brand */}
-        {!collapsed && (
-          <div className='flex items-center gap-3'>
-            <LogoIcon className='size-5' />
-            <div className='flex gap-0.5'>
-              <span className='shrink-0 font-display text-lg font-black tracking-tight text-foreground'>
-                Chroma
-              </span>
-              <span className='font-display text-lg font-normal tracking-tight text-muted-foreground'>
-                ELITE
-              </span>
-            </div>
-          </div>
-        )}
+        {!collapsed && <BrandLockup compact />}
         <button
           onClick={toggle}
           className='flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded border border-transparent bg-transparent text-sm text-muted-foreground transition-colors hover:border-border hover:text-foreground'

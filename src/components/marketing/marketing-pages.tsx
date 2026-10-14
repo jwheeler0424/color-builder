@@ -8,6 +8,17 @@ import {
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { parseColor, textColor } from '@/lib/engine/browser';
+import { cn } from '@/lib/utils';
+
 type BillingInterval = 'monthly' | 'yearly';
 type PaidPlan = 'pro' | 'team';
 
@@ -51,26 +62,21 @@ export function PaletteArtwork() {
   return (
     <figure className='palette-artwork'>
       <div className='palette-artwork-top'>
-        <span>Palette / study 024</span>
-        <span className='palette-artwork-dots' aria-hidden='true'>
-          <i />
-          <i />
-          <i />
-        </span>
+        <span>Sample palette</span>
       </div>
       <div className='palette-artwork-swatches' aria-label='Six-color generated palette'>
         {PALETTE_SWATCHES.map((color) => (
           <div
             key={color.hex}
             className='palette-artwork-swatch'
-            style={{ backgroundColor: color.hex }}>
+            style={{ backgroundColor: color.hex, color: textColor(parseColor(color.hex).xyz) }}>
             {color.hex}
           </div>
         ))}
       </div>
       <figcaption className='palette-artwork-bottom'>
-        <span>Analogous · OKLCH</span>
-        <strong>6 colors / contrast tools</strong>
+        <span>HEX values</span>
+        <strong>6 colors</strong>
       </figcaption>
     </figure>
   );
@@ -111,6 +117,25 @@ const FEATURE_STAGES = [
   },
 ] as const;
 
+const FREE_CAPABILITIES = [
+  {
+    title: 'Palette foundations',
+    description: 'Up to six colors, harmony generation, and a perceptual color picker.',
+  },
+  {
+    title: 'Everyday color tools',
+    description: 'Mix colors, build two-stop gradients, and extract up to five colors from images.',
+  },
+  {
+    title: 'Accessibility basics',
+    description: 'Check foreground and background pairs with basic WCAG contrast tools.',
+  },
+  {
+    title: 'Ready-to-use exports',
+    description: 'Take HEX, RGB, and CSS variables straight into your project.',
+  },
+] as const;
+
 export function FeaturesPage() {
   const [activeStage, setActiveStage] = useState<(typeof FEATURE_STAGES)[number]['key']>('analyze');
   const stage = FEATURE_STAGES.find((item) => item.key === activeStage)!;
@@ -128,10 +153,22 @@ export function FeaturesPage() {
             handoff. Move from the first hue to implementation without losing the thread.
           </p>
           <div className='marketing-hero-actions'>
-            <Link to='/' className='marketing-primary-link'>
+            <Link
+              to='/'
+              data-slot='button'
+              className={cn(
+                buttonVariants({ size: 'lg', className: 'text-sm' }),
+                'marketing-primary-link',
+              )}>
               Open the studio <IconArrowUpRight aria-hidden='true' size={17} />
             </Link>
-            <Link to='/pricing' className='marketing-secondary-link'>
+            <Link
+              to='/pricing'
+              data-slot='button'
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'lg', className: 'text-sm' }),
+                'marketing-secondary-link',
+              )}>
               Explore plans <IconArrowRight aria-hidden='true' size={16} />
             </Link>
           </div>
@@ -158,7 +195,7 @@ export function FeaturesPage() {
         </div>
       </section>
 
-      <section className='marketing-wrap marketing-section'>
+      <section className='marketing-wrap marketing-section feature-tools-section'>
         <div className='marketing-section-heading'>
           <div>
             <p className='marketing-kicker'>Inside the studio</p>
@@ -174,15 +211,16 @@ export function FeaturesPage() {
         <div className='feature-explorer'>
           <div className='feature-explorer-nav' aria-label='Explore product areas'>
             {FEATURE_STAGES.map((item) => (
-              <button
+              <Button
                 key={item.key}
                 type='button'
-                className='feature-stage-button'
+                variant={activeStage === item.key ? 'secondary' : 'ghost'}
+                className='feature-stage-button min-h-10 justify-between text-xs font-semibold max-sm:min-h-11'
                 aria-pressed={activeStage === item.key}
                 onClick={() => setActiveStage(item.key)}>
                 <span>{item.name}</span>
                 <IconArrowRight aria-hidden='true' size={15} />
-              </button>
+              </Button>
             ))}
           </div>
           <div className='feature-explorer-content' aria-live='polite'>
@@ -191,35 +229,60 @@ export function FeaturesPage() {
             <p>{stage.description}</p>
             <div className='feature-tool-list'>
               {stage.tools.map((tool) => (
-                <span key={tool}>{tool}</span>
+                <Badge key={tool} variant='secondary'>
+                  {tool}
+                </Badge>
               ))}
             </div>
           </div>
         </div>
       </section>
 
-      <section className='marketing-wrap marketing-section' aria-labelledby='free-sample-title'>
-        <div className='free-sample-band'>
-          <div>
+      <section className='feature-plans-section' aria-labelledby='free-sample-title'>
+        <div className='marketing-wrap feature-plans-grid'>
+          <div className='feature-plan-copy'>
             <p className='marketing-kicker'>Start free</p>
             <h2 id='free-sample-title'>Try every stage before you scale up.</h2>
+            <p>
+              Build your first palette, check it, and take it into your project. The essentials are
+              ready without an account or a paid plan.
+            </p>
+            <Link
+              to='/'
+              data-slot='button'
+              className={cn(
+                buttonVariants({ size: 'lg', className: 'text-sm' }),
+                'marketing-primary-link',
+              )}>
+              Start creating <IconArrowUpRight aria-hidden='true' size={17} />
+            </Link>
           </div>
-          <p>
-            Free includes palettes up to six colors, a basic contrast check, simple mixing and
-            gradients, image color extraction, and foundational exports. Upgrade when you need the
-            full toolset and API access.
-          </p>
+          <ul className='feature-free-list' aria-label='Included with the Free plan'>
+            {FREE_CAPABILITIES.map((capability) => (
+              <li key={capability.title}>
+                <h3>{capability.title}</h3>
+                <p>{capability.description}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className='marketing-wrap feature-upgrade-row'>
+          <div>
+            <p className='marketing-kicker'>When you need more</p>
+            <h3>The full studio, ready when you are.</h3>
+            <p>Advanced analysis, larger palettes, and a complete design-system toolset.</p>
+          </div>
+          <Link
+            to='/pricing'
+            data-slot='button'
+            className={cn(
+              buttonVariants({ variant: 'outline', size: 'lg', className: 'text-sm' }),
+              'marketing-secondary-link',
+            )}>
+            Compare plans <IconArrowRight aria-hidden='true' size={17} />
+          </Link>
         </div>
       </section>
-      <div className='marketing-wrap marketing-bottom-cta'>
-        <div>
-          <h2>Put your next palette to work.</h2>
-          <p>Start in the studio. Keep every color decision connected.</p>
-        </div>
-        <Link to='/' className='marketing-primary-link'>
-          Open Chroma <IconArrowUpRight aria-hidden='true' size={17} />
-        </Link>
-      </div>
     </main>
   );
 }
@@ -331,20 +394,24 @@ export function PricingPage({
         </p>
         <div className='pricing-controls'>
           <div className='billing-switch' role='group' aria-label='Billing interval'>
-            <button
+            <Button
               type='button'
-              className='billing-option'
+              variant={billingInterval === 'monthly' ? 'default' : 'ghost'}
+              size='sm'
+              className='billing-option text-xs'
               aria-pressed={billingInterval === 'monthly'}
               onClick={() => setBillingInterval('monthly')}>
               Monthly
-            </button>
-            <button
+            </Button>
+            <Button
               type='button'
-              className='billing-option'
+              variant={billingInterval === 'yearly' ? 'default' : 'ghost'}
+              size='sm'
+              className='billing-option text-xs'
               aria-pressed={billingInterval === 'yearly'}
               onClick={() => setBillingInterval('yearly')}>
               Yearly
-            </button>
+            </Button>
           </div>
           <span className='billing-savings'>Yearly saves 2 months</span>
         </div>
@@ -361,9 +428,6 @@ export function PricingPage({
             <span className='plan-price-period'>forever</span>
           </div>
           <p className='plan-billing-note'>No card required</p>
-          <Link to='/' className='plan-cta'>
-            Start creating <IconArrowUpRight aria-hidden='true' size={16} />
-          </Link>
           <hr className='plan-divider' />
           <p className='plan-includes'>A little of every stage</p>
           <ul className='plan-features'>
@@ -371,12 +435,22 @@ export function PricingPage({
               <PlanFeature key={feature}>{feature}</PlanFeature>
             ))}
           </ul>
+          <div className='plan-actions'>
+            <Link
+              to='/'
+              data-slot='button'
+              className={cn(buttonVariants({ size: 'lg', className: 'text-sm' }), 'plan-cta')}>
+              Start creating <IconArrowUpRight aria-hidden='true' size={16} />
+            </Link>
+          </div>
         </article>
 
         <article className='plan-card is-featured'>
           <div className='plan-label-row'>
             <h2 className='plan-name'>Pro</h2>
-            <span className='plan-badge'>Full studio</span>
+            <Badge variant='outline' className='plan-badge'>
+              Featured plan
+            </Badge>
           </div>
           <p className='plan-description'>Every tool for designers who need more than a palette.</p>
           <div className='plan-price-row'>
@@ -386,9 +460,6 @@ export function PricingPage({
           <p className='plan-billing-note'>
             {billingInterval === 'yearly' ? '$120 billed yearly' : 'Billed monthly'}
           </p>
-          <button type='button' className='plan-cta' onClick={() => choosePlan('pro')}>
-            Choose Pro <IconArrowRight aria-hidden='true' size={16} />
-          </button>
           <hr className='plan-divider' />
           <p className='plan-includes'>Everything in the studio</p>
           <ul className='plan-features'>
@@ -396,6 +467,15 @@ export function PricingPage({
               <PlanFeature key={feature}>{feature}</PlanFeature>
             ))}
           </ul>
+          <div className='plan-actions'>
+            <Button
+              type='button'
+              size='lg'
+              className='plan-cta text-sm'
+              onClick={() => choosePlan('pro')}>
+              Choose Pro <IconArrowRight aria-hidden='true' size={16} />
+            </Button>
+          </div>
         </article>
 
         <article className='plan-card is-team'>
@@ -410,32 +490,6 @@ export function PricingPage({
           <p className='plan-billing-note'>
             {billingInterval === 'yearly' ? '$200 per seat, billed yearly' : 'Billed monthly'}
           </p>
-          <div className='plan-seat-control'>
-            <span className='plan-seat-label'>Seats · 2 minimum</span>
-            <div className='seat-stepper' role='group' aria-label='Team seat count'>
-              <button
-                type='button'
-                aria-label='Remove a seat'
-                disabled={seats <= 2}
-                onClick={() => setSeats((current) => Math.max(2, current - 1))}>
-                <IconMinus aria-hidden='true' size={14} />
-              </button>
-              <span aria-live='polite'>{seats}</span>
-              <button
-                type='button'
-                aria-label='Add a seat'
-                onClick={() => setSeats((current) => current + 1)}>
-                <IconPlus aria-hidden='true' size={14} />
-              </button>
-            </div>
-          </div>
-          <p className='plan-total'>
-            {displayMoney(teamTotal)} billed{' '}
-            {billingInterval === 'yearly' ? 'per year' : 'per month'}
-          </p>
-          <button type='button' className='plan-cta' onClick={() => choosePlan('team')}>
-            Choose Team <IconArrowRight aria-hidden='true' size={16} />
-          </button>
           <hr className='plan-divider' />
           <p className='plan-includes'>Built for shared work</p>
           <ul className='plan-features'>
@@ -443,6 +497,42 @@ export function PricingPage({
               <PlanFeature key={feature}>{feature}</PlanFeature>
             ))}
           </ul>
+          <div className='plan-actions'>
+            <div className='plan-seat-control'>
+              <span className='plan-seat-label'>Seats · 2 minimum</span>
+              <div className='seat-stepper' role='group' aria-label='Team seat count'>
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='icon-sm'
+                  aria-label='Remove a seat'
+                  disabled={seats <= 2}
+                  onClick={() => setSeats((current) => Math.max(2, current - 1))}>
+                  <IconMinus aria-hidden='true' size={14} />
+                </Button>
+                <span aria-live='polite'>{seats}</span>
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='icon-sm'
+                  aria-label='Add a seat'
+                  onClick={() => setSeats((current) => current + 1)}>
+                  <IconPlus aria-hidden='true' size={14} />
+                </Button>
+              </div>
+            </div>
+            <p className='plan-total'>
+              {displayMoney(teamTotal)} billed{' '}
+              {billingInterval === 'yearly' ? 'per year' : 'per month'}
+            </p>
+            <Button
+              type='button'
+              size='lg'
+              className='plan-cta text-sm'
+              onClick={() => choosePlan('team')}>
+              Choose Team <IconArrowRight aria-hidden='true' size={16} />
+            </Button>
+          </div>
         </article>
       </section>
 
@@ -478,7 +568,11 @@ export function PricingPage({
               Every paid seat gets access to the full Chroma toolset. Team adds shared workflows.
             </p>
           </div>
-          <div className='comparison-table-wrap'>
+          <div
+            className='comparison-table-wrap'
+            role='region'
+            aria-label='Plan comparison'
+            tabIndex={0}>
             <table className='comparison-table'>
               <thead>
                 <tr>
@@ -512,21 +606,29 @@ export function PricingPage({
             <h2 className='marketing-section-title'>A few practical details.</h2>
           </div>
         </div>
-        <div className='faq-list'>
+        <Accordion className='faq-list' multiple>
           {FAQS.map((item) => (
-            <details key={item.question}>
-              <summary>{item.question}</summary>
-              <p>{item.answer}</p>
-            </details>
+            <AccordionItem key={item.question} value={item.question}>
+              <AccordionTrigger>{item.question}</AccordionTrigger>
+              <AccordionContent className='faq-answer'>
+                <p>{item.answer}</p>
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
+        </Accordion>
       </section>
       <div className='marketing-wrap marketing-bottom-cta'>
         <div>
           <h2>Try the color studio for free.</h2>
           <p>Make a palette, then see how far your color system can go.</p>
         </div>
-        <Link to='/' className='marketing-primary-link'>
+        <Link
+          to='/'
+          data-slot='button'
+          className={cn(
+            buttonVariants({ size: 'lg', className: 'text-sm' }),
+            'marketing-primary-link',
+          )}>
           Start creating <IconArrowUpRight aria-hidden='true' size={17} />
         </Link>
       </div>

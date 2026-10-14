@@ -36,7 +36,7 @@ import {
 import { Outlet, useRouterState } from '@tanstack/react-router';
 import { useState, useCallback, Suspense } from 'react';
 
-import { MarketingPagesMenu } from '@/components/marketing/marketing-menu';
+import { MarketingResourcesNavigation } from '@/components/marketing/marketing-menu';
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import { useCommandModifier } from '@/hooks/use-command-modifier';
 import { usePortraitViewport } from '@/hooks/use-stacked-palette';
@@ -112,6 +112,7 @@ export function TabletShell() {
         <header className='flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-4'>
           <BrandLockup compact />
           <div className='flex-1' />
+          <MarketingResourcesNavigation compact />
 
           {/* ⌘K */}
           <button
@@ -121,8 +122,6 @@ export function TabletShell() {
             aria-label={`Open search (${commandModifier}K)`}>
             <IconSearch className='size-5' aria-hidden='true' />
           </button>
-
-          <MarketingPagesMenu compact />
 
           {/* Actions */}
           <button

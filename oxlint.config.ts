@@ -19,6 +19,14 @@ export default defineConfig({
     typeAware: true,
     typeCheck: true,
   },
+  overrides: [
+    {
+      files: ['src/components/marketing/marketing-pages.tsx'],
+      rules: {
+        'jsx-a11y/no-noninteractive-tabindex': ['warn', { roles: ['tabpanel', 'region'] }],
+      },
+    },
+  ],
   ignorePatterns: [
     '__old__/**',
     'src/routeTree.gen.ts',

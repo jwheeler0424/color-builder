@@ -268,6 +268,7 @@ export function SearchButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
+      aria-label='Search tools'
       className={cn(
         'inline-flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-[10px]',
         'cursor-pointer tracking-[.04em] whitespace-nowrap transition-colors',

@@ -1,99 +1,231 @@
-import { IconArrowUpRight, IconCheck, IconPalette } from '@tabler/icons-react';
+import type { CSSProperties } from 'react';
+
+import {
+  IconBox,
+  IconChevronRight,
+  IconCode,
+  IconFileText,
+  IconHelpCircle,
+  IconLayoutDashboard,
+  IconShieldLock,
+  IconSparkles,
+  IconTag,
+} from '@tabler/icons-react';
 import { Link, useRouterState } from '@tanstack/react-router';
 
-import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuPanel,
+  NavigationMenuTrigger,
+  studioNavigationTriggerClassName,
+} from '@/components/ui/navigation-menu';
+import { cn } from '@/lib/utils';
 
 const MARKETING_LINKS = [
-  { to: '/overview', label: 'Overview' },
-  { to: '/features', label: 'Features' },
-  { to: '/pricing', label: 'Pricing' },
-  { to: '/api', label: 'Developer API' },
-  { to: '/guides', label: 'Guides' },
-  { to: '/support', label: 'Help center' },
-  { to: '/data', label: 'Data & privacy' },
+  {
+    to: '/overview',
+    label: 'Overview',
+    navLabel: 'Overview',
+    description: 'The product and the complete color workflow.',
+    icon: IconLayoutDashboard,
+  },
+  {
+    to: '/features',
+    label: 'Features',
+    navLabel: 'Features',
+    description: 'Palette tools, accessibility analysis, themes, and exports.',
+    icon: IconSparkles,
+  },
+  {
+    to: '/pricing',
+    label: 'Pricing',
+    navLabel: 'Pricing',
+    description: 'Compare Free, Pro, and Team plans.',
+    icon: IconTag,
+  },
+  {
+    to: '/api',
+    label: 'Developer API',
+    navLabel: 'API',
+    description: 'Color generation, analysis, and API integration.',
+    icon: IconCode,
+  },
+  {
+    to: '/support',
+    label: 'Help center',
+    navLabel: 'Help',
+    description: 'Guides and answers about palettes, contrast, exports, plans, and API access.',
+    icon: IconHelpCircle,
+  },
+  {
+    to: '/data',
+    label: 'Data overview',
+    navLabel: 'Data',
+    description: 'Local storage, shared links, and image processing.',
+    icon: IconShieldLock,
+  },
+  {
+    to: '/privacy',
+    label: 'Privacy Policy',
+    navLabel: 'Privacy',
+    description: 'Information handling, browser storage, choices, and privacy rights.',
+    icon: IconShieldLock,
+  },
+  {
+    to: '/terms',
+    label: 'Terms of Use',
+    navLabel: 'Terms',
+    description: 'Conditions for using the studio, your content, and available services.',
+    icon: IconFileText,
+  },
 ] as const;
 
-function MarketingLinkItems() {
+const PAGE_GROUPS = [
+  { label: 'Product and developers', pages: MARKETING_LINKS.slice(0, 4) },
+  { label: 'Learning and support', pages: MARKETING_LINKS.slice(4) },
+] as const;
+
+export function MarketingResourcesMenuItem({
+  kind = 'product',
+  compact = false,
+  className,
+}: {
+  kind?: 'product' | 'support';
+  compact?: boolean;
+  className?: string;
+}) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isSupport = kind === 'support';
+  const label = isSupport ? 'Support' : 'Product';
+  const MenuIcon = isSupport ? IconHelpCircle : IconBox;
+  const group = PAGE_GROUPS[isSupport ? 1 : 0];
+  const currentPage = MARKETING_LINKS.find((item) => item.to === pathname);
+  const isActive = group.pages.some((item) => item.to === pathname);
+  const accent = 'text-sky-700 dark:text-primary';
 
   return (
-    <>
-      {MARKETING_LINKS.map((item) => (
-        <DropdownMenuItem
-          key={item.to}
-          render={<Link to={item.to as Parameters<typeof Link>[0]['to']} />}
-          className='justify-between'>
-          {item.label}
-          {pathname === item.to ? (
-            <IconCheck className='size-4' aria-hidden='true' />
-          ) : (
-            <IconArrowUpRight className='size-3.5 text-muted-foreground' aria-hidden='true' />
-          )}
-        </DropdownMenuItem>
-      ))}
-    </>
+    <NavigationMenuItem
+      className='h-full'
+      data-section={kind}
+      style={{ '--section-accent': 'var(--primary)' } as CSSProperties}>
+      <NavigationMenuTrigger
+        aria-label={label}
+        title={label}
+        className={cn(
+          studioNavigationTriggerClassName(isActive),
+          compact && 'min-h-11 min-w-11 px-2 [&>svg:last-child]:hidden',
+          className,
+        )}>
+        <MenuIcon className={cn('size-4 shrink-0', isActive && accent)} aria-hidden='true' />
+        {!compact && <span className='relative top-0.5'>{label}</span>}
+      </NavigationMenuTrigger>
+      <NavigationMenuContent className='p-0'>
+        <NavigationMenuPanel
+          title={label}
+          eyebrow={isSupport ? 'Learning & support' : 'Product & developers'}
+          summary={
+            isSupport
+              ? 'Practical color guidance, answers to common questions, and clear data practices.'
+              : 'Explore the studio, compare plans, and connect the color engine to your workflow.'
+          }
+          icon={MenuIcon}
+          accent={accent}
+          accentSurface='bg-primary/10'
+          accentColor='var(--primary)'
+          section={kind}
+          contentLabel={group.label}
+          countLabel={`${String(group.pages.length).padStart(2, '0')} pages`}
+          sidebarFooter={
+            <>
+              <div className='flex items-center justify-between font-mono text-[10px] text-foreground/65'>
+                <span>Current page</span>
+                <span>{currentPage ? 'Product site' : 'Studio'}</span>
+              </div>
+              <div className='mt-2 flex h-8 items-center gap-2 rounded border border-border/70 px-2 font-mono text-[10px] text-foreground/65'>
+                <MenuIcon className={cn('size-3.5 shrink-0', accent)} aria-hidden='true' />
+                <span className='truncate'>{currentPage?.label ?? 'Color studio'}</span>
+              </div>
+            </>
+          }
+          footer={
+            <Link
+              to={isSupport ? '/support' : '/overview'}
+              className={cn(
+                'inline-flex items-center gap-1.5 text-xs font-medium underline-offset-4 transition-colors hover:underline',
+                accent,
+              )}>
+              Open {label}
+              <IconChevronRight className='size-3.5' aria-hidden='true' />
+            </Link>
+          }>
+          <nav
+            aria-label={`Chroma ${kind}`}
+            className='col-span-full grid grid-cols-2 gap-1.5 max-sm:grid-cols-1'>
+            {group.pages.map((item) => (
+              <NavigationMenuLink
+                key={item.to}
+                render={
+                  <Link
+                    to={item.to}
+                    aria-label={item.label}
+                    aria-current={pathname === item.to ? 'page' : undefined}
+                  />
+                }
+                active={pathname === item.to}
+                closeOnClick
+                className='group/tool grid min-h-18 min-w-0 grid-cols-[2.25rem_minmax(0,1fr)_1rem] items-center gap-3 rounded-md border border-transparent p-2.5 text-left transition-[background,border-color] hover:border-(--section-accent) hover:bg-muted/55 data-[active=true]:border-(--section-accent) data-[active=true]:bg-muted/45'>
+                <span className='grid size-9 place-items-center rounded-md border border-border/70 bg-primary/10 text-sky-700 transition-colors group-hover/tool:border-border dark:text-primary'>
+                  <item.icon className='size-4' aria-hidden='true' />
+                </span>
+                <span className='flex min-w-0 flex-col gap-0.5'>
+                  <span className='truncate text-sm font-medium text-foreground'>{item.label}</span>
+                  <span className='line-clamp-2 text-xs leading-4 text-foreground/65'>
+                    {item.description}
+                  </span>
+                </span>
+                <IconChevronRight
+                  className='size-3.5 text-muted-foreground/50 transition-transform group-hover/tool:translate-x-0.5 group-hover/tool:text-foreground'
+                  aria-hidden='true'
+                />
+              </NavigationMenuLink>
+            ))}
+          </nav>
+        </NavigationMenuPanel>
+      </NavigationMenuContent>
+    </NavigationMenuItem>
   );
 }
 
-export function MarketingPagesSubmenuItems() {
+export function MarketingResourcesNavigation({
+  compact = false,
+  variant = 'studio',
+  className,
+}: {
+  compact?: boolean;
+  variant?: 'studio' | 'marketing';
+  className?: string;
+}) {
   return (
-    <>
-      <DropdownMenuSeparator />
-      <DropdownMenuSub>
-        <DropdownMenuSubTrigger>
-          <IconPalette className='size-4' aria-hidden='true' />
-          Explore Chroma
-        </DropdownMenuSubTrigger>
-        <DropdownMenuSubContent align='start' className='min-w-48'>
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Pages &amp; resources</DropdownMenuLabel>
-            <MarketingLinkItems />
-          </DropdownMenuGroup>
-        </DropdownMenuSubContent>
-      </DropdownMenuSub>
-    </>
-  );
-}
-
-export function MarketingPagesMenu({ compact = false }: { compact?: boolean }) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant='ghost'
-            size={compact ? 'icon-lg' : 'sm'}
-            title='Explore Chroma pages and resources'
-            aria-label='Explore Chroma pages and resources'
-            className={compact ? 'text-muted-foreground' : 'gap-1.5 px-2.5 text-xs font-semibold'}>
-            <IconPalette className='size-4' aria-hidden='true' />
-            {!compact && <span>Explore</span>}
-          </Button>
-        }
-      />
-      <DropdownMenuContent align='end' className='w-52'>
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Pages &amp; resources</DropdownMenuLabel>
-          <MarketingLinkItems />
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link to='/' />}>
-          <IconArrowUpRight className='size-4' aria-hidden='true' />
-          Open studio
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <NavigationMenu className={cn('w-auto flex-none self-stretch', className)}>
+      <NavigationMenuList className='h-full flex-none'>
+        <MarketingResourcesMenuItem
+          compact={compact}
+          className={
+            variant === 'marketing' ? 'text-[13px] text-(--mk-ink) normal-case' : undefined
+          }
+        />
+        <MarketingResourcesMenuItem
+          kind='support'
+          compact={compact}
+          className={
+            variant === 'marketing' ? 'text-[13px] text-(--mk-ink) normal-case' : undefined
+          }
+        />
+      </NavigationMenuList>
+    </NavigationMenu>
   );
 }

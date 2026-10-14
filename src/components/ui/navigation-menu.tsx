@@ -4,6 +4,99 @@ import { cva } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
 
+function studioNavigationTriggerClassName(active = false) {
+  return cn(
+    "relative inline-flex h-full items-center justify-center gap-0.5 rounded-none bg-transparent px-0 py-0 text-[11px] font-bold uppercase no-underline transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:content-[''] xl:gap-1.5 xl:px-3 [&>svg:last-child]:top-0",
+    active
+      ? 'text-foreground after:bg-(--section-accent)'
+      : 'text-muted-foreground after:bg-transparent hover:text-foreground hover:after:bg-(--section-accent)',
+  );
+}
+
+type NavigationMenuPanelProps = {
+  title: string;
+  number?: string;
+  eyebrow: string;
+  summary: string;
+  icon: React.ComponentType<{ className?: string }>;
+  accent: string;
+  accentSurface: string;
+  accentColor: string;
+  section: string;
+  contentLabel: string;
+  countLabel: string;
+  sidebarFooter: React.ReactNode;
+  footer: React.ReactNode;
+  children: React.ReactNode;
+};
+
+function NavigationMenuPanel({
+  title,
+  number,
+  eyebrow,
+  summary,
+  icon: PanelIcon,
+  accent,
+  accentSurface,
+  accentColor,
+  section,
+  contentLabel,
+  countLabel,
+  sidebarFooter,
+  footer,
+  children,
+}: NavigationMenuPanelProps) {
+  return (
+    <div
+      data-slot='navigation-menu-panel'
+      data-section={section}
+      style={{ '--section-accent': accentColor } as React.CSSProperties}
+      className='relative grid max-h-(--available-height) min-h-72 w-[min(56rem,calc(100vw-2rem))] grid-cols-[14.5rem_minmax(0,1fr)] overflow-y-auto rounded-lg border border-border/80 bg-card max-sm:min-h-0 max-sm:grid-cols-1 sm:h-80'>
+      <span
+        className='pointer-events-none absolute inset-x-0 top-0 z-10 h-0.5'
+        style={{ backgroundColor: 'var(--section-accent)' }}
+        aria-hidden='true'
+      />
+      <aside className='flex flex-col border-r border-border bg-muted/20 p-5 max-sm:border-r-0 max-sm:border-b'>
+        <div className='flex items-center justify-between gap-4'>
+          <span className={cn('font-mono text-[10px] uppercase', accent)}>{eyebrow}</span>
+          <span
+            className={cn(
+              'grid size-9 place-items-center rounded-md border border-border/70',
+              accentSurface,
+              accent,
+            )}>
+            <PanelIcon className='size-5' aria-hidden='true' />
+          </span>
+        </div>
+        <div className='mt-7 max-sm:mt-3'>
+          <div className='flex items-baseline gap-2'>
+            {number && <span className={cn('font-mono text-[10px]', accent)}>{number}</span>}
+            <h2 className='text-xl leading-tight font-semibold text-foreground'>{title}</h2>
+          </div>
+          <p className='mt-2 max-w-56 text-sm leading-5 text-foreground/75'>{summary}</p>
+        </div>
+        <div className='mt-auto pt-6 max-sm:hidden'>{sidebarFooter}</div>
+      </aside>
+      <section className='flex min-w-0 flex-col p-5'>
+        <div className='flex items-center justify-between border-b border-border/70 pb-3'>
+          <p className='font-mono text-[10px] text-foreground/65 uppercase'>{contentLabel}</p>
+          <span className='font-mono text-[10px] text-foreground/55'>{countLabel}</span>
+        </div>
+        <div className='grid grid-cols-2 gap-1.5 pt-3 max-sm:grid-cols-1'>{children}</div>
+        <div
+          data-slot='navigation-menu-panel-footer'
+          className='mt-auto flex items-center justify-between gap-3 border-t border-border/70 pt-3'>
+          <span className='font-mono text-[10px] text-muted-foreground'>
+            CHROMA ELITE / {title.toUpperCase()}
+          </span>
+          {footer}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function NavigationMenu({ className, children, ...props }: NavigationMenuPrimitive.Root.Props) {
   return (
     <NavigationMenuPrimitive.Root
@@ -149,4 +242,6 @@ export {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
   NavigationMenuPositioner,
+  NavigationMenuPanel,
+  studioNavigationTriggerClassName,
 };

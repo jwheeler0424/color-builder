@@ -7,21 +7,21 @@
 import {
   IconAdjustmentsHorizontal,
   IconDownload,
+  IconDots,
   IconHeart,
   IconKeyboard,
+  IconSearch,
   IconShare,
 } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
 
-import {
-  MarketingPagesMenu,
-  MarketingPagesSubmenuItems,
-} from '@/components/marketing/marketing-menu';
+import { MarketingResourcesNavigation } from '@/components/marketing/marketing-menu';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useChromaStore } from '@/hooks/use-chroma-store';
@@ -38,64 +38,109 @@ import { SectionNavigation } from './section-navigation';
 
 interface MainHeaderProps {
   className?: string;
+  brandVariant?: 'studio' | 'marketing';
 }
 
-export function MainHeader({ className }: MainHeaderProps) {
+function HeaderOptions({ compact = false }: { compact?: boolean }) {
   const navigate = useNavigate();
   const { setOpen: openCommandPalette } = useCommandPalette();
   const openModal = useChromaStore((state) => state.openModal);
   const setSaveName = useChromaStore((state) => state.setSaveName);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant='ghost'
+            size='icon-lg'
+            title={compact ? 'More actions' : 'Options'}
+            aria-label={compact ? 'More actions' : 'Options'}
+            className={
+              compact ? 'size-11 shrink-0 text-muted-foreground' : 'text-muted-foreground'
+            }>
+            {compact ? (
+              <IconDots className='size-5' />
+            ) : (
+              <IconAdjustmentsHorizontal className='size-5' />
+            )}
+          </Button>
+        }
+      />
+      <DropdownMenuContent align='end' className='w-48'>
+        {compact && (
+          <DropdownMenuItem onClick={() => openCommandPalette(true)}>
+            <IconSearch />
+            Search tools
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem onClick={() => openModal('share')}>
+          <IconShare />
+          Share palette
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            setSaveName('');
+            openModal('save');
+          }}>
+          <IconHeart />
+          Save palette
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => openModal('export')}>
+          <IconDownload />
+          Export palette
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => openModal('shortcuts')}>
+          <IconKeyboard />
+          Keyboard shortcuts
+        </DropdownMenuItem>
+        {compact && (
+          <>
+            <DropdownMenuSeparator />
+            <ThemeToggle menuItem />
+            <DropdownMenuItem onClick={() => void navigate({ to: '/sign-in' })}>
+              Sign In
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => void navigate({ to: '/sign-up' })}>
+              Sign Up
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export function MainHeader({ className, brandVariant = 'studio' }: MainHeaderProps) {
+  const navigate = useNavigate();
+  const { setOpen: openCommandPalette } = useCommandPalette();
   return (
     <header
+      data-slot='application-header'
+      data-brand-variant={brandVariant}
       className={cn(
         'relative z-30 col-span-2 col-start-1 flex h-fit flex-col bg-background',
         className,
       )}>
       <div className='relative'>
-        <main className='flex h-16 items-center gap-3 border-b border-border/40 px-4'>
-          <BrandLockup heading />
+        <div className='hidden h-16 items-center gap-3 border-b border-border/40 px-4 min-[1024px]:flex'>
+          <BrandLockup heading={brandVariant === 'studio'} variant={brandVariant} to='/' />
           <SectionNavigation className='min-w-0 flex-1 justify-center self-stretch' />
           <nav className='flex shrink-0 items-center gap-1'>
-            <SearchButton onClick={() => openCommandPalette(true)} />
-            <MarketingPagesMenu />
+            <div className='hidden min-[1360px]:block'>
+              <SearchButton onClick={() => openCommandPalette(true)} />
+            </div>
+            <Button
+              variant='ghost'
+              size='icon-lg'
+              title='Search tools'
+              aria-label='Search tools'
+              className='text-muted-foreground min-[1360px]:hidden'
+              onClick={() => openCommandPalette(true)}>
+              <IconSearch className='size-4' aria-hidden='true' />
+            </Button>
             <ThemeToggle />
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant='ghost'
-                    size='icon-lg'
-                    title='Options'
-                    aria-label='Options'
-                    className='text-muted-foreground'>
-                    <IconAdjustmentsHorizontal className='size-5' />
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align='end' className='w-48'>
-                <DropdownMenuItem onClick={() => openModal('share')}>
-                  <IconShare />
-                  Share palette
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    setSaveName('');
-                    openModal('save');
-                  }}>
-                  <IconHeart />
-                  Save palette
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => openModal('export')}>
-                  <IconDownload />
-                  Export palette
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => openModal('shortcuts')}>
-                  <IconKeyboard />
-                  Keyboard shortcuts
-                </DropdownMenuItem>
-                <MarketingPagesSubmenuItems />
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <HeaderOptions />
           </nav>
           <Separator
             orientation='vertical'
@@ -120,7 +165,13 @@ export function MainHeader({ className }: MainHeaderProps) {
               </Button>
             </section>
           </nav>
-        </main>
+        </div>
+        <div className='flex h-13 items-center gap-1 border-b border-border bg-background px-2 min-[1024px]:hidden'>
+          <BrandLockup compact variant={brandVariant} to='/' />
+          <div className='flex-1' />
+          <MarketingResourcesNavigation compact />
+          <HeaderOptions compact />
+        </div>
       </div>
       <div className='hidden' aria-hidden='true'>
         <ShareModal />

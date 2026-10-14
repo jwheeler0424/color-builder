@@ -6,6 +6,7 @@ import {
 import { useRouteContext, useRouter } from '@tanstack/react-router';
 
 import { Button } from '@/components/ui/button';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { setTheme, type Theme } from '@/lib/theme';
 
 const CYCLE: Theme[] = ['light', 'dark', 'auto'];
@@ -28,7 +29,7 @@ function ThemeIcon({ theme }: { theme: Theme }) {
   return <Monitor className='size-5' />;
 }
 
-export function ThemeToggle() {
+export function ThemeToggle({ menuItem = false }: { menuItem?: boolean }) {
   const { theme } = useRouteContext({ from: '__root__' });
   const router = useRouter();
 
@@ -36,6 +37,15 @@ export function ThemeToggle() {
     const next = CYCLE[(CYCLE.indexOf(theme) + 1) % CYCLE.length];
     setTheme(next);
     void router.invalidate();
+  }
+
+  if (menuItem) {
+    return (
+      <DropdownMenuItem onClick={cycleTheme} aria-label={NEXT_LABEL[theme]}>
+        <ThemeIcon theme={theme} />
+        Theme: {LABELS[theme]}
+      </DropdownMenuItem>
+    );
   }
 
   return (
