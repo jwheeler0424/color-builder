@@ -233,14 +233,14 @@ export function MarketingResourcesNavigation({
         <MarketingResourcesMenuItem
           compact={compact}
           className={
-            variant === 'marketing' ? 'text-[13px] text-(--mk-ink) normal-case' : undefined
+            variant === 'marketing' ? 'text-[13px] text-foreground normal-case' : undefined
           }
         />
         <MarketingResourcesMenuItem
           kind='support'
           compact={compact}
           className={
-            variant === 'marketing' ? 'text-[13px] text-(--mk-ink) normal-case' : undefined
+            variant === 'marketing' ? 'text-[13px] text-foreground normal-case' : undefined
           }
         />
       </NavigationMenuList>

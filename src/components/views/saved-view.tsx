@@ -50,7 +50,7 @@ export default function SavedView() {
 
   if (!palettes.length) {
     return (
-      <div className='tool-panel-space min-h-0 flex-1 overflow-auto'>
+      <div className='tool-panel-space min-h-0 flex-1 overflow-auto px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
         <div className='mb-5'>
           <h2>Saved Palettes</h2>
         </div>
@@ -65,7 +65,7 @@ export default function SavedView() {
   }
 
   return (
-    <div className='tool-panel-space min-h-0 flex-1 overflow-auto'>
+    <div className='tool-panel-space min-h-0 flex-1 overflow-auto px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
       <div className='min-w-0'>
         <div className='mb-4 flex items-center justify-between'>
           <h2 className='font-display text-xl font-extrabold'>Saved Palettes</h2>

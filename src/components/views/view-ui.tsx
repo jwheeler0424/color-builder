@@ -48,7 +48,7 @@ export function ToolTabs<Value extends string>({
       <div
         role='tablist'
         aria-label={label}
-        className='flex min-w-max border-b border-border pl-(--tool-panel-x)'>
+        className='flex min-w-max border-b border-border pl-4 3xl:pl-6 min-[160rem]:pl-7'>
         {items.map((item, index) => (
           <button
             key={item.id}
@@ -125,7 +125,7 @@ export function ToolSegments<Value extends string>({
 
 export function ViewHeader({ title, description }: { title: string; description: string }) {
   return (
-    <div className='tool-page-header shrink-0'>
+    <div className='tool-page-header shrink-0 px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
       <h2 className='font-display text-xl font-bold'>{title}</h2>
       <p className={`mt-0.5 ${TYPE.meta}`}>{description}</p>
     </div>

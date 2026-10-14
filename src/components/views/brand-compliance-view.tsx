@@ -118,11 +118,11 @@ export default function BrandComplianceView() {
       />
       <div
         data-brand-layout
-        className='grid min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start overflow-auto border-t border-border @3xl:grid-cols-[15rem_minmax(0,1fr)] @3xl:grid-rows-[minmax(0,1fr)] @3xl:content-stretch @3xl:overflow-hidden'>
+        className='grid brand-compliance min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start overflow-auto border-t border-border @3xl:grid-cols-[15rem_minmax(0,1fr)] @3xl:grid-rows-[minmax(0,1fr)] @3xl:content-stretch @3xl:overflow-hidden'>
         <aside className='flex min-h-0 min-w-0 flex-col border-b border-border @3xl:border-r @3xl:border-b-0'>
           <form
             data-brand-form
-            className='tool-panel-space flex shrink-0 flex-col gap-2 border-b border-border @min-[56rem]:gap-3'
+            className='tool-panel-space flex shrink-0 flex-col gap-2 border-b border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @min-[56rem]:gap-3'
             onSubmit={(event) => {
               event.preventDefault();
               handleAdd();
@@ -183,7 +183,7 @@ export default function BrandComplianceView() {
           </form>
           <div
             data-brand-colors-heading
-            className='tool-inline-space flex shrink-0 items-center justify-between pt-3 pb-2 @min-[56rem]:pt-4'>
+            className='tool-inline-space flex shrink-0 items-center justify-between px-4 pt-3 pb-2 3xl:px-6 min-[160rem]:px-7 @min-[56rem]:pt-4'>
             <span className={TYPE.label}>Brand colors</span>
             <span className={TYPE.mono}>{brandColors.length}</span>
           </div>
@@ -255,7 +255,7 @@ export default function BrandComplianceView() {
         </aside>
         <section className='@container/results flex min-h-0 min-w-0 flex-col'>
           {!selected ? (
-            <div className='tool-panel-space flex min-h-64 flex-1 flex-col items-center justify-center gap-3 text-muted-foreground'>
+            <div className='tool-panel-space flex min-h-64 flex-1 flex-col items-center justify-center gap-3 px-4 py-4 text-muted-foreground 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
               <SwatchBook className='size-8' stroke={1.25} />
               <p className={TYPE.title}>No brand colors</p>
             </div>
@@ -263,7 +263,7 @@ export default function BrandComplianceView() {
             <>
               <div
                 data-brand-details-header
-                className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border'>
+                className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
                 <div className='flex min-w-0 items-center gap-3'>
                   <span
                     className='size-10 shrink-0 rounded-md border border-border'
@@ -284,7 +284,7 @@ export default function BrandComplianceView() {
                 <>
                   <div
                     data-brand-score-summary
-                    className='tool-panel-space grid shrink-0 grid-cols-2 gap-x-6 gap-y-4 border-b border-border @2xl/results:grid-cols-4'>
+                    className='tool-panel-space grid shrink-0 grid-cols-2 gap-x-6 gap-y-4 border-b border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @2xl/results:grid-cols-4'>
                     {[
                       {
                         label: 'WCAG AA',
@@ -318,7 +318,7 @@ export default function BrandComplianceView() {
                   </div>
                   <div
                     data-brand-results-panel
-                    className='tool-panel-space flex min-h-0 flex-1 flex-col'>
+                    className='tool-panel-space flex min-h-0 flex-1 flex-col px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
                     <div
                       data-brand-result-header
                       className={`grid shrink-0 ${pairColumns} items-center gap-2 border-b border-border pb-3 ${TYPE.label}`}>

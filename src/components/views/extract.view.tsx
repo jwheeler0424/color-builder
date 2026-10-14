@@ -204,10 +204,10 @@ function ImageTab() {
     <div className='@container/extract-view flex min-h-0 flex-1 flex-col overflow-auto'>
       <div
         data-extract-layout-grid
-        className='grid min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start'>
+        className='grid min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start @min-[56rem]/extract-view:grid-cols-[minmax(0,3fr)_minmax(22rem,2fr)] @min-[56rem]/extract-view:grid-rows-[minmax(0,1fr)] @min-[56rem]/extract-view:content-stretch @min-[56rem]/extract-view:overflow-hidden'>
         <section
           data-extract-source
-          className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col'>
+          className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-b border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @min-[56rem]/extract-view:grid @min-[56rem]/extract-view:grid-rows-[auto_minmax(0,1fr)] @min-[56rem]/extract-view:border-r @min-[56rem]/extract-view:border-b-0'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
             <span className='flex items-center gap-2'>
               <span className='font-mono text-[10px] text-primary'>01</span>
@@ -234,7 +234,7 @@ function ImageTab() {
           />
           <div
             aria-label='Image drop zone'
-            className={`relative flex min-h-56 flex-1 items-center justify-center overflow-hidden rounded-md border transition-colors @min-[40rem]:min-h-56 ${imgSrc ? 'border-border bg-secondary' : 'border-dashed border-input bg-secondary/30'} ${dragOver ? 'border-primary bg-primary/5 ring-2 ring-primary/30' : ''}`}
+            className={`relative flex min-h-56 flex-1 items-center justify-center overflow-hidden rounded-md border transition-colors @min-[40rem]:min-h-56 @min-[56rem]/extract-view:aspect-[16/10] @min-[56rem]/extract-view:max-h-[min(62vh,44rem)] @min-[56rem]/extract-view:min-h-0 @min-[56rem]/extract-view:w-full @min-[56rem]/extract-view:self-center @min-[56rem]/extract-view:justify-self-center ${imgSrc ? 'border-border bg-secondary' : 'border-dashed border-input bg-secondary/30'} ${dragOver ? 'border-primary bg-primary/5 ring-2 ring-primary/30' : ''}`}
             onDragOver={(e) => {
               e.preventDefault();
               setDragOver(true);
@@ -299,7 +299,7 @@ function ImageTab() {
             </p>
           )}
         </section>
-        <section className='tool-panel-space tool-panel-stack @container/extracted-colors flex min-h-0 min-w-0 flex-col'>
+        <section className='extract-results tool-panel-space tool-panel-stack @container/extracted-colors flex min-h-0 min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @min-[56rem]/extract-view:overflow-y-auto [@min-[56rem]/extract-view]:[scrollbar-gutter:stable]'>
           <div className='flex shrink-0 items-center justify-between gap-2'>
             <div className='flex min-w-0 items-center gap-2'>
               <span className='font-mono text-[10px] text-primary'>02</span>
@@ -652,7 +652,7 @@ function ConvertTab() {
     <>
       <div className='@container flex min-h-0 flex-1 flex-col overflow-auto'>
         <div className='grid min-h-0 flex-1 grid-cols-1 @3xl:grid-cols-[16rem_minmax(0,1fr)]'>
-          <section className='tool-panel-space tool-panel-stack flex min-w-0 flex-col border-b border-border @3xl:border-r @3xl:border-b-0'>
+          <section className='tool-panel-space tool-panel-stack flex min-w-0 flex-col gap-4 border-b border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @3xl:border-r @3xl:border-b-0'>
             <label htmlFor='convert-source' className={TYPE.label}>
               Source color
             </label>
@@ -698,7 +698,7 @@ function ConvertTab() {
               ))}
             </div>
           </section>
-          <section className='tool-inline-space grid min-w-0 auto-rows-fr @3xl:min-h-0'>
+          <section className='tool-inline-space grid min-w-0 auto-rows-fr px-4 3xl:px-6 min-[160rem]:px-7 @3xl:min-h-0'>
             <ConvCard disabled={!valid} label='HEX' value={hex} />
             <ConvCard
               disabled={!valid}

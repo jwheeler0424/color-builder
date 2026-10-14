@@ -44,10 +44,10 @@ desktop, tablet, and mobile.
 
 - **Accessibility** — WCAG 2.1 contrast pairs matrix (AA/AAA/Fail), APCA lightness contrast,
   per-slot badge analysis; Color Blind simulation (8 CVD types via LMS matrix transforms)
-- **Score & Compare** — Radar chart scoring across hue balance, accessibility, chroma harmony, and uniqueness;
-  side-by-side palette comparison
-- **Visualize** — OKLCH lightness/chroma scatter and hue/chroma polar distribution; P3 swatch previews;
-  out-of-gamut flagging
+- **Score & Compare** — Radar chart scoring across hue balance, accessibility, chroma harmony, and
+  uniqueness; side-by-side palette comparison
+- **Visualize** — OKLCH lightness/chroma scatter and hue/chroma polar distribution; P3 swatch
+  previews; out-of-gamut flagging
 - **Brand Compliance** — Brand color matching, minimum contrast ratio enforcement, usage proportion
   guidelines
 
@@ -157,23 +157,22 @@ Run a bounded series of 300-color batches with:
 bun scripts/review-color-batches.ts --from 9 --through 100 --batch-workers 3
 ```
 
-Three batch workers receive disjoint frozen color lists and prepare candidates concurrently.
-A single coordinator rechecks cross-batch name ownership, saves in batch order, and advances
-the public queue. `--batch-workers` accepts 1 through 4 and defaults to 3.
-Each batch generates three 100-color slices concurrently, with worker tools disabled and hexes
-mapped from immutable row IDs. A 12-color quality sample and targeted repairs replace routine
-full-batch rewrites. Completed slices are checkpointed for restart. Combined candidates must cover
-the exact queue, pass naming-quality guards, and satisfy the builder's name ownership and fit
-checks before being saved. The next queue is loaded only after a validated batch is saved.
-Existing batches are not overwritten. The legacy SQLite snapshot is rebuilt and verified at the end
-of the run.
+Three batch workers receive disjoint frozen color lists and prepare candidates concurrently. A
+single coordinator rechecks cross-batch name ownership, saves in batch order, and advances the
+public queue. `--batch-workers` accepts 1 through 4 and defaults to 3. Each batch generates three
+100-color slices concurrently, with worker tools disabled and hexes mapped from immutable row IDs. A
+12-color quality sample and targeted repairs replace routine full-batch rewrites. Completed slices
+are checkpointed for restart. Combined candidates must cover the exact queue, pass naming-quality
+guards, and satisfy the builder's name ownership and fit checks before being saved. The next queue
+is loaded only after a validated batch is saved. Existing batches are not overwritten. The legacy
+SQLite snapshot is rebuilt and verified at the end of the run.
 
-Progress and rejected candidates are kept in the ignored `.cache/color-review/` directory.
-Rerun the same command after fixing a failure to resume from the first unsaved batch. Failures
-stop the runner; do not treat a saved candidate as an accepted batch. On Windows the runner
-uses the npm-installed CLI entry point to avoid shell quoting issues. A custom installation can
-be selected with `COLOR_REVIEW_CLI_ENTRY`, pointing to `@github/copilot/npm-loader.js`.
-Set `COLOR_REVIEW_MODEL` to select a CLI-supported model; otherwise the CLI default is used.
+Progress and rejected candidates are kept in the ignored `.cache/color-review/` directory. Rerun the
+same command after fixing a failure to resume from the first unsaved batch. Failures stop the
+runner; do not treat a saved candidate as an accepted batch. On Windows the runner uses the
+npm-installed CLI entry point to avoid shell quoting issues. A custom installation can be selected
+with `COLOR_REVIEW_CLI_ENTRY`, pointing to `@github/copilot/npm-loader.js`. Set `COLOR_REVIEW_MODEL`
+to select a CLI-supported model; otherwise the CLI default is used.
 
 ### CSV duplicate-name cleanup
 
@@ -185,28 +184,26 @@ bun scripts/audit-color-names.ts
 
 Use `bun scripts/audit-color-names.ts --check` for a read-only review without writing a queue.
 
-The source is `src/lib/engine/colors/colors.csv`, not the outdated CSV under `scripts/`.
-Before writing the queue, the audit opens `src/lib/engine/colors/colors.sqlite` read-only,
-checks SQLite integrity, and requires every CSV name and hex to match both the `colors` and
-`color_oklab` tables, independent of row order. Any mismatch stops the audit before publication.
-This writes `src/lib/engine/colors/color-name-renames.csv` without changing either catalog.
-Each queued row includes its one-based data-row index, hex, current name, reasons, an optional
-CSS-name suggestion, duplicate keeper, and an empty `New Name` field for manual review.
-The audit checks codes/numeric labels, parentheses, names over three whitespace-separated
-words, and normalized duplicates. Formulaic naming structures and suspected misspellings
-are not flagged. Unflagged names are not a guarantee of semantic fit.
-Individually reviewed numeric references (such as `Windows 95 Desktop`, `French 75`, and
-scientific names) are recorded by exact hex and current name in the audit script's `reviewedNames`
-map, independent of the removed legacy review directory. These approvals suppress only the
-code/numeric-label flag, not duplicates, CSS ownership, parentheses, or the three-word limit.
-Changed names or different hexes require fresh review; digits alone do not prove a name is a code.
-The audit also detects letter-only hex labels and Unicode numeric characters.
-Standard CSS names are reserved for their exact RGB hex
-values. Capitalization and spaces are ignored when matching CSS names, so `Light Blue` is
-accepted for `#ADD8E6`; the three-word limit still applies.
-Equivalent CSS aliases (such as aqua/cyan and gray/grey) are accepted, and a correctly
-matched CSS row takes priority over an earlier duplicate. Colors absent from the catalog are
-not added. The rename CSV is a review queue, not an input to the duplicate-only override builder.
+The source is `src/lib/engine/colors/colors.csv`, not the outdated CSV under `scripts/`. Before
+writing the queue, the audit opens `src/lib/engine/colors/colors.sqlite` read-only, checks SQLite
+integrity, and requires every CSV name and hex to match both the `colors` and `color_oklab` tables,
+independent of row order. Any mismatch stops the audit before publication. This writes
+`src/lib/engine/colors/color-name-renames.csv` without changing either catalog. Each queued row
+includes its one-based data-row index, hex, current name, reasons, an optional CSS-name suggestion,
+duplicate keeper, and an empty `New Name` field for manual review. The audit checks codes/numeric
+labels, parentheses, names over three whitespace-separated words, and normalized duplicates.
+Formulaic naming structures and suspected misspellings are not flagged. Unflagged names are not a
+guarantee of semantic fit. Individually reviewed numeric references (such as `Windows 95 Desktop`,
+`French 75`, and scientific names) are recorded by exact hex and current name in the audit script's
+`reviewedNames` map, independent of the removed legacy review directory. These approvals suppress
+only the code/numeric-label flag, not duplicates, CSS ownership, parentheses, or the three-word
+limit. Changed names or different hexes require fresh review; digits alone do not prove a name is a
+code. The audit also detects letter-only hex labels and Unicode numeric characters. Standard CSS
+names are reserved for their exact RGB hex values. Capitalization and spaces are ignored when
+matching CSS names, so `Light Blue` is accepted for `#ADD8E6`; the three-word limit still applies.
+Equivalent CSS aliases (such as aqua/cyan and gray/grey) are accepted, and a correctly matched CSS
+row takes priority over an earlier duplicate. Colors absent from the catalog are not added. The
+rename CSV is a review queue, not an input to the duplicate-only override builder.
 
 The `New Name` column contains the proposed replacements. Verify it without changing any files:
 
@@ -217,12 +214,11 @@ bun scripts/fill-color-name-renames.ts
 Verification requires every queued row to have a name, at most three words, no codes or parentheses,
 and no collision with any current catalog name or another proposal. Comparisons normalize Unicode,
 case, spaces, and hyphens. CSV names must match both SQLite name tables, and SQLite integrity must
-pass. The live CSV and database are never updated by this command.
-Individually authored names are stored in `color-name-replacements.json`, bound to the queue's
-row/name/hex fingerprint and ordered by lightness within hue groups. Use `--write` to republish the
-complete authored list; `--write --partial` supports completed groups while authoring. Existing
-nonmatching proposals are never overwritten. The audit refuses to clear a queue with populated
-replacement names.
+pass. The live CSV and database are never updated by this command. Individually authored names are
+stored in `color-name-replacements.json`, bound to the queue's row/name/hex fingerprint and ordered
+by lightness within hue groups. Use `--write` to republish the complete authored list;
+`--write --partial` supports completed groups while authoring. Existing nonmatching proposals are
+never overwritten. The audit refuses to clear a queue with populated replacement names.
 
 Apply the reviewed `New Name` column to the engine CSV and both SQLite name tables:
 
@@ -243,18 +239,18 @@ The direct CSV workflow copies all rows and all 17 columns from
 bun scripts/build-colors-csv.ts
 ```
 
-Only handwritten entries in `duplicate-name-overrides.json` change names. Each entry identifies
-the one-based data row (excluding the header), hex, original name, and replacement name.
-All other fields and the source file remain unchanged. Existing unrecorded edits to the output
-are rejected rather than overwritten.
+Only handwritten entries in `duplicate-name-overrides.json` change names. Each entry identifies the
+one-based data row (excluding the header), hex, original name, and replacement name. All other
+fields and the source file remain unchanged. Existing unrecorded edits to the output are rejected
+rather than overwritten.
 
-`duplicate-color-names.csv` lists every remaining conflicting row. One occurrence per group
-can keep its original name; the others need distinct names. Comparisons ignore case and
-surrounding whitespace and normalize Unicode. The report counts parsed records, not physical
-text lines, because quoted fields may contain newlines. No automatic suffixes are added.
+`duplicate-color-names.csv` lists every remaining conflicting row. One occurrence per group can keep
+its original name; the others need distinct names. Comparisons ignore case and surrounding
+whitespace and normalize Unicode. The report counts parsed records, not physical text lines, because
+quoted fields may contain newlines. No automatic suffixes are added.
 
-Run `bun scripts/build-colors-csv.ts --require-unique` when manual cleanup is finished; it
-fails while any duplicate-name groups remain. Build the SQLite database from the cleaned CSV with:
+Run `bun scripts/build-colors-csv.ts --require-unique` when manual cleanup is finished; it fails
+while any duplicate-name groups remain. Build the SQLite database from the cleaned CSV with:
 
 ```bash
 bun run build:colors
@@ -280,17 +276,17 @@ bun scripts/review-csv-duplicates.ts --rules
 This keeps one original name per duplicate group, records generated names in the same override file,
 and verifies uniqueness and preservation of all non-name fields.
 
-Workers receive disjoint duplicate rows and can only return proposed names, not edit files.
-The coordinator preserves one original occurrence of every name, rejects all global name
-clashes and code/suffix names, and records accepted replacements in the handwritten override
-file. It refreshes the output and duplicate report every 1,000 accepted names and at shutdown.
-Final verification requires zero duplicate names and unchanged non-name data for every row.
-This can take hours and consumes model requests. Templates and automatic suffixes are not used.
+Workers receive disjoint duplicate rows and can only return proposed names, not edit files. The
+coordinator preserves one original occurrence of every name, rejects all global name clashes and
+code/suffix names, and records accepted replacements in the handwritten override file. It refreshes
+the output and duplicate report every 1,000 accepted names and at shutdown. Final verification
+requires zero duplicate names and unchanged non-name data for every row. This can take hours and
+consumes model requests. Templates and automatic suffixes are not used.
 
-Progress and reusable draft checkpoints are stored in `.cache/csv-name-review/`. Rerun the
-same command after a graceful failure to continue from the remaining duplicates. A lock
-prevents two CSV coordinators from running simultaneously; never remove an active runner's lock.
-`COLOR_REVIEW_MODEL` and `COLOR_REVIEW_CLI_ENTRY` also apply to this CSV worker.
+Progress and reusable draft checkpoints are stored in `.cache/csv-name-review/`. Rerun the same
+command after a graceful failure to continue from the remaining duplicates. A lock prevents two CSV
+coordinators from running simultaneously; never remove an active runner's lock. `COLOR_REVIEW_MODEL`
+and `COLOR_REVIEW_CLI_ENTRY` also apply to this CSV worker.
 
 ---
 
@@ -482,20 +478,17 @@ remain functional:
 
 ### Charts
 
-The scoring radar and the two OKLCH plots use the React adapter from
-`@tanstack/charts`. Definitions live in `src/lib/tools/palette-charts.ts` and only
-style and lay out data; the underlying chart data (OKLCH coordinates, chroma bound,
-score dimensions and levels) comes from the engine's `chart-data.ts`. The
-shared host in `src/components/ui/chart.tsx` measures container widths on animation
-frames to keep narrow panels and responsive shells stable. Charts inherit theme
-colors and support pointer and keyboard tooltips. The numeric summaries remain
-available alongside the plots.
+The scoring radar and the two OKLCH plots use the React adapter from `@tanstack/charts`. Definitions
+live in `src/lib/tools/palette-charts.ts` and only style and lay out data; the underlying chart data
+(OKLCH coordinates, chroma bound, score dimensions and levels) comes from the engine's
+`chart-data.ts`. The shared host in `src/components/ui/chart.tsx` measures container widths on
+animation frames to keep narrow panels and responsive shells stable. Charts inherit theme colors and
+support pointer and keyboard tooltips. The numeric summaries remain available alongside the plots.
 
-The package is pinned to `0.18.0` because its Alpha API can change between minor
-releases. Its `mark` module is initialized before other chart imports to avoid a
-circular-import issue with Bun browser HMR; no dependency files are patched.
-`d3-shape` supplies the radar's closed curve. The interactive color picker and P3
-swatches remain application-owned graphics.
+The package is pinned to `0.18.0` because its Alpha API can change between minor releases. Its
+`mark` module is initialized before other chart imports to avoid a circular-import issue with Bun
+browser HMR; no dependency files are patched. `d3-shape` supplies the radar's closed curve. The
+interactive color picker and P3 swatches remain application-owned graphics.
 
 ### Data Flow
 
@@ -532,15 +525,15 @@ context visible together.
 
 ## Color Science
 
-Color-domain logic is owned by `src/lib/engine`. Application views import the browser-safe API
-from `src/lib/engine/browser`; it bundles without app utility adapters. The full API is available
-from `src/lib/engine/index.ts` for server and runtime use.
+Color-domain logic is owned by `src/lib/engine`. Application views import the browser-safe API from
+`src/lib/engine/browser`; it bundles without app utility adapters. The full API is available from
+`src/lib/engine/index.ts` for server and runtime use.
 
 The canonical `ColorValue` stores D65 XYZ, alpha, and display gamut. `parseColor` accepts CSS color
 syntax and hex; `renderColor` returns CSS, best sRGB hex/RGB8, and gamut-limit information. The
 engine also owns RGB8/XYZ and percentage HSL/HSV boundary conversions, ICC-profile CMYK, palette
-composition, scales/scoring, WCAG/APCA, color-vision simulation, gradients, theme tokens, and
-Figma, Tailwind v3/v4, Style Dictionary, CSS, and HTML exports.
+composition, scales/scoring, WCAG/APCA, color-vision simulation, gradients, theme tokens, and Figma,
+Tailwind v3/v4, Style Dictionary, CSS, and HTML exports.
 
 ### Harmony Modes
 
@@ -879,8 +872,8 @@ No changes needed in any component file — they all import from `@dnd-kit/*` al
 
 #### `@dnd-kit/core`
 
-| Export                                                          | Status                                                    |
-| --------------------------------------------------------------- | --------------------------------------------------------- |
+| Export                                                          | Status                                                     |
+| --------------------------------------------------------------- | ---------------------------------------------------------- |
 | `DndContext`                                                    | ✅ Full — sensors, collision detection, all drag callbacks |
 | `DragOverlay`                                                   | ✅ Renders dragged clone in a portal                       |
 | `useDraggable`                                                  | ✅ Full — pointer + keyboard activation, transform         |
@@ -889,13 +882,13 @@ No changes needed in any component file — they all import from `@dnd-kit/*` al
 | `PointerSensor`, `KeyboardSensor`, `MouseSensor`, `TouchSensor` | ✅                                                         |
 | `closestCenter`                                                 | ✅ Distance-to-center collision                            |
 | `closestCorners`, `rectIntersection`, `pointerWithin`           | ✅                                                         |
-| `useDndMonitor`                                                 | Stub (no-op)                                              |
-| `MeasuringStrategy`, `MeasuringConfiguration`                   | Types only                                                |
+| `useDndMonitor`                                                 | Stub (no-op)                                               |
+| `MeasuringStrategy`, `MeasuringConfiguration`                   | Types only                                                 |
 
 #### `@dnd-kit/sortable`
 
-| Export                          | Status                                                          |
-| ------------------------------- | --------------------------------------------------------------- |
+| Export                          | Status                                                           |
+| ------------------------------- | ---------------------------------------------------------------- |
 | `SortableContext`               | ✅ Full — item registration, index tracking                      |
 | `useSortable`                   | ✅ Full — combines useDraggable + useDroppable, shift transforms |
 | `arrayMove`, `arraySwap`        | ✅                                                               |
@@ -907,12 +900,12 @@ No changes needed in any component file — they all import from `@dnd-kit/*` al
 
 #### `@dnd-kit/utilities`
 
-| Export                                  | Status                       |
-| --------------------------------------- | ---------------------------- |
+| Export                                  | Status                        |
+| --------------------------------------- | ----------------------------- |
 | `CSS.Transform.toString`                | ✅ Matches real output format |
 | `CSS.Transition.toString`               | ✅                            |
 | `isKeyboardEvent`, `isTouchEvent`       | ✅                            |
-| `Coordinates`, `Transform`, `Translate` | Types                        |
+| `Coordinates`, `Transform`, `Translate` | Types                         |
 
 ---
 

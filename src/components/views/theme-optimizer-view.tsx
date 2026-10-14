@@ -251,7 +251,7 @@ function ThemeModePanel({
   const passes = rows.filter((row) => row.recommendation.meetsTarget).length;
 
   return (
-    <section className='tool-panel-space tool-panel-stack flex min-w-0 flex-col'>
+    <section className='tool-panel-space tool-panel-stack flex min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
       <header className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border pb-3'>
         <div className='flex items-center gap-2'>
           <span
@@ -313,7 +313,7 @@ export default function ThemeOptimizerView() {
         title='Theme Optimizer'
         description='Review and apply light and dark palette variants without changing the source palette.'
       />
-      <div className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border'>
+      <div className='tool-panel-space flex shrink-0 flex-wrap items-center justify-between gap-3 border-y border-border px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
         <ToolSegments
           value={standard}
           onValueChange={setStandard}
@@ -343,7 +343,7 @@ export default function ThemeOptimizerView() {
         )}
       </div>
       {!slots.length ? (
-        <div className='tool-panel-space flex-1'>
+        <div className='tool-panel-space flex-1 px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
           <p className={TYPE.body}>Generate a palette to optimize light and dark variants.</p>
         </div>
       ) : (

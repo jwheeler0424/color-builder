@@ -18,8 +18,6 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
-import './marketing-content.css';
-
 const API_EXAMPLES = {
   curl: `curl --request POST "$CHROMA_API_BASE/v1/palettes" \\
   --header "Authorization: Bearer $CHROMA_API_KEY" \\
@@ -133,9 +131,9 @@ function ApiCodeExplorer() {
 
 export function OverviewPage() {
   return (
-    <main className='marketing-page-wide marketing-page-overview'>
-      <section className='marketing-page-masthead overview-masthead'>
-        <div className='marketing-wrap marketing-hero overview-hero'>
+    <main className={cn('marketing-page-wide', 'marketing-page-overview')}>
+      <section className='overview-masthead marketing-page-masthead'>
+        <div className={cn('marketing-wrap', 'marketing-hero', 'overview-hero')}>
           <div className='marketing-hero-copy'>
             <p className='marketing-kicker'>A workspace for color systems</p>
             <h1 className='marketing-title'>
@@ -169,13 +167,15 @@ export function OverviewPage() {
             <p className='overview-free-note'>Start free · no account required</p>
           </div>
           <div className='marketing-hero-art'>
-            <PaletteArtwork />
+            <PaletteArtwork variant='overview' />
           </div>
         </div>
       </section>
 
-      <section className='workflow-section' aria-label='The Chroma workflow'>
-        <div className='marketing-wrap workflow-grid'>
+      <section
+        className='workflow-section border-y border-border bg-card'
+        aria-label='The Chroma workflow'>
+        <div className='overview-workflow-grid marketing-wrap'>
           {[
             {
               number: '01',
@@ -213,21 +213,21 @@ export function OverviewPage() {
             <Link
               key={step.number}
               to={step.to}
-              className='workflow-step'
+              className='workflow-step overview-workflow-step'
               data-section={step.section}>
-              <step.icon className='workflow-step-watermark' aria-hidden='true' stroke={1.25} />
-              <span className='workflow-number'>{step.number}</span>
-              <span className='workflow-step-content'>
-                <span className='workflow-step-title'>{step.title}</span>
-                <span className='workflow-step-description'>{step.description}</span>
+              <step.icon className='overview-workflow-watermark' aria-hidden='true' stroke={1.25} />
+              <span className='workflow-number overview-workflow-number'>{step.number}</span>
+              <span className='overview-workflow-content'>
+                <span className='overview-workflow-title'>{step.title}</span>
+                <span className='overview-workflow-description'>{step.description}</span>
               </span>
-              <IconArrowUpRight className='workflow-step-arrow' aria-hidden='true' size={18} />
+              <IconArrowUpRight className='overview-workflow-arrow' aria-hidden='true' size={18} />
             </Link>
           ))}
         </div>
       </section>
 
-      <section className='marketing-wrap marketing-section overview-detail-grid'>
+      <section className={cn('marketing-wrap', ' overview-detail-grid marketing-section')}>
         <article>
           <p className='marketing-kicker'>Perceptual color, practical checks</p>
           <h2 className='marketing-section-title'>See the system, not just the swatches.</h2>
@@ -263,7 +263,7 @@ export function OverviewPage() {
       </section>
 
       <section className='overview-plan-band'>
-        <div className='marketing-wrap overview-plan-inner'>
+        <div className={cn('marketing-wrap', ' overview-plan-inner')}>
           <div>
             <p className='marketing-kicker'>Start with the essentials</p>
             <h2>Free gives you a useful first pass.</h2>
@@ -300,9 +300,9 @@ export function OverviewPage() {
 
 export function ApiPage() {
   return (
-    <main className='marketing-page-wide marketing-page-api'>
+    <main className={cn('marketing-page-wide', 'marketing-page-api')}>
       <section className='marketing-page-masthead api-masthead'>
-        <div className='marketing-wrap marketing-hero api-hero'>
+        <div className={cn('marketing-wrap', 'marketing-hero', 'api-hero')}>
           <div className='marketing-hero-copy'>
             <p className='marketing-kicker'>Developer API · Pro and Team</p>
             <h1 className='marketing-title'>
@@ -348,7 +348,7 @@ export function ApiPage() {
       </section>
 
       <section className='api-preview-section'>
-        <div className='marketing-wrap api-preview-grid'>
+        <div className={cn('marketing-wrap', ' api-preview-grid')}>
           <div>
             <p className='marketing-kicker'>A readable contract</p>
             <h2 className='marketing-section-title'>Make color decisions callable.</h2>
@@ -380,7 +380,7 @@ export function ApiPage() {
         </div>
       </section>
 
-      <section className='marketing-wrap marketing-section api-plan-section'>
+      <section className={cn('marketing-wrap', ' api-plan-section marketing-section')}>
         <div className='api-plan-callout'>
           <div>
             <p className='marketing-kicker'>Part of the paid toolset</p>
@@ -480,7 +480,7 @@ function GuideExplorer({
             key={topic.id}
             type='button'
             variant={activeGuide === topic.id ? 'secondary' : 'ghost'}
-            className='min-h-10 min-w-0 px-2.5 py-2 text-left text-xs font-medium whitespace-normal'
+            className='grid min-h-10 min-w-0 grid-cols-[28px_minmax(0,1fr)_16px] items-center gap-2 px-2.5 py-2 text-left text-xs font-medium whitespace-normal'
             aria-pressed={activeGuide === topic.id}
             onClick={() => onGuideChange(topic.id)}>
             <span className='guide-topic-number'>0{index + 1}</span>
@@ -518,8 +518,8 @@ export function GuidesPage() {
   const [activeGuide, setActiveGuide] = useState<GuideTopic['id']>('palette');
 
   return (
-    <main>
-      <section className='marketing-wrap marketing-hero guides-hero'>
+    <main className='marketing-page-wide'>
+      <section className={cn('marketing-wrap', 'marketing-hero', 'guides-hero')}>
         <div className='marketing-hero-copy'>
           <p className='marketing-kicker'>Field notes for better color work</p>
           <h1 className='marketing-title'>
@@ -558,7 +558,7 @@ export function GuidesPage() {
         </div>
       </section>
 
-      <section className='marketing-wrap marketing-section guide-section'>
+      <section className={cn('marketing-wrap', ' marketing-section guide-section')}>
         <div className='marketing-section-heading'>
           <div>
             <p className='marketing-kicker'>Choose a workflow</p>
@@ -572,7 +572,7 @@ export function GuidesPage() {
       </section>
 
       <section className='guide-resource-band'>
-        <div className='marketing-wrap guide-resource-inner'>
+        <div className={cn('marketing-wrap', ' guide-resource-inner')}>
           <div>
             <p className='marketing-kicker'>More to explore</p>
             <h2>Need the whole workflow?</h2>
@@ -640,9 +640,9 @@ export function DocumentationPage() {
   ];
 
   return (
-    <main className='marketing-page-wide marketing-page-documentation'>
+    <main className={cn('marketing-page-wide', 'marketing-page-documentation')}>
       <section className='marketing-page-masthead documentation-masthead'>
-        <div className='marketing-wrap marketing-hero documentation-hero'>
+        <div className={cn('marketing-wrap', 'marketing-hero', 'documentation-hero')}>
           <div className='marketing-hero-copy'>
             <p className='marketing-kicker'>Documentation</p>
             <h1 className='marketing-title'>A field guide to Chroma ELITE.</h1>
@@ -658,7 +658,7 @@ export function DocumentationPage() {
         </div>
       </section>
 
-      <section className='marketing-wrap marketing-section documentation-index'>
+      <section className={cn('marketing-wrap', ' documentation-index marketing-section')}>
         <div className='marketing-section-heading'>
           <div>
             <p className='marketing-kicker'>Start here</p>
@@ -764,9 +764,9 @@ export function SupportPage() {
   });
 
   return (
-    <main className='marketing-page-wide marketing-page-support'>
+    <main className={cn('marketing-page-wide', 'marketing-page-support')}>
       <section className='marketing-page-masthead support-masthead'>
-        <div className='marketing-wrap support-intro'>
+        <div className={cn('marketing-wrap', ' support-intro')}>
           <p className='marketing-kicker'>Help center</p>
           <h1 className='marketing-title'>Find your next step.</h1>
           <p className='marketing-lede'>
@@ -798,7 +798,7 @@ export function SupportPage() {
         </div>
       </section>
 
-      <section className='marketing-wrap support-content'>
+      <section className={cn('marketing-wrap', ' support-content')}>
         <div className='support-filter-panel'>
           <p className='support-filter-label'>Filter by topic</p>
           <div className='support-category-list' role='group' aria-label='Filter help topics'>
@@ -874,7 +874,7 @@ export function SupportPage() {
       <section
         id='guides'
         aria-labelledby='support-guides-title'
-        className='marketing-wrap marketing-section guide-section support-guide-section'>
+        className={cn('marketing-wrap', ' marketing-section guide-section support-guide-section')}>
         <div className='marketing-section-heading'>
           <div>
             <p className='marketing-kicker'>Step-by-step references</p>
@@ -892,7 +892,7 @@ export function SupportPage() {
       <section
         id='data'
         aria-labelledby='support-data-title'
-        className='marketing-wrap marketing-section data-practices-section'>
+        className={cn('marketing-wrap', ' marketing-section data-practices-section')}>
         <div className='marketing-section-heading'>
           <div>
             <p className='marketing-kicker'>Data &amp; privacy</p>
@@ -931,7 +931,7 @@ export function SupportPage() {
         </div>
       </section>
 
-      <section className='marketing-wrap data-policy-note'>
+      <section className={cn('marketing-wrap', ' data-policy-note')}>
         <div>
           <p className='marketing-kicker'>Before paid services launch</p>
           <h2>Account and API data practices will be documented separately.</h2>

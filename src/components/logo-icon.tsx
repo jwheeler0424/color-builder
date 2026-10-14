@@ -27,11 +27,19 @@ export function BrandLockup({
       style={
         variant === 'marketing' ? ({ '--brand-accent': '#ed654f' } as CSSProperties) : undefined
       }
-      className={cn('brand-lockup', compact && 'is-compact', className)}>
-      <LogoIcon className='brand-icon' />
-      <Wordmark className='brand-wordmark'>
+      className={cn(
+        'brand-lockup inline-flex shrink-0 items-center gap-2 text-[26px] leading-[1.1] text-foreground [--brand-accent:var(--primary)] max-[800px]:text-2xl',
+        compact && 'is-compact text-2xl',
+        className,
+      )}>
+      <LogoIcon
+        className={cn('brand-icon size-7 shrink-0 max-[800px]:size-6.5', compact && 'size-6.5')}
+      />
+      <Wordmark className='brand-wordmark m-0 font-display leading-[inherit] font-extrabold whitespace-nowrap text-inherit'>
         Chroma
-        <sup className='brand-elite'>ELITE</sup>
+        <sup className='brand-elite relative top-[-0.65em] ml-0.75 align-baseline font-mono text-[0.46em] leading-0 font-bold text-(--brand-accent)'>
+          ELITE
+        </sup>
       </Wordmark>
     </Link>
   );

@@ -38,15 +38,13 @@ export function SlotButton({ index }: SlotButtonProps) {
               variant='secondary'
               size='icon-lg'
               className={cn(
-                'palette-add-button palette-add-button--slot absolute top-1/2 z-20 size-12 -translate-y-1/2 rounded-full',
-                'scale-70 opacity-0',
-                'transition-all duration-200 ease-in-out',
+                'palette-add-button palette-add-button--slot top-1/2 z-20 size-12 -translate-y-1/2 scale-70 rounded-full bg-black/55 opacity-0',
                 (isHovering || isHoveringSlot) && 'scale-100 opacity-100',
               )}
               onPointerEnter={() => setIsHovering(true)}
               onPointerLeave={() => setIsHovering(false)}
               onClick={() => insertSlot(insertAt)}>
-              <PlusIcon className='palette-add-icon size-6' aria-hidden='true' />
+              <PlusIcon className='size-6 palette-add-icon' aria-hidden='true' />
             </Button>
           }
         />

@@ -1687,7 +1687,7 @@ export function WorkspacePreview({
           </span>
         </nav>
       </header>
-      <main className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col overflow-auto'>
+      <main className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col gap-4 overflow-auto px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
         {view === 'landing' && <LandingPage t={t} onStart={startProject} />}
         {view === 'settings' && (
           <SettingsPage

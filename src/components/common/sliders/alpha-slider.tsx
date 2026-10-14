@@ -1,6 +1,6 @@
 // ─── Alpha slider (shared across all modes) ───────────────────────────────────
 
-import { SliderRow } from "../slider-row";
+import { SliderRow } from '../slider-row';
 
 function alphaGrad(hex: string) {
   return `linear-gradient(to right, transparent, ${hex})`;
@@ -17,7 +17,7 @@ export function AlphaSlider({
 }) {
   return (
     <SliderRow
-      label="Alpha"
+      label='Alpha'
       display={`${alpha}%`}
       value={alpha}
       min={0}

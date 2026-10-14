@@ -388,7 +388,7 @@ function WcagSlotsTab() {
   if (!slots.length) return <EmptyState title='Accessibility' />;
 
   return (
-    <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col overflow-hidden'>
+    <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col gap-4 overflow-hidden px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
       <div className='flex flex-wrap items-center justify-between gap-2.5'>
         <p className='max-w-3xl text-[11px] text-muted-foreground'>
           How each palette color performs as text or UI against white and black backgrounds.
@@ -441,7 +441,7 @@ function WcagSlotsTab() {
         ))}
       </div>
 
-      <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col overflow-auto'>
+      <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col gap-4 overflow-auto px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
         <section className='flex flex-1 flex-col gap-2'>
           <div className={cn('hidden shrink-0 gap-3 px-3 md:grid', ROW_GRID)}>
             <div className={SECTION_LABEL}>Color</div>
@@ -597,7 +597,7 @@ function ContrastCheckerTab() {
 
   return (
     <>
-      <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col items-center overflow-auto'>
+      <div className='tool-panel-space tool-panel-stack flex min-h-0 flex-1 flex-col items-center gap-4 overflow-auto px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
         {/* Colors: identical cards either side of the swap control, so they line up */}
         <div className='grid w-full max-w-360 grid-cols-1 items-stretch gap-3 @2xl/accessibility:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]'>
           <ColorField

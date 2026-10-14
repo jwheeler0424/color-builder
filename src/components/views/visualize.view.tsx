@@ -61,7 +61,7 @@ function TabBar({ active, setActive }: { active: Tab; setActive: (t: Tab) => voi
 
 function EmptyState({ title }: { title: string }) {
   return (
-    <div className='tool-panel-space flex-1'>
+    <div className='tool-panel-space flex-1 px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
       <p className='text-[12px] text-muted-foreground'>Generate a palette first to use {title}.</p>
     </div>
   );
@@ -201,7 +201,7 @@ function OklchTab() {
     : [];
   return (
     <div className='@container flex min-h-0 flex-1 flex-col overflow-auto lg:overflow-hidden'>
-      <div className='tool-inline-space grid shrink-0 grid-cols-2 gap-x-4 gap-y-3 border-b border-border py-3 sm:grid-cols-3 lg:grid-cols-5'>
+      <div className='tool-inline-space grid shrink-0 grid-cols-2 gap-x-4 gap-y-3 border-b border-border px-4 py-3 sm:grid-cols-3 lg:grid-cols-5 3xl:px-6 min-[160rem]:px-7'>
         {statItems.map(([label, value]) => (
           <div key={label} className='flex flex-col gap-1.5'>
             <span className={TYPE.label}>{label}</span>
@@ -210,7 +210,7 @@ function OklchTab() {
         ))}
       </div>
       <div className='grid grid-cols-1 lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:grid-rows-[minmax(0,1fr)_auto] @4xl:grid-cols-3 @4xl:grid-rows-[minmax(0,1fr)]'>
-        <section className='tool-panel-space tool-panel-stack grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] lg:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)] @4xl:border-r @4xl:border-border'>
+        <section className='tool-panel-space tool-panel-stack grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] gap-4 px-4 py-4 lg:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)] 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:border-r @4xl:border-border'>
           <div className='flex h-6 items-center justify-between gap-2'>
             <div className={TYPE.label}>Lightness vs chroma</div>
             <div className={TYPE.mono}>L / C</div>
@@ -226,7 +226,7 @@ function OklchTab() {
           <ColorProfile points={points} dimension='lightness' activeId={activeId} />
         </section>
 
-        <section className='tool-panel-space tool-panel-stack grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] lg:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)]'>
+        <section className='tool-panel-space tool-panel-stack grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] gap-4 px-4 py-4 lg:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)] 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
           <div className='flex h-6 items-center justify-between gap-2'>
             <div className={TYPE.label}>Hue distribution</div>
             <div className={TYPE.mono}>H / C</div>
@@ -241,7 +241,7 @@ function OklchTab() {
           </div>
           <ColorProfile points={points} dimension='chroma' activeId={activeId} />
         </section>
-        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col border-t border-border lg:col-span-2 @4xl:col-span-1 @4xl:border-t-0 @4xl:border-l'>
+        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-t border-border px-4 py-4 lg:col-span-2 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:col-span-1 @4xl:border-t-0 @4xl:border-l'>
           <div className='flex h-6 shrink-0 items-center justify-between gap-2'>
             <div className={TYPE.label}>Color values</div>
             <Button
@@ -420,7 +420,7 @@ function P3Tab() {
   return (
     <div className='@container flex min-h-0 flex-1 flex-col overflow-auto lg:overflow-hidden'>
       <div className='grid grid-cols-1 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[auto_minmax(0,1fr)]'>
-        <section className='tool-panel-space grid grid-cols-1 items-center gap-4 border-b border-border lg:col-span-2 @3xl:grid-cols-[auto_minmax(0,1fr)]'>
+        <section className='tool-panel-space grid grid-cols-1 items-center gap-4 border-b border-border px-4 py-4 lg:col-span-2 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6 @3xl:grid-cols-[auto_minmax(0,1fr)]'>
           <div className='flex gap-10'>
             <div className='flex flex-col gap-1.5'>
               <span
@@ -448,7 +448,7 @@ function P3Tab() {
           </div>
         </section>
 
-        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col border-b border-border lg:border-r lg:border-b-0'>
+        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-b border-border px-4 py-4 lg:border-r lg:border-b-0 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
           <div className='flex flex-wrap items-center justify-between gap-2'>
             <div className={TYPE.label}>Colors</div>
             <ToolSegments
@@ -472,7 +472,7 @@ function P3Tab() {
           </div>
         </section>
 
-        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col'>
+        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6'>
           <div className='flex flex-wrap items-center justify-between gap-2'>
             <div className={TYPE.label}>CSS with P3 fallback</div>
             <Button

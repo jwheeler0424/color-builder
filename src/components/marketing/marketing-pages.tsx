@@ -58,25 +58,32 @@ const PALETTE_SWATCHES = [
   { name: 'Iris', hex: '#8D61E8' },
 ];
 
-export function PaletteArtwork() {
+export function PaletteArtwork({ variant = 'feature' }: { variant?: 'feature' | 'overview' }) {
   return (
-    <figure className='palette-artwork'>
-      <div className='palette-artwork-top'>
+    <figure className='palette-artwork overflow-hidden rounded-[7px] border border-border bg-card text-foreground shadow-none'>
+      <div className='palette-artwork-top flex items-center justify-between border-b border-border px-[17px] py-[14px] font-mono text-[9px] text-muted-foreground uppercase'>
         <span>Sample palette</span>
       </div>
-      <div className='palette-artwork-swatches' aria-label='Six-color generated palette'>
+      <div
+        className={cn(
+          'palette-artwork-swatches',
+          variant === 'overview'
+            ? 'palette-artwork-swatches--overview'
+            : 'palette-artwork-swatches--feature',
+        )}
+        aria-label='Six-color generated palette'>
         {PALETTE_SWATCHES.map((color) => (
           <div
             key={color.hex}
-            className='palette-artwork-swatch'
+            className='palette-artwork-swatch flex min-w-0 rotate-180 items-end justify-center rounded-[2px] px-[2px] py-[9px] font-mono text-[9px] text-white [writing-mode:vertical-rl]'
             style={{ backgroundColor: color.hex, color: textColor(parseColor(color.hex).xyz) }}>
             {color.hex}
           </div>
         ))}
       </div>
-      <figcaption className='palette-artwork-bottom'>
+      <figcaption className='palette-artwork-bottom flex items-center justify-between border-t border-border px-[17px] py-[14px] font-mono text-[9px] text-muted-foreground uppercase'>
         <span>HEX values</span>
-        <strong>6 colors</strong>
+        <strong className='font-normal text-[var(--brand-teal-ink)]'>6 colors</strong>
       </figcaption>
     </figure>
   );
@@ -141,9 +148,9 @@ export function FeaturesPage() {
   const stage = FEATURE_STAGES.find((item) => item.key === activeStage)!;
 
   return (
-    <main className='marketing-page-wide marketing-page-features'>
+    <main className={cn('marketing-page-wide', 'marketing-page-features')}>
       <section className='marketing-page-masthead features-masthead'>
-        <div className='marketing-wrap marketing-hero'>
+        <div className={cn('marketing-wrap', 'marketing-hero')}>
           <div className='marketing-hero-copy'>
             <p className='marketing-kicker'>Color design, end to end</p>
             <h1 className='marketing-title'>
@@ -180,24 +187,36 @@ export function FeaturesPage() {
         </div>
       </section>
 
-      <section className='workflow-section' aria-label='Color workflow'>
-        <div className='marketing-wrap workflow-grid'>
+      <section
+        className='workflow-section border-y border-border bg-card'
+        aria-label='Color workflow'>
+        <div
+          className={cn(
+            'marketing-wrap',
+            ' workflow-grid grid grid-cols-4 max-[800px]:grid-cols-2 max-[560px]:grid-cols-1',
+          )}>
           {[
             ['01', 'Create', 'Build a palette with intent.'],
             ['02', 'Analyze', 'Check contrast and harmony.'],
             ['03', 'Build', 'Shape scales, themes, gradients.'],
             ['04', 'Export', 'Take tokens straight to code.'],
           ].map(([number, title, description]) => (
-            <article key={number} className='workflow-step'>
-              <span className='workflow-number'>{number} / 04</span>
-              <h2>{title}</h2>
-              <p>{description}</p>
+            <article
+              key={number}
+              className='workflow-step min-h-28 border-l border-border p-5 first:border-l-0 max-[800px]:min-h-[180px] max-[800px]:p-[18px] max-[560px]:min-h-[145px] max-[560px]:p-4'>
+              <span className='workflow-number font-mono text-[10px] text-[var(--primary-link)] max-[800px]:text-[32px] max-[560px]:text-[30px]'>
+                {number} / 04
+              </span>
+              <h2 className='mt-5 mb-[5px] font-display text-[21px] max-[800px]:text-[19px] max-[560px]:text-[18px]'>
+                {title}
+              </h2>
+              <p className='m-0 text-[12px] leading-[1.5] text-[var(--muted-foreground)]'>{description}</p>
             </article>
           ))}
         </div>
       </section>
 
-      <section className='marketing-wrap marketing-section feature-tools-section'>
+      <section className={cn('marketing-wrap', ' marketing-section feature-tools-section')}>
         <div className='marketing-section-heading'>
           <div>
             <p className='marketing-kicker'>Inside the studio</p>
@@ -241,7 +260,7 @@ export function FeaturesPage() {
       </section>
 
       <section className='feature-plans-section' aria-labelledby='free-sample-title'>
-        <div className='marketing-wrap feature-plans-grid'>
+        <div className={cn('marketing-wrap', ' feature-plans-grid')}>
           <div className='feature-plan-copy'>
             <p className='marketing-kicker'>Start free</p>
             <h2 id='free-sample-title'>Try every stage before you scale up.</h2>
@@ -268,7 +287,7 @@ export function FeaturesPage() {
             ))}
           </ul>
         </div>
-        <div className='marketing-wrap feature-upgrade-row'>
+        <div className={cn('marketing-wrap', ' feature-upgrade-row')}>
           <div>
             <p className='marketing-kicker'>When you need more</p>
             <h3>The full studio, ready when you are.</h3>
@@ -384,9 +403,9 @@ export function PricingPage({
   const selectionPeriod = selection?.billingInterval === 'yearly' ? 'year' : 'month';
 
   return (
-    <main className='marketing-page-wide marketing-page-pricing'>
+    <main className={cn('marketing-page-wide', 'marketing-page-pricing')}>
       <section className='marketing-page-masthead pricing-masthead'>
-        <div className='marketing-wrap pricing-intro'>
+        <div className={cn('marketing-wrap', ' pricing-intro')}>
           <p className='marketing-kicker'>Simple plans / serious color work</p>
           <h1 className='marketing-title'>
             Room to explore. <em>Power to ship.</em>
@@ -421,7 +440,7 @@ export function PricingPage({
         </div>
       </section>
 
-      <section className='marketing-wrap plans-grid' aria-label='Choose a Chroma plan'>
+      <section className={cn('marketing-wrap', ' plans-grid')} aria-label='Choose a Chroma plan'>
         <article className='plan-card'>
           <div className='plan-label-row'>
             <h2 className='plan-name'>Free</h2>
@@ -449,7 +468,7 @@ export function PricingPage({
           </div>
         </article>
 
-        <article className='plan-card is-featured'>
+        <article className='is-featured plan-card plan-card-featured'>
           <div className='plan-label-row'>
             <h2 className='plan-name'>Pro</h2>
             <Badge variant='outline' className='plan-badge'>
@@ -482,7 +501,7 @@ export function PricingPage({
           </div>
         </article>
 
-        <article className='plan-card is-team'>
+        <article className='is-team plan-card'>
           <div className='plan-label-row'>
             <h2 className='plan-name'>Team</h2>
           </div>
@@ -541,7 +560,7 @@ export function PricingPage({
       </section>
 
       {selection && (
-        <section className='marketing-wrap' aria-live='polite'>
+        <section className={cn('marketing-wrap', '')} aria-live='polite'>
           <div className='plan-selection' role='status'>
             <div>
               <h2>{selection.plan === 'pro' ? 'Pro' : 'Team'} plan selected</h2>
@@ -562,7 +581,7 @@ export function PricingPage({
       )}
 
       <section className='comparison-section'>
-        <div className='marketing-wrap'>
+        <div className={cn('marketing-wrap', '')}>
           <div className='marketing-section-heading'>
             <div>
               <p className='marketing-kicker'>Compare plans</p>
@@ -603,7 +622,7 @@ export function PricingPage({
         </div>
       </section>
 
-      <section className='marketing-wrap marketing-faq-section'>
+      <section className={cn('marketing-wrap', ' marketing-faq-section')}>
         <div className='marketing-section-heading'>
           <div>
             <p className='marketing-kicker'>Good to know</p>
@@ -621,7 +640,7 @@ export function PricingPage({
           ))}
         </Accordion>
       </section>
-      <div className='marketing-wrap marketing-bottom-cta'>
+      <div className={cn('marketing-wrap', ' marketing-bottom-cta')}>
         <div>
           <h2>Try the color studio for free.</h2>
           <p>Make a palette, then see how far your color system can go.</p>

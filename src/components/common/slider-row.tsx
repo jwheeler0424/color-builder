@@ -1,4 +1,4 @@
-import { ColorSlider } from "../ui/slider-color";
+import { ColorSlider } from '../ui/slider-color';
 
 // ─── Shared slider row ────────────────────────────────────────────────────────
 export function SliderRow({
@@ -23,12 +23,10 @@ export function SliderRow({
   isAlpha?: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex justify-between items-center text-[11px] font-medium px-0.5">
-        <span className="text-muted-foreground uppercase tracking-tight">
-          {label}
-        </span>
-        <span className="font-mono text-foreground tabular-nums bg-secondary/30 px-1.5 py-0.5 rounded leading-none">
+    <div className='flex flex-col gap-1.5'>
+      <div className='flex items-center justify-between px-0.5 text-[11px] font-medium'>
+        <span className='tracking-tight text-muted-foreground uppercase'>{label}</span>
+        <span className='rounded bg-secondary/30 px-1.5 py-0.5 font-mono leading-none text-foreground tabular-nums'>
           {display}
         </span>
       </div>

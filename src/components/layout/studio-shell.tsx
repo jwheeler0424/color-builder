@@ -92,17 +92,19 @@ export function StudioShell() {
 
   return (
     <ShellProvider shell='studio'>
-      <main className='desktop-main h-full overflow-hidden' data-studio-shell>
+      <main
+        className='desktop-main grid h-full grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr] overflow-hidden'
+        data-studio-shell>
         {/* ── Top nav ── */}
-        <NavDesktop className='desktop-main-nav' />
+        <NavDesktop className='desktop-main-nav [grid-area:1/2/2/4]' />
 
         {/* ── 3-column body ── */}
 
         {/* Left rail */}
-        <LeftRail className='desktop-left' onEditSeed={handleEditSlot} />
+        <LeftRail className='desktop-left [grid-area:1/1/3/2]' onEditSeed={handleEditSlot} />
 
         {/* Center: palette strip + FAB */}
-        <div className='desktop-main relative flex h-full flex-1 overflow-hidden'>
+        <div className='desktop-main relative flex h-full flex-1 overflow-hidden [grid-area:2/2/3/3]'>
           <PaletteStrip onEditSlot={handleEditSlot} />
         </div>
 
@@ -113,7 +115,7 @@ export function StudioShell() {
             side='right'
             panelWidth='340px'
             collapsible='none'
-            className='desktop-right'>
+            className='desktop-right [grid-area:2/3/3/4]'>
             <div className='flex h-full min-h-0 flex-col overflow-hidden'>
               <div className='flex shrink-0 items-center justify-between gap-3 border-b border-border px-3 py-2'>
                 <span className='truncate text-[11px] font-bold text-foreground'>

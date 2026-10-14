@@ -7,8 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-
-import './marketing-content.css';
+import { cn } from '@/lib/utils';
 
 type LegalSection = {
   id: string;
@@ -233,7 +232,7 @@ function LegalPage({ kind }: { kind: 'privacy' | 'terms' }) {
   const sections = privacy ? PRIVACY_SECTIONS : TERMS_SECTIONS;
   const [contentsOpen, setContentsOpen] = useState<string[]>([]);
   const contents = (
-    <ol>
+    <ol className='legal-contents-list'>
       {sections.map((section) => (
         <li key={section.id}>
           <a href={`#${kind}-${section.id}`} onClick={() => setContentsOpen([])}>
@@ -250,38 +249,52 @@ function LegalPage({ kind }: { kind: 'privacy' | 'terms' }) {
   );
 
   return (
-    <main className='marketing-wrap legal-page marketing-page-wide marketing-page-legal'>
+    <main
+      className={cn(
+        'marketing-page-wide',
+        'legal-page',
+        '[&_a]:text-(--brand-teal-ink) [&_a]:underline [&_a]:underline-offset-[3px]',
+        'marketing-page-legal',
+      )}>
       <header className='legal-page-heading'>
         <p className='marketing-kicker'>Designer's Image / Chroma ELITE</p>
-        <h1>{title}</h1>
-        <p>
+        <h1 className='mt-3.5 mb-0 font-display text-[42px] leading-[1.1] font-bold max-[560px]:text-[32px]'>
+          {title}
+        </h1>
+        <p className='mt-4 mb-0 max-w-[62ch] text-[15px] leading-[1.7] text-(--muted-foreground)'>
           {privacy
             ? 'How information is handled in the Chroma website and local-first studio.'
             : 'The conditions for using Chroma color tools, the website, and available services.'}
         </p>
-        <dl className='legal-page-meta'>
+        <dl className='legal-page-meta mt-6 mb-0 flex flex-wrap gap-x-8 gap-y-3.5 text-xs leading-[1.6]'>
           <div>
-            <dt>Effective</dt>
-            <dd>
+            <dt className='text-(--muted-foreground)'>Effective</dt>
+            <dd className='mx-0 mt-0.75 mb-0'>
               <time dateTime='2026-10-13'>{EFFECTIVE_DATE}</time>
             </dd>
           </div>
           <div>
-            <dt>Operator</dt>
-            <dd>Designer's Image, California, United States</dd>
+            <dt className='text-(--muted-foreground)'>Operator</dt>
+            <dd className='mx-0 mt-0.75 mb-0'>Designer's Image, California, United States</dd>
           </div>
           <div>
-            <dt>Contact</dt>
-            <dd>
+            <dt className='text-(--muted-foreground)'>Contact</dt>
+            <dd className='mx-0 mt-0.75 mb-0'>
               <a href={`mailto:${LEGAL_CONTACT}`}>{LEGAL_CONTACT}</a>
             </dd>
           </div>
         </dl>
-        <div className='legal-related-links'>
-          <Link to='/privacy' aria-current={privacy ? 'page' : undefined}>
+        <div className='legal-related-links mt-6 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold'>
+          <Link
+            to='/privacy'
+            aria-current={privacy ? 'page' : undefined}
+            className={privacy ? 'text-(--foreground)' : undefined}>
             Privacy Policy
           </Link>
-          <Link to='/terms' aria-current={!privacy ? 'page' : undefined}>
+          <Link
+            to='/terms'
+            aria-current={!privacy ? 'page' : undefined}
+            className={!privacy ? 'text-(--foreground)' : undefined}>
             Terms of Use
           </Link>
           <Link to='/support' hash='data'>
@@ -292,20 +305,22 @@ function LegalPage({ kind }: { kind: 'privacy' | 'terms' }) {
       <div className='legal-page-layout'>
         <nav
           aria-label={`${title} contents`}
-          className='legal-page-contents legal-desktop-contents'>
-          <h2>On this page</h2>
+          className={cn('legal-page-contents', 'legal-desktop-contents max-[800px]:hidden')}>
+          <h2 className='mb-3.5 font-mono text-[10px] font-bold text-(--brand-teal-ink) uppercase'>
+            On this page
+          </h2>
           {contents}
         </nav>
         <Accordion
           value={contentsOpen}
           onValueChange={setContentsOpen}
-          className='faq-list legal-mobile-contents'>
+          className='legal-mobile-contents faq-list'>
           <AccordionItem value='contents'>
             <AccordionTrigger>On this page</AccordionTrigger>
             <AccordionContent className='faq-answer'>
               <nav
                 aria-label={`${title} contents`}
-                className='legal-page-contents legal-mobile-list'>
+                className='legal-mobile-list legal-page-contents border-0 p-0'>
                 {contents}
               </nav>
             </AccordionContent>
@@ -313,16 +328,21 @@ function LegalPage({ kind }: { kind: 'privacy' | 'terms' }) {
         </Accordion>
         <article aria-label={title} className='legal-page-article'>
           {sections.map((section) => (
-            <section key={section.id} id={`${kind}-${section.id}`}>
-              <h2>{section.title}</h2>
+            <section
+              key={section.id}
+              id={`${kind}-${section.id}`}
+              className='legal-article-section'>
+              <h2 className='legal-article-heading'>{section.title}</h2>
               {section.paragraphs.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
+                <p key={paragraph} className='legal-article-paragraph'>
+                  {paragraph}
+                </p>
               ))}
             </section>
           ))}
-          <section id={`${kind}-contact`}>
-            <h2>Contact</h2>
-            <p>
+          <section id={`${kind}-contact`} className='legal-article-section'>
+            <h2 className='legal-article-heading'>Contact</h2>
+            <p className='legal-article-paragraph'>
               For {privacy ? 'privacy questions and requests' : 'questions about these terms'},
               contact Designer's Image at <a href={`mailto:${LEGAL_CONTACT}`}>{LEGAL_CONTACT}</a>.
               Please identify Chroma ELITE and describe your request without sending passwords or

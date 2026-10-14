@@ -149,7 +149,7 @@ function SingleColorTab() {
     <>
       <div className='@container flex min-h-0 flex-1 flex-col overflow-auto @4xl:overflow-hidden'>
         <div className='grid min-w-0 grid-cols-1 @4xl:min-h-0 @4xl:flex-1 @4xl:grid-cols-[minmax(0,1fr)_18rem]'>
-          <section className='tool-panel-space tool-panel-stack @container/shades flex min-h-0 min-w-0 flex-col @4xl:border-r @4xl:border-border'>
+          <section className='tool-panel-space tool-panel-stack @container/shades flex min-h-0 min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:border-r @4xl:border-border'>
             <div className='flex shrink-0 flex-wrap items-center justify-between gap-3'>
               <div className='flex min-w-0 items-center gap-3'>
                 <button
@@ -256,7 +256,7 @@ function SingleColorTab() {
               </div>
             </div>
           </section>
-          <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col border-t border-border @4xl:border-t-0'>
+          <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-t border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:border-t-0'>
             <div className='flex shrink-0 items-center justify-between gap-2'>
               <span className={TYPE.label}>Export scale</span>
               <Button
@@ -444,7 +444,7 @@ function FullPaletteTab() {
 
   if (!slots.length) {
     return (
-      <div className='tool-panel-space flex-1'>
+      <div className='tool-panel-space flex-1 px-4 py-4 3xl:px-6 3xl:py-5 min-[160rem]:px-7 min-[160rem]:py-6'>
         <p className='text-[12px] text-muted-foreground'>Generate a palette first.</p>
       </div>
     );
@@ -453,7 +453,7 @@ function FullPaletteTab() {
   return (
     <div className='@container flex min-h-0 flex-1 flex-col overflow-auto @4xl:overflow-hidden'>
       <div className='grid grid-cols-1 @4xl:min-h-0 @4xl:flex-1 @4xl:grid-cols-[minmax(0,1fr)_18rem]'>
-        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col @4xl:border-r @4xl:border-border'>
+        <section className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:border-r @4xl:border-border'>
           <div className='flex shrink-0 items-center justify-between gap-3'>
             <span className={TYPE.label}>Palette scales</span>
             <span className={TYPE.mono}>
@@ -574,7 +574,7 @@ function FullPaletteTab() {
             </div>
           )}
         </section>
-        <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col border-t border-border @4xl:border-t-0'>
+        <aside className='tool-panel-space tool-panel-stack flex min-h-0 min-w-0 flex-col gap-4 border-t border-border px-4 py-4 3xl:gap-5 3xl:px-6 3xl:py-5 min-[160rem]:gap-6 min-[160rem]:px-7 min-[160rem]:py-6 @4xl:border-t-0'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
             <span className={TYPE.label}>Export all scales</span>
             <Button

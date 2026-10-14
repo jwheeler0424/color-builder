@@ -143,8 +143,10 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
                   size='lg'
                   aria-label='Add a color'
                   onClick={() => insertSlot(slots.length)}
-                  className='palette-add-button palette-add-button--wide h-14 w-full justify-center gap-2.5 border-dashed border-border bg-card px-4 text-sm font-semibold text-foreground'>
-                  <span className='palette-add-icon grid size-7 place-items-center rounded-full bg-primary text-primary-foreground'>
+                  className={cn(
+                    'palette-add-button palette-add-button--wide h-14 w-full justify-center gap-2.5 border-dashed border-border bg-card px-4 text-sm font-semibold text-foreground',
+                  )}>
+                  <span className='grid size-7 place-items-center rounded-full bg-primary text-primary-foreground palette-add-icon'>
                     <PlusIcon className='size-4' aria-hidden='true' />
                   </span>
                   <span className='relative z-10'>Add a color</span>
