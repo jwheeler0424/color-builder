@@ -41,6 +41,7 @@ import { Route as ChromaThemeRouteImport } from './routes/_chroma/theme'
 import { Route as ChromaUtilityRouteImport } from './routes/_chroma/utility'
 import { Route as MarketingApiRouteImport } from './routes/_marketing/api'
 import { Route as MarketingDataRouteImport } from './routes/_marketing/data'
+import { Route as MarketingDocumentationRouteImport } from './routes/_marketing/documentation'
 import { Route as MarketingFeaturesRouteImport } from './routes/_marketing/features'
 import { Route as MarketingGuidesRouteImport } from './routes/_marketing/guides'
 import { Route as MarketingOverviewRouteImport } from './routes/_marketing/overview'
@@ -223,6 +224,11 @@ const MarketingDataRoute = MarketingDataRouteImport.update({
   path: '/data',
   getParentRoute: () => MarketingRoute,
 } as any)
+const MarketingDocumentationRoute = MarketingDocumentationRouteImport.update({
+  id: '/documentation',
+  path: '/documentation',
+  getParentRoute: () => MarketingRoute,
+} as any)
 const MarketingFeaturesRoute = MarketingFeaturesRouteImport.update({
   id: '/features',
   path: '/features',
@@ -372,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/utility': typeof ChromaUtilityRoute
   '/api': typeof MarketingApiRoute
   '/data': typeof MarketingDataRoute
+  '/documentation': typeof MarketingDocumentationRoute
   '/features': typeof MarketingFeaturesRoute
   '/guides': typeof MarketingGuidesRoute
   '/overview': typeof MarketingOverviewRoute
@@ -424,6 +431,7 @@ export interface FileRoutesByTo {
   '/utility': typeof ChromaUtilityRoute
   '/api': typeof MarketingApiRoute
   '/data': typeof MarketingDataRoute
+  '/documentation': typeof MarketingDocumentationRoute
   '/features': typeof MarketingFeaturesRoute
   '/guides': typeof MarketingGuidesRoute
   '/overview': typeof MarketingOverviewRoute
@@ -481,6 +489,7 @@ export interface FileRoutesById {
   '/_chroma/utility': typeof ChromaUtilityRoute
   '/_marketing/api': typeof MarketingApiRoute
   '/_marketing/data': typeof MarketingDataRoute
+  '/_marketing/documentation': typeof MarketingDocumentationRoute
   '/_marketing/features': typeof MarketingFeaturesRoute
   '/_marketing/guides': typeof MarketingGuidesRoute
   '/_marketing/overview': typeof MarketingOverviewRoute
@@ -539,6 +548,7 @@ export interface FileRouteTypes {
     | '/utility'
     | '/api'
     | '/data'
+    | '/documentation'
     | '/features'
     | '/guides'
     | '/overview'
@@ -591,6 +601,7 @@ export interface FileRouteTypes {
     | '/utility'
     | '/api'
     | '/data'
+    | '/documentation'
     | '/features'
     | '/guides'
     | '/overview'
@@ -647,6 +658,7 @@ export interface FileRouteTypes {
     | '/_chroma/utility'
     | '/_marketing/api'
     | '/_marketing/data'
+    | '/_marketing/documentation'
     | '/_marketing/features'
     | '/_marketing/guides'
     | '/_marketing/overview'
@@ -907,6 +919,13 @@ declare module '@tanstack/react-router' {
       path: '/data'
       fullPath: '/data'
       preLoaderRoute: typeof MarketingDataRouteImport
+      parentRoute: typeof MarketingRoute
+    }
+    '/_marketing/documentation': {
+      id: '/_marketing/documentation'
+      path: '/documentation'
+      fullPath: '/documentation'
+      preLoaderRoute: typeof MarketingDocumentationRouteImport
       parentRoute: typeof MarketingRoute
     }
     '/_marketing/features': {
@@ -1193,6 +1212,7 @@ const ChromaRouteWithChildren =
 interface MarketingRouteChildren {
   MarketingApiRoute: typeof MarketingApiRoute
   MarketingDataRoute: typeof MarketingDataRoute
+  MarketingDocumentationRoute: typeof MarketingDocumentationRoute
   MarketingFeaturesRoute: typeof MarketingFeaturesRoute
   MarketingGuidesRoute: typeof MarketingGuidesRoute
   MarketingOverviewRoute: typeof MarketingOverviewRoute
@@ -1205,6 +1225,7 @@ interface MarketingRouteChildren {
 const MarketingRouteChildren: MarketingRouteChildren = {
   MarketingApiRoute: MarketingApiRoute,
   MarketingDataRoute: MarketingDataRoute,
+  MarketingDocumentationRoute: MarketingDocumentationRoute,
   MarketingFeaturesRoute: MarketingFeaturesRoute,
   MarketingGuidesRoute: MarketingGuidesRoute,
   MarketingOverviewRoute: MarketingOverviewRoute,

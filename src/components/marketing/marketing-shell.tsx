@@ -14,7 +14,7 @@ export function MarketingShell() {
           <p>Chroma ELITE / Designer's Image</p>
           <nav aria-label='Footer navigation'>
             <Link to='/support'>Help center</Link>
-            <Link to='/data'>Data overview</Link>
+            <Link to='/documentation'>Documentation</Link>
             <Link to='/privacy'>Privacy Policy</Link>
             <Link to='/terms'>Terms of Use</Link>
           </nav>

@@ -218,6 +218,13 @@ body {
 
   --primary: oklch(0.71 0.15 239.15);
   --primary-foreground: oklch(100% 0 0);
+  --primary-ink: var(--primary);
+  --primary-ink-foreground: var(--primary-foreground);
+  --primary-link: var(--primary);
+  --primary-action: var(--primary);
+  --primary-action-foreground: var(--primary-foreground);
+  --primary-action-outline: var(--primary);
+  --brand-teal-ink: var(--success);
 
   --secondary: oklch(96.5% 0 0);
   --secondary-foreground: oklch(36.9% 0 0);
@@ -243,6 +250,19 @@ body {
   --chart-3: oklch(0.65 0.15 159.03);
   --chart-4: oklch(0.75 0.1 100.01);
   --chart-5: oklch(0.55 0.15 299.88);
+
+  --section-create-accent: var(--primary);
+  --section-create-ink: oklch(0.43 0.12 239.15);
+  --section-analyze-accent: oklch(0.59 0.12 195);
+  --section-analyze-ink: oklch(0.42 0.1 195);
+  --section-build-accent: var(--warning);
+  --section-build-ink: oklch(0.42 0.15 85);
+  --section-export-accent: var(--success);
+  --section-export-ink: oklch(0.38 0.14 136.02);
+  --section-product-accent: var(--chart-5);
+  --section-product-ink: oklch(0.4 0.12 299.88);
+  --section-support-accent: var(--destructive);
+  --section-support-ink: oklch(0.41 0.16 20.96);
 
   --sidebar: oklch(0.93 0.01 238.46);
   --sidebar-foreground: oklch(0.15 0.02 269.18);
@@ -297,6 +317,13 @@ body {
 
   --primary: oklch(0.71 0.15 239.15);
   --primary-foreground: oklch(0% 0 0);
+  --primary-ink: var(--primary);
+  --primary-ink-foreground: var(--primary-foreground);
+  --primary-link: var(--primary);
+  --primary-action: var(--primary);
+  --primary-action-foreground: var(--primary-foreground);
+  --primary-action-outline: var(--primary);
+  --brand-teal-ink: var(--success);
 
   --secondary: oklch(17.8% 0 0);
   --secondary-foreground: oklch(69.8% 0 0);
@@ -322,6 +349,19 @@ body {
   --chart-3: oklch(0.7 0.15 159.83);
   --chart-4: oklch(0.8 0.1 100.65);
   --chart-5: oklch(0.6 0.15 300.14);
+
+  --section-create-accent: var(--primary);
+  --section-create-ink: var(--primary);
+  --section-analyze-accent: oklch(0.76 0.12 195);
+  --section-analyze-ink: var(--section-analyze-accent);
+  --section-build-accent: oklch(0.78 0.17 85);
+  --section-build-ink: var(--section-build-accent);
+  --section-export-accent: oklch(0.74 0.15 145);
+  --section-export-ink: var(--section-export-accent);
+  --section-product-accent: oklch(0.75 0.13 300.14);
+  --section-product-ink: var(--section-product-accent);
+  --section-support-accent: oklch(0.74 0.17 19.69);
+  --section-support-ink: var(--section-support-accent);
 
   --sidebar: oklch(0.22 0.02 271.67);
   --sidebar-foreground: oklch(0.9 0.01 238.47);
@@ -356,6 +396,13 @@ body {
 
     --primary: oklch(0.71 0.15 239.15);
     --primary-foreground: oklch(0% 0 0);
+    --primary-ink: var(--primary);
+    --primary-ink-foreground: var(--primary-foreground);
+    --primary-link: var(--primary);
+    --primary-action: var(--primary);
+    --primary-action-foreground: var(--primary-foreground);
+    --primary-action-outline: var(--primary);
+    --brand-teal-ink: var(--success);
 
     --secondary: oklch(17.8% 0 0);
     --secondary-foreground: oklch(69.8% 0 0);
@@ -381,6 +428,19 @@ body {
     --chart-3: oklch(0.7 0.15 159.83);
     --chart-4: oklch(0.8 0.1 100.65);
     --chart-5: oklch(0.6 0.15 300.14);
+
+    --section-create-accent: var(--primary);
+    --section-create-ink: var(--primary);
+    --section-analyze-accent: oklch(0.76 0.12 195);
+    --section-analyze-ink: var(--section-analyze-accent);
+    --section-build-accent: oklch(0.78 0.17 85);
+    --section-build-ink: var(--section-build-accent);
+    --section-export-accent: oklch(0.74 0.15 145);
+    --section-export-ink: var(--section-export-accent);
+    --section-product-accent: oklch(0.75 0.13 300.14);
+    --section-product-ink: var(--section-product-accent);
+    --section-support-accent: oklch(0.74 0.17 19.69);
+    --section-support-ink: var(--section-support-accent);
 
     --sidebar: oklch(0.22 0.02 271.67);
     --sidebar-foreground: oklch(0.9 0.01 238.47);
@@ -421,8 +481,15 @@ body {
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary-ink);
+  --color-primary-foreground: var(--primary-ink-foreground);
+  --color-primary-ink: var(--primary-ink);
+  --color-primary-ink-foreground: var(--primary-ink-foreground);
+  --color-primary-link: var(--primary-link);
+  --color-primary-action: var(--primary-action);
+  --color-primary-action-foreground: var(--primary-action-foreground);
+  --color-primary-action-outline: var(--primary-action-outline);
+  --color-brand-teal-ink: var(--brand-teal-ink);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);

@@ -56,30 +56,34 @@ const SECTION_PRESENTATION = {
   create: {
     eyebrow: 'Color studio',
     summary: 'Build a palette with character, balance, and room to explore.',
-    accent: 'text-sky-700 dark:text-primary',
-    accentSurface: 'bg-primary/10',
-    accentColor: 'var(--primary)',
+    accent: 'text-(--section-create-ink) dark:text-(--section-create-accent)',
+    accentSurface: 'bg-(--section-create-accent)/10',
+    accentColor: 'var(--section-create-accent)',
+    accentInkColor: 'var(--section-create-ink)',
   },
   analyze: {
     eyebrow: 'Color intelligence',
     summary: 'Understand contrast, relationships, perception, and brand coherence.',
-    accent: 'text-cyan-700 dark:text-cyan-300',
-    accentSurface: 'bg-cyan-300/10',
-    accentColor: '#67e8f9',
+    accent: 'text-(--section-analyze-ink) dark:text-(--section-analyze-accent)',
+    accentSurface: 'bg-(--section-analyze-accent)/10',
+    accentColor: 'var(--section-analyze-accent)',
+    accentInkColor: 'var(--section-analyze-ink)',
   },
   build: {
     eyebrow: 'Creative workbench',
     summary: 'Mix, tune, extract, and shape colors into practical systems.',
-    accent: 'text-amber-800 dark:text-amber-300',
-    accentSurface: 'bg-amber-300/10',
-    accentColor: '#fcd34d',
+    accent: 'text-(--section-build-ink) dark:text-(--section-build-accent)',
+    accentSurface: 'bg-(--section-build-accent)/10',
+    accentColor: 'var(--section-build-accent)',
+    accentInkColor: 'var(--section-build-ink)',
   },
   export: {
     eyebrow: 'Ready to ship',
     summary: 'Turn finished colors into scales, tokens, and implementation-ready themes.',
-    accent: 'text-emerald-700 dark:text-emerald-300',
-    accentSurface: 'bg-emerald-300/10',
-    accentColor: '#6ee7b7',
+    accent: 'text-(--section-export-ink) dark:text-(--section-export-accent)',
+    accentSurface: 'bg-(--section-export-accent)/10',
+    accentColor: 'var(--section-export-accent)',
+    accentInkColor: 'var(--section-export-ink)',
   },
 } as const;
 
@@ -188,6 +192,7 @@ export function SectionNavigation({ className }: SectionNavigationProps) {
             SECTION_PRESENTATION[section.id as keyof typeof SECTION_PRESENTATION];
           const sectionStyle = {
             '--section-accent': presentation.accentColor,
+            '--section-accent-ink': presentation.accentInkColor,
           } as CSSProperties;
           const linkClassName = studioNavigationTriggerClassName(isActive);
           const isPalette = section.id === 'create';

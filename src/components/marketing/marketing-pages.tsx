@@ -141,40 +141,42 @@ export function FeaturesPage() {
   const stage = FEATURE_STAGES.find((item) => item.key === activeStage)!;
 
   return (
-    <main>
-      <section className='marketing-wrap marketing-hero'>
-        <div className='marketing-hero-copy'>
-          <p className='marketing-kicker'>Color design, end to end</p>
-          <h1 className='marketing-title'>
-            Make color decisions <em>you can ship.</em>
-          </h1>
-          <p className='marketing-lede'>
-            One focused studio for palette exploration, accessibility checks, and design-system
-            handoff. Move from the first hue to implementation without losing the thread.
-          </p>
-          <div className='marketing-hero-actions'>
-            <Link
-              to='/'
-              data-slot='button'
-              className={cn(
-                buttonVariants({ size: 'lg', className: 'text-sm' }),
-                'marketing-primary-link',
-              )}>
-              Open the studio <IconArrowUpRight aria-hidden='true' size={17} />
-            </Link>
-            <Link
-              to='/pricing'
-              data-slot='button'
-              className={cn(
-                buttonVariants({ variant: 'outline', size: 'lg', className: 'text-sm' }),
-                'marketing-secondary-link',
-              )}>
-              Explore plans <IconArrowRight aria-hidden='true' size={16} />
-            </Link>
+    <main className='marketing-page-wide marketing-page-features'>
+      <section className='marketing-page-masthead features-masthead'>
+        <div className='marketing-wrap marketing-hero'>
+          <div className='marketing-hero-copy'>
+            <p className='marketing-kicker'>Color design, end to end</p>
+            <h1 className='marketing-title'>
+              Make color decisions <em>you can ship.</em>
+            </h1>
+            <p className='marketing-lede'>
+              One focused studio for palette exploration, accessibility checks, and design-system
+              handoff. Move from the first hue to implementation without losing the thread.
+            </p>
+            <div className='marketing-hero-actions'>
+              <Link
+                to='/'
+                data-slot='button'
+                className={cn(
+                  buttonVariants({ size: 'lg', className: 'text-sm' }),
+                  'marketing-primary-link',
+                )}>
+                Open the studio <IconArrowUpRight aria-hidden='true' size={17} />
+              </Link>
+              <Link
+                to='/pricing'
+                data-slot='button'
+                className={cn(
+                  buttonVariants({ variant: 'outline', size: 'lg', className: 'text-sm' }),
+                  'marketing-secondary-link',
+                )}>
+                Explore plans <IconArrowRight aria-hidden='true' size={16} />
+              </Link>
+            </div>
           </div>
-        </div>
-        <div className='marketing-hero-art'>
-          <PaletteArtwork />
+          <div className='marketing-hero-art'>
+            <PaletteArtwork />
+          </div>
         </div>
       </section>
 
@@ -382,38 +384,40 @@ export function PricingPage({
   const selectionPeriod = selection?.billingInterval === 'yearly' ? 'year' : 'month';
 
   return (
-    <main>
-      <section className='marketing-wrap pricing-intro'>
-        <p className='marketing-kicker'>Simple plans / serious color work</p>
-        <h1 className='marketing-title'>
-          Room to explore. <em>Power to ship.</em>
-        </h1>
-        <p className='marketing-lede'>
-          Start free with a little of everything. Go Pro for the complete color studio, or bring
-          your whole team into the system.
-        </p>
-        <div className='pricing-controls'>
-          <div className='billing-switch' role='group' aria-label='Billing interval'>
-            <Button
-              type='button'
-              variant={billingInterval === 'monthly' ? 'default' : 'ghost'}
-              size='sm'
-              className='billing-option text-xs'
-              aria-pressed={billingInterval === 'monthly'}
-              onClick={() => setBillingInterval('monthly')}>
-              Monthly
-            </Button>
-            <Button
-              type='button'
-              variant={billingInterval === 'yearly' ? 'default' : 'ghost'}
-              size='sm'
-              className='billing-option text-xs'
-              aria-pressed={billingInterval === 'yearly'}
-              onClick={() => setBillingInterval('yearly')}>
-              Yearly
-            </Button>
+    <main className='marketing-page-wide marketing-page-pricing'>
+      <section className='marketing-page-masthead pricing-masthead'>
+        <div className='marketing-wrap pricing-intro'>
+          <p className='marketing-kicker'>Simple plans / serious color work</p>
+          <h1 className='marketing-title'>
+            Room to explore. <em>Power to ship.</em>
+          </h1>
+          <p className='marketing-lede'>
+            Start free with a little of everything. Go Pro for the complete color studio, or bring
+            your whole team into the system.
+          </p>
+          <div className='pricing-controls'>
+            <div className='billing-switch' role='group' aria-label='Billing interval'>
+              <Button
+                type='button'
+                variant={billingInterval === 'monthly' ? 'default' : 'ghost'}
+                size='sm'
+                className='billing-option text-xs'
+                aria-pressed={billingInterval === 'monthly'}
+                onClick={() => setBillingInterval('monthly')}>
+                Monthly
+              </Button>
+              <Button
+                type='button'
+                variant={billingInterval === 'yearly' ? 'default' : 'ghost'}
+                size='sm'
+                className='billing-option text-xs'
+                aria-pressed={billingInterval === 'yearly'}
+                onClick={() => setBillingInterval('yearly')}>
+                Yearly
+              </Button>
+            </div>
+            <span className='billing-savings'>Yearly saves 2 months</span>
           </div>
-          <span className='billing-savings'>Yearly saves 2 months</span>
         </div>
       </section>
 

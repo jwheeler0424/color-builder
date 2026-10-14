@@ -4,14 +4,14 @@
   --mk-canvas: var(--background);
   --mk-paper: var(--card);
   --mk-line: var(--border);
-  --mk-coral: var(--primary);
-  --mk-green: color-mix(in srgb, var(--primary) 65%, var(--foreground));
+  --mk-coral: var(--primary-link);
+  --mk-green: var(--brand-teal-ink);
   --mk-yellow: var(--warning);
   --mk-soft: var(--muted);
   --mk-highlight: var(--accent);
   --mk-accent-ink: var(--mk-green);
-  --mk-button: var(--primary);
-  --mk-button-ink: var(--primary-foreground);
+  --mk-button: var(--primary-action);
+  --mk-button-ink: var(--primary-action-foreground);
   --mk-gutter: 24px;
   display: flex;
   height: 100%;
@@ -92,7 +92,6 @@
   background: var(--mk-coral);
   content: '';
 }
-.marketing-studio-link,
 .marketing-primary-link:not([data-slot='button']),
 .marketing-secondary-link:not([data-slot='button']),
 .plan-cta:not([data-slot='button']) {
@@ -142,6 +141,14 @@
 .marketing-wrap {
   width: min(1120px, calc(100% - var(--mk-gutter) * 2));
   margin-inline: auto;
+}
+.marketing-page-wide {
+  --mk-page-gutter: clamp(24px, 3vw, 72px);
+}
+.marketing-page-wide .marketing-wrap,
+.marketing-page-wide.marketing-wrap {
+  width: calc(100% - var(--mk-page-gutter) * 2);
+  max-width: none;
 }
 .marketing-kicker {
   display: inline-flex;
@@ -301,39 +308,116 @@
   font-size: 12px;
   line-height: 1.5;
 }
-.marketing-section {
-  padding-block: 40px;
+.marketing-page-overview .workflow-section {
+  border-block: 1px solid var(--mk-line);
+  background: var(--mk-paper);
 }
-.marketing-section + .marketing-section {
-  padding-top: 0;
+.marketing-page-overview .workflow-grid {
+  width: 100%;
+  max-width: none;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-inline: 0;
+  padding-inline: var(--mk-page-gutter);
 }
-.marketing-section-heading {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 30px;
-  margin-bottom: 30px;
-}
-.marketing-section-title {
-  max-width: 610px;
-  margin-top: 11px;
-  font-size: 28px;
-  line-height: 1.2;
-}
-.marketing-section-note {
+.marketing-page-overview .workflow-step {
+  position: relative;
+  display: grid;
   min-width: 0;
-  max-width: 360px;
-  margin: 0;
+  min-height: 220px;
+  grid-template-columns: minmax(0, 1fr) 20px;
+  grid-template-rows: auto 1fr;
+  align-items: stretch;
+  gap: 6px 12px;
+  border: 0;
+  border-radius: 0;
+  padding: 26px clamp(18px, 2vw, 40px);
+  background: transparent;
+  color: var(--mk-ink);
+  text-decoration: none;
+  transition: background 150ms ease;
+}
+.marketing-page-overview .workflow-step + .workflow-step {
+  border-left: 1px solid var(--mk-line);
+}
+.marketing-page-overview .workflow-step[data-section='create'] {
+  --workflow-accent: var(--section-create-accent);
+  --workflow-ink: var(--section-create-ink);
+}
+.marketing-page-overview .workflow-step[data-section='analyze'] {
+  --workflow-accent: var(--section-analyze-accent);
+  --workflow-ink: var(--section-analyze-ink);
+}
+.marketing-page-overview .workflow-step[data-section='build'] {
+  --workflow-accent: var(--section-build-accent);
+  --workflow-ink: var(--section-build-ink);
+}
+.marketing-page-overview .workflow-step[data-section='export'] {
+  --workflow-accent: var(--section-export-accent);
+  --workflow-ink: var(--section-export-ink);
+}
+.marketing-page-overview .workflow-step:hover {
+  background: color-mix(in srgb, var(--mk-paper) 94%, var(--workflow-accent));
+}
+.marketing-page-overview .workflow-step:focus-visible {
+  outline: 2px solid var(--workflow-accent);
+  outline-offset: 3px;
+}
+.marketing-page-overview .workflow-step-watermark {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 0;
+  width: 108px;
+  height: 108px;
+  transform: rotate(14deg);
+  color: var(--workflow-accent);
+  opacity: 0.055;
+  pointer-events: none;
+}
+.marketing-page-overview .workflow-number {
+  position: relative;
+  z-index: 1;
+  grid-column: 1 / -1;
+  color: var(--workflow-ink);
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+}
+.marketing-page-overview .workflow-step-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-width: 0;
+  grid-column: 1;
+  grid-row: 2;
+  align-content: start;
+  gap: 8px;
+}
+.marketing-page-overview .workflow-step-title {
+  color: var(--mk-ink);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.marketing-page-overview .workflow-step-description {
+  max-width: 34ch;
   color: var(--mk-muted);
   font-size: 13px;
-  line-height: 1.7;
+  line-height: 1.6;
 }
-.feature-explorer {
-  display: grid;
-  grid-template-columns: 250px minmax(0, 1fr);
-  border: 1px solid var(--mk-line);
-  border-radius: 6px;
-  background: var(--mk-paper);
+.marketing-page-overview .workflow-step-arrow {
+  position: relative;
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 2;
+  align-self: end;
+  color: var(--workflow-ink);
+  transition: transform 150ms ease;
+}
+.marketing-page-overview .workflow-step:hover .workflow-step-arrow {
+  transform: translate(2px, -2px);
 }
 .feature-explorer-nav {
   display: flex;
@@ -926,6 +1010,9 @@
   }
 }
 @media (max-width: 960px) {
+  .marketing-page-wide {
+    --mk-page-gutter: clamp(16px, 2.7vw, 28px);
+  }
   .marketing-title {
     font-size: 32px;
   }
@@ -968,17 +1055,29 @@
   }
 }
 @media (max-width: 800px) {
+  .marketing-page-wide {
+    --mk-page-gutter: 18px;
+  }
   .marketing-hero-art .palette-artwork-swatches {
     height: 160px;
   }
   .workflow-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .workflow-step:nth-child(3) {
-    border-left: 0;
+  .workflow-step {
+    min-height: 180px;
+    grid-template-columns: 38px minmax(0, 1fr) 18px;
+    gap: 10px;
+    padding: 18px;
   }
-  .workflow-step:nth-child(n + 3) {
-    border-top: 1px solid var(--mk-line);
+  .workflow-number {
+    font-size: 32px;
+  }
+  .workflow-step-title {
+    font-size: 19px;
+  }
+  .workflow-step-description {
+    font-size: 12px;
   }
   .feature-plans-grid {
     grid-template-columns: 1fr;
@@ -1057,6 +1156,9 @@
   }
 }
 @media (max-width: 560px) {
+  .marketing-page-wide {
+    --mk-page-gutter: 12px;
+  }
   .marketing-header-inner {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -1103,15 +1205,22 @@
     height: 120px;
   }
   .workflow-step {
-    min-height: 130px;
-    padding: 17px 13px;
+    min-height: 145px;
+    grid-template-columns: 38px minmax(0, 1fr) 18px;
+    gap: 10px;
+    padding: 16px;
   }
-  .workflow-step h2 {
-    margin-top: 14px;
+  .workflow-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .workflow-number {
+    font-size: 30px;
+  }
+  .workflow-step-title {
     font-size: 18px;
   }
-  .workflow-step p {
-    font-size: 11px;
+  .workflow-step-description {
+    font-size: 12px;
   }
   .marketing-section {
     padding-block: 32px;
@@ -1248,5 +1357,351 @@
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+.marketing-page-wide .marketing-hero {
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: clamp(32px, 4vw, 96px);
+  padding-block: clamp(44px, 5vw, 88px);
+}
+.marketing-page-overview .overview-detail-grid {
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: clamp(32px, 4vw, 96px);
+}
+.marketing-page-features .feature-explorer {
+  grid-template-columns: minmax(240px, 0.28fr) minmax(0, 0.72fr);
+}
+.marketing-page-features .feature-explorer-content {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-content: center;
+  column-gap: clamp(32px, 4vw, 80px);
+}
+.marketing-page-features .feature-explorer-content .marketing-kicker {
+  grid-column: 1 / -1;
+}
+.marketing-page-features .feature-explorer-content h3,
+.marketing-page-features .feature-explorer-content p:not(.marketing-kicker) {
+  grid-column: 1;
+}
+.marketing-page-features .feature-tool-list {
+  grid-column: 2;
+  grid-row: 2 / span 2;
+  align-content: center;
+  margin-top: 0;
+}
+.marketing-page-features .feature-plans-grid {
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(40px, 5vw, 104px);
+}
+.marketing-page-features .feature-plan-copy h2,
+.marketing-page-features .feature-plan-copy > p:not(.marketing-kicker) {
+  max-width: 560px;
+}
+.marketing-page-features .feature-free-list p {
+  max-width: 42ch;
+}
+.marketing-page-pricing .plans-grid,
+.marketing-page-pricing .comparison-table-wrap {
+  max-width: 1960px;
+  margin-inline: auto;
+}
+.marketing-page-pricing .plan-card {
+  padding: clamp(22px, 1.6vw, 34px);
+}
+.marketing-page-pricing .comparison-table tbody th {
+  width: 32%;
+}
+.marketing-page-masthead {
+  border-bottom: 1px solid var(--mk-line);
+  background: color-mix(in srgb, var(--mk-paper) 92%, var(--mk-coral));
+}
+.marketing-page-masthead > .marketing-wrap {
+  margin-block: 0;
+}
+.marketing-page-overview .overview-hero {
+  min-height: 400px;
+  grid-template-columns: minmax(0, 0.82fr) minmax(460px, 1.18fr);
+  gap: clamp(40px, 5vw, 120px);
+}
+.marketing-page-overview .overview-hero .marketing-title {
+  max-width: 13ch;
+  margin-top: 22px;
+  font-size: 46px;
+  line-height: 1.08;
+}
+.marketing-page-overview .overview-hero .marketing-lede {
+  max-width: 54ch;
+  margin-top: 22px;
+  font-size: 16px;
+  line-height: 1.7;
+}
+.marketing-page-overview .overview-hero .palette-artwork-swatches {
+  height: 230px;
+}
+@media (min-width: 1600px) {
+  .marketing-page-overview .overview-hero {
+    min-height: 560px;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(80px, 6vw, 144px);
+  }
+  .marketing-page-overview .overview-hero .marketing-title {
+    max-width: 16ch;
+    font-size: 56px;
+  }
+  .marketing-page-overview .overview-hero .marketing-lede {
+    max-width: 48ch;
+    font-size: 17px;
+  }
+  .marketing-page-overview .marketing-hero-art {
+    width: min(100%, 1180px);
+    justify-self: end;
+  }
+  .marketing-page-overview .overview-hero .palette-artwork-swatches {
+    height: 280px;
+  }
+}
+@media (min-width: 1201px) {
+  .marketing-page-pricing .faq-list {
+    max-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(36px, 4vw, 88px);
+  }
+}
+@media (max-width: 960px) {
+  .marketing-page-wide .marketing-hero {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding-block: 36px;
+  }
+  .marketing-page-overview .overview-hero {
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .marketing-page-overview .overview-hero .palette-artwork-swatches {
+    height: 200px;
+  }
+}
+@media (max-width: 800px) {
+  .marketing-page-features .feature-explorer {
+    grid-template-columns: 1fr;
+  }
+  .marketing-page-features .feature-explorer-content {
+    display: block;
+  }
+  .marketing-page-features .feature-tool-list {
+    margin-top: 24px;
+  }
+  .marketing-page-features .feature-plans-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .marketing-page-pricing .faq-list {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .marketing-page-overview .overview-hero .marketing-title {
+    max-width: 14ch;
+    font-size: 34px;
+  }
+  .marketing-page-overview .overview-hero .marketing-lede {
+    font-size: 14px;
+  }
+  .marketing-page-overview .overview-hero .palette-artwork-swatches {
+    height: 112px;
+  }
+}
+
+.marketing-page-wide .marketing-title {
+  font-size: 46px;
+  line-height: 1.08;
+}
+.marketing-page-wide .marketing-lede {
+  font-size: 16px;
+  line-height: 1.7;
+}
+.features-masthead {
+  background: color-mix(in srgb, var(--mk-paper) 94%, var(--mk-green));
+}
+.api-masthead {
+  background: color-mix(in srgb, var(--mk-paper) 91%, var(--mk-yellow));
+}
+.documentation-masthead {
+  background: color-mix(in srgb, var(--mk-paper) 94%, var(--mk-green));
+}
+.pricing-masthead {
+  background: color-mix(in srgb, var(--mk-paper) 94%, var(--mk-yellow));
+}
+.marketing-page-pricing .pricing-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  grid-template-rows: auto auto 1fr;
+  align-items: center;
+  column-gap: clamp(48px, 7vw, 144px);
+  padding-block: clamp(48px, 6vw, 88px);
+  text-align: left;
+}
+.marketing-page-pricing .pricing-intro > .marketing-kicker,
+.marketing-page-pricing .pricing-intro > .marketing-title,
+.marketing-page-pricing .pricing-intro > .marketing-lede {
+  grid-column: 1;
+}
+.marketing-page-pricing .pricing-intro .marketing-title {
+  max-width: 14ch;
+  margin-inline: 0;
+  font-size: 46px;
+}
+.marketing-page-pricing .pricing-intro .marketing-lede {
+  max-width: 58ch;
+  margin-inline: 0;
+}
+.marketing-page-pricing .pricing-controls {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 13px;
+  margin-top: 0;
+  border: 1px solid var(--mk-line);
+  border-radius: 6px;
+  padding: clamp(22px, 2.5vw, 36px);
+  background: var(--mk-paper);
+}
+.marketing-page-pricing .pricing-controls::before {
+  color: var(--mk-muted);
+  content: 'Choose a billing interval';
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.marketing-page-pricing .plans-grid {
+  gap: 16px;
+}
+.marketing-page-pricing .plan-card {
+  border-top: 3px solid var(--mk-line);
+  padding: clamp(20px, 2vw, 32px);
+  background: var(--mk-paper);
+}
+.marketing-page-pricing .plan-card.is-featured {
+  border-top-color: var(--mk-coral);
+  background: color-mix(in srgb, var(--mk-paper) 95%, var(--mk-coral));
+}
+.marketing-page-pricing .plan-card.is-team {
+  border-top-color: var(--mk-yellow);
+}
+.marketing-page-pricing .plan-price-row {
+  border-bottom: 1px solid var(--mk-line);
+  padding-bottom: 13px;
+}
+.marketing-page-features .feature-explorer {
+  border-radius: 8px;
+}
+.marketing-page-features .feature-explorer-nav {
+  padding: 18px;
+}
+.marketing-page-features .feature-explorer-content {
+  min-height: 300px;
+  padding: clamp(28px, 3vw, 48px);
+}
+.marketing-page-features .feature-explorer-content h3 {
+  font-size: 28px;
+}
+.marketing-page-features .feature-tool-list span:not([data-slot='badge']) {
+  padding: 9px 12px;
+  background: var(--mk-paper);
+}
+@media (max-width: 960px) {
+  .marketing-page-wide .marketing-title,
+  .marketing-page-pricing .pricing-intro .marketing-title {
+    font-size: 38px;
+  }
+  .marketing-page-pricing .pricing-intro {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    gap: 16px;
+    padding-block: 40px;
+  }
+  .marketing-page-pricing .pricing-intro > *,
+  .marketing-page-pricing .pricing-controls {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .marketing-page-pricing .pricing-controls {
+    margin-top: 8px;
+  }
+  .marketing-page-features .feature-explorer-content {
+    min-height: 270px;
+  }
+}
+@media (max-width: 560px) {
+  .marketing-page-wide .marketing-title,
+  .marketing-page-pricing .pricing-intro .marketing-title {
+    font-size: 34px;
+  }
+  .marketing-page-wide .marketing-lede {
+    font-size: 14px;
+  }
+  .marketing-page-pricing .pricing-intro {
+    padding-block: 32px;
+  }
+  .marketing-page-pricing .pricing-controls {
+    padding: 18px;
+  }
+  .marketing-page-features .feature-explorer-content {
+    min-height: 255px;
+    padding: 24px 19px;
+  }
+  .marketing-page-features .feature-explorer-content h3 {
+    font-size: 22px;
+  }
+}
+@media (max-width: 800px) {
+  .marketing-page-overview .workflow-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .marketing-page-overview .workflow-step {
+    min-height: 190px;
+    padding: 22px;
+  }
+  .marketing-page-overview .workflow-step:nth-child(2n + 1) {
+    border-left: 0;
+  }
+  .marketing-page-overview .workflow-step:nth-child(n + 3) {
+    border-top: 1px solid var(--mk-line);
+  }
+  .marketing-page-overview .workflow-number {
+    font-size: 30px;
+  }
+  .marketing-page-overview .workflow-step-title {
+    font-size: 19px;
+  }
+  .marketing-page-overview .workflow-step-description {
+    font-size: 12px;
+  }
+}
+@media (max-width: 560px) {
+  .marketing-page-overview .workflow-step {
+    min-height: 190px;
+    padding: 18px 14px;
+  }
+  .marketing-page-overview .workflow-number {
+    font-size: 28px;
+  }
+  .marketing-page-overview .workflow-step-title {
+    font-size: 18px;
+  }
+  .marketing-page-overview .workflow-step-description {
+    font-size: 11px;
+  }
+}
+@media (max-width: 380px) {
+  .marketing-page-overview .workflow-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .marketing-page-overview .workflow-step + .workflow-step {
+    border-top: 1px solid var(--mk-line);
+    border-left: 0;
   }
 }

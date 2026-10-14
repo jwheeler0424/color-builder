@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 
 import {
   IconBox,
+  IconBook2,
   IconChevronRight,
   IconCode,
   IconFileText,
@@ -62,11 +63,11 @@ const MARKETING_LINKS = [
     icon: IconHelpCircle,
   },
   {
-    to: '/data',
-    label: 'Data overview',
-    navLabel: 'Data',
-    description: 'Local storage, shared links, and image processing.',
-    icon: IconShieldLock,
+    to: '/documentation',
+    label: 'Documentation',
+    navLabel: 'Docs',
+    description: 'References for the application shell, design system, and styles.',
+    icon: IconBook2,
   },
   {
     to: '/privacy',
@@ -105,13 +106,25 @@ export function MarketingResourcesMenuItem({
   const group = PAGE_GROUPS[isSupport ? 1 : 0];
   const currentPage = MARKETING_LINKS.find((item) => item.to === pathname);
   const isActive = group.pages.some((item) => item.to === pathname);
-  const accent = 'text-sky-700 dark:text-primary';
+  const accent = isSupport
+    ? 'text-(--section-support-ink) dark:text-(--section-support-accent)'
+    : 'text-(--section-product-ink) dark:text-(--section-product-accent)';
+  const accentColor = isSupport ? 'var(--section-support-accent)' : 'var(--section-product-accent)';
+  const accentInkColor = isSupport ? 'var(--section-support-ink)' : 'var(--section-product-ink)';
+  const accentSurface = isSupport
+    ? 'bg-(--section-support-accent)/10'
+    : 'bg-(--section-product-accent)/10';
 
   return (
     <NavigationMenuItem
       className='h-full'
       data-section={kind}
-      style={{ '--section-accent': 'var(--primary)' } as CSSProperties}>
+      style={
+        {
+          '--section-accent': accentColor,
+          '--section-accent-ink': accentInkColor,
+        } as CSSProperties
+      }>
       <NavigationMenuTrigger
         aria-label={label}
         title={label}
@@ -134,8 +147,8 @@ export function MarketingResourcesMenuItem({
           }
           icon={MenuIcon}
           accent={accent}
-          accentSurface='bg-primary/10'
-          accentColor='var(--primary)'
+          accentSurface={accentSurface}
+          accentColor={accentColor}
           section={kind}
           contentLabel={group.label}
           countLabel={`${String(group.pages.length).padStart(2, '0')} pages`}
@@ -178,7 +191,12 @@ export function MarketingResourcesMenuItem({
                 active={pathname === item.to}
                 closeOnClick
                 className='group/tool grid min-h-18 min-w-0 grid-cols-[2.25rem_minmax(0,1fr)_1rem] items-center gap-3 rounded-md border border-transparent p-2.5 text-left transition-[background,border-color] hover:border-(--section-accent) hover:bg-muted/55 data-[active=true]:border-(--section-accent) data-[active=true]:bg-muted/45'>
-                <span className='grid size-9 place-items-center rounded-md border border-border/70 bg-primary/10 text-sky-700 transition-colors group-hover/tool:border-border dark:text-primary'>
+                <span
+                  className={cn(
+                    'grid size-9 place-items-center rounded-md border border-border/70 transition-colors group-hover/tool:border-border',
+                    accentSurface,
+                    accent,
+                  )}>
                   <item.icon className='size-4' aria-hidden='true' />
                 </span>
                 <span className='flex min-w-0 flex-col gap-0.5'>

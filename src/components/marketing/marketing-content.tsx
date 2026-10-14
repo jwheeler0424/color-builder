@@ -1,9 +1,13 @@
 import {
   IconArrowRight,
   IconArrowUpRight,
+  IconChartRadar,
   IconCheck,
   IconCopy,
+  IconDownload,
+  IconPalette,
   IconSearch,
+  IconTools,
   IconX,
 } from '@tabler/icons-react';
 import { Link } from '@tanstack/react-router';
@@ -129,57 +133,96 @@ function ApiCodeExplorer() {
 
 export function OverviewPage() {
   return (
-    <main>
-      <section className='marketing-wrap marketing-hero overview-hero'>
-        <div className='marketing-hero-copy'>
-          <p className='marketing-kicker'>A workspace for color systems</p>
-          <h1 className='marketing-title'>
-            Color that holds up, <em>all the way to code.</em>
-          </h1>
-          <p className='marketing-lede'>
-            Explore a palette, test how it works, and build a system your team can ship. Chroma
-            brings perceptual color tools and implementation-ready exports into one focused studio.
-          </p>
-          <div className='marketing-hero-actions'>
-            <Link
-              to='/'
-              data-slot='button'
-              className={cn(
-                buttonVariants({ size: 'lg', className: 'text-sm' }),
-                'marketing-primary-link',
-              )}>
-              Open the studio <IconArrowUpRight aria-hidden='true' size={17} />
-            </Link>
-            <Link
-              to='/pricing'
-              data-slot='button'
-              className={cn(
-                buttonVariants({ variant: 'outline', size: 'lg', className: 'text-sm' }),
-                'marketing-secondary-link',
-              )}>
-              See plans <IconArrowRight aria-hidden='true' size={16} />
-            </Link>
+    <main className='marketing-page-wide marketing-page-overview'>
+      <section className='marketing-page-masthead overview-masthead'>
+        <div className='marketing-wrap marketing-hero overview-hero'>
+          <div className='marketing-hero-copy'>
+            <p className='marketing-kicker'>A workspace for color systems</p>
+            <h1 className='marketing-title'>
+              Color that holds up, <em>all the way to code.</em>
+            </h1>
+            <p className='marketing-lede'>
+              Explore a palette, test how it works, and build a system your team can ship. Chroma
+              brings perceptual color tools and implementation-ready exports into one focused
+              studio.
+            </p>
+            <div className='marketing-hero-actions'>
+              <Link
+                to='/'
+                data-slot='button'
+                className={cn(
+                  buttonVariants({ size: 'lg', className: 'text-sm' }),
+                  'marketing-primary-link',
+                )}>
+                Open the studio <IconArrowUpRight aria-hidden='true' size={17} />
+              </Link>
+              <Link
+                to='/pricing'
+                data-slot='button'
+                className={cn(
+                  buttonVariants({ variant: 'outline', size: 'lg', className: 'text-sm' }),
+                  'marketing-secondary-link',
+                )}>
+                See plans <IconArrowRight aria-hidden='true' size={16} />
+              </Link>
+            </div>
+            <p className='overview-free-note'>Start free · no account required</p>
           </div>
-          <p className='overview-free-note'>Start free · no account required</p>
-        </div>
-        <div className='marketing-hero-art'>
-          <PaletteArtwork />
+          <div className='marketing-hero-art'>
+            <PaletteArtwork />
+          </div>
         </div>
       </section>
 
       <section className='workflow-section' aria-label='The Chroma workflow'>
         <div className='marketing-wrap workflow-grid'>
           {[
-            ['01', 'Create', 'Generate and refine with color harmony and OKLCH controls.'],
-            ['02', 'Analyze', 'Review contrast, color vision, balance, and brand rules.'],
-            ['03', 'Build', 'Shape scales, themes, gradients, and image palettes.'],
-            ['04', 'Export', 'Hand off tokens and styles in formats your stack uses.'],
-          ].map(([number, title, description]) => (
-            <article key={number} className='workflow-step'>
-              <span className='workflow-number'>{number} / 04</span>
-              <h2>{title}</h2>
-              <p>{description}</p>
-            </article>
+            {
+              number: '01',
+              title: 'Create',
+              description: 'Generate and refine with color harmony and OKLCH controls.',
+              section: 'create',
+              icon: IconPalette,
+              to: '/',
+            },
+            {
+              number: '02',
+              title: 'Analyze',
+              description: 'Review contrast, color vision, balance, and brand rules.',
+              section: 'analyze',
+              icon: IconChartRadar,
+              to: '/analyze/accessibility',
+            },
+            {
+              number: '03',
+              title: 'Build',
+              description: 'Shape scales, themes, gradients, and image palettes.',
+              section: 'build',
+              icon: IconTools,
+              to: '/build/mixer',
+            },
+            {
+              number: '04',
+              title: 'Export',
+              description: 'Hand off tokens and styles in formats your stack uses.',
+              section: 'export',
+              icon: IconDownload,
+              to: '/export/scale',
+            },
+          ].map((step) => (
+            <Link
+              key={step.number}
+              to={step.to}
+              className='workflow-step'
+              data-section={step.section}>
+              <step.icon className='workflow-step-watermark' aria-hidden='true' stroke={1.25} />
+              <span className='workflow-number'>{step.number}</span>
+              <span className='workflow-step-content'>
+                <span className='workflow-step-title'>{step.title}</span>
+                <span className='workflow-step-description'>{step.description}</span>
+              </span>
+              <IconArrowUpRight className='workflow-step-arrow' aria-hidden='true' size={18} />
+            </Link>
           ))}
         </div>
       </section>
@@ -257,48 +300,50 @@ export function OverviewPage() {
 
 export function ApiPage() {
   return (
-    <main>
-      <section className='marketing-wrap marketing-hero api-hero'>
-        <div className='marketing-hero-copy'>
-          <p className='marketing-kicker'>Developer API · Pro and Team</p>
-          <h1 className='marketing-title'>
-            Color intelligence, <em>in your workflow.</em>
-          </h1>
-          <p className='marketing-lede'>
-            Put palette generation and color analysis alongside the tools your product team already
-            uses. Design tokens can move from a color decision into your build pipeline.
-          </p>
-          <div className='marketing-hero-actions'>
-            <Link
-              to='/pricing'
-              data-slot='button'
-              className={cn(
-                buttonVariants({ size: 'lg', className: 'text-sm' }),
-                'marketing-primary-link',
-              )}>
-              Explore paid plans <IconArrowRight aria-hidden='true' size={16} />
-            </Link>
-            <Link
-              to='/guides'
-              data-slot='button'
-              className={cn(
-                buttonVariants({ variant: 'outline', size: 'lg', className: 'text-sm' }),
-                'marketing-secondary-link',
-              )}>
-              Read developer guides <IconArrowUpRight aria-hidden='true' size={16} />
-            </Link>
+    <main className='marketing-page-wide marketing-page-api'>
+      <section className='marketing-page-masthead api-masthead'>
+        <div className='marketing-wrap marketing-hero api-hero'>
+          <div className='marketing-hero-copy'>
+            <p className='marketing-kicker'>Developer API · Pro and Team</p>
+            <h1 className='marketing-title'>
+              Color intelligence, <em>in your workflow.</em>
+            </h1>
+            <p className='marketing-lede'>
+              Put palette generation and color analysis alongside the tools your product team
+              already uses. Design tokens can move from a color decision into your build pipeline.
+            </p>
+            <div className='marketing-hero-actions'>
+              <Link
+                to='/pricing'
+                data-slot='button'
+                className={cn(
+                  buttonVariants({ size: 'lg', className: 'text-sm' }),
+                  'marketing-primary-link',
+                )}>
+                Explore paid plans <IconArrowRight aria-hidden='true' size={16} />
+              </Link>
+              <Link
+                to='/guides'
+                data-slot='button'
+                className={cn(
+                  buttonVariants({ variant: 'outline', size: 'lg', className: 'text-sm' }),
+                  'marketing-secondary-link',
+                )}>
+                Read developer guides <IconArrowUpRight aria-hidden='true' size={16} />
+              </Link>
+            </div>
           </div>
-        </div>
-        <div className='api-hero-detail'>
-          <strong>Color rules your product can reuse.</strong>
-          <div className='api-detail-flow'>
-            <span>palette</span>
-            <i aria-hidden='true' />
-            <span>analysis</span>
-            <i aria-hidden='true' />
-            <span>tokens</span>
+          <div className='api-hero-detail'>
+            <strong>Color rules your product can reuse.</strong>
+            <div className='api-detail-flow'>
+              <span>palette</span>
+              <i aria-hidden='true' />
+              <span>analysis</span>
+              <i aria-hidden='true' />
+              <span>tokens</span>
+            </div>
+            <p>Designed for repeatable handoff between design and code.</p>
           </div>
-          <p>Designed for repeatable handoff between design and code.</p>
         </div>
       </section>
 
@@ -578,81 +623,64 @@ const DATA_PRACTICES = [
   },
 ] as const;
 
-export function DataPage() {
+export function DocumentationPage() {
+  const topics = [
+    {
+      title: 'Application shell',
+      summary: 'Navigation, page structure, responsive behavior, and shared layout patterns.',
+    },
+    {
+      title: 'Design system',
+      summary: 'Components, interaction states, accessibility, and interface conventions.',
+    },
+    {
+      title: 'Styles and tokens',
+      summary: 'Typography, color, spacing, themes, and the styles that bring the system together.',
+    },
+  ];
+
   return (
-    <main>
-      <section className='marketing-wrap marketing-hero data-hero'>
-        <div className='marketing-hero-copy'>
-          <p className='marketing-kicker'>Data &amp; privacy</p>
-          <h1 className='marketing-title'>
-            Know where your <em>color work lives.</em>
-          </h1>
-          <p className='marketing-lede'>
-            A plain-language snapshot of how the current Chroma studio handles palettes, shared
-            links, images, and color-name requests.
-          </p>
-        </div>
-        <div className='data-summary-mark'>
-          <span>Current studio</span>
-          <strong>Local-first</strong>
-          <i aria-hidden='true' />
-          <p>Your palettes stay in this browser unless you choose to share a link.</p>
+    <main className='marketing-page-wide marketing-page-documentation'>
+      <section className='marketing-page-masthead documentation-masthead'>
+        <div className='marketing-wrap marketing-hero documentation-hero'>
+          <div className='marketing-hero-copy'>
+            <p className='marketing-kicker'>Documentation</p>
+            <h1 className='marketing-title'>A field guide to Chroma ELITE.</h1>
+            <p className='marketing-lede'>
+              Foundations for the application shell, design system, and visual styles.
+            </p>
+          </div>
+          <div className='documentation-index-mark' aria-label='Three foundation topics'>
+            <span>Foundation topics</span>
+            <strong>03</strong>
+            <span>Index / 001</span>
+          </div>
         </div>
       </section>
 
-      <section className='marketing-wrap marketing-section data-practices-section'>
+      <section className='marketing-wrap marketing-section documentation-index'>
         <div className='marketing-section-heading'>
           <div>
-            <p className='marketing-kicker'>Current behavior</p>
-            <h2 className='marketing-section-title'>What happens to your data today.</h2>
+            <p className='marketing-kicker'>Start here</p>
+            <h2 className='marketing-section-title'>Interface foundations</h2>
           </div>
           <p className='marketing-section-note'>
-            These notes describe the current client-first app, not future account, billing, or API
-            services.
+            The core references for building with Chroma ELITE.
           </p>
         </div>
-        <div className='data-practices-list'>
-          {DATA_PRACTICES.map((practice, index) => (
-            <article key={practice.title} className='data-practice'>
-              <span className='data-practice-index'>0{index + 1}</span>
+        <div className='documentation-topic-list'>
+          {topics.map((topic, index) => (
+            <article key={topic.title} className='documentation-topic'>
+              <span className='documentation-topic-index'>0{index + 1}</span>
               <div>
-                <h3>{practice.title}</h3>
-                <p>{practice.detail}</p>
+                <h3>{topic.title}</h3>
+                <p>{topic.summary}</p>
               </div>
-              <span className='data-practice-label'>{practice.label}</span>
+              <span className='documentation-topic-status'>Coming next</span>
             </article>
           ))}
         </div>
       </section>
-
-      <section className='marketing-wrap data-policy-note'>
-        <div>
-          <p className='marketing-kicker'>Before paid services launch</p>
-          <h2>Account and API data practices will be documented separately.</h2>
-        </div>
-        <p>
-          Authentication, billing, cloud sync, and paid API usage are not connected to the current
-          studio. Their collection, retention, and deletion rules should be published before those
-          services are enabled. Read the <Link to='/privacy'>Privacy Policy</Link> for the full
-          current notice and the <Link to='/terms'>Terms of Use</Link> for service conditions.
-        </p>
-      </section>
-
-      <div className='marketing-wrap marketing-bottom-cta'>
-        <div>
-          <h2>Want to learn more about the workflow?</h2>
-          <p>Browse practical guides or explore the studio.</p>
-        </div>
-        <Link
-          to='/guides'
-          data-slot='button'
-          className={cn(
-            buttonVariants({ size: 'lg', className: 'text-sm' }),
-            'marketing-primary-link',
-          )}>
-          Open the guides <IconArrowRight aria-hidden='true' size={16} />
-        </Link>
-      </div>
     </main>
   );
 }
@@ -673,7 +701,8 @@ const SUPPORT_ARTICLES = [
     title: 'Where are my saved palettes?',
     category: 'Data',
     summary: 'Learn how browser-local saves work and what happens when site data is cleared.',
-    to: '/data',
+    to: '/support',
+    hash: 'data',
   },
   {
     title: 'How do I share a palette?',
@@ -735,52 +764,57 @@ export function SupportPage() {
   });
 
   return (
-    <main>
-      <section className='marketing-wrap support-intro'>
-        <p className='marketing-kicker'>Help center</p>
-        <h1 className='marketing-title'>Find your next step.</h1>
-        <p className='marketing-lede'>
-          Search practical answers for building, checking, and shipping color systems.
-        </p>
-        <label className='support-search'>
-          <IconSearch aria-hidden='true' size={19} />
-          <span className='sr-only'>Search help topics</span>
-          <Input
-            type='search'
-            aria-label='Search help topics'
-            placeholder='Search by topic or keyword'
-            className='min-h-11 border-0 shadow-none focus-visible:ring-0'
-            value={query}
-            onChange={(event) => setQuery(event.currentTarget.value)}
-          />
-          {query && (
-            <Button
-              type='button'
-              variant='ghost'
-              size='icon-sm'
-              aria-label='Clear search'
-              title='Clear search'
-              onClick={() => setQuery('')}>
-              <IconX aria-hidden='true' size={16} />
-            </Button>
-          )}
-        </label>
+    <main className='marketing-page-wide marketing-page-support'>
+      <section className='marketing-page-masthead support-masthead'>
+        <div className='marketing-wrap support-intro'>
+          <p className='marketing-kicker'>Help center</p>
+          <h1 className='marketing-title'>Find your next step.</h1>
+          <p className='marketing-lede'>
+            Search practical answers for building, checking, and shipping color systems.
+          </p>
+          <label className='support-search'>
+            <IconSearch aria-hidden='true' size={19} />
+            <span className='sr-only'>Search help topics</span>
+            <Input
+              type='search'
+              aria-label='Search help topics'
+              placeholder='Search by topic or keyword'
+              className='min-h-11 border-0 shadow-none focus-visible:ring-0'
+              value={query}
+              onChange={(event) => setQuery(event.currentTarget.value)}
+            />
+            {query && (
+              <Button
+                type='button'
+                variant='ghost'
+                size='icon-sm'
+                aria-label='Clear search'
+                title='Clear search'
+                onClick={() => setQuery('')}>
+                <IconX aria-hidden='true' size={16} />
+              </Button>
+            )}
+          </label>
+        </div>
       </section>
 
       <section className='marketing-wrap support-content'>
-        <div className='support-category-list' role='group' aria-label='Filter help topics'>
-          {SUPPORT_CATEGORIES.map((category) => (
-            <Button
-              key={category}
-              type='button'
-              variant={activeCategory === category ? 'secondary' : 'ghost'}
-              size='sm'
-              className='h-auto min-h-9 min-w-0 justify-start px-2 text-left text-xs whitespace-normal max-sm:min-h-11 max-sm:justify-center'
-              aria-pressed={activeCategory === category}
-              onClick={() => setActiveCategory(category)}>
-              {category}
-            </Button>
-          ))}
+        <div className='support-filter-panel'>
+          <p className='support-filter-label'>Filter by topic</p>
+          <div className='support-category-list' role='group' aria-label='Filter help topics'>
+            {SUPPORT_CATEGORIES.map((category) => (
+              <Button
+                key={category}
+                type='button'
+                variant={activeCategory === category ? 'secondary' : 'ghost'}
+                size='sm'
+                className='h-auto min-h-9 min-w-0 justify-start px-2 text-left text-xs whitespace-normal max-sm:min-h-11 max-sm:justify-center'
+                aria-pressed={activeCategory === category}
+                onClick={() => setActiveCategory(category)}>
+                {category}
+              </Button>
+            ))}
+          </div>
         </div>
         <div className='support-results' aria-live='polite'>
           <p className='support-result-count'>
@@ -809,7 +843,11 @@ export function SupportPage() {
                   {content}
                 </a>
               ) : (
-                <Link key={article.title} to={article.to} className='support-result'>
+                <Link
+                  key={article.title}
+                  to={article.to}
+                  hash={'hash' in article ? article.hash : undefined}
+                  className='support-result'>
                   {content}
                 </Link>
               );
@@ -849,6 +887,61 @@ export function SupportPage() {
           </p>
         </div>
         <GuideExplorer activeGuide={activeGuide} onGuideChange={setActiveGuide} />
+      </section>
+
+      <section
+        id='data'
+        aria-labelledby='support-data-title'
+        className='marketing-wrap marketing-section data-practices-section'>
+        <div className='marketing-section-heading'>
+          <div>
+            <p className='marketing-kicker'>Data &amp; privacy</p>
+            <h2 id='support-data-title' className='marketing-section-title'>
+              Know where your color work lives.
+            </h2>
+          </div>
+          <p className='marketing-section-note'>
+            A plain-language snapshot of how the current Chroma studio handles palettes, shared
+            links, images, and color-name requests.
+          </p>
+        </div>
+        <div className='data-overview-summary'>
+          <div className='data-summary-mark'>
+            <span>Current studio</span>
+            <strong>Local-first</strong>
+            <i aria-hidden='true' />
+            <p>Your palettes stay in this browser unless you choose to share a link.</p>
+          </div>
+          <p className='data-overview-note'>
+            These notes describe the current client-first app, not future account, billing, or API
+            services.
+          </p>
+        </div>
+        <div className='data-practices-list'>
+          {DATA_PRACTICES.map((practice, index) => (
+            <article key={practice.title} className='data-practice'>
+              <span className='data-practice-index'>0{index + 1}</span>
+              <div>
+                <h3>{practice.title}</h3>
+                <p>{practice.detail}</p>
+              </div>
+              <span className='data-practice-label'>{practice.label}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className='marketing-wrap data-policy-note'>
+        <div>
+          <p className='marketing-kicker'>Before paid services launch</p>
+          <h2>Account and API data practices will be documented separately.</h2>
+        </div>
+        <p>
+          Authentication, billing, cloud sync, and paid API usage are not connected to the current
+          studio. Their collection, retention, and deletion rules should be published before those
+          services are enabled. Read the <Link to='/privacy'>Privacy Policy</Link> for the full
+          current notice and the <Link to='/terms'>Terms of Use</Link> for service conditions.
+        </p>
       </section>
     </main>
   );

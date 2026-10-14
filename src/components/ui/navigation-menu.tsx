@@ -8,8 +8,8 @@ function studioNavigationTriggerClassName(active = false) {
   return cn(
     "relative inline-flex h-full items-center justify-center gap-0.5 rounded-none bg-transparent px-0 py-0 text-[11px] font-bold uppercase no-underline transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:content-[''] xl:gap-1.5 xl:px-3 [&>svg:last-child]:top-0",
     active
-      ? 'text-foreground after:bg-(--section-accent)'
-      : 'text-muted-foreground after:bg-transparent hover:text-foreground hover:after:bg-(--section-accent)',
+      ? 'text-(--section-accent-ink) after:bg-(--section-accent) dark:text-(--section-accent)'
+      : 'text-muted-foreground after:bg-transparent hover:text-(--section-accent-ink) hover:after:bg-(--section-accent) dark:hover:text-(--section-accent)',
   );
 }
 

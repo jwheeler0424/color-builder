@@ -15,7 +15,7 @@ import { SectionNavigation } from '@/components/desktop/section-navigation';
 import { BrandLockup } from '@/components/logo-icon';
 import {
   ApiPage as DeveloperApiPage,
-  DataPage as ProductDataPage,
+  DocumentationPage,
   OverviewPage as MarketingOverviewPage,
   SupportPage as ProductSupportPage,
 } from '@/components/marketing/marketing-content';
@@ -40,6 +40,7 @@ function renderMarketingPage(
     | '/overview'
     | '/api'
     | '/guides'
+    | '/documentation'
     | '/data'
     | '/support'
     | '/privacy'
@@ -74,6 +75,73 @@ function renderPricing(onPlanSelected?: (intent: CheckoutIntent) => void) {
 }
 
 describe('marketing pricing', () => {
+  test('gives Product and Support pages distinct layout structures', async () => {
+    const pages: {
+      path: Parameters<typeof renderMarketingPage>[0];
+      page: ReactNode;
+      className: string;
+      structure: string;
+    }[] = [
+      {
+        path: '/overview',
+        page: <MarketingOverviewPage />,
+        className: 'marketing-page-overview',
+        structure: '.overview-masthead',
+      },
+      {
+        path: '/features',
+        page: <FeaturesPage />,
+        className: 'marketing-page-features',
+        structure: '.features-masthead',
+      },
+      {
+        path: '/pricing',
+        page: <PricingPage />,
+        className: 'marketing-page-pricing',
+        structure: '.pricing-masthead',
+      },
+      {
+        path: '/api',
+        page: <DeveloperApiPage />,
+        className: 'marketing-page-api',
+        structure: '.api-masthead',
+      },
+      {
+        path: '/support',
+        page: <ProductSupportPage />,
+        className: 'marketing-page-support',
+        structure: '.support-filter-panel',
+      },
+      {
+        path: '/documentation',
+        page: <DocumentationPage />,
+        className: 'marketing-page-documentation',
+        structure: '.documentation-masthead',
+      },
+      {
+        path: '/privacy',
+        page: <PrivacyPolicyPage />,
+        className: 'marketing-page-legal',
+        structure: '.legal-page-heading + .legal-page-layout',
+      },
+      {
+        path: '/terms',
+        page: <TermsOfUsePage />,
+        className: 'marketing-page-legal',
+        structure: '.legal-page-heading + .legal-page-layout',
+      },
+    ];
+
+    for (const page of pages) {
+      const rendered = renderMarketingPage(page.path, page.page);
+      expect(await screen.findByRole('main')).toHaveClass('marketing-page-wide', page.className);
+      if (rendered.container.querySelector(page.structure) === null) {
+        throw new Error(`Missing ${page.structure} on ${page.path}`);
+      }
+      rendered.unmount();
+    }
+  });
+
   test('uses the shared application header on product pages with only the orange brand accent', async () => {
     renderMarketingPage('/features', <FeaturesPage />, true);
 
@@ -149,12 +217,12 @@ describe('marketing pricing', () => {
         accent: section.style.getPropertyValue('--section-accent'),
       })),
     ).toEqual([
-      { id: 'create', accent: 'var(--primary)' },
-      { id: 'analyze', accent: '#67e8f9' },
-      { id: 'build', accent: '#fcd34d' },
-      { id: 'export', accent: '#6ee7b7' },
-      { id: 'product', accent: 'var(--primary)' },
-      { id: 'support', accent: 'var(--primary)' },
+      { id: 'create', accent: 'var(--section-create-accent)' },
+      { id: 'analyze', accent: 'var(--section-analyze-accent)' },
+      { id: 'build', accent: 'var(--section-build-accent)' },
+      { id: 'export', accent: 'var(--section-export-accent)' },
+      { id: 'product', accent: 'var(--section-product-accent)' },
+      { id: 'support', accent: 'var(--section-support-accent)' },
     ]);
     for (const section of sections) {
       expect(section.querySelector('[data-slot="navigation-menu-trigger"]')).toBeInTheDocument();
@@ -200,12 +268,12 @@ describe('marketing pricing', () => {
     for (const label of ['Product', 'Support']) {
       const trigger = screen.getByRole('button', { name: label });
       expect(trigger.className).toBe(reference.className);
-      expect(trigger).toHaveClass('text-muted-foreground', 'hover:text-foreground');
+      expect(trigger).toHaveClass('text-muted-foreground', 'hover:text-(--section-accent-ink)');
       expect(trigger.className).not.toContain('data-popup-open:after:bg-primary');
     }
   });
 
-  test('groups learning, help, and data pages in the Support menu', async () => {
+  test('groups learning, help, and documentation pages in the Support menu', async () => {
     renderMarketingPage('/pricing', <MarketingResourcesNavigation />);
 
     fireEvent.click(await screen.findByRole('button', { name: 'Support' }));
@@ -220,7 +288,10 @@ describe('marketing pricing', () => {
     expect(navigation.querySelectorAll('a')).toHaveLength(4);
     expect(screen.queryByRole('link', { name: 'Guides' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Help center/ })).toHaveAttribute('href', '/support');
-    expect(screen.getByRole('link', { name: 'Data overview' })).toHaveAttribute('href', '/data');
+    expect(screen.getByRole('link', { name: 'Documentation' })).toHaveAttribute(
+      'href',
+      '/documentation',
+    );
     expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute(
       'href',
       '/privacy',
@@ -245,7 +316,7 @@ describe('marketing pricing', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Support' }));
     const help = await screen.findByRole('link', { name: 'Help center' });
     expect(help).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'Data overview' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: 'Documentation' })).not.toHaveAttribute('aria-current');
     expect(
       screen
         .getByRole('navigation', { name: 'Chroma support' })
@@ -259,6 +330,17 @@ describe('marketing pricing', () => {
     await screen.findByRole('heading', { name: 'Color that holds up, all the way to code.' });
     expect(screen.getByRole('link', { name: /See plans/ })).toHaveAttribute('href', '/pricing');
     expect(screen.getByRole('link', { name: /Open the studio/ })).toHaveAttribute('href', '/');
+    const workflowSteps = Array.from(document.querySelectorAll<HTMLElement>('.workflow-step'));
+    expect(workflowSteps).toHaveLength(4);
+    expect(
+      workflowSteps.map((step) => step.querySelector('.workflow-number')?.textContent),
+    ).toEqual(['01', '02', '03', '04']);
+    expect(workflowSteps.map((step) => step.getAttribute('href'))).toEqual([
+      '/',
+      '/analyze/accessibility',
+      '/build/mixer',
+      '/export/scale',
+    ]);
   });
 
   test('keeps palette preview labels readable against every swatch', async () => {
@@ -332,8 +414,8 @@ describe('marketing pricing', () => {
     ).toBeInTheDocument();
   });
 
-  test('describes the current local-first data behavior', async () => {
-    renderMarketingPage('/data', <ProductDataPage />);
+  test('includes the current local-first data overview in Help Center', async () => {
+    renderMarketingPage('/support', <ProductSupportPage />);
 
     await screen.findByRole('heading', { name: 'Know where your color work lives.' });
     expect(
@@ -344,6 +426,15 @@ describe('marketing pricing', () => {
       'href',
       '/privacy',
     );
+  });
+
+  test('provides a Documentation index for the interface foundations', async () => {
+    renderMarketingPage('/documentation', <DocumentationPage />);
+
+    await screen.findByRole('heading', { name: 'A field guide to Chroma ELITE.' });
+    expect(screen.getByRole('heading', { name: 'Application shell' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Design system' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Styles and tokens' })).toBeInTheDocument();
   });
 
   test('discloses actual data handling and operator details in the Privacy Policy', async () => {

@@ -14,7 +14,7 @@
  *   EXPORT  → /scale, /designsystem, /theme, /utility, /brand
  */
 
-import type { ComponentType } from 'react';
+import type { ComponentType, CSSProperties } from 'react';
 
 import {
   IconChartRadar,
@@ -82,6 +82,15 @@ export const SECTIONS: SectionDef[] = [
     routes: ['/export/scale', '/export/designsystem', '/export/theme', '/export/utility'],
   },
 ];
+
+export const SECTION_COLORS = {
+  create: { light: 'var(--section-create-accent)', dark: 'var(--section-create-ink)' },
+  analyze: { light: 'var(--section-analyze-accent)', dark: 'var(--section-analyze-ink)' },
+  build: { light: 'var(--section-build-accent)', dark: 'var(--section-build-ink)' },
+  export: { light: 'var(--section-export-accent)', dark: 'var(--section-export-ink)' },
+  product: { light: 'var(--section-product-accent)', dark: 'var(--section-product-ink)' },
+  support: { light: 'var(--section-support-accent)', dark: 'var(--section-support-ink)' },
+} as const;
 
 // Routes where the palette owns the main area instead of the route view
 export const PALETTE_ROUTES = new Set(['/', '/picker']);
@@ -166,6 +175,7 @@ export function SectionToolMenu() {
   if (!section || !tools || tools.length < 2) return null;
 
   const activeTool = tools.find((tool) => pathname === tool.to) ?? tools[0]!;
+  const colors = SECTION_COLORS[section.id as keyof typeof SECTION_COLORS];
 
   return (
     <DropdownMenu>
@@ -174,7 +184,13 @@ export function SectionToolMenu() {
           <Button
             variant='ghost'
             size='sm'
-            className='h-8 max-w-40 gap-2 px-2.5 font-mono text-[10px] text-muted-foreground hover:text-foreground'
+            className='h-8 max-w-40 gap-2 px-2.5 font-mono text-[10px] text-(--section-accent-ink) hover:text-foreground dark:text-(--section-accent)'
+            style={
+              {
+                '--section-accent': colors.light,
+                '--section-accent-ink': colors.dark,
+              } as CSSProperties
+            }
             aria-label={`Choose ${section.label} tool`}>
             <span className='truncate'>{activeTool.label}</span>
             <IconChevronDown className='size-3 shrink-0' aria-hidden='true' />
@@ -209,16 +225,23 @@ export function SectionTabs({ className }: { className?: string }) {
       {SECTIONS.map((section) => {
         const isActive = section.id === activeSection?.id;
         const SectionIcon = section.icon;
+        const colors = SECTION_COLORS[section.id as keyof typeof SECTION_COLORS];
         return (
           <Link
             key={section.id}
             to={section.primary as Parameters<typeof Link>[0]['to']}
             aria-current={isActive ? 'page' : undefined}
+            style={
+              {
+                '--section-accent': colors.light,
+                '--section-accent-ink': colors.dark,
+              } as CSSProperties
+            }
             className={cn(
               "relative inline-flex h-full items-center gap-1.5 px-2.5 text-[11px] font-bold tracking-[.07em] uppercase no-underline transition-colors after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:content-[''] xl:px-4",
               isActive
-                ? 'text-foreground after:bg-primary'
-                : 'text-muted-foreground after:bg-transparent hover:text-foreground hover:after:bg-border',
+                ? 'text-(--section-accent-ink) after:bg-(--section-accent) dark:text-(--section-accent)'
+                : 'text-muted-foreground after:bg-transparent hover:text-(--section-accent-ink) hover:after:bg-(--section-accent) dark:hover:text-(--section-accent)',
             )}>
             <SectionIcon className='size-4' aria-hidden='true' />
             {section.label}
@@ -231,14 +254,21 @@ export function SectionTabs({ className }: { className?: string }) {
 export function SectionToolTabs({ className }: { className?: string }) {
   const { pathname, section: activeSection } = useActiveSection();
   const tools = activeSection ? SECTION_TOOLS[activeSection.id] : undefined;
-  if (!tools || tools.length < 2) return null;
+  if (!activeSection || !tools || tools.length < 2) return null;
+  const colors = SECTION_COLORS[activeSection.id as keyof typeof SECTION_COLORS];
 
   return (
     <nav
       className={cn(
-        'flex h-full min-w-0 [scrollbar-width:none] items-center gap-0.5 overflow-x-auto',
+        'flex h-full min-w-0 scrollbar-none items-center gap-0.5 overflow-x-auto',
         className,
       )}
+      style={
+        {
+          '--section-accent': colors.light,
+          '--section-accent-ink': colors.dark,
+        } as CSSProperties
+      }
       aria-label={`${activeSection?.label} tools`}>
       {tools.map((tool) => {
         const isToolActive = pathname === tool.to;
@@ -251,8 +281,8 @@ export function SectionToolTabs({ className }: { className?: string }) {
               'inline-flex shrink-0 items-center rounded px-2 py-1 font-mono text-[10px]',
               'tracking-[.04em] whitespace-nowrap no-underline transition-colors',
               isToolActive
-                ? 'bg-accent text-foreground'
-                : 'text-muted-foreground hover:text-foreground',
+                ? 'bg-(--section-accent)/10 text-(--section-accent-ink) dark:text-(--section-accent)'
+                : 'text-muted-foreground hover:text-(--section-accent-ink) dark:hover:text-(--section-accent)',
             )}>
             {tool.label}
           </Link>

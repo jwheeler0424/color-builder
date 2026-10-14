@@ -250,7 +250,7 @@ function LegalPage({ kind }: { kind: 'privacy' | 'terms' }) {
   );
 
   return (
-    <main className='marketing-wrap legal-page'>
+    <main className='marketing-wrap legal-page marketing-page-wide marketing-page-legal'>
       <header className='legal-page-heading'>
         <p className='marketing-kicker'>Designer's Image / Chroma ELITE</p>
         <h1>{title}</h1>
@@ -284,7 +284,9 @@ function LegalPage({ kind }: { kind: 'privacy' | 'terms' }) {
           <Link to='/terms' aria-current={!privacy ? 'page' : undefined}>
             Terms of Use
           </Link>
-          <Link to='/data'>Data overview</Link>
+          <Link to='/support' hash='data'>
+            Data overview
+          </Link>
         </div>
       </header>
       <div className='legal-page-layout'>
