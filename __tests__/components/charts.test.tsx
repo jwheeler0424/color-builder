@@ -5,7 +5,7 @@ import {
   createRouter,
   RouterProvider,
 } from '@tanstack/react-router';
-import { render, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import { describe, expect, spyOn, test } from 'bun:test';
 import { StrictMode } from 'react';
 
@@ -14,6 +14,7 @@ import AccessibilityView from '@/components/views/accessibility.view';
 import { createEasingChart, EASING_OPTIONS } from '@/components/views/gradient-view';
 import ScoreView from '@/components/views/score.view';
 import { TYPE } from '@/components/views/view-ui';
+import { VISION_TYPES } from '@/lib/engine/browser';
 import {
   createChromaChart,
   createHueChart,
@@ -30,6 +31,38 @@ test('accessibility preserves the original compact row and matrix typography', (
   expect(view.getByText('AA on white')).toHaveClass('text-[9px]');
   expect(view.getByText(/combinations pass/)).toHaveClass('text-[10.5px]');
   expect(colorLabel.closest('section')?.parentElement).not.toHaveClass('tool-panel-space');
+});
+
+test('color vision simulations preserve colors and labels in the responsive layout', () => {
+  const view = render(<AccessibilityView />);
+  fireEvent.click(view.getByRole('tab', { name: 'Color Blind' }));
+  const simulations = view.getAllByRole('region', { name: / simulation$/ });
+  const matrix = view.getByRole('table', { name: 'Color vision simulations' });
+  const colorCount = matrix.querySelectorAll('thead th').length - 1;
+  expect(simulations).toHaveLength(VISION_TYPES.length);
+  expect(colorCount).toBeGreaterThan(0);
+  for (const simulation of simulations) {
+    expect(within(simulation).getAllByRole('img')).toHaveLength(colorCount);
+    expect(simulation).not.toHaveClass('overflow-auto');
+  }
+  expect(simulations[0]!.parentElement?.parentElement).toHaveClass(
+    'overflow-auto',
+    'tool-panel-space',
+  );
+  const swatch = within(simulations[0]!).getAllByRole('img')[0]!;
+  expect(matrix.querySelector('tbody td')).toHaveAttribute(
+    'aria-label',
+    swatch.getAttribute('aria-label')!,
+  );
+  const hex = swatch.getAttribute('aria-label')!.match(/#[0-9A-F]{6}/)![0];
+  expect(within(swatch).getByText(hex)).toBeInTheDocument();
+  const toggle = view.getByRole('button', { name: 'Hex labels' });
+  fireEvent.click(toggle);
+  expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  expect(within(swatch).queryByText(hex)).not.toBeInTheDocument();
+  expect(within(swatch).getByText('Color 1')).toBeInTheDocument();
+  fireEvent.click(toggle);
+  expect(within(swatch).getByText(hex)).toBeInTheDocument();
 });
 
 test('score desktop grid keeps detail sections in the lower wide-screen row', async () => {

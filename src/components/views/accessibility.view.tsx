@@ -36,7 +36,7 @@ import {
 import { lookupColorName } from '@/lib/engine/colors/color-names';
 import { cn } from '@/lib/utils';
 
-import { ToolButton as Button, ToolSegments, ToolTabs, ViewHeader } from './view-ui';
+import { ToolButton as Button, ToolSegments, ToolTabs, TYPE, ViewHeader } from './view-ui';
 
 // ─── Shared badge helpers ─────────────────────────────────────────────────────
 
@@ -799,6 +799,42 @@ function oklabDistance(a: string, b: string) {
   return OKLAB.distance(OKLAB.xyzToLab(parseColor(a).xyz), OKLAB.xyzToLab(parseColor(b).xyz));
 }
 
+function VisionSwatch({
+  hex,
+  index,
+  originalHex,
+  isConfused,
+  showHex,
+}: {
+  hex: string;
+  index: number;
+  originalHex: string;
+  isConfused: boolean;
+  showHex: boolean;
+}) {
+  const foreground = textColor(parseColor(hex).xyz);
+  return (
+    <div
+      className='flex h-full min-h-16 min-w-0 items-center justify-center gap-1 rounded px-2 py-3 @4xl/accessibility:min-h-12'
+      style={{ background: hex }}
+      title={`Color ${index + 1}: ${originalHex.toUpperCase()} → ${hex.toUpperCase()}`}>
+      {isConfused && (
+        <span
+          className='font-sans text-sm leading-none font-bold'
+          style={{ color: foreground }}
+          aria-hidden>
+          ≈
+        </span>
+      )}
+      {showHex && (
+        <span className='font-sans text-sm leading-none font-bold' style={{ color: foreground }}>
+          {hex.toUpperCase()}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function ColorBlindTab() {
   const slots = useChromaStore((s) => s.slots);
   const [showHex, setShowHex] = useState(true);
@@ -836,7 +872,7 @@ function ColorBlindTab() {
     );
 
   return (
-    <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4'>
+    <div className='flex min-h-0 flex-1 flex-col tool-panel-stack overflow-auto tool-panel-space'>
       <div className='flex shrink-0 flex-wrap items-center justify-between gap-2.5'>
         <p className='max-w-3xl text-xs text-muted-foreground'>
           How your palette appears under each type of color vision deficiency. Colors stay in the
@@ -855,8 +891,64 @@ function ColorBlindTab() {
         </Button>
       </div>
 
-      <div className='flex min-h-0 flex-1 flex-col overflow-auto rounded-md border border-muted bg-card p-2'>
-        <table className='h-full w-full min-w-max table-fixed border-separate border-spacing-0.75'>
+      <div className='flex shrink-0 flex-col gap-4 @4xl/accessibility:hidden'>
+        {rows.map(({ cbType, sim, confused }, rowIndex) => {
+          const ok = confused.length === 0;
+          const badge = WCAG_BADGE[ok ? 'AAA' : 'AA Large'];
+          const group = CB_GROUP[cbType.id] ?? 'Other';
+          const newGroup = rowIndex === 0 || CB_GROUP[rows[rowIndex - 1]!.cbType.id] !== group;
+          return (
+            <Fragment key={cbType.id}>
+              {newGroup && <h3 className={SECTION_LABEL}>{group}</h3>}
+              <section
+                aria-label={`${cbType.name} simulation`}
+                className='flex min-w-0 flex-col gap-3 border-b border-border pb-4 last:border-b-0'>
+                <div className='flex flex-wrap items-start justify-between gap-2'>
+                  <div className='min-w-0'>
+                    <h4 className='font-display text-sm font-bold'>{cbType.name}</h4>
+                    <p className={TYPE.meta}>{cbType.desc}</p>
+                  </div>
+                  <span
+                    className='rounded-[3px] px-1.5 py-0.5 text-2xs font-bold'
+                    style={{ background: badge.bg, color: badge.fg }}>
+                    {ok
+                      ? 'All distinguishable'
+                      : `${confused.length} pair${confused.length > 1 ? 's' : ''} may be confused`}
+                  </span>
+                </div>
+                <div className='grid grid-cols-2 gap-2 @min-[24rem]/accessibility:grid-cols-3 @min-[40rem]/accessibility:grid-cols-6'>
+                  {sim.map((hex, index) => {
+                    const isConfused = confused.some(
+                      ([first, second]) => first === index || second === index,
+                    );
+                    return (
+                      <div
+                        key={slots[index]!.id}
+                        role='img'
+                        aria-label={`Color ${index + 1} appears as ${hex.toUpperCase()}${isConfused ? ', may be confused' : ''}`}
+                        className='flex min-w-0 flex-col gap-1'>
+                        <span className={TYPE.meta}>Color {index + 1}</span>
+                        <VisionSwatch
+                          hex={hex}
+                          index={index}
+                          originalHex={slots[index]!.color.hex}
+                          isConfused={isConfused}
+                          showHex={showHex}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            </Fragment>
+          );
+        })}
+      </div>
+
+      <div className='hidden shrink-0 overflow-x-auto rounded-md border border-muted bg-card p-2 @4xl/accessibility:block'>
+        <table
+          aria-label='Color vision simulations'
+          className='w-full min-w-max table-auto border-separate border-spacing-0.75'>
           <thead>
             <tr>
               <th className='w-40 px-2 text-left font-normal @4xl/accessibility:w-64'>
@@ -920,31 +1012,17 @@ function ColorBlindTab() {
                     </th>
                     {sim.map((hex, i) => {
                       const isConfused = confused.some(([a, b]) => a === i || b === i);
-                      const tc = textColor(parseColor(hex).xyz);
                       return (
                         <td
                           key={i}
                           aria-label={`Color ${i + 1} appears as ${hex.toUpperCase()}${isConfused ? ', may be confused' : ''}`}>
-                          <div
-                            className='flex h-full min-h-12 min-w-16 items-center justify-center gap-1 rounded'
-                            style={{ background: hex }}
-                            title={`Color ${i + 1}: ${slots[i].color.hex.toUpperCase()} → ${hex.toUpperCase()}`}>
-                            {isConfused && (
-                              <span
-                                className='font-sans text-sm leading-none font-bold'
-                                style={{ color: tc }}
-                                aria-hidden>
-                                ≈
-                              </span>
-                            )}
-                            {showHex && (
-                              <span
-                                className='font-sans text-sm leading-none font-bold'
-                                style={{ color: tc }}>
-                                {hex.toUpperCase()}
-                              </span>
-                            )}
-                          </div>
+                          <VisionSwatch
+                            hex={hex}
+                            index={i}
+                            originalHex={slots[i]!.color.hex}
+                            isConfused={isConfused}
+                            showHex={showHex}
+                          />
                         </td>
                       );
                     })}
