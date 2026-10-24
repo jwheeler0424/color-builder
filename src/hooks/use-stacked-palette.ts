@@ -1,11 +1,28 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useSyncExternalStore } from 'react';
 
 import { useShell } from '@/providers/shell.provider';
 
-/** Phones use rows; tablet orientation is handled by the app-shell container query. */
+const PORTRAIT_QUERY = '(orientation: portrait)';
+
+function subscribePortrait(onChange: () => void) {
+  const query = window.matchMedia(PORTRAIT_QUERY);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+export function usePortraitViewport(): boolean {
+  return useSyncExternalStore(
+    subscribePortrait,
+    () => window.matchMedia(PORTRAIT_QUERY).matches,
+    () => false,
+  );
+}
+
+/** Phones and portrait tablets use rows; landscape tablets use columns. */
 export function useStackedPalette(): boolean {
   const shell = useShell();
-  return shell === 'mobile';
+  const portrait = usePortraitViewport();
+  return shell === 'mobile' || (shell === 'tablet' && portrait);
 }
 
 /** How the palette strip lays out its swatches. */

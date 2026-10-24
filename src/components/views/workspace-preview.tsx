@@ -362,7 +362,7 @@ function ProductMockup({ t }: { t: Theme }) {
           <div className='flex items-center justify-between'>
             <span className='font-display text-xs font-bold'>Q4 roadmap</span>
             <span
-              className='rounded px-1.5 py-0.5 text-2xs font-semibold'
+              className='rounded px-1.5 py-0.5 text-[9px] font-semibold'
               style={pillStyle(t, 'success')}>
               On track
             </span>
@@ -377,11 +377,11 @@ function ProductMockup({ t }: { t: Theme }) {
                 key={stat.label}
                 className='rounded-md border p-2'
                 style={{ background: get('--card'), borderColor: get('--border') }}>
-                <div className='text-2xs' style={{ color: get('--muted-foreground') }}>
+                <div className='text-[8px]' style={{ color: get('--muted-foreground') }}>
                   {stat.label}
                 </div>
                 <div className='font-display text-sm leading-tight font-bold'>{stat.value}</div>
-                <div className='text-2xs font-semibold' style={{ color: utility.success[mode] }}>
+                <div className='text-[8px] font-semibold' style={{ color: utility.success[mode] }}>
                   {stat.delta}
                 </div>
               </div>
@@ -419,11 +419,11 @@ function ProductMockup({ t }: { t: Theme }) {
                 </span>
                 <span className='min-w-0 flex-1 truncate'>{row.label}</span>
                 <span
-                  className='rounded px-1.5 py-0.5 text-2xs font-semibold'
+                  className='rounded px-1.5 py-0.5 text-[8px] font-semibold'
                   style={pillStyle(t, row.role)}>
                   {row.pill}
                 </span>
-                <Avatar t={t} index={row.person} initials='' className='size-4 text-2xs' />
+                <Avatar t={t} index={row.person} initials='' className='size-4 text-[7px]' />
               </div>
             ))}
           </div>

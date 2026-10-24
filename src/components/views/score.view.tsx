@@ -255,14 +255,14 @@ function ScoreTab() {
   const levelName = (v: number) => (v >= 75 ? 'Strong' : v >= 50 ? 'Fair' : 'Weak');
 
   return (
-    <div className='@container/score flex min-h-0 flex-1 scrollbar-gutter-stable flex-col overflow-auto'>
+    <div className='@container/score flex min-h-0 flex-1 flex-col overflow-auto'>
       {/* The palette itself is already previewed in the side panel, so it isn't repeated here. */}
-      <div className='contents @7xl:grid @7xl:min-h-min @7xl:flex-1 @7xl:grid-cols-3 @7xl:grid-rows-[max-content_auto_minmax(0,1fr)] @7xl:content-start @7xl:gap-x-0 @7xl:gap-y-[clamp(0.375rem,1vh,0.75rem)] @7xl:pt-[clamp(0.75rem,2vh,1.5rem)] @7xl:pb-[clamp(0.75rem,2vh,1.5rem)]'>
-        <div className='grid grid-cols-1 @min-[35rem]:grid-cols-[minmax(0,1fr)_minmax(17rem,1fr)] @min-[48rem]:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] @7xl:contents @min-[80rem]/score:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]!'>
-          <section className='grid grid-cols-1 gap-x-4 gap-y-8 tool-panel-space @min-[48rem]:col-span-2 @min-[48rem]:grid-cols-[minmax(0,4fr)_minmax(0,6fr)] @min-[48rem]:items-stretch @min-[48rem]:gap-x-6 @min-[48rem]:gap-y-4 @min-[48rem]:border-b @min-[48rem]:border-border @5xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] @5xl:items-center @5xl:gap-8 @7xl:col-span-1 @7xl:col-start-1 @7xl:row-start-1 @7xl:grid-cols-1 @7xl:content-evenly @7xl:items-start @7xl:gap-y-0 @7xl:border-b-0'>
-            <div className='flex min-w-0 items-center gap-4 @5xl:justify-center @5xl:gap-6 @7xl:justify-start'>
+      <div className='contents desktop-short:gap-y-0.5! desktop-short:py-2! score-wide:grid score-wide:min-h-min score-wide:flex-1 score-wide:grid-cols-3 score-wide:grid-rows-[max-content_auto_minmax(0,1fr)] score-wide:content-start score-wide:gap-x-0 score-wide:gap-y-[clamp(0.375rem,1vh,0.75rem)] score-wide:pt-[clamp(0.75rem,2vh,1.5rem)] score-wide:pb-[clamp(0.75rem,2vh,1.5rem)]'>
+        <div className='grid grid-cols-1 @min-[35rem]:grid-cols-[minmax(0,1fr)_minmax(17rem,1fr)] @min-[48rem]:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] @min-[80rem]/score:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]! score-wide:contents'>
+          <section className='grid grid-cols-1 gap-x-4 gap-y-8 tool-panel-space @min-[48rem]:col-span-2 @min-[48rem]:grid-cols-[minmax(0,4fr)_minmax(0,6fr)] @min-[48rem]:items-stretch @min-[48rem]:gap-x-6 @min-[48rem]:gap-y-4 @min-[48rem]:border-b @min-[48rem]:border-border @5xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] @5xl:items-center @5xl:gap-8 score-wide:col-span-1 score-wide:col-start-1 score-wide:row-start-1 score-wide:grid-cols-1 score-wide:content-evenly score-wide:items-start score-wide:gap-y-0 score-wide:border-b-0'>
+            <div className='flex min-w-0 items-center gap-4 @5xl:justify-center @5xl:gap-6 score-wide:justify-start'>
               <ScoreRing value={overall} size='lg' />
-              <div className='flex min-w-0 flex-col gap-2 @5xl:self-center @7xl:self-center'>
+              <div className='flex min-w-0 flex-col gap-2 @5xl:self-center score-wide:self-center'>
                 <div className={TYPE.label}>Overall score</div>
                 <div className={`${TYPE.title} @5xl:text-[18px] @min-[80rem]/score:text-[16px]`}>
                   {verdict(overall)}
@@ -271,8 +271,8 @@ function ScoreTab() {
               </div>
             </div>
 
-            <div className='flex min-w-0 flex-col justify-center gap-4 @xl:grid @xl:grid-cols-1 @xl:content-start @min-[48rem]:self-stretch @5xl:gap-6 @7xl:contents'>
-              <div className='flex min-w-0 flex-col gap-4 @7xl:mx-0 @7xl:w-full @7xl:max-w-none @7xl:border-l-0 @7xl:pl-0'>
+            <div className='flex min-w-0 flex-col justify-center gap-4 @xl:grid @xl:grid-cols-1 @xl:content-start @min-[48rem]:self-stretch @5xl:gap-6 score-wide:contents'>
+              <div className='flex min-w-0 flex-col gap-4 score-wide:mx-0 score-wide:w-full score-wide:max-w-none score-wide:border-l-0 score-wide:pl-0'>
                 <div className='flex items-baseline justify-between gap-3'>
                   <div className={TYPE.label}>Score range</div>
                   <div className={`${TYPE.title} min-w-0 truncate`}>0 – 100</div>
@@ -280,7 +280,7 @@ function ScoreTab() {
                 <ScaleMeter value={overall} />
               </div>
 
-              <div className='grid min-w-0 grid-cols-2 gap-4 @5xl:grid-cols-2 @5xl:gap-4 @7xl:mx-0 @7xl:w-full @7xl:max-w-none @7xl:border-l-0 @7xl:pl-0'>
+              <div className='grid min-w-0 grid-cols-2 gap-4 @5xl:grid-cols-2 @5xl:gap-4 score-wide:mx-0 score-wide:w-full score-wide:max-w-none score-wide:border-l-0 score-wide:pl-0'>
                 {[
                   { label: 'Strongest', dimension: ranked[0] },
                   { label: 'Needs attention', dimension: ranked[ranked.length - 1] },
@@ -296,13 +296,13 @@ function ScoreTab() {
 
           <section
             data-score-divider-column
-            className='flex min-w-0 flex-col tool-panel-stack tool-panel-space @min-[48rem]:self-start @7xl:col-start-3 @7xl:row-start-1 @7xl:self-stretch @7xl:border-l @7xl:border-border @min-[80rem]:ps-3.75 @min-[120rem]:ps-5.75 @min-[160rem]:ps-6.75'>
+            className='flex min-w-0 flex-col tool-panel-stack tool-panel-space 3xl:ps-5.75! 4xl:ps-6.75! @min-[48rem]:self-start @min-[80rem]:ps-3.75 score-wide:col-start-3 score-wide:row-start-1 score-wide:self-stretch score-wide:border-l score-wide:border-border'>
             <div className='flex flex-wrap items-baseline justify-between gap-2'>
               <div className={TYPE.label}>Score profile</div>
               <div className={TYPE.mono}>0 – 100</div>
             </div>
             <div ref={radarAreaRef} className='flex min-w-0 flex-1 items-center justify-center'>
-              <div className='aspect-square w-full max-w-64 @min-[35rem]:max-w-56 @min-[40rem]:max-w-64 @min-[48rem]:max-w-80 @min-[64rem]/score:max-w-72! @7xl:max-w-[clamp(14rem,31vh,32rem)]! @min-[120rem]:max-w-76!'>
+              <div className='aspect-square w-full max-w-64 @min-[35rem]:max-w-56 @min-[40rem]:max-w-64 @min-[48rem]:max-w-80 @min-[64rem]/score:max-w-72! @min-[120rem]:max-w-76! desktop-short:max-w-[clamp(14rem,31vh,18rem)]! score-wide:max-w-[clamp(14rem,31vh,32rem)]!'>
                 <Chart
                   initialWidth={320}
                   height={320}
@@ -320,16 +320,16 @@ function ScoreTab() {
 
           <section
             data-score-divider-column
-            className='flex min-w-0 flex-col border-t border-border tool-panel-space @min-[35rem]:col-span-2 @min-[48rem]:col-span-1 @min-[48rem]:border-t-0 @7xl:col-span-1 @7xl:col-start-2 @7xl:row-start-1 @7xl:border-l @7xl:border-border @min-[80rem]:ps-3.75 @min-[120rem]:ps-5.75 @min-[160rem]:ps-6.75'>
+            className='flex min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space 3xl:ps-5.75! 4xl:ps-6.75! @min-[35rem]:col-span-2 @min-[48rem]:col-span-1 @min-[48rem]:border-t-0 @min-[80rem]:ps-3.75 score-wide:col-span-1 score-wide:col-start-2 score-wide:row-start-1 score-wide:border-l score-wide:border-border'>
             <div className='flex flex-wrap items-baseline justify-between gap-2'>
               <div className={TYPE.label}>Dimensions</div>
               <div className={TYPE.meta}>4 dimensions</div>
             </div>
-            <div className='grid grid-cols-1 gap-x-6 gap-y-3 @min-[35rem]:grid-cols-2'>
+            <div className='grid grid-cols-1 gap-x-6 gap-y-3 @min-[35rem]:grid-cols-2 desktop-short:gap-y-2'>
               {feedback.map(({ label, measures, value, note }) => (
                 <div
                   key={label}
-                  className='flex min-w-0 flex-col gap-2 border-b border-border py-3 last:border-b-0 @min-[35rem]:gap-1 @min-[35rem]:border-0 @min-[35rem]:py-2 @min-[48rem]:py-1.5 @min-[80rem]/score:gap-4 @min-[80rem]/score:py-5'>
+                  className='flex min-w-0 flex-col gap-2 border-b border-border py-3 last:border-b-0 @min-[35rem]:row-span-4 @min-[35rem]:grid @min-[35rem]:grid-rows-subgrid @min-[35rem]:gap-1 @min-[35rem]:border-0 @min-[35rem]:py-2 @xl:gap-4 @xl:py-5 @min-[48rem]:py-1.5 desktop-short:gap-1.5! desktop-short:py-0.5!'>
                   <div className='flex min-w-0 flex-col gap-1'>
                     <div className={TYPE.title}>{label}</div>
                     <div className={TYPE.meta}>{measures}</div>
@@ -355,15 +355,15 @@ function ScoreTab() {
         </div>
         <div
           aria-hidden='true'
-          className='hidden border-t border-border @7xl:col-span-3 @7xl:row-start-2 @7xl:block'
+          className='hidden border-t border-border score-wide:col-span-3 score-wide:row-start-2 score-wide:block'
         />
-        <div className='grid min-w-0 grid-cols-1 gap-y-5 @7xl:contents @min-[80rem]/score:grid-cols-2 @min-[80rem]/score:items-start @min-[80rem]/score:gap-x-6 @min-[80rem]/score:gap-y-6 @min-[80rem]/score:border-t @min-[80rem]/score:border-border @min-[80rem]/score:pt-6'>
-          <section className='@container/color-detail col-span-full flex min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @7xl:col-span-1 @min-[80rem]/score:col-span-1 @7xl:col-start-1 @min-[80rem]/score:col-start-1 @7xl:row-start-3 @min-[80rem]/score:row-start-1 @7xl:self-stretch @min-[80rem]/score:self-start @min-[80rem]/score:border-t-0'>
+        <div className='grid min-w-0 grid-cols-1 gap-y-5 xl:grid-cols-2 xl:items-start xl:gap-x-6 xl:gap-y-6 xl:border-t xl:border-border xl:pt-6 score-wide:contents'>
+          <section className='@container/color-detail col-span-full flex min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space xl:col-span-1 xl:col-start-1 xl:row-start-1 xl:self-start xl:border-t-0 score-wide:col-span-1 score-wide:col-start-1 score-wide:row-start-3 score-wide:self-stretch'>
             <div className='flex flex-wrap items-baseline justify-between gap-2'>
               <div className={TYPE.label}>Color detail</div>
               <div className={TYPE.meta}>OKLCH and text contrast on white / black</div>
             </div>
-            <div className='grid grid-cols-1 gap-x-6 gap-y-3 @min-[32rem]/color-detail:hidden'>
+            <div className='grid grid-cols-1 gap-x-6 gap-y-3 xl:hidden @min-[32rem]/color-detail:hidden'>
               {slots.map((slot, index) => {
                 const xyz = colors[index]!;
                 const { l, c, h } = xyzToLch(OKLAB, xyz);
@@ -420,8 +420,8 @@ function ScoreTab() {
                 );
               })}
             </div>
-            <div className='hidden overflow-x-auto @min-[32rem]/color-detail:block'>
-              <table className='w-full min-w-0 table-fixed border-collapse text-left text-xs'>
+            <div className='hidden overflow-x-auto xl:block @min-[32rem]/color-detail:block'>
+              <table className='w-full min-w-104 table-fixed border-collapse text-left text-[11px] desktop-short:[&_td]:py-1.5 desktop-short:[&_th]:py-1.5'>
                 <thead>
                   <tr className='border-b border-border text-muted-foreground'>
                     <th scope='col' className='w-[24%] py-2 pr-2 font-medium'>
@@ -505,7 +505,7 @@ function ScoreTab() {
 
           <section
             data-score-divider-column
-            className='flex min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @7xl:col-span-1 @min-[80rem]/score:col-span-2 @7xl:col-start-3 @7xl:row-start-3 @min-[80rem]/score:row-start-2 @7xl:border-t-0 @min-[80rem]/score:border-t @7xl:border-l @7xl:border-border @min-[80rem]:ps-3.75 @min-[120rem]:ps-5.75 @min-[160rem]:ps-6.75'>
+            className='flex min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space xl:col-span-2 xl:row-start-2 3xl:ps-5.75! 4xl:ps-6.75! @min-[80rem]:ps-3.75 score-wide:col-span-1 score-wide:col-start-3 score-wide:row-start-3 score-wide:border-t-0 score-wide:border-l score-wide:border-border'>
             <div className='flex flex-wrap items-baseline justify-between gap-2'>
               <div className={TYPE.label}>Pair contrast</div>
               <div className={TYPE.meta}>WCAG text contrast ratios · opaque color pairs</div>
@@ -560,7 +560,7 @@ function ScoreTab() {
                   </ul>
                 </div>
                 <div className='hidden overflow-x-auto @min-[35rem]:block'>
-                  <table className='w-full min-w-0 border-collapse text-center text-xs'>
+                  <table className='w-full min-w-0 border-collapse text-center text-xs desktop-short:[&_td]:py-0.5 desktop-short:[&_th]:py-0.5'>
                     <caption className='sr-only'>
                       WCAG contrast ratio for each palette color pair
                     </caption>
@@ -620,7 +620,7 @@ function ScoreTab() {
                                 key={column.id}
                                 aria-label={`${row.color.hex.toUpperCase()} and ${column.color.hex.toUpperCase()}: ${pair?.ratio.toFixed(2)} to 1, ${pair?.level}`}
                                 className='p-1'>
-                                <span className='block rounded-sm bg-muted px-1.5 py-1'>
+                                <span className='block rounded-sm bg-muted px-1.5 py-1 desktop-short:py-0.5'>
                                   <span className={`${TYPE.mono} block`}>
                                     {pair?.ratio.toFixed(2)}:1
                                   </span>
@@ -645,12 +645,12 @@ function ScoreTab() {
 
           <section
             data-score-divider-column
-            className='@container/vision flex min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @7xl:col-span-1 @7xl:col-start-2 @min-[80rem]/score:col-start-2 @7xl:row-start-3 @min-[80rem]/score:row-start-1 @7xl:self-stretch @min-[80rem]/score:self-start @min-[80rem]/score:border-t-0 @7xl:border-l @7xl:border-border @min-[80rem]:ps-3.75 @min-[120rem]:ps-5.75 @min-[160rem]:ps-6.75'>
+            className='@container/vision flex min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space xl:col-start-2 xl:row-start-1 xl:self-start xl:border-t-0 3xl:ps-5.75! 4xl:ps-6.75! @min-[80rem]:ps-3.75 score-wide:col-span-1 score-wide:col-start-2 score-wide:row-start-3 score-wide:self-stretch score-wide:border-l score-wide:border-border'>
             <div className='flex flex-wrap items-baseline justify-between gap-2'>
               <div className={TYPE.label}>Color-vision distinction</div>
               <div className={TYPE.meta}>Closest pair · simulated appearance · ΔE00</div>
             </div>
-            <div className='@xl/vision:hidden'>
+            <div className='@xl/vision:hidden desktop-short:hidden'>
               <ul className='divide-y divide-border'>
                 {visionPairs.map((pair) => {
                   const name =
@@ -699,7 +699,7 @@ function ScoreTab() {
                 })}
               </ul>
             </div>
-            <div className='hidden overflow-x-auto @xl/vision:block'>
+            <div className='hidden overflow-x-auto @xl/vision:block desktop-short:block'>
               <table className='w-full min-w-0 table-fixed border-collapse text-left text-xs'>
                 <thead>
                   <tr className='border-b border-border text-muted-foreground'>
@@ -953,7 +953,7 @@ function CompareMetricCards({
                   <div
                     key={side}
                     className='grid min-w-0 grid-cols-[1rem_minmax(0,1fr)_3.75rem] items-center gap-2'>
-                    <span className='text-xs font-bold' style={{ color: SERIES[side].color }}>
+                    <span className='text-[11px] font-bold' style={{ color: SERIES[side].color }}>
                       {SERIES[side].tag}
                     </span>
                     <ScoreBar
@@ -971,7 +971,7 @@ function CompareMetricCards({
               })}
             </div>
             {showScale && (
-              <div className='mt-1.5 flex justify-between pr-17 pl-6 text-2xs text-muted-foreground'>
+              <div className='mt-1.5 flex justify-between pr-17 pl-6 text-[9px] text-muted-foreground'>
                 <span>0</span>
                 <span>{metric.format(metric.max)}</span>
               </div>
@@ -1114,7 +1114,7 @@ function CompareTab() {
     },
   ];
   return (
-    <div className='@container/compare-page flex min-h-0 flex-1 scrollbar-gutter-stable flex-col overflow-auto'>
+    <div className='@container/compare-page flex min-h-0 flex-1 flex-col overflow-auto'>
       {palA && palB && statsA && statsB && (
         <>
           <div
@@ -1151,7 +1151,7 @@ function CompareTab() {
           <div className='grid min-w-0 grid-cols-1 @min-[56rem]:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] @min-[56rem]:grid-rows-[auto_auto] @min-[80rem]:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)]! @min-[120rem]:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]!'>
             <section
               data-compare-profile-section
-              className='flex min-w-0 flex-col tool-panel-stack tool-panel-space @min-[56rem]:col-start-1 @min-[56rem]:row-start-1 @min-[56rem]:border-r @min-[56rem]:border-border'>
+              className='flex min-w-0 flex-col tool-panel-stack tool-panel-space @min-[56rem]:col-start-1 @min-[56rem]:row-start-1 @min-[56rem]:border-r @min-[56rem]:border-border compare-short:gap-2 compare-short:py-2'>
               <div className='flex flex-wrap items-baseline justify-between gap-2'>
                 <div className={SECTION_LABEL}>Score profile</div>
                 <div className='flex flex-wrap items-center gap-3 text-2xs text-muted-foreground'>
@@ -1172,7 +1172,7 @@ function CompareTab() {
               <div className='flex min-h-0 items-center justify-center @min-[56rem]:flex-1'>
                 <div
                   data-compare-profile-chart
-                  className='grid aspect-square w-full max-w-64 place-items-center @min-[40rem]:@max-[56rem]:max-w-104 @min-[56rem]:max-w-80 @min-[64rem]:max-w-88 @min-[64rem]:@max-[80rem]:max-w-64 compare-short:max-w-88 compare-tall:max-w-lg'>
+                  className='grid aspect-square w-full max-w-64 place-items-center @min-[40rem]:@max-[56rem]:max-w-104 @min-[56rem]:max-w-80 @min-[64rem]:max-w-88 @min-[64rem]:@max-[72rem]:max-w-64 compare-short:max-w-88! compare-tall:max-w-lg!'>
                   <Chart
                     className='h-full w-full font-display'
                     definition={createCompareChart(scoreA, scoreB, { a: palA.name, b: palB.name })}
@@ -1216,7 +1216,7 @@ function CompareTab() {
             <section
               data-compare-tablet-metrics
               data-compare-metrics-section
-              className='@container/score-metrics min-w-0 border-t border-border tool-panel-space @min-[56rem]:col-start-2 @min-[56rem]:row-start-1 @min-[56rem]:border-t-0 compare-short:flex compare-short:flex-col compare-tall:flex compare-tall:flex-col'>
+              className='@container/score-metrics min-w-0 border-t border-border tool-panel-space @min-[56rem]:col-start-2 @min-[56rem]:row-start-1 @min-[56rem]:border-t-0 compare-short:flex compare-short:flex-col compare-short:py-2 compare-tall:flex compare-tall:flex-col'>
               <div className='mb-3 flex flex-wrap items-end justify-between gap-2'>
                 <div>
                   <div className={SECTION_LABEL}>Score metrics</div>

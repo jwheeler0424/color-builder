@@ -15,7 +15,9 @@ import { SectionNavigation } from '@/components/desktop/section-navigation';
 import { BrandLockup } from '@/components/logo-icon';
 import {
   ApiPage as DeveloperApiPage,
+  DataPage,
   DocumentationPage,
+  GuidesPage,
   OverviewPage as MarketingOverviewPage,
   SupportPage as ProductSupportPage,
 } from '@/components/marketing/marketing-content';
@@ -31,6 +33,8 @@ import {
 } from '@/components/marketing/marketing-pages';
 import { MarketingShell } from '@/components/marketing/marketing-shell';
 import { contrastRatio, parseColor } from '@/lib/engine/browser';
+import { Route as DataRoute } from '@/routes/_marketing/data';
+import { Route as GuidesRoute } from '@/routes/_marketing/guides';
 
 function renderMarketingPage(
   path:
@@ -47,6 +51,7 @@ function renderMarketingPage(
     | '/terms',
   page: ReactNode,
   shell = false,
+  hash = '',
 ) {
   const rootRoute = createRootRoute({
     component: shell ? MarketingShell : Outlet,
@@ -64,7 +69,7 @@ function renderMarketingPage(
   });
   const router = createRouter({
     routeTree: rootRoute.addChildren(path === '/' ? [pageRoute] : [pageRoute, studioRoute]),
-    history: createMemoryHistory({ initialEntries: [path] }),
+    history: createMemoryHistory({ initialEntries: [`${path}${hash ? `#${hash}` : ''}`] }),
   });
 
   return render(<RouterProvider router={router} />);
@@ -73,6 +78,18 @@ function renderMarketingPage(
 function renderPricing(onPlanSelected?: (intent: CheckoutIntent) => void) {
   return renderMarketingPage('/pricing', <PricingPage onPlanSelected={onPlanSelected} />);
 }
+
+test('marketing footer keeps mobile links in aligned columns with vertical spacing', async () => {
+  renderMarketingPage('/features', <FeaturesPage />, true);
+  const navigation = await screen.findByRole('navigation', { name: 'Footer navigation' });
+  expect(navigation).toHaveClass('max-sm:grid', 'max-sm:w-full', 'max-sm:grid-cols-2');
+  expect(navigation.closest('footer')?.firstElementChild).toHaveClass(
+    'max-sm:flex-col',
+    'max-sm:items-start',
+    'max-sm:py-4',
+  );
+  expect(navigation.querySelectorAll('a')).toHaveLength(4);
+});
 
 describe('marketing pricing', () => {
   test('gives Product and Support pages distinct layout structures', async () => {
@@ -289,17 +306,16 @@ describe('marketing pricing', () => {
     expect(screen.getByText('04 pages')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open Support' })).toHaveAttribute('href', '/support');
     expect(navigation.querySelectorAll('a')).toHaveLength(4);
-    expect(screen.queryByRole('link', { name: 'Guides' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Help center/ })).toHaveAttribute('href', '/support');
+    expect(
+      Array.from(navigation.querySelectorAll('a'), (link) => link.getAttribute('aria-label')),
+    ).toEqual(['Help Center', 'Documentation', 'Guides', 'Legal Notices']);
+    expect(screen.getByRole('link', { name: 'Guides' })).toHaveAttribute('href', '/guides');
+    expect(screen.getByRole('link', { name: 'Help Center' })).toHaveAttribute('href', '/support');
     expect(screen.getByRole('link', { name: 'Documentation' })).toHaveAttribute(
       'href',
       '/documentation',
     );
-    expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute(
-      'href',
-      '/privacy',
-    );
-    expect(screen.getByRole('link', { name: 'Terms of Use' })).toHaveAttribute('href', '/terms');
+    expect(screen.getByRole('link', { name: 'Legal Notices' })).toHaveAttribute('href', '/privacy');
     expect(screen.queryByRole('link', { name: /Pricing/ })).not.toBeInTheDocument();
     expect(screen.queryByText('06')).not.toBeInTheDocument();
   });
@@ -317,7 +333,7 @@ describe('marketing pricing', () => {
     renderMarketingPage('/support', <MarketingResourcesNavigation variant='marketing' />);
 
     fireEvent.click(await screen.findByRole('button', { name: 'Support' }));
-    const help = await screen.findByRole('link', { name: 'Help center' });
+    const help = await screen.findByRole('link', { name: 'Help Center' });
     expect(help).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Documentation' })).not.toHaveAttribute('aria-current');
     expect(
@@ -388,41 +404,55 @@ describe('marketing pricing', () => {
   });
 
   test('switches the guide and presents the contrast thresholds', async () => {
-    renderMarketingPage('/support', <ProductSupportPage />);
+    expect(GuidesRoute.options.beforeLoad).toBeUndefined();
+    expect(GuidesRoute.options.component).toBe(GuidesPage);
+    renderMarketingPage('/guides', <GuidesPage />);
 
     await screen.findByRole('heading', { name: 'Find a harmony, then make it yours.' });
     fireEvent.click(screen.getByRole('button', { name: /Check contrast/ }));
 
-    expect(
-      screen.getByRole('heading', { name: 'Check the actual foreground and background pair.' }),
-    ).toBeInTheDocument();
+    await screen.findByRole('heading', {
+      name: 'Check the actual foreground and background pair.',
+    });
     expect(screen.getByText('AA normal 4.5:1')).toBeInTheDocument();
     expect(screen.getByText('AA large 3:1')).toBeInTheDocument();
   });
 
-  test('opens the relevant guide from Help Center search without leaving the page', async () => {
+  test('links Help Center results to standalone guides without embedding the explorer', async () => {
     renderMarketingPage('/support', <ProductSupportPage />);
 
     const search = await screen.findByRole('searchbox', { name: 'Search help topics' });
     fireEvent.change(search, { target: { value: 'contrast' } });
     const result = screen.getByRole('link', { name: /How should I check text contrast/ });
-    expect(result).toHaveAttribute('href', '#guides');
-    fireEvent.click(result);
-    expect(
-      screen.getByRole('heading', { name: 'Check the actual foreground and background pair.' }),
-    ).toBeInTheDocument();
+    expect(result).toHaveAttribute('href', '/guides#contrast');
+    expect(screen.queryByRole('navigation', { name: 'Guides' })).not.toBeInTheDocument();
 
     fireEvent.change(search, { target: { value: 'gradient' } });
-    fireEvent.click(screen.getByRole('link', { name: /How do I build a gradient/ }));
-    expect(
-      screen.getByRole('heading', { name: 'Choose how colors travel between stops.' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /How do I build a gradient/ })).toHaveAttribute(
+      'href',
+      '/guides#gradients',
+    );
   });
 
-  test('includes the current local-first data overview in Help Center', async () => {
-    renderMarketingPage('/support', <ProductSupportPage />);
+  test('opens a directly linked guide topic', async () => {
+    renderMarketingPage('/guides', <GuidesPage />, false, 'contrast');
 
-    await screen.findByRole('heading', { name: 'Know where your color work lives.' });
+    await screen.findByRole('heading', {
+      name: 'Check the actual foreground and background pair.',
+    });
+    expect(screen.getByRole('button', { name: /Check contrast/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  test('provides the current local-first data overview on its own legal page', async () => {
+    expect(DataRoute.options.beforeLoad).toBeUndefined();
+    expect(DataRoute.options.component).toBe(DataPage);
+    renderMarketingPage('/data', <DataPage />);
+
+    await screen.findByRole('heading', { name: 'Know where your color work lives.', level: 1 });
+    expect(screen.getByRole('main')).toHaveClass('marketing-page-legal');
     expect(
       screen.getByText(/Saved palettes and studio preferences use browser local storage/),
     ).toBeInTheDocument();
@@ -431,6 +461,23 @@ describe('marketing pricing', () => {
       'href',
       '/privacy',
     );
+  });
+
+  test('links Help Center data results to the standalone legal page', async () => {
+    renderMarketingPage('/support', <ProductSupportPage />);
+
+    const search = await screen.findByRole('searchbox', { name: 'Search help topics' });
+    fireEvent.change(search, { target: { value: 'saved palettes' } });
+    expect(screen.getByRole('link', { name: /Where are my saved palettes/ })).toHaveAttribute(
+      'href',
+      '/data',
+    );
+    expect(
+      screen.queryByRole('heading', { name: 'Know where your color work lives.' }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Account and API data practices will be documented separately/),
+    ).not.toBeInTheDocument();
   });
 
   test('provides a Documentation index for the interface foundations', async () => {
@@ -456,6 +503,7 @@ describe('marketing pricing', () => {
       'mailto:auto@designersimage.io',
     );
     expect(screen.getByRole('link', { name: 'Terms of Use' })).toHaveAttribute('href', '/terms');
+    expect(screen.getByRole('link', { name: 'Data overview' })).toHaveAttribute('href', '/data');
   });
 
   test('explains eligibility, current billing behavior, and output responsibilities in Terms', async () => {
@@ -471,6 +519,7 @@ describe('marketing pricing', () => {
       'href',
       '/privacy',
     );
+    expect(screen.getByRole('link', { name: 'Data overview' })).toHaveAttribute('href', '/data');
   });
 
   test('uses shared application controls for feature actions and metadata', async () => {

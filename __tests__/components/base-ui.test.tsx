@@ -46,6 +46,7 @@ import ThemeGeneratorView from '@/components/views/theme-generator-view';
 import UtilityColorsView, { buildUtilityCss } from '@/components/views/utility-colors-view';
 import { ToolButton, ToolSegments, ToolTabs } from '@/components/views/view-ui';
 import { useChromaStore } from '@/hooks/use-chroma-store';
+import { useStackedPalette } from '@/hooks/use-stacked-palette';
 import {
   deriveThemeTokens,
   generateUtilityColors,
@@ -53,6 +54,59 @@ import {
   parseColor,
   textColor,
 } from '@/lib/engine/browser';
+import { ShellProvider } from '@/providers/shell.provider';
+
+test('palette rows follow phone and tablet orientation without stacking desktop palettes', () => {
+  const originalMatchMedia = window.matchMedia;
+  const portraitQuery = Object.assign(new EventTarget(), {
+    matches: true,
+    media: '(orientation: portrait)',
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+  });
+  window.matchMedia = mock(() => portraitQuery);
+
+  function LayoutProbe() {
+    return <output>{useStackedPalette() ? 'rows' : 'columns'}</output>;
+  }
+
+  try {
+    const view = render(
+      <ShellProvider shell='tablet'>
+        <LayoutProbe />
+      </ShellProvider>,
+    );
+    expect(view.getByRole('status')).toHaveTextContent('rows');
+
+    act(() => {
+      portraitQuery.matches = false;
+      portraitQuery.dispatchEvent(new Event('change'));
+    });
+    expect(view.getByRole('status')).toHaveTextContent('columns');
+
+    view.rerender(
+      <ShellProvider shell='mobile'>
+        <LayoutProbe />
+      </ShellProvider>,
+    );
+    expect(view.getByRole('status')).toHaveTextContent('rows');
+
+    act(() => {
+      portraitQuery.matches = true;
+      portraitQuery.dispatchEvent(new Event('change'));
+    });
+    view.rerender(
+      <ShellProvider shell='studio'>
+        <LayoutProbe />
+      </ShellProvider>,
+    );
+    expect(view.getByRole('status')).toHaveTextContent('columns');
+    view.unmount();
+  } finally {
+    window.matchMedia = originalMatchMedia;
+  }
+});
 
 function colorValues(slots: { color: { hex: string; value?: ColorValue } }[]): ColorValue[] {
   return slots.map((slot) => slot.color.value ?? parseColor(slot.color.hex));

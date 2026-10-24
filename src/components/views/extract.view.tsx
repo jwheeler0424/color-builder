@@ -299,7 +299,7 @@ function ImageTab() {
             </p>
           )}
         </section>
-        <section className='extract-results @container/extracted-colors flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space @min-[56rem]/extract-view:overflow-y-auto [@min-[56rem]/extract-view]:[scrollbar-gutter:stable]'>
+        <section className='extract-results @container/extracted-colors flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space @min-[56rem]/extract-view:scrollbar-gutter-stable @min-[56rem]/extract-view:overflow-y-auto'>
           <div className='flex shrink-0 items-center justify-between gap-2'>
             <div className='flex min-w-0 items-center gap-2'>
               <span className='font-mono text-2xs text-primary'>02</span>

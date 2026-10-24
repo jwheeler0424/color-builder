@@ -110,7 +110,8 @@ export default function BrandComplianceView() {
   const pairColumns = [
     'grid-cols-[minmax(0,1fr)_3.75rem_3rem_3rem]',
     '@2xl/results:grid-cols-[minmax(0,1fr)_4rem_3.5rem_3.5rem_6rem]',
-    '@min-[120rem]/brand:grid-cols-[minmax(0,2.6fr)_minmax(5rem,1fr)_minmax(4rem,0.7fr)_minmax(4rem,0.7fr)_minmax(7rem,1.1fr)]',
+    '3xl:gap-x-4',
+    '3xl:grid-cols-[minmax(0,2.6fr)_minmax(5rem,1fr)_minmax(4rem,0.7fr)_minmax(4rem,0.7fr)_minmax(7rem,1.1fr)]!',
   ].join(' ');
 
   return (
@@ -121,11 +122,11 @@ export default function BrandComplianceView() {
       />
       <div
         data-brand-layout
-        className='grid min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start overflow-auto border-t border-border @3xl:grid-cols-[15rem_minmax(0,1fr)] @3xl:grid-rows-[minmax(0,1fr)] @3xl:content-stretch @3xl:overflow-hidden @min-[120rem]/brand:grid-cols-[18rem_minmax(0,1fr)] @min-[144rem]/brand:grid-cols-[22rem_minmax(0,1fr)]'>
+        className='grid min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start overflow-auto border-t border-border 3xl:grid-cols-[18rem_minmax(0,1fr)]! min-[144rem]:grid-cols-[22rem_minmax(0,1fr)]! @3xl:grid-cols-[15rem_minmax(0,1fr)] @3xl:grid-rows-[minmax(0,1fr)] @3xl:content-stretch @3xl:overflow-hidden'>
         <aside className='flex min-h-0 min-w-0 flex-col border-b border-border @3xl:border-r @3xl:border-b-0'>
           <form
             data-brand-form
-            className='flex shrink-0 flex-col gap-2 border-b border-border tool-panel-space @min-[56rem]:gap-3 @min-[120rem]/brand:px-6'
+            className='flex shrink-0 flex-col gap-2 border-b border-border tool-panel-space 3xl:px-6 @min-[56rem]:gap-3'
             onSubmit={(event) => {
               event.preventDefault();
               handleAdd();
@@ -186,13 +187,13 @@ export default function BrandComplianceView() {
           </form>
           <div
             data-brand-colors-heading
-            className='flex shrink-0 items-center justify-between px-4 pt-3 pb-2 3xl:px-6 4xl:px-7 @min-[56rem]:pt-4 @min-[120rem]/brand:px-6'>
+            className='flex shrink-0 items-center justify-between px-4 pt-3 pb-2 3xl:px-6 4xl:px-7 @min-[56rem]:pt-4'>
             <span className={TYPE.label}>Brand colors</span>
             <span className={TYPE.mono}>{brandColors.length}</span>
           </div>
           <div
             data-brand-color-list
-            className='px-2 pb-2 @3xl:min-h-0 @3xl:flex-1 @3xl:overflow-auto @min-[120rem]/brand:px-4'>
+            className='px-2 pb-2 3xl:px-4 @3xl:min-h-0 @3xl:flex-1 @3xl:overflow-auto'>
             {brandColors.length === 0 && (
               <p className={`px-2 py-3 ${TYPE.meta}`}>No brand colors yet.</p>
             )}
@@ -266,7 +267,7 @@ export default function BrandComplianceView() {
             <>
               <div
                 data-brand-details-header
-                className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border tool-panel-space @min-[120rem]/brand:px-6'>
+                className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border tool-panel-space 3xl:px-6'>
                 <div className='flex min-w-0 items-center gap-3'>
                   <span
                     className='size-10 shrink-0 rounded-md border border-border'
@@ -274,10 +275,10 @@ export default function BrandComplianceView() {
                   />
                   <div className='flex min-w-0 flex-col gap-1'>
                     <h3
-                      className={`${TYPE.title} wrap-break-word @min-[120rem]/brand:text-xs @min-[144rem]/brand:text-sm`}>
+                      className={`${TYPE.title} wrap-break-word 3xl:text-xs min-[144rem]:text-sm`}>
                       {selected.brand.label}
                     </h3>
-                    <span className={`${TYPE.mono} @min-[120rem]/brand:text-[11px]`}>
+                    <span className={`${TYPE.mono} 3xl:text-[11px]`}>
                       {selected.brand.hex.toUpperCase()}
                     </span>
                   </div>
@@ -292,7 +293,7 @@ export default function BrandComplianceView() {
                 <>
                   <div
                     data-brand-score-summary
-                    className='grid shrink-0 grid-cols-2 gap-x-6 gap-y-4 border-b border-border tool-panel-space @2xl/results:grid-cols-4 @min-[120rem]/brand:px-6'>
+                    className='grid shrink-0 grid-cols-2 gap-x-6 gap-y-4 border-b border-border tool-panel-space 3xl:px-6 @2xl/results:grid-cols-4'>
                     {[
                       {
                         label: 'WCAG AA',
@@ -326,10 +327,10 @@ export default function BrandComplianceView() {
                   </div>
                   <div
                     data-brand-results-panel
-                    className='flex min-h-0 flex-1 flex-col tool-panel-space @min-[120rem]/brand:px-6 @min-[120rem]/brand:py-4'>
+                    className='flex min-h-0 flex-1 flex-col tool-panel-space 3xl:px-6 3xl:py-4'>
                     <div
                       data-brand-result-header
-                      className={`grid shrink-0 ${pairColumns} items-center gap-2 border-b border-border pb-3 ${TYPE.label} @min-[120rem]/brand:pb-4`}>
+                      className={`grid shrink-0 ${pairColumns} items-center gap-2 border-b border-border pb-3 ${TYPE.label} 3xl:pb-4`}>
                       <span>Palette color</span>
                       <span className='text-right'>Contrast</span>
                       <span className='text-right' title='Absolute APCA contrast'>
@@ -342,7 +343,7 @@ export default function BrandComplianceView() {
                     </div>
                     <div
                       data-brand-result-list
-                      className='grid auto-rows-[minmax(2.5rem,1fr)] @3xl:min-h-0 @3xl:flex-1 @3xl:auto-rows-fr @min-[120rem]/brand:flex-none @min-[120rem]/brand:auto-rows-[minmax(5rem,auto)] @min-[120rem]/brand:content-start @min-[144rem]/brand:auto-rows-[minmax(6rem,auto)]'>
+                      className='grid auto-rows-[minmax(2.5rem,1fr)] 3xl:flex-none! 3xl:auto-rows-[minmax(5rem,auto)]! 3xl:content-start! min-[144rem]:auto-rows-[minmax(6rem,auto)]! @3xl:min-h-0 @3xl:flex-1 @3xl:auto-rows-fr'>
                       {pairs.map(
                         ({ slot, ratio, apcaVal, dist, badge, harmonious, complementary }) => {
                           const name =
@@ -358,7 +359,7 @@ export default function BrandComplianceView() {
                               className={`grid ${pairColumns} min-w-0 items-center gap-2 border-b border-border last:border-b-0`}>
                               <div className='flex min-w-0 items-center gap-2'>
                                 <div
-                                  className='flex h-7 w-14 shrink-0 gap-1 @min-[120rem]/brand:h-8 @min-[120rem]/brand:w-16 @min-[144rem]/brand:h-10 @min-[144rem]/brand:w-20'
+                                  className='flex h-7 w-14 shrink-0 gap-1 3xl:h-8 3xl:w-16 min-[144rem]:h-10 min-[144rem]:w-20'
                                   aria-hidden='true'>
                                   <span
                                     className='flex flex-1 items-center justify-center rounded-sm border border-foreground/10 text-2xs font-bold'
@@ -379,33 +380,33 @@ export default function BrandComplianceView() {
                                 </div>
                                 <div className='flex min-w-0 flex-col gap-0.5'>
                                   <span
-                                    className='truncate text-xs leading-tight font-semibold @min-[120rem]/brand:text-xs @min-[144rem]/brand:text-sm'
+                                    className='truncate text-xs leading-tight font-semibold min-[144rem]:text-sm'
                                     title={name}>
                                     {name}
                                   </span>
-                                  <span className='font-mono text-2xs leading-none text-muted-foreground @min-[120rem]/brand:text-[11px] @min-[144rem]/brand:text-xs'>
+                                  <span className='font-mono text-2xs leading-none text-muted-foreground 3xl:text-[11px] min-[144rem]:text-xs'>
                                     {slot.color.hex.toUpperCase()}
                                   </span>
                                 </div>
                               </div>
                               <div className='flex flex-col items-end gap-0.5'>
-                                <span className='font-mono text-xs leading-none tabular-nums @min-[144rem]/brand:text-sm'>
+                                <span className='font-mono text-xs leading-none tabular-nums min-[144rem]:text-sm'>
                                   {ratio.toFixed(2)}:1
                                 </span>
                                 <span
-                                  className='text-2xs leading-none font-semibold @min-[144rem]/brand:text-[11px]'
+                                  className='text-2xs leading-none font-semibold min-[144rem]:text-[11px]'
                                   style={{ color: badge.color }}>
                                   {badge.label}
                                 </span>
                               </div>
-                              <span className='text-right font-mono text-xs tabular-nums @min-[144rem]/brand:text-sm'>
+                              <span className='text-right font-mono text-xs tabular-nums min-[144rem]:text-sm'>
                                 {apcaVal.toFixed(0)}
                               </span>
-                              <span className='text-right font-mono text-xs tabular-nums @min-[144rem]/brand:text-sm'>
+                              <span className='text-right font-mono text-xs tabular-nums min-[144rem]:text-sm'>
                                 {dist.toFixed(1)}
                               </span>
                               <span
-                                className={`hidden text-right text-2xs @2xl/results:block @min-[144rem]/brand:text-[11px] ${harmonious ? 'text-success' : complementary ? 'text-warning' : 'text-muted-foreground'}`}>
+                                className={`hidden text-right text-2xs min-[144rem]:text-[11px] @2xl/results:block ${harmonious ? 'text-success' : complementary ? 'text-warning' : 'text-muted-foreground'}`}>
                                 {harmonious
                                   ? 'Harmonious'
                                   : complementary

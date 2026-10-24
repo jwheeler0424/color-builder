@@ -216,8 +216,8 @@ function ColorRow({ hex, index, useApca }: { hex: string; index: number; useApca
           style={{ background: hex }}
         />
         <div className='min-w-0'>
-          <div className='font-mono text-xs font-bold text-foreground'>{hex.toUpperCase()}</div>
-          <div className='truncate text-xs text-muted-foreground'>{name}</div>
+          <div className='font-mono text-[12px] font-bold text-foreground'>{hex.toUpperCase()}</div>
+          <div className='truncate text-[11px] text-muted-foreground'>{name}</div>
           <div className='text-2xs text-muted-foreground'>Color {index + 1}</div>
         </div>
       </div>
@@ -245,7 +245,7 @@ function PairMatrix({ hexes, useApca }: { hexes: string[]; useApca: boolean }) {
     <section className='flex shrink-0 flex-col gap-3'>
       <div className='flex flex-wrap items-baseline justify-between gap-2'>
         <div className={SECTION_LABEL}>Palette color pairs</div>
-        <div className='text-xs text-muted-foreground'>
+        <div className='text-[10.5px] text-muted-foreground'>
           {passing} of {total} combinations pass{' '}
           {useApca ? 'APCA Large (Lc ≥ 45)' : 'WCAG AA (4.5:1)'} · rows are text, columns are
           backgrounds · faded cells fail
@@ -321,7 +321,7 @@ function PairMatrix({ hexes, useApca }: { hexes: string[]; useApca: boolean }) {
                             style={{ color: selectedText }}>
                             {useBlackText ? 'B Aa' : 'W Aa'}
                           </span>
-                          <span className='rounded bg-card px-1 font-mono text-2xs text-foreground'>
+                          <span className='rounded bg-card px-1 font-mono text-[9px] text-foreground'>
                             {selectedLabel}
                           </span>
                         </div>
@@ -348,7 +348,7 @@ function PairMatrix({ hexes, useApca }: { hexes: string[]; useApca: boolean }) {
                         <span className='text-sm leading-none font-extrabold' style={{ color: fg }}>
                           Aa
                         </span>
-                        <span className='rounded bg-card px-1 font-mono text-2xs text-foreground'>
+                        <span className='rounded bg-card px-1 font-mono text-[9px] text-foreground'>
                           {label}
                         </span>
                       </div>
@@ -397,7 +397,7 @@ function WcagSlotsTab() {
   return (
     <div className='flex min-h-0 flex-1 flex-col tool-panel-stack overflow-hidden tool-panel-space'>
       <div className='flex flex-wrap items-center justify-between gap-2.5'>
-        <p className='max-w-3xl text-xs text-muted-foreground'>
+        <p className='max-w-3xl text-[11px] text-muted-foreground'>
           How each palette color performs as text or UI against white and black backgrounds.
         </p>
         <ModeToggle useApca={useApca} setUseApca={setUseApca} />
@@ -441,14 +441,14 @@ function WcagSlotsTab() {
               }}>
               {val}
             </div>
-            <div className='mt-0.5 text-2xs tracking-wider text-muted-foreground uppercase'>
+            <div className='mt-0.5 text-[9px] tracking-wider text-muted-foreground uppercase'>
               {label}
             </div>
           </div>
         ))}
       </div>
 
-      <div className='flex min-h-0 flex-1 flex-col tool-panel-stack overflow-auto tool-panel-space'>
+      <div className='flex min-h-0 flex-1 flex-col tool-panel-stack overflow-auto'>
         <section className='flex flex-1 flex-col gap-2'>
           <div className={cn('hidden shrink-0 gap-3 px-3 @2xl/accessibility:grid', ROW_GRID)}>
             <div className={SECTION_LABEL}>Color</div>

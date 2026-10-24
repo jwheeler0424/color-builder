@@ -29,7 +29,16 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { IconPlus as PlusIcon } from '@tabler/icons-react';
-import { Fragment, useState, useCallback, useMemo, useId, type CSSProperties } from 'react';
+import {
+  Fragment,
+  useState,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useId,
+  useRef,
+  type CSSProperties,
+} from 'react';
 
 import { useChromaStore } from '@/hooks/use-chroma-store';
 import {
@@ -55,10 +64,22 @@ interface PaletteStripProps {
 export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
   const { slots, reorderSlots, insertSlot } = useChromaStore();
   const tallRows = useStackedPalette();
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null);
 
-  const layout: StripLayout = tallRows ? 'rows' : 'columns';
-  const stacked = tallRows;
+  useLayoutEffect(() => {
+    const element = wrapRef.current;
+    if (!element || tallRows) return;
+    setWidth(element.getBoundingClientRect().width);
+    const observer = new ResizeObserver(([entry]) => setWidth(entry!.contentRect.width));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [tallRows]);
+
+  const crowded = !tallRows && width > 0 && width / slots.length < 72;
+  const layout: StripLayout = tallRows || crowded ? 'rows' : 'columns';
+  const stacked = layout === 'rows';
   // Stable ID so SSR/client aria-describedby always matches
   const dndId = useId();
 
@@ -93,6 +114,7 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
   return (
     <StripLayoutContext.Provider value={layout}>
       <div
+        ref={wrapRef}
         className={cn(tallRows ? 'contents' : '@container/palette-strip h-full w-full')}
         style={tallRows ? undefined : ({ '--palette-slot-count': slots.length } as CSSProperties)}>
         <DndContext
@@ -105,7 +127,7 @@ export function PaletteStrip({ onEditSlot, className }: PaletteStripProps) {
           <div
             className={cn(
               'palette-strip-items @container/palette-strip-layout flex h-full w-full min-w-0',
-              tallRows && 'flex-col overflow-y-auto',
+              stacked && 'flex-col overflow-y-auto',
               className,
             )}>
             <SortableContext items={slotIds} strategy={rectSortingStrategy}>

@@ -1,10 +1,19 @@
 import { createChartScene } from '@tanstack/charts/scene';
-import { render } from '@testing-library/react';
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRouter,
+  RouterProvider,
+} from '@tanstack/react-router';
+import { render, waitFor } from '@testing-library/react';
 import { describe, expect, spyOn, test } from 'bun:test';
 import { StrictMode } from 'react';
 
 import { Chart } from '@/components/ui/chart';
+import AccessibilityView from '@/components/views/accessibility.view';
 import { createEasingChart, EASING_OPTIONS } from '@/components/views/gradient-view';
+import ScoreView from '@/components/views/score.view';
+import { TYPE } from '@/components/views/view-ui';
 import {
   createChromaChart,
   createHueChart,
@@ -12,6 +21,72 @@ import {
   MAX_CHROMA,
   type PaletteChartPoint,
 } from '@/lib/tools/palette-charts';
+
+test('accessibility preserves the original compact row and matrix typography', () => {
+  const view = render(<AccessibilityView />);
+  const colorLabel = view.getByText('Color 1').parentElement!;
+  expect(colorLabel.querySelector('.font-mono')).toHaveClass('text-[12px]');
+  expect(colorLabel.querySelector('.truncate')).toHaveClass('text-[11px]');
+  expect(view.getByText('AA on white')).toHaveClass('text-[9px]');
+  expect(view.getByText(/combinations pass/)).toHaveClass('text-[10.5px]');
+  expect(colorLabel.closest('section')?.parentElement).not.toHaveClass('tool-panel-space');
+});
+
+test('score desktop grid keeps detail sections in the lower wide-screen row', async () => {
+  const router = createRouter({
+    routeTree: createRootRoute({ component: ScoreView }),
+    history: createMemoryHistory({ initialEntries: ['/'] }),
+  });
+  const view = render(<RouterProvider router={router} />);
+  await waitFor(() => expect(view.getByText('Color detail')).toBeInTheDocument());
+
+  const detail = view.getByText('Color detail').closest('section')!;
+  const vision = view.getByText('Color-vision distinction').closest('section')!;
+  const contrast = view.getByText('Pair contrast').closest('section')!;
+  expect(detail.parentElement).toHaveClass('xl:grid-cols-2', 'score-wide:contents');
+  expect(detail).toHaveClass('xl:row-start-1', 'score-wide:row-start-3', 'score-wide:col-start-1');
+  expect(vision).toHaveClass('xl:row-start-1', 'score-wide:row-start-3', 'score-wide:col-start-2');
+  expect(contrast).toHaveClass(
+    'xl:row-start-2',
+    'score-wide:row-start-3',
+    'score-wide:col-start-3',
+    'score-wide:col-span-1',
+  );
+  expect(view.container.querySelectorAll('.score-panel')).toHaveLength(0);
+  expect(
+    view.container.querySelector('[class~="@container/score"]')?.firstElementChild,
+  ).toHaveClass('score-wide:min-h-min', 'score-wide:grid-rows-[max-content_auto_minmax(0,1fr)]');
+  for (const section of view.container.querySelectorAll('[class~="@container/score"] section')) {
+    expect(section).not.toHaveClass('overflow-auto');
+    expect(section).not.toHaveClass('overflow-y-auto');
+  }
+  for (const section of [detail, vision, contrast]) {
+    expect(section).not.toHaveClass('@min-[80rem]/score:row-start-1');
+    expect(section).not.toHaveClass('@min-[80rem]/score:row-start-2');
+    expect(section).not.toHaveClass('@min-[80rem]/score:col-span-2');
+  }
+  expect(detail.children[1]).toHaveClass('xl:hidden');
+  expect(detail.querySelector('table')?.parentElement).toHaveClass('xl:block');
+  expect(detail.querySelector('table')).toHaveClass('text-[11px]', 'min-w-104');
+  const dimensions = view.getByText('Dimensions').closest('section')!;
+  const dimensionCard = dimensions.children[1]!.firstElementChild;
+  expect(dimensions).toHaveClass('tool-panel-stack');
+  expect(dimensionCard).toHaveClass(
+    '@min-[35rem]:grid',
+    '@min-[35rem]:grid-rows-subgrid',
+    '@min-[35rem]:row-span-4',
+  );
+  expect(dimensionCard).toHaveClass('@xl:gap-4', '@min-[48rem]:py-1.5');
+  expect(dimensionCard).not.toHaveClass('@min-[80rem]/score:py-5');
+  expect(dimensionCard).toHaveClass('desktop-short:gap-1.5!', 'desktop-short:py-0.5!');
+  expect(vision.children[1]).toHaveClass('desktop-short:hidden');
+  expect(vision.querySelector('table')?.parentElement).toHaveClass('desktop-short:block');
+  expect(contrast.querySelector('table')).toHaveClass('desktop-short:[&_td]:py-0.5');
+  expect(detail.querySelector('table')).toHaveClass('desktop-short:[&_td]:py-1.5');
+  expect(TYPE.title).toContain('text-[13px]');
+  expect(TYPE.meta).toContain('text-[11px]');
+  expect(TYPE.mono).toContain('text-[11px]');
+});
 
 test('easing thumbnails render continuous rounded paths without axes', () => {
   for (const { id } of EASING_OPTIONS) {

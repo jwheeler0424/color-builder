@@ -49,9 +49,26 @@ body {
 }
 
 @custom-variant compare-compact (@container compare-page (min-width: 40rem) and (max-width: 55.99rem));
-@custom-variant compare-tablet (@container compare-page (min-width: 40rem) and (max-width: 63.99rem));
+@custom-variant compare-tablet {
+  @media (min-width: 40rem) and (max-width: 63.99rem) {
+    &:where([data-compare-tablet-metrics] *) {
+      @slot;
+    }
+  }
+}
 @custom-variant compare-short (@media (min-width: 120rem) and (max-height: 70rem));
 @custom-variant compare-tall (@media (min-width: 144rem) and (min-height: 70.01rem));
+@custom-variant desktop-short (@media (min-width: 80rem) and (max-height: 60rem));
+@custom-variant score-wide {
+  @container score (min-width: 80rem) {
+    @slot;
+  }
+  @media (min-width: 80rem) and (max-height: 60rem) {
+    @container score (min-width: 64rem) {
+      @slot;
+    }
+  }
+}
 @custom-variant shell-mobile (@container app-shell (max-width: 37.49rem));
 @custom-variant shell-tablet (@container app-shell (min-width: 37.5rem) and (max-width: 63.99rem));
 @custom-variant shell-desktop (@container app-shell (min-width: 64rem));
@@ -495,6 +512,10 @@ body {
     padding-block: 1.5rem;
     padding-inline: 1.75rem;
   }
+
+  @media (width >= 80rem) and (height <= 60rem) {
+    padding-block: 0.75rem;
+  }
 }
 
 @utility tool-panel-stack {
@@ -506,6 +527,24 @@ body {
 
   @media (width >= theme(--breakpoint-4xl)) {
     gap: 1.5rem;
+  }
+
+  @media (width >= 80rem) and (height <= 60rem) {
+    gap: 0.75rem;
+  }
+}
+
+@utility scrollbar-gutter-stable {
+  scrollbar-gutter: stable;
+}
+
+@layer utilities {
+  @media (width < 40rem) {
+    #root:has([data-mobile-footer])
+      :is([class~='flex-1'][class~='overflow-auto'], [class~='flex-1'][class~='overflow-y-auto']) {
+      padding-block-end: 2rem;
+      scroll-padding-block-end: 2rem;
+    }
   }
 }
 

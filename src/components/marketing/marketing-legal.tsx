@@ -308,9 +308,7 @@ function LegalPage({ kind }: { kind: 'privacy' | 'terms' }) {
             className={!privacy ? 'text-(--foreground)' : undefined}>
             Terms of Use
           </Link>
-          <Link to='/support' hash='data'>
-            Data overview
-          </Link>
+          <Link to='/data'>Data overview</Link>
         </div>
       </header>
       <div

@@ -8,7 +8,6 @@ import {
   IconFileText,
   IconHelpCircle,
   IconLayoutDashboard,
-  IconShieldLock,
   IconSparkles,
   IconTag,
 } from '@tabler/icons-react';
@@ -57,9 +56,9 @@ const MARKETING_LINKS = [
   },
   {
     to: '/support',
-    label: 'Help center',
+    label: 'Help Center',
     navLabel: 'Help',
-    description: 'Guides and answers about palettes, contrast, exports, plans, and API access.',
+    description: 'Answers about palettes, contrast, exports, plans, and API access.',
     icon: IconHelpCircle,
   },
   {
@@ -70,17 +69,17 @@ const MARKETING_LINKS = [
     icon: IconBook2,
   },
   {
-    to: '/privacy',
-    label: 'Privacy Policy',
-    navLabel: 'Privacy',
-    description: 'Information handling, browser storage, choices, and privacy rights.',
-    icon: IconShieldLock,
+    to: '/guides',
+    label: 'Guides',
+    navLabel: 'Guides',
+    description: 'Practical workflows for palettes, accessible contrast, tokens, and gradients.',
+    icon: IconBook2,
   },
   {
-    to: '/terms',
-    label: 'Terms of Use',
-    navLabel: 'Terms',
-    description: 'Conditions for using the studio, your content, and available services.',
+    to: '/privacy',
+    label: 'Legal Notices',
+    navLabel: 'Legal',
+    description: 'Privacy policy, terms of use, and information about your rights.',
     icon: IconFileText,
   },
 ] as const;
@@ -232,16 +231,12 @@ export function MarketingResourcesNavigation({
       <NavigationMenuList className='h-full flex-none'>
         <MarketingResourcesMenuItem
           compact={compact}
-          className={
-            variant === 'marketing' ? 'text-sm text-foreground normal-case' : undefined
-          }
+          className={variant === 'marketing' ? 'text-sm text-foreground normal-case' : undefined}
         />
         <MarketingResourcesMenuItem
           kind='support'
           compact={compact}
-          className={
-            variant === 'marketing' ? 'text-sm text-foreground normal-case' : undefined
-          }
+          className={variant === 'marketing' ? 'text-sm text-foreground normal-case' : undefined}
         />
       </NavigationMenuList>
     </NavigationMenu>

@@ -10,7 +10,7 @@ import {
   IconTools,
   IconX,
 } from '@tabler/icons-react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate, useRouterState } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { PaletteArtwork } from '@/components/marketing/marketing-pages';
@@ -613,7 +613,9 @@ function GuideExplorer({
 }
 
 export function GuidesPage() {
-  const [activeGuide, setActiveGuide] = useState<GuideTopic['id']>('palette');
+  const hash = useRouterState({ select: (state) => state.location.hash });
+  const navigate = useNavigate();
+  const activeGuide = GUIDE_TOPICS.find((guide) => guide.id === hash)?.id ?? 'palette';
 
   return (
     <main className='min-w-0 flex-[1_0_auto] [--page-gutter:clamp(24px,3vw,72px)] max-[960px]:[--page-gutter:clamp(16px,2.7vw,28px)] max-[800px]:[--page-gutter:18px]'>
@@ -668,7 +670,9 @@ export function GuidesPage() {
         </div>
       </section>
 
-      <section className='mx-auto w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none pt-[54px] max-[560.01px]:py-8'>
+      <section
+        id={activeGuide}
+        className='mx-auto w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none pt-[54px] max-[560.01px]:py-8'>
         <MarketingSectionHeading>
           <div>
             <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
@@ -680,7 +684,10 @@ export function GuidesPage() {
             Use these guides as a working reference while you build and review a color system.
           </MarketingSectionNote>
         </MarketingSectionHeading>
-        <GuideExplorer activeGuide={activeGuide} onGuideChange={setActiveGuide} />
+        <GuideExplorer
+          activeGuide={activeGuide}
+          onGuideChange={(guide) => void navigate({ to: '/guides', hash: guide, replace: true })}
+        />
       </section>
 
       <section className='bg-card py-[38px] text-foreground'>
@@ -839,8 +846,7 @@ const SUPPORT_ARTICLES = [
     title: 'Where are my saved palettes?',
     category: 'Data',
     summary: 'Learn how browser-local saves work and what happens when site data is cleared.',
-    to: '/support',
-    hash: 'data',
+    to: '/data',
   },
   {
     title: 'How do I share a palette?',
@@ -879,7 +885,7 @@ const SUPPORT_ARTICLES = [
     title: 'How do I build a gradient?',
     category: 'Studio',
     summary: 'Choose gradient stops, compare interpolation spaces, and export the result.',
-    to: '/support',
+    to: '/guides',
     guideId: 'gradients',
   },
 ] as const;
@@ -887,7 +893,6 @@ const SUPPORT_ARTICLES = [
 export function SupportPage() {
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<SupportCategory>('All');
-  const [activeGuide, setActiveGuide] = useState<GuideTopic['id']>('palette');
   const normalizedQuery = query.trim().toLocaleLowerCase();
   const articles = SUPPORT_ARTICLES.filter((article) => {
     const guide =
@@ -977,7 +982,6 @@ export function SupportPage() {
           </p>
           {articles.length > 0 ? (
             articles.map((article) => {
-              const guideId = 'guideId' in article ? article.guideId : null;
               const content = (
                 <>
                   <span className='font-mono text-2xs text-brand-teal-ink uppercase max-[560.01px]:col-start-1 max-[560.01px]:row-start-1'>
@@ -1001,19 +1005,11 @@ export function SupportPage() {
               const resultClassName =
                 'grid min-h-[138px] grid-cols-[minmax(78px,0.25fr)_minmax(0,1fr)_20px] items-start gap-3 rounded-md border border-border bg-card p-5 transition-[background,border-color,transform] duration-[140ms] hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--brand-teal-ink)_55%,var(--border))] hover:bg-accent hover:shadow-none max-[800.01px]:min-h-0 max-[800.01px]:grid-cols-[100px_minmax(0,1fr)_20px] max-[800.01px]:rounded-none max-[800.01px]:border-0 max-[800.01px]:border-b max-[800.01px]:border-border max-[800.01px]:bg-transparent max-[800.01px]:px-2 max-[800.01px]:py-[18px] max-[800.01px]:hover:translate-y-0 max-[800.01px]:hover:shadow-[inset_0_-1px_0_var(--border)] max-[560.01px]:grid-cols-[minmax(0,1fr)_20px] max-[560.01px]:gap-x-[9px] max-[560.01px]:gap-y-1 max-[560.01px]:px-1 max-[560.01px]:py-4';
 
-              return guideId ? (
-                <a
-                  key={article.title}
-                  href='#guides'
-                  className={resultClassName}
-                  onClick={() => setActiveGuide(guideId)}>
-                  {content}
-                </a>
-              ) : (
+              return (
                 <Link
                   key={article.title}
                   to={article.to}
-                  hash={'hash' in article ? article.hash : undefined}
+                  hash={'guideId' in article ? article.guideId : undefined}
                   className={resultClassName}>
                   {content}
                 </Link>
@@ -1040,36 +1036,27 @@ export function SupportPage() {
           )}
         </div>
       </section>
-      <section
-        id='guides'
-        aria-labelledby='support-guides-title'
-        className='mx-auto w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none pt-6 max-[560.01px]:pb-8'>
-        <MarketingSectionHeading>
-          <div>
-            <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
-              Step-by-step references
-            </p>
-            <MarketingSectionTitle id='support-guides-title'>Color guides</MarketingSectionTitle>
-          </div>
-          <MarketingSectionNote>
-            Build a palette, check contrast, prepare tokens, or refine a gradient.
-          </MarketingSectionNote>
-        </MarketingSectionHeading>
-        <GuideExplorer activeGuide={activeGuide} onGuideChange={setActiveGuide} />
-      </section>
+    </main>
+  );
+}
 
+export function DataPage() {
+  return (
+    <main
+      className={cn(
+        'min-w-0 flex-[1_0_auto] [--page-gutter:clamp(24px,3vw,72px)] max-[960px]:[--page-gutter:clamp(16px,2.7vw,28px)] max-[800px]:[--page-gutter:18px]',
+        'marketing-page-legal',
+      )}>
       <section
         id='data'
-        aria-labelledby='support-data-title'
+        aria-labelledby='data-title'
         className='mx-auto w-[calc(100%_-_var(--page-gutter)_*_2)] max-w-none pt-12 max-[560px]:py-8 max-[560.01px]:pt-9'>
         <MarketingSectionHeading>
           <div>
             <p className='m-0 inline-flex items-center gap-[9px] font-display text-2xs font-semibold tracking-[0] text-muted-foreground uppercase'>
               Data &amp; privacy
             </p>
-            <MarketingSectionTitle id='support-data-title'>
-              Know where your color work lives.
-            </MarketingSectionTitle>
+            <MarketingTitle id='data-title'>Know where your color work lives.</MarketingTitle>
           </div>
           <MarketingSectionNote>
             A plain-language snapshot of how the current Chroma studio handles palettes, shared

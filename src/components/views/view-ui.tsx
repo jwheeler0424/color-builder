@@ -17,10 +17,10 @@ export const TYPE = {
   hero: 'font-display text-5xl leading-none font-extrabold tabular-nums',
   metric: 'font-display text-2xl leading-none font-extrabold tabular-nums',
   stat: 'font-display text-lg leading-none font-extrabold tabular-nums',
-  title: 'text-sm leading-snug font-semibold text-foreground',
+  title: 'text-[13px] leading-snug font-semibold text-foreground',
   body: 'text-xs leading-relaxed text-foreground/80',
-  meta: 'text-xs leading-snug text-muted-foreground',
-  mono: 'font-mono text-xs leading-snug text-muted-foreground',
+  meta: 'text-[11px] leading-snug text-muted-foreground',
+  mono: 'font-mono text-[11px] leading-snug text-muted-foreground',
   label: SECTION_LABEL,
 };
 
