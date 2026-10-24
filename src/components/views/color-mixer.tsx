@@ -127,7 +127,7 @@ export default function ColorMixer() {
           ].map(({ label, value, set }, index) => (
             <div
               key={label}
-              className={`flex min-w-0 flex-col gap-3 ${index === 1 ? '@xl:col-start-3 @xl:row-start-1' : ''}`}>
+              className={`flex min-w-0 flex-col gap-3 ${index === 1 ? 'order-3 @xl:col-start-3 @xl:row-start-1' : 'order-1'}`}>
               <div className={TYPE.label}>{label}</div>
               <div className='flex min-w-0 items-center gap-3'>
                 <input
@@ -177,7 +177,7 @@ export default function ColorMixer() {
             size='icon-sm'
             title='Swap colors'
             aria-label='Swap colors'
-            className='justify-self-center @xl:col-start-2 @xl:row-start-1'
+            className='order-2 justify-self-center @xl:col-start-2 @xl:row-start-1'
             onClick={() => {
               setColorA(colorB);
               setColorB(colorA);
@@ -196,7 +196,7 @@ export default function ColorMixer() {
                 items={MIX_SPACES.map((space) => ({ ...space, title: space.desc }))}
               />
             </div>
-            <div className='grid min-h-40 grid-cols-7 gap-1 @4xl:min-h-24 @4xl:flex-1'>
+            <div className='grid min-h-40 grid-cols-1 gap-1 @min-[28rem]:grid-cols-7 @4xl:min-h-24 @4xl:flex-1'>
               {blendRow.map((color) => {
                 const { hex, t } = color;
                 const value = color.value ?? parseColor(hex);
@@ -211,7 +211,7 @@ export default function ColorMixer() {
                     onClick={() => {
                       void copyColor(paint);
                     }}
-                    className='flex min-w-0 cursor-pointer flex-col justify-between rounded-md border border-foreground/10 px-1 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring'
+                    className='flex min-h-12 min-w-0 cursor-pointer items-center justify-between rounded-md border border-foreground/10 px-3 py-3 outline-none focus-visible:ring-2 focus-visible:ring-ring @min-[28rem]:flex-col @min-[28rem]:items-stretch @min-[28rem]:px-1'
                     style={{ background: paint, color: textColor(value.xyz) }}>
                     <span className='font-mono text-2xs'>{Math.round(t * 100)}%</span>
                     <span className='flex min-h-4 items-center justify-center font-mono text-2xs'>

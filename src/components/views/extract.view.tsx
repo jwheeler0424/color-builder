@@ -204,7 +204,7 @@ function ImageTab() {
     <div className='@container/extract-view flex min-h-0 flex-1 flex-col overflow-auto'>
       <div
         data-extract-layout-grid
-        className='grid min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start @min-[56rem]/extract-view:grid-cols-[minmax(0,3fr)_minmax(22rem,2fr)] @min-[56rem]/extract-view:grid-rows-[minmax(0,1fr)] @min-[56rem]/extract-view:content-stretch @min-[56rem]/extract-view:overflow-hidden'>
+        className='grid min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start @min-[56rem]/extract-view:grid-cols-[minmax(0,3fr)_minmax(22rem,2fr)] @min-[56rem]/extract-view:grid-rows-[max-content]'>
         <section
           data-extract-source
           className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-b border-border tool-panel-space @min-[56rem]/extract-view:grid @min-[56rem]/extract-view:grid-rows-[auto_minmax(0,1fr)] @min-[56rem]/extract-view:border-r @min-[56rem]/extract-view:border-b-0'>
@@ -299,7 +299,7 @@ function ImageTab() {
             </p>
           )}
         </section>
-        <section className='extract-results @container/extracted-colors flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space @min-[56rem]/extract-view:scrollbar-gutter-stable @min-[56rem]/extract-view:overflow-y-auto'>
+        <section className='extract-results @container/extracted-colors flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space'>
           <div className='flex shrink-0 items-center justify-between gap-2'>
             <div className='flex min-w-0 items-center gap-2'>
               <span className='font-mono text-2xs text-primary'>02</span>

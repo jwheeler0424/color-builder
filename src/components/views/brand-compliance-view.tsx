@@ -122,7 +122,7 @@ export default function BrandComplianceView() {
       />
       <div
         data-brand-layout
-        className='grid min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start overflow-auto border-t border-border 3xl:grid-cols-[18rem_minmax(0,1fr)]! min-[144rem]:grid-cols-[22rem_minmax(0,1fr)]! @3xl:grid-cols-[15rem_minmax(0,1fr)] @3xl:grid-rows-[minmax(0,1fr)] @3xl:content-stretch @3xl:overflow-hidden'>
+        className='grid min-h-0 flex-1 grid-cols-1 grid-rows-[max-content_max-content] content-start overflow-auto border-t border-border 3xl:grid-cols-[18rem_minmax(0,1fr)]! min-[144rem]:grid-cols-[22rem_minmax(0,1fr)]! @3xl:grid-cols-[15rem_minmax(0,1fr)] @3xl:grid-rows-[max-content]'>
         <aside className='flex min-h-0 min-w-0 flex-col border-b border-border @3xl:border-r @3xl:border-b-0'>
           <form
             data-brand-form
@@ -357,7 +357,7 @@ export default function BrandComplianceView() {
                               key={slot.id}
                               data-brand-result-row
                               className={`grid ${pairColumns} min-w-0 items-center gap-2 border-b border-border last:border-b-0`}>
-                              <div className='flex min-w-0 items-center gap-2'>
+                              <div className='flex min-w-0 items-center gap-2 @max-[24rem]/results:flex-col @max-[24rem]/results:items-start @max-[24rem]/results:gap-1 @max-[24rem]/results:py-2'>
                                 <div
                                   className='flex h-7 w-14 shrink-0 gap-1 3xl:h-8 3xl:w-16 min-[144rem]:h-10 min-[144rem]:w-20'
                                   aria-hidden='true'>

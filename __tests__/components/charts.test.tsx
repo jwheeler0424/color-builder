@@ -5,15 +5,18 @@ import {
   createRouter,
   RouterProvider,
 } from '@tanstack/react-router';
-import { fireEvent, render, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, waitFor, within } from '@testing-library/react';
 import { describe, expect, spyOn, test } from 'bun:test';
 import { StrictMode } from 'react';
 
 import { Chart } from '@/components/ui/chart';
 import AccessibilityView from '@/components/views/accessibility.view';
+import BrandComplianceView from '@/components/views/brand-compliance-view';
 import { createEasingChart, EASING_OPTIONS } from '@/components/views/gradient-view';
 import ScoreView from '@/components/views/score.view';
 import { TYPE } from '@/components/views/view-ui';
+import VisualizeView from '@/components/views/visualize.view';
+import { useChromaStore } from '@/hooks/use-chroma-store';
 import { VISION_TYPES } from '@/lib/engine/browser';
 import {
   createChromaChart,
@@ -31,6 +34,9 @@ test('accessibility preserves the original compact row and matrix typography', (
   expect(view.getByText('AA on white')).toHaveClass('text-[9px]');
   expect(view.getByText(/combinations pass/)).toHaveClass('text-[10.5px]');
   expect(colorLabel.closest('section')?.parentElement).not.toHaveClass('tool-panel-space');
+  expect(
+    view.getByText('Palette color pairs').closest('section')?.querySelector('table'),
+  ).toHaveClass('table-auto', 'min-w-max');
 });
 
 test('color vision simulations preserve colors and labels in the responsive layout', () => {
@@ -63,6 +69,20 @@ test('color vision simulations preserve colors and labels in the responsive layo
   expect(within(swatch).getByText('Color 1')).toBeInTheDocument();
   fireEvent.click(toggle);
   expect(within(swatch).getByText(hex)).toBeInTheDocument();
+});
+
+test('phone contrast previews retain readable widths and natural row heights', () => {
+  const view = render(<AccessibilityView />);
+  fireEvent.click(view.getByRole('tab', { name: 'Contrast Checker' }));
+  const preview = view.getByRole('table', { name: 'Contrast preview examples' });
+  expect(preview).toHaveClass('@max-[40rem]/accessibility:overflow-x-auto');
+  expect(within(preview).getByRole('rowgroup')).toHaveClass(
+    '@max-[40rem]/accessibility:min-w-128',
+    '@max-[40rem]/accessibility:flex-none',
+  );
+  for (const row of within(preview).getAllByRole('row').slice(1)) {
+    expect(row).toHaveClass('@max-[40rem]/accessibility:min-h-max');
+  }
 });
 
 test('score desktop grid keeps detail sections in the lower wide-screen row', async () => {
@@ -114,11 +134,56 @@ test('score desktop grid keeps detail sections in the lower wide-screen row', as
   expect(dimensionCard).toHaveClass('desktop-short:gap-1.5!', 'desktop-short:py-0.5!');
   expect(vision.children[1]).toHaveClass('desktop-short:hidden');
   expect(vision.querySelector('table')?.parentElement).toHaveClass('desktop-short:block');
+  expect(vision.querySelector('table')).toHaveClass('table-auto', 'min-w-max');
   expect(contrast.querySelector('table')).toHaveClass('desktop-short:[&_td]:py-0.5');
   expect(detail.querySelector('table')).toHaveClass('desktop-short:[&_td]:py-1.5');
   expect(TYPE.title).toContain('text-[13px]');
   expect(TYPE.meta).toContain('text-[11px]');
   expect(TYPE.mono).toContain('text-[11px]');
+});
+
+test('visualizer keeps natural chart rows in short landscape viewports', async () => {
+  const router = createRouter({
+    routeTree: createRootRoute({ component: VisualizeView }),
+    history: createMemoryHistory({ initialEntries: ['/'] }),
+  });
+  const view = render(<RouterProvider router={router} />);
+  await waitFor(() => expect(view.getByText('Lightness vs chroma')).toBeInTheDocument());
+  const section = view.getByText('Lightness vs chroma').closest('section')!;
+  expect(section).toHaveClass('[@media(max-height:40rem)]:grid-rows-[auto_15rem_auto]!');
+  expect(section.parentElement).toHaveClass(
+    '[@media(max-height:40rem)]:flex-none!',
+    '[@media(max-height:40rem)]:overflow-visible!',
+  );
+  fireEvent.click(view.getByRole('tab', { name: 'P3 Gamut' }));
+  expect(view.getByText('CSS with P3 fallback').closest('section')?.parentElement).toHaveClass(
+    '@min-[42rem]:grid-rows-[auto_auto]',
+  );
+  expect(view.getAllByText('sRGB')[0]!.parentElement?.parentElement).toHaveClass('@4xl:min-h-12');
+});
+
+test('brand results keep hex labels below swatches in narrow result panes', async () => {
+  const originalBrands = useChromaStore.getState().brandColors;
+  const view = render(<BrandComplianceView />);
+  try {
+    fireEvent.change(view.getByLabelText('Hex color'), { target: { value: '#0057B8' } });
+    fireEvent.click(view.getByRole('button', { name: 'Add color' }));
+    const row = view.container.querySelector('[data-brand-result-row]');
+    expect(row).toBeInTheDocument();
+    expect(row?.firstElementChild).toHaveClass(
+      '@max-[24rem]/results:flex-col',
+      '@max-[24rem]/results:items-start',
+    );
+    expect(view.container.querySelector('[data-brand-layout]')).toHaveClass(
+      '@3xl:grid-rows-[max-content]',
+    );
+    expect(view.container.querySelector('[data-brand-layout]')).not.toHaveClass(
+      '@3xl:overflow-hidden',
+    );
+  } finally {
+    view.unmount();
+    await act(() => useChromaStore.setState({ brandColors: originalBrands }));
+  }
 });
 
 test('easing thumbnails render continuous rounded paths without axes', () => {

@@ -700,7 +700,7 @@ function ScoreTab() {
               </ul>
             </div>
             <div className='hidden overflow-x-auto @xl/vision:block desktop-short:block'>
-              <table className='w-full min-w-0 table-fixed border-collapse text-left text-xs'>
+              <table className='w-full min-w-max table-auto border-collapse text-left text-xs'>
                 <thead>
                   <tr className='border-b border-border text-muted-foreground'>
                     <th scope='col' className='w-[28%] py-3 pr-3 font-medium'>

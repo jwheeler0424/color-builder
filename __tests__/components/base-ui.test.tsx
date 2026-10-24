@@ -1,6 +1,12 @@
-import { act, fireEvent, render, within } from '@testing-library/react';
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRouter,
+  RouterProvider,
+} from '@tanstack/react-router';
+import { act, fireEvent, render, waitFor, within } from '@testing-library/react';
 import { describe, expect, mock, test } from 'bun:test';
-import { useState } from 'react';
+import { useState, type ComponentType } from 'react';
 
 import type { ColorValue } from '@/lib/engine/color';
 
@@ -36,13 +42,17 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast, ToasterGlobal } from '@/components/ui/toast';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import ColorMixer from '@/components/views/color-mixer';
 import { TokenLegend } from '@/components/views/css-preview';
 import {
   AccessibilityPanel,
   UtilityThemeCard,
   WorkspacePreview,
 } from '@/components/views/design-system-view';
+import ExtractView from '@/components/views/extract.view';
+import GradientView from '@/components/views/gradient-view';
 import ThemeGeneratorView from '@/components/views/theme-generator-view';
+import ThemeOptimizerView from '@/components/views/theme-optimizer-view';
 import UtilityColorsView, { buildUtilityCss } from '@/components/views/utility-colors-view';
 import { ToolButton, ToolSegments, ToolTabs } from '@/components/views/view-ui';
 import { useChromaStore } from '@/hooks/use-chroma-store';
@@ -53,6 +63,7 @@ import {
   hexToStop,
   parseColor,
   textColor,
+  VISION_TYPES,
 } from '@/lib/engine/browser';
 import { ShellProvider } from '@/providers/shell.provider';
 
@@ -116,6 +127,97 @@ function themeForSlots(slots: { color: { hex: string; value?: ColorValue } }[]) 
   const palette = colorValues(slots);
   return deriveThemeTokens(palette, generateUtilityColors(palette));
 }
+
+describe('build tools', () => {
+  async function renderTool(Component: ComponentType) {
+    const router = createRouter({
+      routeTree: createRootRoute({ component: () => <Component /> }),
+      history: createMemoryHistory({ initialEntries: ['/'] }),
+    });
+    const view = render(<RouterProvider router={router} />);
+    await waitFor(() => expect(view.container.querySelector('h2')).toBeInTheDocument());
+    return view;
+  }
+
+  test('mixer keeps narrow blend steps readable and swaps the input colors', async () => {
+    const view = await renderTool(ColorMixer);
+    const blends = view.getAllByRole('button', { name: /^Copy blend / });
+    expect(blends).toHaveLength(7);
+    expect(blends[0]!.parentElement).toHaveClass('grid-cols-1', '@min-[28rem]:grid-cols-7');
+    const inputA = view.getByRole('textbox', { name: 'Color A hex' }) as HTMLInputElement;
+    const inputB = view.getByRole('textbox', { name: 'Color B hex' }) as HTMLInputElement;
+    const originalA = inputA.value;
+    const originalB = inputB.value;
+    const swap = view.getByRole('button', { name: 'Swap colors' });
+    expect(swap).toHaveClass('order-2');
+    fireEvent.click(swap);
+    expect(inputA).toHaveValue(originalB);
+    expect(inputB).toHaveValue(originalA);
+  });
+
+  test('gradient uses aligned embedded tabs and one vertical scroll area', async () => {
+    const view = await renderTool(GradientView);
+    const tabs = view.getByRole('tablist', { name: 'Gradient controls' });
+    expect(tabs).not.toHaveClass('pl-4');
+    expect(view.container.querySelectorAll('[class~="overflow-auto"]')).toHaveLength(1);
+    fireEvent.click(within(tabs).getByRole('tab', { name: 'Stops' }));
+    expect(view.getByRole('textbox', { name: 'Selected stop hex' })).toBeInTheDocument();
+    const colorVision = view.getByRole('checkbox', { name: 'Color vision' });
+    expect(colorVision).toBeChecked();
+    expect(view.getAllByRole('img', { name: /gradient preview/i })).toHaveLength(
+      VISION_TYPES.length,
+    );
+    fireEvent.click(colorVision);
+    expect(colorVision).not.toBeChecked();
+    expect(view.getAllByRole('img', { name: /gradient preview/i })).toHaveLength(1);
+    fireEvent.click(colorVision);
+    expect(view.getAllByRole('img', { name: /gradient preview/i })).toHaveLength(
+      VISION_TYPES.length,
+    );
+  });
+
+  test('extraction shares its scroll area and exposes the converter', async () => {
+    const view = await renderTool(ExtractView);
+    const grid = view.container.querySelector('[data-extract-layout-grid]');
+    expect(grid).toHaveClass('@min-[56rem]/extract-view:grid-rows-[max-content]');
+    expect(grid).not.toHaveClass('@min-[56rem]/extract-view:overflow-hidden');
+    expect(view.container.querySelector('.extract-results')).not.toHaveClass(
+      '@min-[56rem]/extract-view:overflow-y-auto',
+    );
+    fireEvent.click(view.getByRole('tab', { name: 'Convert' }));
+    expect(view.getByRole('textbox', { name: 'Source color' })).toBeInTheDocument();
+    expect(view.getByText('HEX')).toBeInTheDocument();
+  });
+
+  test('theme optimizer switches contrast standards without applying palette changes', async () => {
+    const view = await renderTool(ThemeOptimizerView);
+    const light = view.getByRole('heading', { name: 'light theme' }).closest('section')!;
+    const dark = view.getByRole('heading', { name: 'dark theme' }).closest('section')!;
+    expect(light.parentElement).toHaveClass('@5xl/theme-optimizer:grid-cols-2');
+    expect((light.parentElement as HTMLElement).style.getPropertyValue('--theme-rows')).toBe(
+      String(useChromaStore.getState().slots.length + 1),
+    );
+    for (const panel of [light, dark]) {
+      expect(panel).toHaveClass(
+        '@5xl/theme-optimizer:grid-rows-subgrid',
+        '@5xl/theme-optimizer:row-span-(--theme-rows)',
+      );
+      expect(panel).not.toHaveClass('@container/theme-mode');
+      expect(panel.lastElementChild).toHaveClass('@5xl/theme-optimizer:contents');
+      for (const card of panel.querySelectorAll('article')) {
+        expect(card.children).toHaveLength(5);
+        expect(card.lastElementChild).toHaveClass('min-h-6');
+      }
+    }
+    fireEvent.click(view.getByRole('button', { name: 'APCA' }));
+    const target = view.getByRole('combobox', { name: 'APCA target' });
+    expect(target).toHaveValue('45');
+    fireEvent.change(target, { target: { value: '60' } });
+    expect(target).toHaveValue('60');
+    fireEvent.click(view.getByRole('button', { name: 'WCAG AA · 4.5:1' }));
+    expect(view.queryByRole('combobox', { name: 'APCA target' })).not.toBeInTheDocument();
+  });
+});
 
 test('tool empty state preserves wrapper classes, optional heading and guidance text', () => {
   const message = 'Generate a palette first to see your theme.';

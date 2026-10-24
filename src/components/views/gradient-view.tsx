@@ -270,8 +270,8 @@ export default function GradientView() {
         title='Gradient Generator'
         description='Color stops, interpolation and CSS gradients.'
       />
-      <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto border-t border-border @4xl:auto-rows-auto @4xl:grid-cols-[minmax(0,1fr)_17rem] @4xl:grid-rows-[minmax(0,1fr)] @4xl:overflow-hidden'>
-        <div className='flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space @4xl:overflow-auto'>
+      <div className='grid min-h-0 flex-1 auto-rows-max grid-cols-1 overflow-auto border-t border-border @4xl:grid-cols-[minmax(0,1fr)_17rem]'>
+        <div className='flex min-h-0 min-w-0 flex-col tool-panel-stack tool-panel-space'>
           <div className='flex shrink-0 flex-wrap items-center justify-between gap-2'>
             <span className={TYPE.label}>Preview</span>
             <label className='flex cursor-pointer items-center gap-2 text-xs text-muted-foreground'>
@@ -338,12 +338,13 @@ export default function GradientView() {
         </div>
 
         {/* Side panel */}
-        <div className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @4xl:overflow-auto @4xl:border-t-0 @4xl:border-l'>
+        <div className='flex min-h-0 min-w-0 flex-col tool-panel-stack border-t border-border tool-panel-space @4xl:border-t-0 @4xl:border-l'>
           <ToolTabs
             value={panel}
             onValueChange={setPanel}
             label='Gradient controls'
             stretch
+            inset={false}
             items={[
               { id: 'gradient', label: 'Gradient' },
               { id: 'stops', label: 'Stops' },

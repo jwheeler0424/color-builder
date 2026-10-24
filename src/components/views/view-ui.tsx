@@ -36,19 +36,21 @@ export function ToolTabs<Value extends string>({
   items,
   label,
   stretch = false,
+  inset = true,
 }: {
   value: Value;
   onValueChange: (value: Value) => void;
   items: readonly ToolOption<Value>[];
   label: string;
   stretch?: boolean;
+  inset?: boolean;
 }) {
   return (
     <div className='shrink-0 overflow-x-auto'>
       <div
         role='tablist'
         aria-label={label}
-        className='flex min-w-max border-b border-border pl-4 3xl:pl-6 4xl:pl-7'>
+        className={cn('flex min-w-max border-b border-border', inset && 'pl-4 3xl:pl-6 4xl:pl-7')}>
         {items.map((item, index) => (
           <button
             key={item.id}

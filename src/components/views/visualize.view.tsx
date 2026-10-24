@@ -208,8 +208,8 @@ function OklchTab() {
           </div>
         ))}
       </div>
-      <div className='grid grid-cols-1 @min-[42rem]:min-h-0 @min-[42rem]:flex-1 @min-[42rem]:grid-cols-2 @min-[42rem]:grid-rows-[minmax(0,1fr)_auto] @min-[42rem]:overflow-hidden @4xl:grid-cols-3 @4xl:grid-rows-[minmax(0,1fr)]'>
-        <section className='grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] tool-panel-stack tool-panel-space @min-[42rem]:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)] @4xl:border-r @4xl:border-border'>
+      <div className='grid grid-cols-1 @min-[42rem]:min-h-0 @min-[42rem]:flex-1 @min-[42rem]:grid-cols-2 @min-[42rem]:grid-rows-[minmax(0,1fr)_auto] @min-[42rem]:overflow-hidden @4xl:grid-cols-3 @4xl:grid-rows-[minmax(0,1fr)] [@media(max-height:40rem)]:min-h-min! [@media(max-height:40rem)]:flex-none! [@media(max-height:40rem)]:grid-rows-[auto_auto]! [@media(max-height:40rem)]:overflow-visible!'>
+        <section className='grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] tool-panel-stack tool-panel-space @min-[42rem]:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)] @4xl:border-r @4xl:border-border [@media(max-height:40rem)]:grid-rows-[auto_15rem_auto]!'>
           <div className='flex h-6 items-center justify-between gap-2'>
             <div className={TYPE.label}>Lightness vs chroma</div>
             <div className={TYPE.mono}>L / C</div>
@@ -225,7 +225,7 @@ function OklchTab() {
           <ColorProfile points={points} dimension='lightness' activeId={activeId} />
         </section>
 
-        <section className='grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] tool-panel-stack tool-panel-space @min-[42rem]:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)]'>
+        <section className='grid min-h-0 min-w-0 grid-rows-[auto_15rem_auto] tool-panel-stack tool-panel-space @min-[42rem]:grid-rows-[auto_minmax(0,3fr)_minmax(0,2fr)] [@media(max-height:40rem)]:grid-rows-[auto_15rem_auto]!'>
           <div className='flex h-6 items-center justify-between gap-2'>
             <div className={TYPE.label}>Hue distribution</div>
             <div className={TYPE.mono}>H / C</div>
@@ -359,7 +359,7 @@ function P3SwatchCard({ value, showP3 }: { value: ColorValue; showP3: boolean })
 
   return (
     <div className='flex min-h-0 min-w-0 flex-col gap-2'>
-      <div className='relative flex h-24 shrink-0 gap-1 @4xl:h-auto @4xl:min-h-8 @4xl:flex-1'>
+      <div className='relative flex h-24 shrink-0 gap-1 @4xl:h-auto @4xl:min-h-12 @4xl:flex-1'>
         <div
           className='flex min-w-0 flex-1 items-end rounded-md border border-border p-3'
           style={{ background: hex }}>
@@ -424,7 +424,7 @@ function P3Tab() {
 
   return (
     <div className='@container flex min-h-0 flex-1 flex-col overflow-auto'>
-      <div className='grid grid-cols-1 @min-[42rem]:min-h-0 @min-[42rem]:flex-1 @min-[42rem]:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] @min-[42rem]:grid-rows-[auto_minmax(0,1fr)] @min-[42rem]:overflow-hidden'>
+      <div className='grid grid-cols-1 @min-[42rem]:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] @min-[42rem]:grid-rows-[auto_auto]'>
         <section className='grid grid-cols-1 items-center gap-4 border-b border-border tool-panel-space @min-[42rem]:col-span-2 @min-[42rem]:grid-cols-[auto_minmax(0,1fr)]'>
           <div className='flex gap-10'>
             <div className='flex flex-col gap-1.5'>

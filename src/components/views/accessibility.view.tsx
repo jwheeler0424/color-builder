@@ -252,7 +252,7 @@ function PairMatrix({ hexes, useApca }: { hexes: string[]; useApca: boolean }) {
         </div>
       </div>
       <div className='overflow-x-auto rounded-md border border-muted bg-card p-2'>
-        <table className='w-full min-w-max table-fixed border-separate border-spacing-1'>
+        <table className='w-full min-w-max table-auto border-separate border-spacing-1'>
           <thead>
             <tr>
               <th className='w-10'>
@@ -637,10 +637,10 @@ function ContrastCheckerTab() {
           <section
             role='table'
             aria-label='Contrast preview examples'
-            className='flex min-h-80 min-w-0 flex-col overflow-hidden rounded-md border border-muted'>
+            className='flex min-h-80 min-w-0 flex-col overflow-hidden rounded-md border border-muted @max-[40rem]/accessibility:overflow-x-auto'>
             <div
               role='row'
-              className='grid shrink-0 grid-cols-[5.5rem_minmax(0,1fr)_minmax(0,1fr)] bg-card px-3 py-2'>
+              className='grid shrink-0 grid-cols-[5.5rem_minmax(0,1fr)_minmax(0,1fr)] bg-card px-3 py-2 @max-[40rem]/accessibility:min-w-128'>
               <div role='columnheader' className={SECTION_LABEL}>
                 Sample
               </div>
@@ -651,12 +651,14 @@ function ContrastCheckerTab() {
                 Background on foreground
               </div>
             </div>
-            <div role='rowgroup' className='flex min-h-0 flex-1 flex-col'>
+            <div
+              role='rowgroup'
+              className='flex min-h-0 flex-1 flex-col @max-[40rem]/accessibility:min-w-128 @max-[40rem]/accessibility:flex-none'>
               {previewRows.map(({ id, label, detail }) => (
                 <div
                   key={id}
                   role='row'
-                  className='grid min-h-0 flex-1 grid-cols-[5.5rem_minmax(0,1fr)_minmax(0,1fr)] border-t border-muted'>
+                  className='grid min-h-0 flex-1 grid-cols-[5.5rem_minmax(0,1fr)_minmax(0,1fr)] border-t border-muted @max-[40rem]/accessibility:min-h-max @max-[40rem]/accessibility:flex-none'>
                   <div role='rowheader' className='flex min-w-0 flex-col justify-center gap-1 px-3'>
                     <span className='text-xs font-semibold text-foreground'>{label}</span>
                     <span className='text-2xs text-muted-foreground'>{detail}</span>

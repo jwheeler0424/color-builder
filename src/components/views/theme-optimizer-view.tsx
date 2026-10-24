@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 
 import type { ColorValue } from '@/lib/engine/color';
 import type { PaletteSlot, ThemePaletteVariant } from '@/types';
@@ -106,7 +106,7 @@ function PaletteRecommendation({
     recommendation.direction !== 'none' && (!applied || !sameColor(applied, recommendation.color));
 
   return (
-    <article className='grid min-w-0 gap-3 rounded-md border border-muted bg-card p-3'>
+    <article className='grid min-w-0 grid-rows-[auto_auto_minmax(0,1fr)_auto_auto] gap-3 rounded-md border border-muted bg-card p-3 @5xl/theme-optimizer:mb-2'>
       <div className='flex min-w-0 items-center justify-between gap-3'>
         <div className='flex min-w-0 items-center gap-2'>
           <span
@@ -162,18 +162,20 @@ function PaletteRecommendation({
           {formatScore(score, target.standard)}
         </span>
       </div>
-      {recommendation.direction !== 'none' && (
-        <div className='mt-0.5 text-2xs leading-snug text-muted-foreground'>
-          💡{' '}
-          {recommendation.reachable
-            ? `${recommendation.direction === 'darken' ? 'Darken' : 'Lighten'} to `
-            : `Best effort: ${recommendation.direction} toward `}
-          <span className='font-mono font-bold' style={{ color: recommendationRendition.css }}>
-            {recommendationLabel}
-          </span>
-          {recommendation.reachable ? ` for ${targetDescription}` : '; target unreachable'}
-        </div>
-      )}
+      <div className='mt-0.5 min-h-0 text-2xs leading-snug text-muted-foreground'>
+        {recommendation.direction !== 'none' && (
+          <>
+            💡{' '}
+            {recommendation.reachable
+              ? `${recommendation.direction === 'darken' ? 'Darken' : 'Lighten'} to `
+              : `Best effort: ${recommendation.direction} toward `}
+            <span className='font-mono font-bold' style={{ color: recommendationRendition.css }}>
+              {recommendationLabel}
+            </span>
+            {recommendation.reachable ? ` for ${targetDescription}` : '; target unreachable'}
+          </>
+        )}
+      </div>
 
       <div className='flex flex-wrap gap-x-3 gap-y-1 border-t border-border pt-2'>
         <span className={TYPE.meta}>
@@ -187,7 +189,7 @@ function PaletteRecommendation({
         )}
       </div>
 
-      <div className='flex flex-wrap items-center gap-2'>
+      <div className='flex min-h-6 flex-wrap items-center gap-2'>
         {canReplace && (
           <Button
             variant='outline'
@@ -251,8 +253,8 @@ function ThemeModePanel({
   const passes = rows.filter((row) => row.recommendation.meetsTarget).length;
 
   return (
-    <section className='flex min-w-0 flex-col tool-panel-stack tool-panel-space'>
-      <header className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border pb-3'>
+    <section className='flex min-w-0 flex-col tool-panel-stack tool-panel-space @5xl/theme-optimizer:row-span-(--theme-rows) @5xl/theme-optimizer:grid @5xl/theme-optimizer:grid-cols-1 @5xl/theme-optimizer:grid-rows-subgrid @5xl/theme-optimizer:gap-y-0 @min-[90rem]/theme-optimizer:grid-cols-2'>
+      <header className='flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border pb-3 @5xl/theme-optimizer:col-span-full @5xl/theme-optimizer:mb-3'>
         <div className='flex items-center gap-2'>
           <span
             className='size-6 rounded border border-border'
@@ -270,7 +272,7 @@ function ThemeModePanel({
           {backgroundRendition.hex.toUpperCase()} surface
         </span>
       </header>
-      <div className='grid shrink-0 grid-cols-1 gap-2 @xl/theme-optimizer:grid-cols-2'>
+      <div className='grid shrink-0 grid-cols-1 gap-2 @min-[44rem]/theme-optimizer:grid-cols-2 @5xl/theme-optimizer:contents'>
         {rows.map(({ slot, index, recommendation }) => (
           <PaletteRecommendation
             key={slot.id}
@@ -347,7 +349,9 @@ export default function ThemeOptimizerView() {
           <p className={TYPE.body}>Generate a palette to optimize light and dark variants.</p>
         </div>
       ) : (
-        <div className='grid min-h-0 flex-1 grid-cols-1 overflow-auto @6xl/theme-optimizer:grid-cols-2'>
+        <div
+          style={{ '--theme-rows': slots.length + 1 } as CSSProperties}
+          className='grid min-h-0 flex-1 grid-cols-1 overflow-auto @5xl/theme-optimizer:auto-rows-max @5xl/theme-optimizer:grid-cols-2'>
           <ThemeModePanel
             mode='light'
             backgroundHex={themeBackground?.light ?? '#ffffff'}
